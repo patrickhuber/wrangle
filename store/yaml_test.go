@@ -114,6 +114,15 @@ func TestCanUseVariable(test *testing.T) {
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(data), &m)
 	if err != nil {
-		test.Errorf(err.Error())
+		test.Error(err)
+	}
+}
+
+func TestCanParseMultiLine(test *testing.T) {
+	var data = "key: value\nid: value"
+	m := make(map[interface{}]interface{})
+	err := yaml.Unmarshal([]byte(data), &m)
+	if err != nil {
+		test.Error(err)
 	}
 }
