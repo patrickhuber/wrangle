@@ -2,25 +2,28 @@ config-sources:
 
 - name: bosh-lab-yaml
   type: file
-  path: ~/deployments/bosh-1/no-commit/creds.yml
+  params:
+    path: ~/deployments/bosh-1/no-commit/creds.yml
 
 - name: bosh-lab-credhub
   type: credhub
   config: bosh-lab-yaml
-  username: director_to_credhub
-  password: ((/uaa_clients_director_to_credhub))
-  server: https://192.168.3.11:4343
-  ca_cert: ((/credhub-ca-cert.certificate))
-  skip_tls_validation: false
+  params:
+    username: director_to_credhub
+    password: ((/uaa_clients_director_to_credhub))
+    server: https://192.168.3.11:4343
+    ca_cert: ((/credhub-ca-cert.certificate))
+    skip_tls_validation: false
 
 - name: concourse-lab-credhub
   type: credhub
   config: bosh-lab-credhub
-  username: atc_to_credhub
-  password: ((/uaa_clients_atc_to_credhub))
-  server: https://192.168.3.15:4343
-  ca_cert: ((/credhub-ca-cert.certificate))
-  skip_tls_validation: false
+  params:
+    username: atc_to_credhub
+    password: ((/uaa_clients_atc_to_credhub))
+    server: https://192.168.3.15:4343
+    ca_cert: ((/credhub-ca-cert.certificate))
+    skip_tls_validation: false
 
 processes:
 

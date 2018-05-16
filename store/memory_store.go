@@ -29,6 +29,11 @@ func (store *MemoryStore) GetName() string {
 	return store.Name
 }
 
+// GetType - Gets the type for the store. Always "memory"
+func (store *MemoryStore) GetType() string {
+	return "memory"
+}
+
 // Put - Puts the config value under the value in the memory store
 func (store *MemoryStore) Put(key string, value string) (string, error) {
 	data := StoreData{

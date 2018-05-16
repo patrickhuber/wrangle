@@ -16,6 +16,14 @@ func TestMemoryStore(t *testing.T) {
 		}
 	})
 
+	t.Run("CanGetTYpe", func(t *testing.T) {
+		actualType := memoryStore.GetType()
+		expectedType := "memory"
+		if actualType != expectedType {
+			t.Errorf("expected %s found %s", expectedType, actualType)
+		}
+	})
+
 	t.Run("CanPutValue", func(t *testing.T) {
 		key := "key"
 		value := "value"
@@ -73,6 +81,10 @@ func TestMemoryStore(t *testing.T) {
 		if count != 1 {
 			t.Errorf("Invalid item count. Found %d expected 1", count)
 		}
+	})
+
+	t.Run("CanBeCastToStore", func(t *testing.T) {
+
 	})
 }
 

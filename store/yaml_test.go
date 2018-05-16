@@ -108,3 +108,12 @@ a: test`
 		test.Fatalf("expected to find array of length 3, found %d", len(dArray))
 	}
 }
+
+func TestCanUseVariable(test *testing.T) {
+	var data = `b:\n  c: ((somevar))`
+	m := make(map[interface{}]interface{})
+	err := yaml.Unmarshal([]byte(data), &m)
+	if err != nil {
+		test.Errorf(err.Error())
+	}
+}
