@@ -110,7 +110,7 @@ a: test`
 }
 
 func TestCanUseVariable(test *testing.T) {
-	var data = `b:\n  c: ((somevar))`
+	var data = "b:\n  c: ((somevar))"
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(data), &m)
 	if err != nil {
