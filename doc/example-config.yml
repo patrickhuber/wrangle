@@ -1,0 +1,61 @@
+config-sources:
+
+- name: bosh-lab-yaml
+  type: file
+  path: ~/deployments/bosh-1/no-commit/creds.yml
+
+- name: bosh-lab-credhub
+  type: credhub
+  config: bosh-lab-yaml
+  username: director_to_credhub
+  password: ((/uaa_clients_director_to_credhub))
+  server: https://192.168.3.11:4343
+  ca_cert: ((/credhub-ca-cert.certificate))
+  skip_tls_validation: false
+
+- name: concourse-lab-credhub
+  type: credhub
+  config: bosh-lab-credhub
+  username: atc_to_credhub
+  password: ((/uaa_clients_atc_to_credhub))
+  server: https://192.168.3.15:4343
+  ca_cert: ((/credhub-ca-cert.certificate))
+  skip_tls_validation: false
+
+processes:
+
+- name: fly
+  environments:
+  - name: lab
+    config: bosh-lab-credhub
+    process: fly.exe
+    args:
+    - -t
+    - main
+    - login
+    - -u
+    - atc
+    - -p ((/bosh-1/concourse/atc_basic_auth_password))
+
+- name: credhub
+  environments:
+  
+  - name: lab-bosh
+    config: bosh-lab-yaml
+    process: credhub.exe
+    args:
+    - login
+    env:
+    - CREDHUB_CLIENT: ((/credhub-client))
+    - CREDHUB_SECRET: ((/credhub-secret))
+    - CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
+
+  - name: lab-atc
+    config: bosh-lab-credhub
+    process: credhub.exe
+    args:
+    - login
+    env:
+    - CREDHUB_CLIENT: ((/credhub-client))
+    - CREDHUB_SECRET: ((/credhub-secret))
+    - CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
