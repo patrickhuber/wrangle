@@ -13,3 +13,6 @@
 [submodule "vendor\\github.com\\kr\\fs"]
 	path = vendor\\github.com\\kr\\fs
 	url = https://github.com/kr/fs
+[submodule "vendor\\github.com\\pkg\\errors"]
+	path = vendor\\github.com\\pkg\\errors
+	url = https://github.com/pkg/errors
