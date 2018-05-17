@@ -7,3 +7,9 @@
 [submodule "vendor\\gopkg.in\\yaml.v2"]
 	path = vendor\\gopkg.in\\yaml.v2
 	url = https://gopkg.in/yaml.v2
+[submodule "vendor\\github.com\\pkg\\sftp"]
+	path = vendor\\github.com\\pkg\\sftp
+	url = https://github.com/pkg/sftp
+[submodule "vendor\\github.com\\kr\\fs"]
+	path = vendor\\github.com\\kr\\fs
+	url = https://github.com/kr/fs
