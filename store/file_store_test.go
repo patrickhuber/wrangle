@@ -26,7 +26,9 @@ func TestFileStore(t *testing.T) {
 	const fileStoreName string = "fileStore"
 	fileSystem := afero.NewMemMapFs()
 
-	fileContent := "key: value\n\nid: value"
+	fileContent := `
+key: value
+id: value`
 	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
 	if err != nil {
 		t.Error(err)
@@ -58,7 +60,7 @@ func TestFileStore(t *testing.T) {
 
 	t.Run("CanGetByName", func(t *testing.T) {
 		value := "value"
-		key := "key"
+		key := "/key"
 
 		data, err := fileStore.GetByName(key)
 		if err != nil {
@@ -77,7 +79,7 @@ func TestFileStore(t *testing.T) {
 
 	t.Run("CanGetByID", func(t *testing.T) {
 		value := "value"
-		id := "id"
+		id := "/id"
 
 		data, err := fileStore.GetByID(id)
 		if err != nil {

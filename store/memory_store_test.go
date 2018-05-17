@@ -16,7 +16,7 @@ func TestMemoryStore(t *testing.T) {
 		}
 	})
 
-	t.Run("CanGetTYpe", func(t *testing.T) {
+	t.Run("CanGetType", func(t *testing.T) {
 		actualType := memoryStore.GetType()
 		expectedType := "memory"
 		if actualType != expectedType {

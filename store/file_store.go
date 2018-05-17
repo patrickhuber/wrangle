@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"fmt"
 
-	"github.com/hashicorp/terraform/flatmap"
+	patch "github.com/cppforlife/go-patch/patch"
+
 	"github.com/spf13/afero"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -36,29 +37,44 @@ func (config *FileStore) GetByName(key string) (StoreData, error) {
 	// read the file store config as bytes
 	data, err := afero.ReadFile(config.FileSystem, config.Path)
 
-	// read the data into a generic structure
-	structuredContent := make(map[string]interface{})
-	err = yaml.Unmarshal(data, &structuredContent)
+	// read the document
+	document := make(map[interface{}]interface{})
+	err = yaml.Unmarshal(data, &document)
 	if err != nil {
 		return StoreData{}, err
 	}
 
-	// flatten the map
-	flatMap := flatmap.Flatten(structuredContent)
-
-	// search through the file for the given key
-	for fileKey := range flatMap {
-		if fileKey == key {
-			value, ok := flatMap[key]
-			if !ok {
-				return StoreData{}, fmt.Errorf("unable to cast key %s to type string", key)
-			}
-			storeData := StoreData{ID: key, Name: key, Value: value}
-			return storeData, nil
-		}
-
+	// turn the key into a patch pointer
+	pointer, err := patch.NewPointerFromString(key)
+	if err != nil {
+		return StoreData{}, err
 	}
-	return StoreData{}, fmt.Errorf("unable to find key '%s'", key)
+
+	// find the pointer in the document
+	response, err := patch.FindOp{Path: pointer}.Apply(document)
+	if err != nil {
+		return StoreData{}, err
+	}
+
+	if value, ok := response.(string); ok {
+		return StoreData{ID: key, Name: key, Value: value}, nil
+	}
+
+	if value, ok := response.(int); ok {
+		return StoreData{ID: key, Name: key, Value: fmt.Sprintf("%d", value)}, nil
+	}
+
+	if value, ok := response.(bool); ok {
+		return StoreData{ID: key, Name: key, Value: fmt.Sprintf("%v", value)}, nil
+	}
+
+	bytes, err := yaml.Marshal(response)
+	if err != nil {
+		return StoreData{}, err
+	}
+	storeData := StoreData{ID: key, Name: key, Value: string(bytes)}
+
+	return storeData, nil
 }
 
 func (config *FileStore) Delete(key string) (int, error) {
