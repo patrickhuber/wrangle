@@ -102,7 +102,3 @@ func readAllBytes(config *FileStore) (*[]byte, error) {
 	}
 	return &data, nil
 }
-
-func (config *FileStore) GetByID(id string) (StoreData, error) {
-	return config.GetByName(id)
-}

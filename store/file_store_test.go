@@ -76,23 +76,4 @@ id: value`
 			return
 		}
 	})
-
-	t.Run("CanGetByID", func(t *testing.T) {
-		value := "value"
-		id := "/id"
-
-		data, err := fileStore.GetByID(id)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if data == (StoreData{}) {
-			t.Error("invalid store data")
-			return
-		}
-		if value != data.Value {
-			t.Errorf("expected data.Value '%s' actual '%s'", value, data.Value)
-			return
-		}
-	})
 }
