@@ -7,13 +7,13 @@ import (
 )
 
 func TestStoreFactory(t *testing.T) {
+	storeFactory := NewStoreFactory()
 	t.Run("CanCreateMemoryStore", func(t *testing.T) {
 		configSource := &config.ConfigSource{
 			ConfigSourceType: "memory",
 			Config:           "config",
 			Name:             "name",
 			Params:           map[string]string{}}
-		storeFactory := NewStoreFactory()
 		store := storeFactory.Create(configSource)
 		if store == nil {
 			t.Error("store is nil")
@@ -21,6 +21,24 @@ func TestStoreFactory(t *testing.T) {
 		name := store.GetName()
 		if name != configSource.Name {
 			t.Errorf("expected name '%s' actual '%s'", configSource.Name, name)
+		}
+	})
+
+	t.Run("CanCreateFileStore", func(t *testing.T) {
+		configSource := &config.ConfigSource{
+			ConfigSourceType: "file",
+			Config:           "config",
+			Name:             "name",
+			Params:           map[string]string{}}
+		store := storeFactory.Create(configSource)
+		if store == nil {
+			t.Error("store is nil")
+			return
+		}
+		name := store.GetName()
+		if name != configSource.Name {
+			t.Errorf("expected name '%s' actual '%s'", configSource.Name, name)
+			return
 		}
 	})
 }

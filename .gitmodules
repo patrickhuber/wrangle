@@ -1,0 +1,9 @@
+[submodule "vendor\\github.com\\cppforlife\\go-patch"]
+	path = vendor\\github.com\\cppforlife\\go-patch
+	url = https://github.com/cppforlife/go-patch
+[submodule "vendor\\github.com\\spf13\\afero"]
+	path = vendor\\github.com\\spf13\\afero
+	url = https://github.com/spf13/afero
+[submodule "vendor\\gopkg.in\\yaml.v2"]
+	path = vendor\\gopkg.in\\yaml.v2
+	url = https://gopkg.in/yaml.v2

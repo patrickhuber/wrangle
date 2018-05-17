@@ -41,7 +41,7 @@ func parseT(data string) (*T, error) {
 	return t, nil
 }
 
-func TestCanParseYamlOutOfOrer(test *testing.T) {
+func TestCanParseYamlOutOfOrder(test *testing.T) {
 	var data = `
 b:
   d: [1,2,3]
