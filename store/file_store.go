@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 
+	"github.com/hashicorp/terraform/flatmap"
 	"github.com/spf13/afero"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -30,21 +31,25 @@ func (config *FileStore) GetType() string {
 	return "file"
 }
 
-func (config *FileStore) GetByKey(key string) (StoreData, error) {
+func (config *FileStore) GetByName(key string) (StoreData, error) {
 
 	// read the file store config as bytes
 	data, err := afero.ReadFile(config.FileSystem, config.Path)
 
 	// read the data into a generic structure
-	structuredContent := make(map[interface{}]interface{})
+	structuredContent := make(map[string]interface{})
 	err = yaml.Unmarshal(data, &structuredContent)
 	if err != nil {
 		return StoreData{}, err
 	}
+
+	// flatten the map
+	flatMap := flatmap.Flatten(structuredContent)
+
 	// search through the file for the given key
-	for fileKey := range structuredContent {
+	for fileKey := range flatMap {
 		if fileKey == key {
-			value, ok := structuredContent[key].(string)
+			value, ok := flatMap[key]
 			if !ok {
 				return StoreData{}, fmt.Errorf("unable to cast key %s to type string", key)
 			}
@@ -54,6 +59,14 @@ func (config *FileStore) GetByKey(key string) (StoreData, error) {
 
 	}
 	return StoreData{}, fmt.Errorf("unable to find key '%s'", key)
+}
+
+func (config *FileStore) Delete(key string) (int, error) {
+	return 0, fmt.Errorf("method Delete is not Implemented")
+}
+
+func (config *FileStore) Put(key string, value string) (string, error) {
+	return "", fmt.Errorf("method Put is not implemented")
 }
 
 func readAllBytes(config *FileStore) (*[]byte, error) {
@@ -75,5 +88,5 @@ func readAllBytes(config *FileStore) (*[]byte, error) {
 }
 
 func (config *FileStore) GetByID(id string) (StoreData, error) {
-	return config.GetByKey(id)
+	return config.GetByName(id)
 }

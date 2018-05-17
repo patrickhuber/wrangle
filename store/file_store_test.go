@@ -56,11 +56,11 @@ func TestFileStore(t *testing.T) {
 		}
 	})
 
-	t.Run("CanGetByKey", func(t *testing.T) {
+	t.Run("CanGetByName", func(t *testing.T) {
 		value := "value"
 		key := "key"
 
-		data, err := fileStore.GetByKey(key)
+		data, err := fileStore.GetByName(key)
 		if err != nil {
 			t.Error(err)
 			return
