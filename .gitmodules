@@ -16,3 +16,9 @@
 [submodule "vendor\\github.com\\pkg\\errors"]
 	path = vendor\\github.com\\pkg\\errors
 	url = https://github.com/pkg/errors
+[submodule "vendor\\golang.org\\x\\crypto"]
+	path = vendor\\golang.org\\x\\crypto
+	url = https://github.com/golang/crypto/
+[submodule "vendor\\golang.org\\x\\sys"]
+	path = vendor\\golang.org\\x\\sys
+	url = https://github.com/golang/sys/
