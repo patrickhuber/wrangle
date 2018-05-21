@@ -9,6 +9,8 @@ config-sources:
   type: credhub
   config: bosh-lab-yaml
   params:
+    client_id: something
+    client_secret: somethingelse
     username: director_to_credhub
     password: ((/uaa_clients_director_to_credhub))
     server: https://192.168.3.11:4343
@@ -19,8 +21,8 @@ config-sources:
   type: credhub
   config: bosh-lab-credhub
   params:
-    username: atc_to_credhub
-    password: ((/uaa_clients_atc_to_credhub))
+    client_id: something
+    client_secret: somethingelse
     server: https://192.168.3.15:4343
     ca_cert: ((/credhub-ca-cert.certificate))
     skip_tls_validation: false

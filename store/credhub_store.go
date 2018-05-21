@@ -2,38 +2,10 @@ package store
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
 )
-
-type CredHubStoreConfig struct {
-	Name              string
-	Username          string
-	Password          string
-	Server            string
-	ClientSecret      string
-	ClientID          string
-	CaCert            string
-	SkipTLSValidation bool
-}
-
-func NewCredHubStoreConfig(configSource *config.ConfigSource) (*CredHubStoreConfig, error) {
-	skipTLSValidation, err := strconv.ParseBool(configSource.Params["skipTLSValidation"])
-	if err != nil {
-		return nil, err
-	}
-	credHubStoreConfig := &CredHubStoreConfig{
-		CaCert:            configSource.Params["caCert"],
-		ClientID:          configSource.Params["clientID"],
-		ClientSecret:      configSource.Params["clientSecret"],
-		Username:          configSource.Params["userName"],
-		Password:          configSource.Params["password"],
-		SkipTLSValidation: skipTLSValidation,
-	}
-	return credHubStoreConfig, nil
-}
 
 type CredHubStore struct {
 	Name    string
@@ -41,7 +13,7 @@ type CredHubStore struct {
 }
 
 func NewCredHubStore(config *CredHubStoreConfig) (*CredHubStore, error) {
-	options := []credhub.Option{}
+	options := createOptions(config)
 	// create options here
 	ch, err := credhub.New(config.Server, options...)
 	if err != nil {
@@ -51,6 +23,16 @@ func NewCredHubStore(config *CredHubStoreConfig) (*CredHubStore, error) {
 		CredHub: ch,
 		Name:    config.Name,
 	}, nil
+}
+
+func createOptions(config *CredHubStoreConfig) []credhub.Option {
+	options := []credhub.Option{}
+	options = append(options, credhub.SkipTLSValidation(config.SkipTLSValidation))
+	options = append(options, credhub.Auth(
+		auth.UaaClientCredentials(
+			config.ClientID,
+			config.ClientSecret)))
+	return []credhub.Option{}
 }
 
 func (store *CredHubStore) GetName() string {

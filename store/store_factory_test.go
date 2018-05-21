@@ -14,13 +14,19 @@ func TestStoreFactory(t *testing.T) {
 			Config:           "config",
 			Name:             "name",
 			Params:           map[string]string{}}
-		store := storeFactory.Create(configSource)
+		store, err := storeFactory.Create(configSource)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 		if store == nil {
 			t.Error("store is nil")
+			return
 		}
 		name := store.GetName()
 		if name != configSource.Name {
 			t.Errorf("expected name '%s' actual '%s'", configSource.Name, name)
+			return
 		}
 	})
 
@@ -30,7 +36,11 @@ func TestStoreFactory(t *testing.T) {
 			Config:           "config",
 			Name:             "name",
 			Params:           map[string]string{}}
-		store := storeFactory.Create(configSource)
+		store, err := storeFactory.Create(configSource)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 		if store == nil {
 			t.Error("store is nil")
 			return
