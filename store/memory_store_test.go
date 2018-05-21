@@ -82,16 +82,17 @@ func TestMemoryStore(t *testing.T) {
 			t.Errorf("Invalid item count. Found %d expected 1", count)
 		}
 	})
-
-	t.Run("CanBeCastToStore", func(t *testing.T) {
-
-	})
 }
 
 func put(store *MemoryStore, t *testing.T, key string, value string) (StoreData, error) {
 	id, err := store.Put(key, value)
 	data, err := store.GetByID(id)
-	if err := assertPutDidNotFail(err, value, data.Value); err != nil {
+	stringValue, ok := data.Value.(string)
+	if !ok {
+		t.Error("Unable to cast value to string")
+		return StoreData{}, err
+	}
+	if err := assertPutDidNotFail(err, value, stringValue); err != nil {
 		t.Error(err.Error())
 		return StoreData{}, err
 	}

@@ -56,23 +56,7 @@ func (config *FileStore) GetByName(key string) (StoreData, error) {
 		return StoreData{}, err
 	}
 
-	if value, ok := response.(string); ok {
-		return StoreData{ID: key, Name: key, Value: value}, nil
-	}
-
-	if value, ok := response.(int); ok {
-		return StoreData{ID: key, Name: key, Value: fmt.Sprintf("%d", value)}, nil
-	}
-
-	if value, ok := response.(bool); ok {
-		return StoreData{ID: key, Name: key, Value: fmt.Sprintf("%v", value)}, nil
-	}
-
-	bytes, err := yaml.Marshal(response)
-	if err != nil {
-		return StoreData{}, err
-	}
-	storeData := StoreData{ID: key, Name: key, Value: string(bytes)}
+	storeData := StoreData{ID: key, Name: key, Value: response}
 
 	return storeData, nil
 }
