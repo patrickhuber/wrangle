@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 )
 
@@ -16,6 +17,7 @@ type T struct {
 }
 
 func TestCanParseYaml(test *testing.T) {
+	require := require.New(test)
 	var data = `
 a: Easy!
 b:
@@ -27,9 +29,9 @@ b:
 		test.Errorf(err.Error())
 	}
 
-	assertStringsAreEqual(test, t.A, "Easy!")
-	assertIntsAreEqual(test, t.B.RenamedC, 2)
-	assertIntsAreEqual(test, len(t.B.D), 2)
+	require.Equal("Easy!", t.A)
+	require.Equal(2, t.B.RenamedC)
+	require.Equal(2, len(t.B.D))
 }
 
 func parseT(data string) (*T, error) {
@@ -42,33 +44,22 @@ func parseT(data string) (*T, error) {
 }
 
 func TestCanParseYamlOutOfOrder(test *testing.T) {
+	require := require.New(test)
 	var data = `
 b:
   d: [1,2,3]
   c: 2  
 a: test`
 	t, err := parseT(data)
-	if err != nil {
-		test.Errorf(err.Error())
-	}
-	assertStringsAreEqual(test, t.A, "test")
-	assertIntsAreEqual(test, t.B.RenamedC, 2)
-	assertIntsAreEqual(test, len(t.B.D), 3)
-}
-
-func assertStringsAreEqual(t *testing.T, expected string, actual string) {
-	if expected != actual {
-		t.Errorf("expected %s, found %s", expected, actual)
-	}
-}
-
-func assertIntsAreEqual(t *testing.T, expected int, actual int) {
-	if expected != actual {
-		t.Errorf("expected %d, found %d", expected, actual)
-	}
+	require.Nil(err)
+	require.Equal("test", t.A)
+	require.Equal(2, t.B.RenamedC)
+	require.Equal(3, len(t.B.D))
 }
 
 func TestCanParseYamlToMap(test *testing.T) {
+	require := require.New(test)
+
 	var data = `
 b:
   d: [1,2,3]
@@ -76,53 +67,43 @@ b:
 a: test`
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(data), &m)
-	if err != nil {
-		test.Errorf(err.Error())
-	}
+	require.Nil(err)
+
 	a, ok := m["a"]
-	if !ok {
-		test.Fatalf("unable to find key %s", "a")
-	}
-	expectedA := "test"
+	require.Truef(ok, "unable to find key %s", "a")
+
 	actualA, ok := a.(string)
-	if actualA != expectedA {
-		test.Fatalf("expected %s actual %s", expectedA, actualA)
-	}
+	require.Truef(ok, "unable to cast to string")
+	require.Equal("test", actualA)
+
 	b, ok := m["b"]
-	if !ok {
-		test.Fatalf("unable to find key %s", "b")
-	}
+	require.True(ok, "unable to find key b")
+
 	bMap, ok := b.(map[interface{}]interface{})
-	if !ok {
-		test.Fatalf("Unable to cast b to type map[interface{}]interface{}")
-	}
+	require.Truef(ok, "unable to cast b to type map[interface{}]interface{}")
+
 	d, ok := bMap["d"]
-	if !ok {
-		test.Fatalf("Unable to find key b.d")
-	}
+	require.True(ok, "unable to find key b.d")
+
 	dArray, ok := d.([]interface{})
-	if !ok {
-		test.Fatalf("Unable to cast b.d to type []interface")
-	}
-	if len(dArray) != 3 {
-		test.Fatalf("expected to find array of length 3, found %d", len(dArray))
-	}
+	require.True(ok, "Unable to cast b.d to type []interface")
+	require.Equal(3, len(dArray))
 }
 
 func TestCanUseVariable(test *testing.T) {
+	require := require.New(test)
+
 	var data = "b:\n  c: ((somevar))"
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(data), &m)
-	if err != nil {
-		test.Error(err)
-	}
+	require.Nil(err)
 }
 
 func TestCanParseMultiLine(test *testing.T) {
+	require := require.New(test)
+
 	var data = "key: value\nid: value"
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(data), &m)
-	if err != nil {
-		test.Error(err)
-	}
+	require.Nil(err)
 }

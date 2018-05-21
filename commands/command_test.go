@@ -2,14 +2,14 @@ package commands
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCommandDispatch(t *testing.T) {
-	process := "go"
-	arguments := []string{"version"}
-	command := Process{ExecutableName: process, Arguments: arguments}
+	require := require.New(t)
+
+	command := Process{ExecutableName: "go", Arguments: []string{"version"}}
 	err := Dispatch(&command)
-	if err != nil {
-		panic(err)
-	}
+	require.Nil(err)
 }

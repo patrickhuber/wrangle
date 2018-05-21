@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCredHubStoreConfig(t *testing.T) {
@@ -34,37 +35,14 @@ func TestCredHubStoreConfig(t *testing.T) {
 		}
 
 		storeConfig, err := NewCredHubStoreConfig(configSource)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if certificate != storeConfig.CaCert {
-			t.Errorf("invalid certificate. expected '%s' found '%s'", certificate, storeConfig.CaCert)
-			return
-		}
-		if username != storeConfig.Username {
-			t.Errorf("invalid username. expected '%s' found '%s'", username, storeConfig.Username)
-			return
-		}
-		if password != storeConfig.Password {
-			t.Errorf("invalid password. expected '%s' found '%s'", password, storeConfig.Password)
-			return
-		}
-		if clientID != storeConfig.ClientID {
-			t.Errorf("invalid client_id. expected '%s' found '%s'", clientID, storeConfig.ClientID)
-			return
-		}
-		if clientSecret != storeConfig.ClientSecret {
-			t.Errorf("invalid client_secret. expected '%s' found '%s'", clientSecret, storeConfig.ClientSecret)
-			return
-		}
-		if server != storeConfig.Server {
-			t.Errorf("invalid server. expected '%s' found '%s'", server, storeConfig.Server)
-			return
-		}
-		if false != storeConfig.SkipTLSValidation {
-			t.Errorf("expected SkipTLSValidation flag of '%v' found '%v'", false, storeConfig.SkipTLSValidation)
-			return
-		}
+		require := require.New(t)
+		require.Nil(err)
+		require.Equal(certificate, storeConfig.CaCert)
+		require.Equal(username, storeConfig.Username)
+		require.Equal(password, storeConfig.Password)
+		require.Equal(clientID, storeConfig.ClientID)
+		require.Equal(clientSecret, storeConfig.ClientSecret)
+		require.Equal(server, storeConfig.Server)
+		require.Equal(false, storeConfig.SkipTLSValidation)
 	})
 }

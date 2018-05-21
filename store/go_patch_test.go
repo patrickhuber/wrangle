@@ -3,11 +3,14 @@ package store
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	patch "github.com/cppforlife/go-patch/patch"
 )
 
 func TestGoPatch(t *testing.T) {
 	t.Run("CanFindKeyValue", func(t *testing.T) {
+		require := require.New(t)
 		pointer, err := patch.NewPointerFromString("/key1")
 		if err != nil {
 			t.Error(err)
@@ -18,25 +21,14 @@ func TestGoPatch(t *testing.T) {
 			"key2": "xyz",
 		}
 		response, err := patch.FindOp{Path: pointer}.Apply(doc)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if response != "abc" {
-			t.Errorf("Expected to find '%s' but found '%v", "thing", response)
-			return
-		}
+		require.Nil(err)
+		require.Equal("abc", response)
 	})
 
 	t.Run("CanCreatePointer", func(t *testing.T) {
+		require := require.New(t)
 		ptr, err := patch.NewPointerFromString("/some/path")
-		if err != nil {
-			t.Error(err)
-		}
-		var expectedTokenCount = 3
-		var actualTokenCount = len(ptr.Tokens())
-		if actualTokenCount != expectedTokenCount {
-			t.Errorf("found %d tokens. Expected %d", expectedTokenCount, actualTokenCount)
-		}
+		require.Nil(err)
+		require.Equal(3, len(ptr.Tokens()))
 	})
 }

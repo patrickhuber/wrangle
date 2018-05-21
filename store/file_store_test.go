@@ -4,25 +4,26 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCanRoundTripFile(t *testing.T) {
 	fileSystem := afero.NewMemMapFs()
 	fileContent := "this\nis\ntext"
-	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	data, err := afero.ReadFile(fileSystem, "/test")
+	require := require.New(t)
 
-	actualFileContent := string(data)
-	if fileContent != actualFileContent {
-		t.Errorf("expected '%s' found '%s'", fileContent, actualFileContent)
-	}
+	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
+	require.Nil(err)
+
+	data, err := afero.ReadFile(fileSystem, "/test")
+	require.Nil(err)
+	require.Equal(fileContent, string(data))
 }
 
 func TestFileStore(t *testing.T) {
+
+	r := require.New(t)
+
 	const fileStoreName string = "fileStore"
 	fileSystem := afero.NewMemMapFs()
 
@@ -30,50 +31,31 @@ func TestFileStore(t *testing.T) {
 key: value
 id: value`
 	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	fileStore := NewFileStore(fileStoreName, "/test", fileSystem)
+	r.Nil(err)
 
-	if fileStore == nil {
-		t.Errorf("fileStore is null")
-		return
-	}
+	fileStore := NewFileStore(fileStoreName, "/test", fileSystem)
+	r.NotNil(fileStore)
 
 	t.Run("CanGetName", func(t *testing.T) {
+		require := require.New(t)
 		name := fileStore.GetName()
-		if name != fileStoreName {
-			t.Errorf("expected %s actual %s", fileStoreName, name)
-			return
-		}
+		require.Equal(name, fileStoreName)
 	})
 
 	t.Run("CanGetType", func(t *testing.T) {
-		expectedStoreType := "file"
-		actualStoreType := fileStore.GetType()
-		if expectedStoreType != actualStoreType {
-			t.Errorf("expected %s actual %s", expectedStoreType, actualStoreType)
-			return
-		}
+		require := require.New(t)
+		require.Equal("file", fileStore.GetType())
 	})
 
 	t.Run("CanGetByName", func(t *testing.T) {
+		require := require.New(t)
+
 		value := "value"
 		key := "/key"
 
 		data, err := fileStore.GetByName(key)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if data == (StoreData{}) {
-			t.Error("invalid store data")
-			return
-		}
-		if value != data.Value {
-			t.Errorf("expected data.Value '%s' actual '%s'", value, data.Value)
-			return
-		}
+		require.Nil(err)
+		require.NotEqual(StoreData{}, data)
+		require.Equal(value, data.Value)
 	})
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type CredHubStore struct {
@@ -45,36 +44,10 @@ func (store *CredHubStore) GetByName(name string) (StoreData, error) {
 	if err != nil {
 		return StoreData{}, err
 	}
-	value := ""
-	ok := false
-	switch cred.Type {
-	case "value":
-		value, ok = cred.Value.(string)
-		if !ok {
-			return StoreData{}, fmt.Errorf("Unable to cast credential value to string")
-		}
-		break
-	case "password":
-		value, ok = cred.Value.(string)
-		if !ok {
-			return StoreData{}, fmt.Errorf("Unable to cast credential value to password")
-		}
-		break
-	case "certificate":
-		bytes, err := yaml.Marshal(cred.Value)
-		if err != nil {
-			return StoreData{}, fmt.Errorf("Unable to marshall certificate value")
-		}
-		value = string(bytes)
-		break
-	default:
-		return StoreData{}, fmt.Errorf("'%s' type not implemented", cred.Type)
-	}
-
 	return StoreData{
 		ID:    cred.Id,
 		Name:  cred.Name,
-		Value: value,
+		Value: cred.Value,
 	}, nil
 }
 

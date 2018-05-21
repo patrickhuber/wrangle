@@ -3,6 +3,8 @@ package store
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMemoryStore(t *testing.T) {
@@ -10,18 +12,13 @@ func TestMemoryStore(t *testing.T) {
 	memoryStore := NewMemoryStore(memoryStoreName)
 
 	t.Run("CanGetName", func(t *testing.T) {
-		actualName := memoryStore.GetName()
-		if actualName != memoryStoreName {
-			t.Errorf("expected %s found %s", memoryStoreName, actualName)
-		}
+		require := require.New(t)
+		require.Equal(memoryStoreName, memoryStore.GetName())
 	})
 
 	t.Run("CanGetType", func(t *testing.T) {
-		actualType := memoryStore.GetType()
-		expectedType := "memory"
-		if actualType != expectedType {
-			t.Errorf("expected %s found %s", expectedType, actualType)
-		}
+		require := require.New(t)
+		require.Equal("memory", memoryStore.GetType())
 	})
 
 	t.Run("CanPutValue", func(t *testing.T) {
@@ -31,71 +28,58 @@ func TestMemoryStore(t *testing.T) {
 	})
 
 	t.Run("CanGetByName", func(t *testing.T) {
+		require := require.New(t)
 		key := "key"
 		value := "value"
-		if _, err := put(memoryStore, t, key, value); err != nil {
-			return
-		}
+		_, err := put(memoryStore, t, key, value)
+		require.Nil(err)
+
 		data, err := memoryStore.GetByName(key)
-		if err != nil {
-			t.Error(err.Error())
-			return
-		}
-		if data.Value != value {
-			t.Errorf("expected %s found %s", data, value)
-		}
+		require.Nil(err)
+		require.Equal(value, data.Value)
 	})
 
 	t.Run("CanGetById", func(t *testing.T) {
+		require := require.New(t)
+
 		key := "key"
 		value := "value"
 
 		expected, err := put(memoryStore, t, key, value)
-		if err != nil {
-			return
-		}
+		require.Nil(err)
 
 		actual, err := memoryStore.GetByID(expected.ID)
-		if err != nil {
-			t.Errorf("Unable to find id %s", expected.ID)
-			return
-		}
-		if actual.Value != value {
-			t.Errorf("Data with id 0 has invalid value %s", actual.Value)
-		}
+		require.Nil(err)
+		require.Equal(value, actual.Value)
 	})
 
 	t.Run("CanDeleteByKey", func(t *testing.T) {
+		require := require.New(t)
+
 		key := "key"
 		value := "value"
 
-		if _, err := put(memoryStore, t, key, value); err != nil {
-			return
-		}
+		_, err := put(memoryStore, t, key, value)
+		require.Nil(err)
 
 		count, err := memoryStore.Delete(key)
-
-		if err != nil {
-			t.Error(err.Error())
-		}
-		if count != 1 {
-			t.Errorf("Invalid item count. Found %d expected 1", count)
-		}
+		require.Nil(err)
+		require.Equal(1, count)
 	})
 }
 
 func put(store *MemoryStore, t *testing.T, key string, value string) (StoreData, error) {
+	require := require.New(t)
+
 	id, err := store.Put(key, value)
 	data, err := store.GetByID(id)
+
 	stringValue, ok := data.Value.(string)
-	if !ok {
-		t.Error("Unable to cast value to string")
-		return StoreData{}, err
-	}
-	if err := assertPutDidNotFail(err, value, stringValue); err != nil {
-		t.Error(err.Error())
-		return StoreData{}, err
-	}
+	require.True(ok)
+
+	err = assertPutDidNotFail(err, value, stringValue)
+	require.Nil(err)
+
 	return data, nil
 }
 

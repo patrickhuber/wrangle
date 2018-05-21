@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 
 	credhub "github.com/cloudfoundry-incubator/credhub-cli/credhub"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
+	"github.com/stretchr/testify/require"
 )
 
 type DummyAuth struct {
@@ -54,21 +56,14 @@ func TestCredHubStore(t *testing.T) {
 				"value": "some-value",
 				"version_created_at": "2017-01-05T01:01:01Z"
 		  }]}`
+		require := require.New(t)
+
 		ch, err := NewDummyCredHub("https://example.com", responseString)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		require.Nil(err)
+
 		cred, err := ch.GetLatestVersion("/example-value")
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		expected := "some-value"
-		if cred.Value.(string) != expected {
-			t.Errorf("expected %s found %s", expected, cred.Value)
-			return
-		}
+		require.Nil(err)
+		require.Equal("some-value", cred.Value)
 	})
 
 	t.Run("CanGetValueByName", func(t *testing.T) {
@@ -81,27 +76,19 @@ func TestCredHubStore(t *testing.T) {
 				"value": "some-value",
 				"version_created_at": "2017-01-05T01:01:01Z"
 		  }]}`
+		require := require.New(t)
+
 		ch, err := NewDummyCredHub("https://example.com", responseString)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		require.Nil(err)
+
 		credHubStore := CredHubStore{
 			CredHub: ch,
 			Name:    "",
 		}
 
 		data, err := credHubStore.GetByName("/example-value")
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		actual := "some-value"
-		if data.Value != actual {
-			t.Errorf("expected %s found %s", data.Value, actual)
-			return
-		}
-
+		require.Nil(err)
+		require.Equal("some-value", data.Value)
 	})
 
 	t.Run("CanGetPasswordByName", func(t *testing.T) {
@@ -115,25 +102,17 @@ func TestCredHubStore(t *testing.T) {
 				"version_created_at": "2017-01-05T01:01:01Z"
 		  }]}`
 		ch, err := NewDummyCredHub("https://example.com", responseString)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		require := require.New(t)
+		require.Nil(err)
+
 		credHubStore := CredHubStore{
 			CredHub: ch,
 			Name:    "",
 		}
 
 		data, err := credHubStore.GetByName("/example-value")
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		actual := "some-value"
-		if data.Value != actual {
-			t.Errorf("expected %s found %s", data.Value, actual)
-			return
-		}
+		require.Nil(err)
+		require.Equal(data.Value, "some-value")
 	})
 
 	t.Run("CanGetCertificateByName", func(t *testing.T) {
@@ -160,13 +139,22 @@ func TestCredHubStore(t *testing.T) {
 		}
 
 		data, err := credHubStore.GetByName("/example-certificate")
-		if err != nil {
-			t.Error(err)
-			return
-		}
-				
-		if data.Value == "" {
-			t.Error("")
-		}
+		require := require.New(t)
+		require.Nil(err)
+
+		stringMap, ok := data.Value.(map[string]interface{})
+		require.Truef(ok, "Unable to map data value to map[string]interface{}. Found type '%v'", reflect.TypeOf(data.Value))
+
+		privateKey, ok := stringMap["private_key"]
+		require.Truef(ok, "unable to find private_key")
+		require.Equal(privateKey, "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----")
+
+		ca, ok := stringMap["ca"]
+		require.Truef(ok, "unable to find ca")
+		require.Equal(ca, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
+
+		certificate, ok := stringMap["certificate"]
+		require.Truef(ok, "unable to find certificate")
+		require.Equal(certificate, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
 	})
 }
