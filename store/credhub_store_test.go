@@ -44,6 +44,17 @@ func NewDummyCredHub(server string, responseString string) (*credhub.CredHub, er
 	return credhub.New(server, credhub.Auth(dummyAuth.Builder()))
 }
 
+func NewDummyCredHubStore(name string, server string, responseString string) (*CredHubStore, error) {
+	ch, err := NewDummyCredHub(server, responseString)
+	if err != nil {
+		return nil, err
+	}
+	return &CredHubStore{
+		CredHub: ch,
+		Name:    name,
+	}, nil
+}
+
 func TestCredHubStore(t *testing.T) {
 
 	t.Run("CanUseDependency", func(t *testing.T) {
@@ -67,6 +78,8 @@ func TestCredHubStore(t *testing.T) {
 	})
 
 	t.Run("CanGetValueByName", func(t *testing.T) {
+		require := require.New(t)
+
 		responseString := `{
 			"data": [
 			  {
@@ -76,22 +89,17 @@ func TestCredHubStore(t *testing.T) {
 				"value": "some-value",
 				"version_created_at": "2017-01-05T01:01:01Z"
 		  }]}`
-		require := require.New(t)
-
-		ch, err := NewDummyCredHub("https://example.com", responseString)
+		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		require.Nil(err)
 
-		credHubStore := CredHubStore{
-			CredHub: ch,
-			Name:    "",
-		}
-
-		data, err := credHubStore.GetByName("/example-value")
+		data, err := store.GetByName("/example-value")
 		require.Nil(err)
 		require.Equal("some-value", data.Value)
 	})
 
 	t.Run("CanGetPasswordByName", func(t *testing.T) {
+		require := require.New(t)
+
 		responseString := `{
 			"data": [
 			  {
@@ -101,21 +109,16 @@ func TestCredHubStore(t *testing.T) {
 				"value": "some-value",
 				"version_created_at": "2017-01-05T01:01:01Z"
 		  }]}`
-		ch, err := NewDummyCredHub("https://example.com", responseString)
-		require := require.New(t)
+		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		require.Nil(err)
 
-		credHubStore := CredHubStore{
-			CredHub: ch,
-			Name:    "",
-		}
-
-		data, err := credHubStore.GetByName("/example-value")
+		data, err := store.GetByName("/example-value")
 		require.Nil(err)
 		require.Equal(data.Value, "some-value")
 	})
 
 	t.Run("CanGetCertificateByName", func(t *testing.T) {
+		require := require.New(t)
 		responseString := `{
 			"data": [ {
     "id": "some-id",
@@ -128,18 +131,10 @@ func TestCredHubStore(t *testing.T) {
 	},
 	"version_created_at": "2017-01-01T04:07:18Z"
 		  }]}`
-		ch, err := NewDummyCredHub("https://example.com", responseString)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		credHubStore := CredHubStore{
-			CredHub: ch,
-			Name:    "",
-		}
+		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
+		require.Nil(err)
 
-		data, err := credHubStore.GetByName("/example-certificate")
-		require := require.New(t)
+		data, err := store.GetByName("/example-certificate")
 		require.Nil(err)
 
 		stringMap, ok := data.Value.(map[string]interface{})
@@ -156,5 +151,78 @@ func TestCredHubStore(t *testing.T) {
 		certificate, ok := stringMap["certificate"]
 		require.Truef(ok, "unable to find certificate")
 		require.Equal(certificate, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
+	})
+
+	t.Run("CanGetRSAByName", func(t *testing.T) {
+		require := require.New(t)
+		responseString := `{
+			"data": [
+			  {
+				"id": "67fc3def-bbfb-4953-83f8-4ab0682ad677",
+				"name": "/example-rsa",
+				"type": "rsa",
+				"value": {
+				  "public_key": "public-key",
+				  "private_key": "private-key"
+				},
+				"version_created_at": "2017-01-01T04:07:18Z"
+			  }
+			]
+		  }`
+		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
+		require.Nil(err)
+
+		data, err := store.GetByName("/example-rsa")
+		require.Nil(err)
+
+		stringMap, ok := data.Value.(map[string]interface{})
+		require.True(ok, "Unable to map data.Value to map[string]interface{}")
+
+		publicKey, ok := stringMap["public_key"]
+		require.True(ok, "unable to find public_key")
+		require.Equal("public-key", publicKey)
+
+		privateKey, ok := stringMap["private_key"]
+		require.True(ok, "unable to find private_key")
+		require.Equal("private-key", privateKey)
+	})
+
+	t.Run("CanGetSSHByName", func(t *testing.T) {
+		require := require.New(t)
+		responseString := `{
+			"data": [
+			  {
+				"id": "some-id",
+				"name": "/example-ssh",
+				"type": "ssh",
+				"value": {
+				  "public_key": "public-key",
+				  "private_key": "private-key",
+				  "public_key_fingerprint": "public-key-fingerprint"
+				},
+				"version_created_at": "2017-01-01T04:07:18Z"
+			  }
+			]
+		  }`
+		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
+		require.Nil(err)
+
+		data, err := store.GetByName("/example-ssh")
+		require.Nil(err)
+
+		stringMap, ok := data.Value.(map[string]interface{})
+		require.True(ok, "Unable to map data.Value to map[string]interface{}")
+
+		publicKey, ok := stringMap["public_key"]
+		require.True(ok, "unable to find public_key")
+		require.Equal("public-key", publicKey)
+
+		privateKey, ok := stringMap["private_key"]
+		require.True(ok, "unable to find private_key")
+		require.Equal("private-key", privateKey)
+
+		publicKeyFingerPrint, ok := stringMap["public_key_fingerprint"]
+		require.True(ok, "unable to find public_key_fingerprint")
+		require.Equal("public-key-fingerprint", publicKeyFingerPrint)
 	})
 }
