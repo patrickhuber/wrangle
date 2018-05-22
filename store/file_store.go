@@ -56,9 +56,17 @@ func (config *FileStore) GetByName(key string) (StoreData, error) {
 		return StoreData{}, err
 	}
 
-	storeData := StoreData{ID: key, Name: key, Value: response}
-
-	return storeData, nil
+	// map document to canonical type
+	// (for compatibilty with credhub return types)
+	switch v := response.(type) {
+	case (map[interface{}]interface{}):
+		stringMap := make(map[string]interface{})
+		for key := range v {
+			stringMap[key.(string)] = v[key]
+		}
+		return StoreData{ID: key, Name: key, Value: stringMap}, nil
+	}
+	return StoreData{ID: key, Name: key, Value: response}, nil
 }
 
 func (config *FileStore) Delete(key string) (int, error) {

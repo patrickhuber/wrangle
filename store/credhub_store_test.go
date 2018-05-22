@@ -137,18 +137,18 @@ func TestCredHubStore(t *testing.T) {
 		data, err := store.GetByName("/example-certificate")
 		require.Nil(err)
 
-		stringMap, ok := data.Value.(map[string]interface{})
+		valueMap, ok := data.Value.(map[string]interface{})
 		require.Truef(ok, "Unable to map data value to map[string]interface{}. Found type '%v'", reflect.TypeOf(data.Value))
 
-		privateKey, ok := stringMap["private_key"]
+		privateKey, ok := valueMap["private_key"]
 		require.Truef(ok, "unable to find private_key")
 		require.Equal(privateKey, "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----")
 
-		ca, ok := stringMap["ca"]
+		ca, ok := valueMap["ca"]
 		require.Truef(ok, "unable to find ca")
 		require.Equal(ca, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
 
-		certificate, ok := stringMap["certificate"]
+		certificate, ok := valueMap["certificate"]
 		require.Truef(ok, "unable to find certificate")
 		require.Equal(certificate, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
 	})

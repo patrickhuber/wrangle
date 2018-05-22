@@ -1,6 +1,7 @@
 package store
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -27,9 +28,29 @@ func TestFileStore(t *testing.T) {
 	const fileStoreName string = "fileStore"
 	fileSystem := afero.NewMemMapFs()
 
-	fileContent := `
-key: value
-id: value`
+	fileContent := `value: aaaaaaaaaaaaaaaa
+password: bbbbbbbbbbbbbbbb
+certificate:
+  ca: |
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+  certificate: |
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+  private_key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    ...
+    -----END RSA PRIVATE KEY-----
+rsa:
+  public_key: public-key
+  private_key: private-key
+ssh:
+  public_key: public-key
+  private_key: private-key
+  public_key_fingerprint: public-key-fingerprint`
+
 	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
 	r.Nil(err)
 
@@ -47,15 +68,86 @@ id: value`
 		require.Equal("file", fileStore.GetType())
 	})
 
-	t.Run("CanGetByName", func(t *testing.T) {
+	t.Run("CanGetValueByName", func(t *testing.T) {
 		require := require.New(t)
 
-		value := "value"
-		key := "/key"
-
-		data, err := fileStore.GetByName(key)
+		data, err := fileStore.GetByName("/value")
 		require.Nil(err)
 		require.NotEqual(StoreData{}, data)
-		require.Equal(value, data.Value)
+		require.Equal("aaaaaaaaaaaaaaaa", data.Value)
+	})
+
+	t.Run("CanGetPasswordByName", func(t *testing.T) {
+		require := require.New(t)
+
+		data, err := fileStore.GetByName("/password")
+		require.Nil(err)
+		require.NotEqual(StoreData{}, data)
+		require.Equal("bbbbbbbbbbbbbbbb", data.Value)
+	})
+
+	t.Run("CanGetCertificateByName", func(t *testing.T) {
+		require := require.New(t)
+
+		data, err := fileStore.GetByName("/certificate")
+		require.Nil(err)
+		require.NotEqual(StoreData{}, data)
+
+		stringMap, ok := data.Value.(map[string]interface{})
+		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
+
+		privateKey, ok := stringMap["private_key"]
+		require.True(ok)
+		require.Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n", privateKey)
+
+		certificate, ok := stringMap["certificate"]
+		require.True(ok)
+		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", certificate)
+
+		ca, ok := stringMap["ca"]
+		require.True(ok)
+		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", ca)
+	})
+
+	t.Run("CanGetRSAByName", func(t *testing.T) {
+		require := require.New(t)
+
+		data, err := fileStore.GetByName("/rsa")
+		require.Nil(err)
+		require.NotEqual(StoreData{}, data)
+
+		stringMap, ok := data.Value.(map[string]interface{})
+		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
+
+		privateKey, ok := stringMap["private_key"]
+		require.True(ok)
+		require.Equal("private-key", privateKey)
+
+		publicKey, ok := stringMap["public_key"]
+		require.True(ok)
+		require.Equal("public-key", publicKey)
+	})
+
+	t.Run("CanGetSSHByName", func(t *testing.T) {
+		require := require.New(t)
+
+		data, err := fileStore.GetByName("/ssh")
+		require.Nil(err)
+		require.NotEqual(StoreData{}, data)
+
+		stringMap, ok := data.Value.(map[string]interface{})
+		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
+
+		privateKey, ok := stringMap["private_key"]
+		require.True(ok)
+		require.Equal("private-key", privateKey)
+
+		publicKey, ok := stringMap["public_key"]
+		require.True(ok)
+		require.Equal("public-key", publicKey)
+
+		publicKeyFingerprint, ok := stringMap["public_key_fingerprint"]
+		require.True(ok)
+		require.Equal("public-key-fingerprint", publicKeyFingerprint)
 	})
 }

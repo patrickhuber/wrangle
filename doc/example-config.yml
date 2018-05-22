@@ -31,6 +31,7 @@ processes:
 
 - name: fly
   environments:
+  
   - name: lab
     config: bosh-lab-credhub
     process: fly.exe
