@@ -1,4 +1,4 @@
-package store
+package credhub
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	credhub "github.com/cloudfoundry-incubator/credhub-cli/credhub"
+	credhubcli "github.com/cloudfoundry-incubator/credhub-cli/credhub"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
 	"github.com/stretchr/testify/require"
 )
@@ -39,9 +39,9 @@ func NewDummyAuth(responseString string) *DummyAuth {
 	return dummyAuth
 }
 
-func NewDummyCredHub(server string, responseString string) (*credhub.CredHub, error) {
+func NewDummyCredHub(server string, responseString string) (*credhubcli.CredHub, error) {
 	dummyAuth := NewDummyAuth(responseString)
-	return credhub.New(server, credhub.Auth(dummyAuth.Builder()))
+	return credhubcli.New(server, credhubcli.Auth(dummyAuth.Builder()))
 }
 
 func NewDummyCredHubStore(name string, server string, responseString string) (*CredHubStore, error) {

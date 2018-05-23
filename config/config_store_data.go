@@ -1,6 +1,6 @@
-package store
+package config
 
-type StoreData struct {
+type ConfigStoreData struct {
 	ID    string
 	Name  string
 	Value interface{}

@@ -1,9 +1,10 @@
-package store
+package file
 
 import (
 	"reflect"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )
@@ -73,7 +74,7 @@ ssh:
 
 		data, err := fileStore.GetByName("/value")
 		require.Nil(err)
-		require.NotEqual(StoreData{}, data)
+		require.NotEqual(config.ConfigStoreData{}, data)
 		require.Equal("aaaaaaaaaaaaaaaa", data.Value)
 	})
 
@@ -82,7 +83,7 @@ ssh:
 
 		data, err := fileStore.GetByName("/password")
 		require.Nil(err)
-		require.NotEqual(StoreData{}, data)
+		require.NotEqual(config.ConfigStoreData{}, data)
 		require.Equal("bbbbbbbbbbbbbbbb", data.Value)
 	})
 
@@ -91,7 +92,7 @@ ssh:
 
 		data, err := fileStore.GetByName("/certificate")
 		require.Nil(err)
-		require.NotEqual(StoreData{}, data)
+		require.NotEqual(config.ConfigStoreData{}, data)
 
 		stringMap, ok := data.Value.(map[string]interface{})
 		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
@@ -114,7 +115,7 @@ ssh:
 
 		data, err := fileStore.GetByName("/rsa")
 		require.Nil(err)
-		require.NotEqual(StoreData{}, data)
+		require.NotEqual(config.ConfigStoreData{}, data)
 
 		stringMap, ok := data.Value.(map[string]interface{})
 		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
@@ -133,7 +134,7 @@ ssh:
 
 		data, err := fileStore.GetByName("/ssh")
 		require.Nil(err)
-		require.NotEqual(StoreData{}, data)
+		require.NotEqual(config.ConfigStoreData{}, data)
 
 		stringMap, ok := data.Value.(map[string]interface{})
 		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))

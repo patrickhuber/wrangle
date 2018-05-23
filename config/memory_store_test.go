@@ -1,4 +1,4 @@
-package store
+package config
 
 import (
 	"fmt"
@@ -68,7 +68,7 @@ func TestMemoryStore(t *testing.T) {
 	})
 }
 
-func put(store *MemoryStore, t *testing.T, key string, value string) (StoreData, error) {
+func put(store *MemoryStore, t *testing.T, key string, value string) (ConfigStoreData, error) {
 	require := require.New(t)
 
 	id, err := store.Put(key, value)

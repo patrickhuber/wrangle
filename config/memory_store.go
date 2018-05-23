@@ -1,4 +1,4 @@
-package store
+package config
 
 import (
 	"fmt"
@@ -9,13 +9,13 @@ import (
 // MemoryStore - Struct that represents a memory store
 type MemoryStore struct {
 	Name    string
-	Data    map[string]StoreData
+	Data    map[string]ConfigStoreData
 	KeyToID map[string]string
 }
 
 // NewMemoryStore - Creates a new memory store with the given name
 func NewMemoryStore(name string) *MemoryStore {
-	data := map[string]StoreData{}
+	data := map[string]ConfigStoreData{}
 	keyToID := map[string]string{}
 	return &MemoryStore{
 		Name:    name,
@@ -36,7 +36,7 @@ func (store *MemoryStore) GetType() string {
 
 // Put - Puts the config value under the value in the memory store
 func (store *MemoryStore) Put(key string, value string) (string, error) {
-	data := StoreData{
+	data := ConfigStoreData{
 		ID:    uuid.New().String(),
 		Name:  key,
 		Value: value,
@@ -47,19 +47,19 @@ func (store *MemoryStore) Put(key string, value string) (string, error) {
 }
 
 // GetByName - Gets the config value by name
-func (store *MemoryStore) GetByName(key string) (StoreData, error) {
+func (store *MemoryStore) GetByName(key string) (ConfigStoreData, error) {
 	id, ok := store.KeyToID[key]
 	if !ok {
-		return StoreData{}, fmt.Errorf("Unable to find key %s", key)
+		return ConfigStoreData{}, fmt.Errorf("Unable to find key %s", key)
 	}
 	return store.GetByID(id)
 }
 
 // GetByID - Gets the value by ID
-func (store *MemoryStore) GetByID(id string) (StoreData, error) {
+func (store *MemoryStore) GetByID(id string) (ConfigStoreData, error) {
 	value, ok := store.Data[id]
 	if ok != true {
-		return StoreData{}, fmt.Errorf("Unable to find id %s", id)
+		return ConfigStoreData{}, fmt.Errorf("Unable to find id %s", id)
 	}
 	return value, nil
 }
