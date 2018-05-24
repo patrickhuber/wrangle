@@ -7,7 +7,7 @@ import (
 )
 
 type SimpleResolver struct {
-	Map map[string]string
+	Map map[string]interface{}
 }
 
 func (resolver *SimpleResolver) Get(key string) interface{} {
@@ -18,7 +18,7 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanEvaluateString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		resolver := &SimpleResolver{Map: make(map[string]string)}
+		resolver := &SimpleResolver{Map: make(map[string]interface{})}
 		resolver.Map["key"] = "value"
 		document := template.Evaluate(resolver)
 		r.Equal("value", document)
@@ -28,7 +28,7 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key)):((other))")
 		resolver := &SimpleResolver{
-			Map: map[string]string{"key": "value", "other": "thing"}}
+			Map: map[string]interface{}{"key": "value", "other": "thing"}}
 		document := template.Evaluate(resolver)
 		r.Equal("value:thing", document)
 	})
@@ -38,7 +38,7 @@ func TestTemplate(t *testing.T) {
 		m := map[string]string{"key": "((key))"}
 		template := NewTemplate(m)
 		resolver := &SimpleResolver{
-			Map: map[string]string{"key": "value"},
+			Map: map[string]interface{}{"key": "value"},
 		}
 		document := template.Evaluate(resolver)
 		actual, ok := document.(map[string]string)
@@ -52,7 +52,7 @@ func TestTemplate(t *testing.T) {
 		m := map[string]interface{}{"key": "((key))"}
 		template := NewTemplate(m)
 		resolver := &SimpleResolver{
-			Map: map[string]string{"key": "value"},
+			Map: map[string]interface{}{"key": "value"},
 		}
 		document := template.Evaluate(resolver)
 		actual, ok := document.(map[string]interface{})
@@ -66,7 +66,7 @@ func TestTemplate(t *testing.T) {
 		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
 		template := NewTemplate(m)
 		resolver := &SimpleResolver{
-			Map: map[string]string{"nested": "value"},
+			Map: map[string]interface{}{"nested": "value"},
 		}
 		document := template.Evaluate(resolver)
 		actual, ok := document.(map[string]interface{})

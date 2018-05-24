@@ -44,8 +44,15 @@ func evaluateString(template string, resolver VariableResolver) string {
 			result = re.ExpandString(result, "$key", value, s)
 		}
 
-		// look up the variable in the variable resolver and return the result
-		return resolver.Get(string(result)).(string)
+		resolved := resolver.Get(string(result))
+
+		// if the resolved value is a string return the string
+		if v, ok := resolved.(string); ok {
+			return v
+		}
+
+		// return the orignal value
+		return value
 	})
 }
 
