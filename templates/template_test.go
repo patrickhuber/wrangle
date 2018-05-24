@@ -15,6 +15,7 @@ func (resolver *SimpleResolver) Get(key string) interface{} {
 }
 
 func TestTemplate(t *testing.T) {
+
 	t.Run("CanEvaluateString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
@@ -76,5 +77,33 @@ func TestTemplate(t *testing.T) {
 		nestedMap, ok := nested.(map[string]string)
 		r.True(ok)
 		r.Equal("value", nestedMap["nested"])
+	})
+
+	t.Run("CanEvaluateStringArray", func(t *testing.T) {
+		r := require.New(t)
+		a := []string{"one", "((key))", "three"}
+		template := NewTemplate(a)
+		resolver := &SimpleResolver{
+			Map: map[string]interface{}{"key": "value"},
+		}
+		document := template.Evaluate(resolver)
+		actual, ok := document.([]string)
+		r.True(ok)
+		r.Equal(3, len(actual))
+		r.Equal("value", actual[1])
+	})
+
+	t.Run("CanEvaluateInterfaceArray", func(t *testing.T) {
+		r := require.New(t)
+		a := []interface{}{"one", "((key))", "three"}
+		template := NewTemplate(a)
+		resolver := &SimpleResolver{
+			Map: map[string]interface{}{"key": "value"},
+		}
+		document := template.Evaluate(resolver)
+		actual, ok := document.([]interface{})
+		r.True(ok)
+		r.Equal(3, len(actual))
+		r.Equal("value", actual[1])
 	})
 }

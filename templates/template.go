@@ -24,6 +24,10 @@ func evaluate(document interface{}, resolver VariableResolver) interface{} {
 		return evaluateMapStringOfString(t, resolver)
 	case (map[string]interface{}):
 		return evaluateMapStringOfInterface(t, resolver)
+	case ([]string):
+		return evaluateSliceOfString(t, resolver)
+	case ([]interface{}):
+		return evaluateSliceOfInterface(t, resolver)
 	}
 	return document
 }
@@ -66,6 +70,20 @@ func evaluateMapStringOfString(template map[string]string, resolver VariableReso
 func evaluateMapStringOfInterface(template map[string]interface{}, resolver VariableResolver) map[string]interface{} {
 	for k, v := range template {
 		template[k] = evaluate(v, resolver)
+	}
+	return template
+}
+
+func evaluateSliceOfString(template []string, resolver VariableResolver) []string {
+	for i, v := range template {
+		template[i] = evaluateString(v, resolver)
+	}
+	return template
+}
+
+func evaluateSliceOfInterface(template []interface{}, resolver VariableResolver) []interface{} {
+	for i, v := range template {
+		template[i] = evaluate(v, resolver)
 	}
 	return template
 }
