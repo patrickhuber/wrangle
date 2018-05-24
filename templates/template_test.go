@@ -33,7 +33,7 @@ func TestTemplate(t *testing.T) {
 		r.Equal("value:thing", document)
 	})
 
-	t.Run("CanEvaluateMap", func(t *testing.T) {
+	t.Run("CanEvaluateMapStringOfString", func(t *testing.T) {
 		r := require.New(t)
 		m := map[string]string{"key": "((key))"}
 		template := NewTemplate(m)
@@ -45,5 +45,36 @@ func TestTemplate(t *testing.T) {
 		r.True(ok)
 		r.Equal(1, len(actual))
 		r.Equal("value", actual["key"])
+	})
+
+	t.Run("CanEvaluateMapStringOfInterface", func(t *testing.T) {
+		r := require.New(t)
+		m := map[string]interface{}{"key": "((key))"}
+		template := NewTemplate(m)
+		resolver := &SimpleResolver{
+			Map: map[string]string{"key": "value"},
+		}
+		document := template.Evaluate(resolver)
+		actual, ok := document.(map[string]interface{})
+		r.True(ok)
+		r.Equal(1, len(actual))
+		r.Equal("value", actual["key"])
+	})
+
+	t.Run("CanEvaluateNestedMap", func(t *testing.T) {
+		r := require.New(t)
+		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
+		template := NewTemplate(m)
+		resolver := &SimpleResolver{
+			Map: map[string]string{"nested": "value"},
+		}
+		document := template.Evaluate(resolver)
+		actual, ok := document.(map[string]interface{})
+		r.True(ok)
+		r.Equal(1, len(actual))
+		nested := actual["key"]
+		nestedMap, ok := nested.(map[string]string)
+		r.True(ok)
+		r.Equal("value", nestedMap["nested"])
 	})
 }
