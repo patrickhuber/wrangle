@@ -28,3 +28,6 @@
 [submodule "vendor\\github.com\\onsi\\ginkgo"]
 	path = vendor\\github.com\\onsi\\ginkgo
 	url = https://github.com/onsi/ginkgo
+[submodule "vendor/github.com/urfave/cli"]
+	path = vendor/github.com/urfave/cli
+	url = https://github.com/urfave/cli
