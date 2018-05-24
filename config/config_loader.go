@@ -15,7 +15,7 @@ type ConfigLoader struct {
 }
 
 func (loader *ConfigLoader) Load(op *option.Options) (*Config, error) {
-	path, err := getConfigPath(op)
+	path, err := GetConfigPath(op)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (loader *ConfigLoader) Load(op *option.Options) (*Config, error) {
 	return config, err
 }
 
-func getConfigPath(op *option.Options) (string, error) {
+func GetConfigPath(op *option.Options) (string, error) {
 	if op.ConfigPath != "" {
 		return op.ConfigPath, nil
 	}

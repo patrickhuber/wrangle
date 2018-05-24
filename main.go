@@ -2,18 +2,54 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/patrickhuber/cli-mgr/option"
+
+	"github.com/patrickhuber/cli-mgr/commands"
 	"github.com/patrickhuber/cli-mgr/config"
 	credhub "github.com/patrickhuber/cli-mgr/store/credhub"
 	file "github.com/patrickhuber/cli-mgr/store/file"
+	"github.com/urfave/cli"
 )
 
 func main() {
 	configStoreManager := createConfigStoreManager()
 	validateConfigStoreManager(configStoreManager)
 
-	println("Success!")
+	configPath, err := config.GetConfigPath(&option.Options{})
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	// creates the app
+	// see https://github.com/urfave/cli#customization-1 for template
+	app := cli.NewApp()
+	app.Usage = "a cli management tool"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:   "config, c",
+			Usage:  "Load configuration from `FILE`",
+			EnvVar: "CLI_MGR_CONFIG",
+			Value:  configPath,
+		},
+	}
+	app.Commands = []cli.Command{
+		{
+			Name:    "run",
+			Aliases: []string{"r"},
+			Usage:   "run a command",
+			Action:  commands.ExecuteRunCommand,
+		},
+	}
+
+	err = app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 }
 
 func createConfigStoreManager() *config.ConfigStoreManager {
