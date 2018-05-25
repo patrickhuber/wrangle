@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/option"
-
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/require"
@@ -21,20 +19,28 @@ func TestConfigLoader(t *testing.T) {
 		require.Nil(err)
 
 		configFilePath := filepath.Join(usr.HomeDir, ".cli-mgr", "config.yml")
-		op := &option.Options{}
-		AssertFilePathIsCorrect(t, configFilePath, op)
+		AssertFilePathIsCorrect(t, configFilePath)
 	})
 
 	t.Run("CanLoadSpecificConfigPath", func(t *testing.T) {
 		configFilePath := "/test/config.yml"
-		op := &option.Options{
-			ConfigPath: configFilePath,
-		}
-		AssertFilePathIsCorrect(t, configFilePath, op)
+		AssertFilePathIsCorrect(t, configFilePath)
+	})
+
+	t.Run("CreatesConfigFileIfNotExists", func(t *testing.T) {
+		r := require.New(t)
+		configFilePath := "/test/config.yml"
+		fileSystem := afero.NewMemMapFs()
+		loader := ConfigLoader{FileSystem: fileSystem}
+		cfg, err := loader.Load(configFilePath)
+		r.Nil(err)
+		r.NotNil(cfg)
+		r.Equal(0, len(cfg.Processes))
+		r.Equal(0, len(cfg.ConfigSources))
 	})
 }
 
-func AssertFilePathIsCorrect(t *testing.T, configFilePath string, op *option.Options) {
+func AssertFilePathIsCorrect(t *testing.T, configFilePath string) {
 	require := require.New(t)
 
 	var content = `
@@ -59,7 +65,7 @@ processes:
 
 	loader := ConfigLoader{FileSystem: fileSystem}
 
-	cfg, err := loader.Load(op)
+	cfg, err := loader.Load(configFilePath)
 	require.Nil(err)
 	require.Equal(1, len(cfg.ConfigSources))
 	require.Equal(1, len(cfg.Processes))

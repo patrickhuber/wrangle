@@ -4,18 +4,23 @@ import (
 	"regexp"
 )
 
+// Template - contains a go object document that contains placeholders for variables
 type Template struct {
 	document interface{}
 }
 
+// NewTemplate - Creates a new template with the given document parameter
 func NewTemplate(document interface{}) *Template {
 	return &Template{document: document}
 }
 
+// Evaluate - Evaluates the tempalte using the variable resolver for variable lookup
 func (template *Template) Evaluate(resolver VariableResolver) interface{} {
 	return evaluate(template.document, resolver)
 }
 
+// evaluate - dispatches the template evaluation by type to a type specific resolver
+// this method is also called recursively by map and array type evaluators
 func evaluate(document interface{}, resolver VariableResolver) interface{} {
 	switch t := document.(type) {
 	case (string):

@@ -14,12 +14,9 @@ type ConfigLoader struct {
 	FileSystem afero.Fs
 }
 
-func (loader *ConfigLoader) Load(op *option.Options) (*Config, error) {
-	path, err := GetConfigPath(op)
-	if err != nil {
-		return nil, err
-	}
-	data, err := afero.ReadFile(loader.FileSystem, path)
+func (loader *ConfigLoader) Load(configPath string) (*Config, error) {
+	loader.ensureExists(configPath)
+	data, err := afero.ReadFile(loader.FileSystem, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -38,4 +35,17 @@ func GetConfigPath(op *option.Options) (string, error) {
 	}
 	configDir := filepath.Join(usr.HomeDir, ".cli-mgr", "config.yml")
 	return configDir, nil
+}
+
+func (loader *ConfigLoader) ensureExists(configFile string) error {
+	fileSystem := loader.FileSystem
+	ok, err := afero.Exists(fileSystem, configFile)
+	if err != nil {
+		return err
+	}
+	if ok {
+		return nil
+	}
+	data := "config-sources:\nprocesses:\n"
+	return afero.WriteFile(fileSystem, configFile, []byte(data), 0644)
 }

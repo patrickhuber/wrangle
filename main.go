@@ -5,18 +5,23 @@ import (
 	"log"
 	"os"
 
-	"github.com/patrickhuber/cli-mgr/option"
+	"github.com/spf13/afero"
 
 	"github.com/patrickhuber/cli-mgr/commands"
 	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/cli-mgr/option"
+
 	credhub "github.com/patrickhuber/cli-mgr/store/credhub"
 	file "github.com/patrickhuber/cli-mgr/store/file"
+
 	"github.com/urfave/cli"
 )
 
 func main() {
 	configStoreManager := createConfigStoreManager()
 	validateConfigStoreManager(configStoreManager)
+
+	fileSystem := afero.NewOsFs()
 
 	configPath, err := config.GetConfigPath(&option.Options{})
 	if err != nil {
@@ -36,12 +41,14 @@ func main() {
 			Value:  configPath,
 		},
 	}
+	runCommand := commands.NewRunCommand(configStoreManager, fileSystem)
+
 	app.Commands = []cli.Command{
 		{
 			Name:    "run",
 			Aliases: []string{"r"},
 			Usage:   "run a command",
-			Action:  commands.ExecuteRunCommand,
+			Action:  runCommand.ExecuteRunCommand,
 		},
 	}
 
