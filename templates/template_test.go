@@ -42,7 +42,7 @@ func TestTemplate(t *testing.T) {
 			Map: map[string]interface{}{"key": "value"},
 		}
 		document := template.Evaluate(resolver)
-		actual, ok := document.(map[string]string)
+		actual, ok := document.(map[string]interface{})
 		r.True(ok)
 		r.Equal(1, len(actual))
 		r.Equal("value", actual["key"])
@@ -74,7 +74,7 @@ func TestTemplate(t *testing.T) {
 		r.True(ok)
 		r.Equal(1, len(actual))
 		nested := actual["key"]
-		nestedMap, ok := nested.(map[string]string)
+		nestedMap, ok := nested.(map[string]interface{})
 		r.True(ok)
 		r.Equal("value", nestedMap["nested"])
 	})
@@ -87,7 +87,7 @@ func TestTemplate(t *testing.T) {
 			Map: map[string]interface{}{"key": "value"},
 		}
 		document := template.Evaluate(resolver)
-		actual, ok := document.([]string)
+		actual, ok := document.([]interface{})
 		r.True(ok)
 		r.Equal(3, len(actual))
 		r.Equal("value", actual[1])
@@ -105,5 +105,19 @@ func TestTemplate(t *testing.T) {
 		r.True(ok)
 		r.Equal(3, len(actual))
 		r.Equal("value", actual[1])
+	})
+
+	t.Run("CanPatchInSliceForString", func(t *testing.T) {
+		r := require.New(t)
+		template := NewTemplate("((key))")
+		m := make(map[string]interface{})
+		m["key"] = []string{"one", "two"}
+		resolver := &SimpleResolver{Map: m}
+		document := template.Evaluate(resolver)
+		s, ok := document.([]string)
+		r.True(ok)
+		r.Equal(2, len(s))
+		r.Equal("one", s[0])
+		r.Equal("two", s[1])
 	})
 }

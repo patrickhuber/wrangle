@@ -9,30 +9,44 @@ type Command interface {
 	GetArguments() []string
 	GetProcessName() string
 	GetEnvironmentVariables() map[string]string
+	Dispatch() error
 }
 
-type Process struct {
+type process struct {
 	ExecutableName       string
 	Arguments            []string
 	EnvironmentVariables map[string]string
 }
 
-func (command *Process) GetProcessName() string {
+func NewCommand(executableName string, arguments []string, environmentVariables map[string]string) Command {
+	return &process{
+		ExecutableName:       executableName,
+		Arguments:            arguments,
+		EnvironmentVariables: environmentVariables}
+}
+
+func (command *process) GetProcessName() string {
 	return command.ExecutableName
 }
 
-func (command *Process) GetArguments() []string {
+func (command *process) GetArguments() []string {
 	return command.Arguments
 }
 
-func (command *Process) GetEnvironmentVariables() map[string]string {
+func (command *process) GetEnvironmentVariables() map[string]string {
 	return command.EnvironmentVariables
 }
 
-func Dispatch(command Command) error {
+func (command *process) Dispatch() error {
 	process := command.GetProcessName()
 	arguments := command.GetArguments()
+	if arguments == nil {
+		arguments = []string{}
+	}
 	environmentVariables := command.GetEnvironmentVariables()
+	if environmentVariables == nil {
+		environmentVariables = map[string]string{}
+	}
 
 	for key := range environmentVariables {
 		os.Setenv(key, environmentVariables[key])

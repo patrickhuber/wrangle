@@ -7,9 +7,18 @@ import (
 )
 
 func TestCommandDispatch(t *testing.T) {
-	require := require.New(t)
+	t.Run("CanRunGoVersion", func(t *testing.T) {
+		r := require.New(t)
 
-	command := Process{ExecutableName: "go", Arguments: []string{"version"}}
-	err := Dispatch(&command)
-	require.Nil(err)
+		command := NewCommand("go", []string{"version"}, make(map[string]string))
+		err := command.Dispatch()
+		r.Nil(err)
+	})
+
+	t.Run("CanRunWithNilEnvironmentVariables", func(t *testing.T) {
+		r := require.New(t)
+		command := NewCommand("go", []string{"version"}, nil)
+		err := command.Dispatch()
+		r.Nil(err)
+	})
 }

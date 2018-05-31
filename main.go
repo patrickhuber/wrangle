@@ -41,7 +41,9 @@ func main() {
 			Value:  configPath,
 		},
 	}
-	runCommand := commands.NewRunCommand(configStoreManager, fileSystem)
+	runCommand := commands.NewRunCommand(
+		configStoreManager,
+		fileSystem)
 
 	app.Commands = []cli.Command{
 		{
@@ -49,6 +51,16 @@ func main() {
 			Aliases: []string{"r"},
 			Usage:   "run a command",
 			Action:  runCommand.ExecuteRunCommand,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "name, n",
+					Usage: "Execute command named `NAME`",					
+				},
+				cli.StringFlag{
+					Name: "environment, e",
+					Usage: "Use environment named `ENVIRONMENT`"
+				},
+			},
 		},
 	}
 
