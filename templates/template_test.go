@@ -21,7 +21,8 @@ func TestTemplate(t *testing.T) {
 		template := NewTemplate("((key))")
 		resolver := &SimpleResolver{Map: make(map[string]interface{})}
 		resolver.Map["key"] = "value"
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		r.Equal("value", document)
 	})
 
@@ -30,7 +31,8 @@ func TestTemplate(t *testing.T) {
 		template := NewTemplate("((key)):((other))")
 		resolver := &SimpleResolver{
 			Map: map[string]interface{}{"key": "value", "other": "thing"}}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		r.Equal("value:thing", document)
 	})
 
@@ -41,7 +43,8 @@ func TestTemplate(t *testing.T) {
 		resolver := &SimpleResolver{
 			Map: map[string]interface{}{"key": "value"},
 		}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		actual, ok := document.(map[string]interface{})
 		r.True(ok)
 		r.Equal(1, len(actual))
@@ -55,7 +58,8 @@ func TestTemplate(t *testing.T) {
 		resolver := &SimpleResolver{
 			Map: map[string]interface{}{"key": "value"},
 		}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		actual, ok := document.(map[string]interface{})
 		r.True(ok)
 		r.Equal(1, len(actual))
@@ -69,7 +73,8 @@ func TestTemplate(t *testing.T) {
 		resolver := &SimpleResolver{
 			Map: map[string]interface{}{"nested": "value"},
 		}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		actual, ok := document.(map[string]interface{})
 		r.True(ok)
 		r.Equal(1, len(actual))
@@ -86,7 +91,8 @@ func TestTemplate(t *testing.T) {
 		resolver := &SimpleResolver{
 			Map: map[string]interface{}{"key": "value"},
 		}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		actual, ok := document.([]interface{})
 		r.True(ok)
 		r.Equal(3, len(actual))
@@ -100,7 +106,8 @@ func TestTemplate(t *testing.T) {
 		resolver := &SimpleResolver{
 			Map: map[string]interface{}{"key": "value"},
 		}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		actual, ok := document.([]interface{})
 		r.True(ok)
 		r.Equal(3, len(actual))
@@ -113,7 +120,8 @@ func TestTemplate(t *testing.T) {
 		m := make(map[string]interface{})
 		m["key"] = []string{"one", "two"}
 		resolver := &SimpleResolver{Map: m}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		s, ok := document.([]string)
 		r.True(ok)
 		r.Equal(2, len(s))
@@ -127,7 +135,8 @@ func TestTemplate(t *testing.T) {
 		m := make(map[string]interface{})
 		m["key"] = map[string]string{"one": "test", "two": "other"}
 		resolver := &SimpleResolver{Map: m}
-		document := template.Evaluate(resolver)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
 		s, ok := document.(map[string]string)
 		r.True(ok)
 		r.Equal(2, len(s))

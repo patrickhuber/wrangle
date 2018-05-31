@@ -2,12 +2,14 @@ package templates
 
 import (
 	"bytes"
+	"fmt"
+	"reflect"
 	"regexp"
 )
 
 // Template - contains a go object document that contains placeholders for variables
 type Template interface {
-	Evaluate(resolver VariableResolver) interface{}
+	Evaluate(resolver VariableResolver) (interface{}, error)
 }
 
 type template struct {
@@ -20,13 +22,13 @@ func NewTemplate(document interface{}) Template {
 }
 
 // Evaluate - Evaluates the tempalte using the variable resolver for variable lookup
-func (template template) Evaluate(resolver VariableResolver) interface{} {
+func (template template) Evaluate(resolver VariableResolver) (interface{}, error) {
 	return evaluate(template.document, resolver)
 }
 
 // evaluate - dispatches the template evaluation by type to a type specific resolver
 // this method is also called recursively by map and array type evaluators
-func evaluate(document interface{}, resolver VariableResolver) interface{} {
+func evaluate(document interface{}, resolver VariableResolver) (interface{}, error) {
 	switch t := document.(type) {
 	case (string):
 		return evaluateString(t, resolver)
@@ -39,10 +41,10 @@ func evaluate(document interface{}, resolver VariableResolver) interface{} {
 	case ([]interface{}):
 		return evaluateSliceOfInterface(t, resolver)
 	}
-	return document
+	return nil, fmt.Errorf("unable to evaluate template. Invalid type '%v'", reflect.TypeOf(document))
 }
 
-func evaluateString(template string, resolver VariableResolver) interface{} {
+func evaluateString(template string, resolver VariableResolver) (interface{}, error) {
 	re := regexp.MustCompile(`\(\((?P<key>[^)]*)\)\)`)
 	index := 0
 	result := bytes.Buffer{}
@@ -57,14 +59,14 @@ func evaluateString(template string, resolver VariableResolver) interface{} {
 
 		// return the value if it is the only match
 		if matchStart == 0 && matchEnd == len(template) {
-			return value
+			return value, nil
 		}
 
 		// check the value type
-		// if it is non-string, return the template
+		// if it is non-string, return a failure
 		v, ok := value.(string)
 		if !ok {
-			return template
+			return nil, fmt.Errorf("unable to evaluate template. Multiple values detected in source string and key '%s' resulted in a variable lookup of type '%v'. Make sure the source is a single variable ((variable)) or the lookup value is of type string", key, reflect.TypeOf(v))
 		}
 
 		// append the string previous to the match to the result
@@ -78,65 +80,52 @@ func evaluateString(template string, resolver VariableResolver) interface{} {
 	if index < len(template) {
 		result.WriteString(template[index:])
 	}
-	return result.String()
+	return result.String(), nil
 }
 
-func evaluateString1(template string, resolver VariableResolver) interface{} {
-	// create a regex that finds the pattern ((key))
-	// where key is the path to the variable in the variable store
-	re := regexp.MustCompile(`\(\((?P<key>[^)]*)\)\)`)
-
-	// replace all strings will find the pattern in the string and call the match function
-	// for each occurance
-	return re.ReplaceAllStringFunc(template, func(value string) string {
-
-		result := []byte{}
-
-		// it will expand just the capture group essintially striping the paranthesis from the variable (( ))
-		for _, s := range re.FindAllStringSubmatchIndex(value, -1) {
-
-			result = re.ExpandString(result, "$key", value, s)
-		}
-
-		resolved := resolver.Get(string(result))
-
-		// if the resolved value is a string return the string
-		if v, ok := resolved.(string); ok {
-			return v
-		}
-
-		// return the orignal value
-		return value
-	})
-}
-
-func evaluateMapStringOfString(template map[string]string, resolver VariableResolver) interface{} {
+func evaluateMapStringOfString(template map[string]string, resolver VariableResolver) (interface{}, error) {
 	transformMap := make(map[string]interface{})
 	for k, v := range template {
-		transformMap[k] = evaluateString(v, resolver)
+		value, err := evaluateString(v, resolver)
+		if err != nil {
+			return nil, err
+		}
+		transformMap[k] = value
 	}
-	return transformMap
+	return transformMap, nil
 }
 
-func evaluateMapStringOfInterface(template map[string]interface{}, resolver VariableResolver) interface{} {
+func evaluateMapStringOfInterface(template map[string]interface{}, resolver VariableResolver) (interface{}, error) {
 	for k, v := range template {
-		template[k] = evaluate(v, resolver)
+		value, err := evaluate(v, resolver)
+		if err != nil {
+			return nil, err
+		}
+		template[k] = value
 	}
-	return template
+	return template, nil
 }
 
-func evaluateSliceOfString(template []string, resolver VariableResolver) interface{} {
+func evaluateSliceOfString(template []string, resolver VariableResolver) (interface{}, error) {
 	// make(type, len, capacity)
 	transformSlice := make([]interface{}, 0, len(template))
 	for _, v := range template {
-		transformSlice = append(transformSlice, evaluateString(v, resolver))
+		value, err := evaluateString(v, resolver)
+		if err != nil {
+			return nil, err
+		}
+		transformSlice = append(transformSlice, value)
 	}
-	return transformSlice
+	return transformSlice, nil
 }
 
-func evaluateSliceOfInterface(template []interface{}, resolver VariableResolver) interface{} {
+func evaluateSliceOfInterface(template []interface{}, resolver VariableResolver) (interface{}, error) {
 	for i, v := range template {
-		template[i] = evaluate(v, resolver)
+		value, err := evaluate(v, resolver)
+		if err != nil {
+			return nil, err
+		}
+		template[i] = value
 	}
-	return template
+	return template, nil
 }
