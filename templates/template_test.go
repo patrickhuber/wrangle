@@ -120,4 +120,18 @@ func TestTemplate(t *testing.T) {
 		r.Equal("one", s[0])
 		r.Equal("two", s[1])
 	})
+
+	t.Run("CanPatchInMapForString", func(t *testing.T) {
+		r := require.New(t)
+		template := NewTemplate("((key))")
+		m := make(map[string]interface{})
+		m["key"] = map[string]string{"one": "test", "two": "other"}
+		resolver := &SimpleResolver{Map: m}
+		document := template.Evaluate(resolver)
+		s, ok := document.(map[string]string)
+		r.True(ok)
+		r.Equal(2, len(s))
+		r.Equal("test", s["one"])
+		r.Equal("other", s["two"])
+	})
 }
