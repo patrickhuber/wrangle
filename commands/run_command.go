@@ -23,10 +23,18 @@ func NewRunCommand(
 		fileSystem:         fileSystem}
 }
 
-func (cmd *RunCommand) ExecuteRunCommand(c *cli.Context) error {
+func (cmd *RunCommand) ExecuteCommand(c *cli.Context) error {
 	configFile := c.GlobalString("config")
 	processName := c.String("name")
 	environmenName := c.String("environment")
+
+	if processName == "" {
+		return errors.New("process name is required for the run command")
+	}
+
+	if environmenName == "" {
+		return errors.New("environment name is required for the run command")
+	}
 
 	configLoader := config.ConfigLoader{FileSystem: cmd.fileSystem}
 	cfg, err := configLoader.Load(configFile)
@@ -34,9 +42,8 @@ func (cmd *RunCommand) ExecuteRunCommand(c *cli.Context) error {
 		return err
 	}
 	if cfg == nil {
-		return errors.New("cfg is null")
+		return errors.New("config is null")
 	}
-
 	return executeConfigItem(cfg, processName, environmenName)
 }
 
@@ -51,9 +58,9 @@ func executeConfigItem(cfg *config.Config, processName string, environmentName s
 			return fmt.Errorf("unable to find environment '%s' in process '%s'", environmentName, processName)
 		}
 	}
-	return nil
+	return fmt.Errorf("No Processes found in config that match '%s'", processName)
 }
 
 func execute(process *config.Process) error {
-	return nil
+	return fmt.Errorf("not implemented")
 }

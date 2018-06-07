@@ -50,15 +50,30 @@ func main() {
 			Name:    "run",
 			Aliases: []string{"r"},
 			Usage:   "run a command",
-			Action:  runCommand.ExecuteRunCommand,
+			Action:  runCommand.ExecuteCommand,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "name, n",
-					Usage: "Execute command named `NAME`",					
+					Usage: "Execute command named `NAME`",
 				},
 				cli.StringFlag{
-					Name: "environment, e",
-					Usage: "Use environment named `ENVIRONMENT`"
+					Name:  "environment, e",
+					Usage: "Use environment named `ENVIRONMENT`",
+				},
+			},
+		},
+		{
+			Name:    "env",
+			Aliases: []string{"e"},
+			Usage:   "print command environemnt variables",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "name, n",
+					Usage: "Execute command named `NAME`",
+				},
+				cli.StringFlag{
+					Name:  "environment, e",
+					Usage: "Use environment named `ENVIRONMENT`",
 				},
 			},
 		},

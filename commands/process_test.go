@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCommandDispatch(t *testing.T) {
+func TestProcessDispatch(t *testing.T) {
 	t.Run("CanRunGoVersion", func(t *testing.T) {
 		r := require.New(t)
 
