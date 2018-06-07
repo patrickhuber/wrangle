@@ -10,14 +10,14 @@ func TestProcessDispatch(t *testing.T) {
 	t.Run("CanRunGoVersion", func(t *testing.T) {
 		r := require.New(t)
 
-		command := NewCommand("go", []string{"version"}, make(map[string]string))
+		command := NewProcess("go", []string{"version"}, make(map[string]string))
 		err := command.Dispatch()
 		r.Nil(err)
 	})
 
 	t.Run("CanRunWithNilEnvironmentVariables", func(t *testing.T) {
 		r := require.New(t)
-		command := NewCommand("go", []string{"version"}, nil)
+		command := NewProcess("go", []string{"version"}, nil)
 		err := command.Dispatch()
 		r.Nil(err)
 	})

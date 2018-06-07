@@ -18,7 +18,7 @@ type process struct {
 	EnvironmentVariables map[string]string
 }
 
-func NewCommand(executableName string, arguments []string, environmentVariables map[string]string) Process {
+func NewProcess(executableName string, arguments []string, environmentVariables map[string]string) Process {
 	return &process{
 		ExecutableName:       executableName,
 		Arguments:            arguments,

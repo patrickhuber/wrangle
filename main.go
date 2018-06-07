@@ -43,7 +43,8 @@ func main() {
 	}
 	runCommand := commands.NewRunCommand(
 		configStoreManager,
-		fileSystem)
+		fileSystem,
+		commands.NewOsProcessFactory())
 
 	app.Commands = []cli.Command{
 		{

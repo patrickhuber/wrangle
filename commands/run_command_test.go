@@ -2,6 +2,7 @@ package commands
 
 import (
 	"flag"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -24,15 +25,16 @@ processes:
   - name: lab
     process: go
     args:
-    - -v
+    - version
 `
+		configFileData = strings.Replace(configFileData, "\t", "  ", -1)
 		fileSystem := afero.NewMemMapFs()
 		err := afero.WriteFile(fileSystem, "/config", []byte(configFileData), 0644)
 		r.Nil(err)
 
 		// create run command
 		configStoreManager := config.NewConfigStoreManager()
-		runCommand := NewRunCommand(configStoreManager, fileSystem)
+		runCommand := NewRunCommand(configStoreManager, fileSystem, NewOsProcessFactory())
 
 		// global context
 		globalSet := flag.NewFlagSet("global", 0)

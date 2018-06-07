@@ -12,15 +12,17 @@ import (
 type RunCommand struct {
 	configStoreManager *config.ConfigStoreManager
 	fileSystem         afero.Fs
-	process            Command
+	processFactory     ProcessFactory
 }
 
 func NewRunCommand(
 	configStoreManager *config.ConfigStoreManager,
-	fileSystem afero.Fs) *RunCommand {
+	fileSystem afero.Fs,
+	processFactory ProcessFactory) *RunCommand {
 	return &RunCommand{
 		configStoreManager: configStoreManager,
-		fileSystem:         fileSystem}
+		fileSystem:         fileSystem,
+		processFactory:     processFactory}
 }
 
 func (cmd *RunCommand) ExecuteCommand(c *cli.Context) error {
@@ -44,15 +46,15 @@ func (cmd *RunCommand) ExecuteCommand(c *cli.Context) error {
 	if cfg == nil {
 		return errors.New("config is null")
 	}
-	return executeConfigItem(cfg, processName, environmenName)
+	return cmd.executeConfigItem(cfg, processName, environmenName)
 }
 
-func executeConfigItem(cfg *config.Config, processName string, environmentName string) error {
+func (cmd *RunCommand) executeConfigItem(cfg *config.Config, processName string, environmentName string) error {
 	for _, p := range cfg.Processes {
 		if p.Name == processName {
 			for _, e := range p.Environments {
 				if e.Name == environmentName {
-					return execute(&p)
+					return cmd.execute(&e)
 				}
 			}
 			return fmt.Errorf("unable to find environment '%s' in process '%s'", environmentName, processName)
@@ -61,6 +63,10 @@ func executeConfigItem(cfg *config.Config, processName string, environmentName s
 	return fmt.Errorf("No Processes found in config that match '%s'", processName)
 }
 
-func execute(process *config.Process) error {
-	return fmt.Errorf("not implemented")
+func (cmd *RunCommand) execute(processEnvironmentConfig *config.Environment) error {
+	process := cmd.processFactory.Create(
+		processEnvironmentConfig.Process,
+		processEnvironmentConfig.Args,
+		processEnvironmentConfig.Vars)
+	return process.Dispatch()
 }

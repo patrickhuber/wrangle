@@ -18,8 +18,9 @@ type Process struct {
 }
 
 type Environment struct {
-	Name    string   `yaml:"name"`
-	Config  string   `yaml:"config"`
-	Process string   `yaml:"process"`
-	Args    []string `yaml:"args"`
+	Name    string            `yaml:"name"`
+	Config  string            `yaml:"config"`
+	Process string            `yaml:"process"`
+	Args    []string          `yaml:"args"`
+	Vars    map[string]string `yaml:"env"`
 }
