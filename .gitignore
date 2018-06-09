@@ -17,3 +17,10 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# binaries
+main
+main.exe
+cli-mgr
+cli-mgr.exe
+
