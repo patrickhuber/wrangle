@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"fmt"
+	"sort"
 )
 
 type envVarRenderer struct {
@@ -25,7 +26,16 @@ func (renderer *envVarRenderer) Platform() string {
 
 func (renderer *envVarRenderer) RenderEnvironment(environmentVariables map[string]string) string {
 	buffer := bytes.Buffer{}
-	for k, v := range environmentVariables {
+
+	// sort the keys because the tests will fail if they are out of order
+	sorted := make([]string, 0, len(environmentVariables))
+	for k := range environmentVariables {
+		sorted = append(sorted, k)
+	}
+	sort.Strings(sorted)
+
+	for _, k := range sorted {
+		v := environmentVariables[k]
 		buffer.WriteString(renderer.RenderEnvironmentVariable(k, v))
 	}
 	return buffer.String()
