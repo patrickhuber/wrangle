@@ -94,7 +94,7 @@ func TestCredHubStore(t *testing.T) {
 
 		data, err := store.GetByName("/example-value")
 		require.Nil(err)
-		require.Equal("some-value", data.Value)
+		require.Equal("some-value", data.GetValue())
 	})
 
 	t.Run("CanGetPasswordByName", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestCredHubStore(t *testing.T) {
 
 		data, err := store.GetByName("/example-value")
 		require.Nil(err)
-		require.Equal(data.Value, "some-value")
+		require.Equal(data.GetValue(), "some-value")
 	})
 
 	t.Run("CanGetCertificateByName", func(t *testing.T) {
@@ -137,8 +137,8 @@ func TestCredHubStore(t *testing.T) {
 		data, err := store.GetByName("/example-certificate")
 		require.Nil(err)
 
-		valueMap, ok := data.Value.(map[string]interface{})
-		require.Truef(ok, "Unable to map data value to map[string]interface{}. Found type '%v'", reflect.TypeOf(data.Value))
+		valueMap, ok := data.GetValue().(map[string]interface{})
+		require.Truef(ok, "Unable to map data value to map[string]interface{}. Found type '%v'", reflect.TypeOf(data.GetValue()))
 
 		privateKey, ok := valueMap["private_key"]
 		require.Truef(ok, "unable to find private_key")
@@ -175,7 +175,7 @@ func TestCredHubStore(t *testing.T) {
 		data, err := store.GetByName("/example-rsa")
 		require.Nil(err)
 
-		stringMap, ok := data.Value.(map[string]interface{})
+		stringMap, ok := data.GetValue().(map[string]interface{})
 		require.True(ok, "Unable to map data.Value to map[string]interface{}")
 
 		publicKey, ok := stringMap["public_key"]
@@ -210,7 +210,7 @@ func TestCredHubStore(t *testing.T) {
 		data, err := store.GetByName("/example-ssh")
 		require.Nil(err)
 
-		stringMap, ok := data.Value.(map[string]interface{})
+		stringMap, ok := data.GetValue().(map[string]interface{})
 		require.True(ok, "Unable to map data.Value to map[string]interface{}")
 
 		publicKey, ok := stringMap["public_key"]

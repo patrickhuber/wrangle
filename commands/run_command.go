@@ -4,19 +4,21 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/patrickhuber/cli-mgr/store"
+
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/spf13/afero"
 	"github.com/urfave/cli"
 )
 
 type RunCommand struct {
-	configStoreManager *config.ConfigStoreManager
+	configStoreManager store.Manager
 	fileSystem         afero.Fs
 	processFactory     ProcessFactory
 }
 
 func NewRunCommand(
-	configStoreManager *config.ConfigStoreManager,
+	configStoreManager store.Manager,
 	fileSystem afero.Fs,
 	processFactory ProcessFactory) *RunCommand {
 	return &RunCommand{

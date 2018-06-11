@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/cli-mgr/store"
 
 	credhubcli "github.com/cloudfoundry-incubator/credhub-cli/credhub"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
@@ -50,33 +50,32 @@ func createOptions(config *CredHubStoreConfig) []credhubcli.Option {
 	return options
 }
 
-func (store *CredHubStore) GetName() string {
-	return store.Name
+func (credHubStore *CredHubStore) GetName() string {
+	return credHubStore.Name
 }
 
-func (store *CredHubStore) GetByName(name string) (config.ConfigStoreData, error) {
-	ch := store.CredHub
+func (credHubStore *CredHubStore) GetByName(name string) (store.Data, error) {
+	ch := credHubStore.CredHub
 	cred, err := ch.GetLatestVersion(name)
 	if err != nil {
-		return config.ConfigStoreData{}, err
+		return nil, err
 	}
-	return config.ConfigStoreData{
-		ID:    cred.Id,
-		Name:  cred.Name,
-		Value: cred.Value,
-	}, nil
+	return store.NewData(
+		cred.Id,
+		cred.Name,
+		cred.Value), nil
 }
 
-func (store *CredHubStore) Delete(name string) (int, error) {
+func (credHubStore *CredHubStore) Delete(name string) (int, error) {
 	return 0, fmt.Errorf("not implemented")
 }
 
-func (store *CredHubStore) GetType() string {
+func (credHubStore *CredHubStore) GetType() string {
 	return "credhub"
 }
 
-func (store *CredHubStore) Put(name string, value string) (string, error) {
-	ch := store.CredHub
+func (credHubStore *CredHubStore) Put(name string, value string) (string, error) {
+	ch := credHubStore.CredHub
 	_, err := ch.SetCredential(name, "value", value, credhubcli.Overwrite)
 	if err != nil {
 		return "", err

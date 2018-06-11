@@ -21,9 +21,9 @@ config-sources:
   type: credhub
   config: bosh-lab-credhub
   params:
-    client_id: something
-    client_secret: somethingelse
-    server: https://192.168.3.15:4343
+    client_id: ((/credhub-client))
+    client_secret: ((/credhub-secret))
+    server: https://192.168.0.6:8844
     ca_cert: ((/credhub-ca-cert.certificate))
     skip_tls_validation: false
 
@@ -55,6 +55,7 @@ processes:
     - CREDHUB_CLIENT: ((/credhub-client))
     - CREDHUB_SECRET: ((/credhub-secret))
     - CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
+    - CREDHUB_SERVER: https://192.168.0.6:8844
 
   - name: lab-atc
     config: bosh-lab-credhub
@@ -65,3 +66,4 @@ processes:
     - CREDHUB_CLIENT: ((/credhub-client))
     - CREDHUB_SECRET: ((/credhub-secret))
     - CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
+    - CREDHUB_SERVER: https://192.168.0.6:8844

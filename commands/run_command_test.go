@@ -5,11 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli"
-
-	"github.com/patrickhuber/cli-mgr/config"
 )
 
 func TestRunCommand(t *testing.T) {
@@ -33,7 +32,7 @@ processes:
 		r.Nil(err)
 
 		// create run command
-		configStoreManager := config.NewConfigStoreManager()
+		configStoreManager := store.NewManager()
 		runCommand := NewRunCommand(configStoreManager, fileSystem, NewOsProcessFactory())
 
 		// global context

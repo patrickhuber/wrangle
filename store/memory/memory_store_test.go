@@ -1,9 +1,10 @@
-package config
+package memory
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,7 +37,7 @@ func TestMemoryStore(t *testing.T) {
 
 		data, err := memoryStore.GetByName(key)
 		require.Nil(err)
-		require.Equal(value, data.Value)
+		require.Equal(value, data.GetValue())
 	})
 
 	t.Run("CanGetById", func(t *testing.T) {
@@ -48,9 +49,9 @@ func TestMemoryStore(t *testing.T) {
 		expected, err := put(memoryStore, t, key, value)
 		require.Nil(err)
 
-		actual, err := memoryStore.GetByID(expected.ID)
+		actual, err := memoryStore.GetByID(expected.GetID())
 		require.Nil(err)
-		require.Equal(value, actual.Value)
+		require.Equal(value, actual.GetValue())
 	})
 
 	t.Run("CanDeleteByKey", func(t *testing.T) {
@@ -66,15 +67,16 @@ func TestMemoryStore(t *testing.T) {
 		require.Nil(err)
 		require.Equal(1, count)
 	})
+
 }
 
-func put(store *MemoryStore, t *testing.T, key string, value string) (ConfigStoreData, error) {
+func put(store *MemoryStore, t *testing.T, key string, value string) (store.Data, error) {
 	require := require.New(t)
 
 	id, err := store.Put(key, value)
 	data, err := store.GetByID(id)
 
-	stringValue, ok := data.Value.(string)
+	stringValue, ok := data.GetValue().(string)
 	require.True(ok)
 
 	err = assertPutDidNotFail(err, value, stringValue)

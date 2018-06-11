@@ -10,6 +10,7 @@ import (
 	"github.com/patrickhuber/cli-mgr/commands"
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/option"
+	"github.com/patrickhuber/cli-mgr/store"
 
 	credhub "github.com/patrickhuber/cli-mgr/store/credhub"
 	file "github.com/patrickhuber/cli-mgr/store/file"
@@ -87,14 +88,14 @@ func main() {
 	}
 }
 
-func createConfigStoreManager() *config.ConfigStoreManager {
-	manager := config.NewConfigStoreManager()
+func createConfigStoreManager() store.Manager {
+	manager := store.NewManager()
 	manager.Register(&credhub.CredHubConfigStoreProvider{})
 	manager.Register(&file.FileConfigStoreProvider{})
 	return manager
 }
 
-func validateConfigStoreManager(manager *config.ConfigStoreManager) {
+func validateConfigStoreManager(manager store.Manager) {
 	if manager == nil {
 		fmt.Printf("unable to create config store manager\n")
 		os.Exit(1)

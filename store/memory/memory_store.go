@@ -1,7 +1,9 @@
-package config
+package memory
 
 import (
 	"fmt"
+
+	"github.com/patrickhuber/cli-mgr/store"
 
 	uuid "github.com/google/uuid"
 )
@@ -9,13 +11,13 @@ import (
 // MemoryStore - Struct that represents a memory store
 type MemoryStore struct {
 	Name    string
-	Data    map[string]ConfigStoreData
+	Data    map[string]store.Data
 	KeyToID map[string]string
 }
 
 // NewMemoryStore - Creates a new memory store with the given name
 func NewMemoryStore(name string) *MemoryStore {
-	data := map[string]ConfigStoreData{}
+	data := map[string]store.Data{}
 	keyToID := map[string]string{}
 	return &MemoryStore{
 		Name:    name,
@@ -35,42 +37,42 @@ func (store *MemoryStore) GetType() string {
 }
 
 // Put - Puts the config value under the value in the memory store
-func (store *MemoryStore) Put(key string, value string) (string, error) {
-	data := ConfigStoreData{
-		ID:    uuid.New().String(),
-		Name:  key,
-		Value: value,
-	}
-	store.Data[data.ID] = data
-	store.KeyToID[key] = data.ID
-	return data.ID, nil
+func (memoryStore *MemoryStore) Put(key string, value string) (string, error) {
+	data := store.NewData(
+		uuid.New().String(),
+		key,
+		value,
+	)
+	memoryStore.Data[data.GetID()] = data
+	memoryStore.KeyToID[key] = data.GetID()
+	return data.GetID(), nil
 }
 
 // GetByName - Gets the config value by name
-func (store *MemoryStore) GetByName(key string) (ConfigStoreData, error) {
-	id, ok := store.KeyToID[key]
+func (memoryStore *MemoryStore) GetByName(key string) (store.Data, error) {
+	id, ok := memoryStore.KeyToID[key]
 	if !ok {
-		return ConfigStoreData{}, fmt.Errorf("Unable to find key %s", key)
+		return nil, fmt.Errorf("Unable to find key %s", key)
 	}
-	return store.GetByID(id)
+	return memoryStore.GetByID(id)
 }
 
 // GetByID - Gets the value by ID
-func (store *MemoryStore) GetByID(id string) (ConfigStoreData, error) {
-	value, ok := store.Data[id]
+func (memoryStore *MemoryStore) GetByID(id string) (store.Data, error) {
+	value, ok := memoryStore.Data[id]
 	if ok != true {
-		return ConfigStoreData{}, fmt.Errorf("Unable to find id %s", id)
+		return nil, fmt.Errorf("Unable to find id %s", id)
 	}
 	return value, nil
 }
 
 // Delete - Deletes the value from the config store
-func (store *MemoryStore) Delete(key string) (int, error) {
-	data, err := store.GetByName(key)
+func (memoryStore *MemoryStore) Delete(key string) (int, error) {
+	data, err := memoryStore.GetByName(key)
 	if err != nil {
 		return 0, err
 	}
-	delete(store.KeyToID, key)
-	delete(store.Data, data.ID)
+	delete(memoryStore.KeyToID, key)
+	delete(memoryStore.Data, data.GetID())
 	return 1, nil
 }

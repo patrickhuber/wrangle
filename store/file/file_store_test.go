@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )
@@ -74,8 +73,8 @@ ssh:
 
 		data, err := fileStore.GetByName("/value")
 		require.Nil(err)
-		require.NotEqual(config.ConfigStoreData{}, data)
-		require.Equal("aaaaaaaaaaaaaaaa", data.Value)
+		require.NotNil(data)
+		require.Equal("aaaaaaaaaaaaaaaa", data.GetValue())
 	})
 
 	t.Run("CanGetPasswordByName", func(t *testing.T) {
@@ -83,8 +82,9 @@ ssh:
 
 		data, err := fileStore.GetByName("/password")
 		require.Nil(err)
-		require.NotEqual(config.ConfigStoreData{}, data)
-		require.Equal("bbbbbbbbbbbbbbbb", data.Value)
+		require.NotNil(data)
+
+		require.Equal("bbbbbbbbbbbbbbbb", data.GetValue())
 	})
 
 	t.Run("CanGetCertificateByName", func(t *testing.T) {
@@ -92,10 +92,10 @@ ssh:
 
 		data, err := fileStore.GetByName("/certificate")
 		require.Nil(err)
-		require.NotEqual(config.ConfigStoreData{}, data)
+		require.NotNil(data)
 
-		stringMap, ok := data.Value.(map[string]interface{})
-		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
+		stringMap, ok := data.GetValue().(map[string]interface{})
+		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.GetValue()))
 
 		privateKey, ok := stringMap["private_key"]
 		require.True(ok)
@@ -115,10 +115,10 @@ ssh:
 
 		data, err := fileStore.GetByName("/rsa")
 		require.Nil(err)
-		require.NotEqual(config.ConfigStoreData{}, data)
+		require.NotNil(data)
 
-		stringMap, ok := data.Value.(map[string]interface{})
-		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
+		stringMap, ok := data.GetValue().(map[string]interface{})
+		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.GetValue()))
 
 		privateKey, ok := stringMap["private_key"]
 		require.True(ok)
@@ -134,10 +134,10 @@ ssh:
 
 		data, err := fileStore.GetByName("/ssh")
 		require.Nil(err)
-		require.NotEqual(config.ConfigStoreData{}, data)
+		require.NotNil(data)
 
-		stringMap, ok := data.Value.(map[string]interface{})
-		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value))
+		stringMap, ok := data.GetValue().(map[string]interface{})
+		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.GetValue()))
 
 		privateKey, ok := stringMap["private_key"]
 		require.True(ok)

@@ -4,8 +4,9 @@ import (
 	"bufio"
 	"fmt"
 
+	"github.com/patrickhuber/cli-mgr/store"
+
 	patch "github.com/cppforlife/go-patch/patch"
-	"github.com/patrickhuber/cli-mgr/config"
 
 	"github.com/spf13/afero"
 	yaml "gopkg.in/yaml.v2"
@@ -33,28 +34,28 @@ func (config *FileStore) GetType() string {
 	return "file"
 }
 
-func (store *FileStore) GetByName(key string) (config.ConfigStoreData, error) {
+func (fileStore *FileStore) GetByName(key string) (store.Data, error) {
 
 	// read the file store config as bytes
-	data, err := afero.ReadFile(store.FileSystem, store.Path)
+	data, err := afero.ReadFile(fileStore.FileSystem, fileStore.Path)
 
 	// read the document
 	document := make(map[interface{}]interface{})
 	err = yaml.Unmarshal(data, &document)
 	if err != nil {
-		return config.ConfigStoreData{}, err
+		return nil, err
 	}
 
 	// turn the key into a patch pointer
 	pointer, err := patch.NewPointerFromString(key)
 	if err != nil {
-		return config.ConfigStoreData{}, err
+		return nil, err
 	}
 
 	// find the pointer in the document
 	response, err := patch.FindOp{Path: pointer}.Apply(document)
 	if err != nil {
-		return config.ConfigStoreData{}, err
+		return nil, err
 	}
 
 	// map document to canonical type
@@ -65,9 +66,9 @@ func (store *FileStore) GetByName(key string) (config.ConfigStoreData, error) {
 		for key := range v {
 			stringMap[key.(string)] = v[key]
 		}
-		return config.ConfigStoreData{ID: key, Name: key, Value: stringMap}, nil
+		return store.NewData(key, key, stringMap), nil
 	}
-	return config.ConfigStoreData{ID: key, Name: key, Value: response}, nil
+	return store.NewData(key, key, response), nil
 }
 
 func (config *FileStore) Delete(key string) (int, error) {
