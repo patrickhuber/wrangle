@@ -1,6 +1,7 @@
 package credhub
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/patrickhuber/cli-mgr/config"
@@ -15,6 +16,16 @@ type CredHubStore struct {
 }
 
 func NewCredHubStore(config *CredHubStoreConfig) (*CredHubStore, error) {
+	if config.ClientID == "" {
+		return nil, errors.New("ClientID is required")
+	}
+	if config.ClientSecret == "" {
+		return nil, errors.New("ClientSecret is required")
+	}
+	if config.Server == "" {
+		return nil, errors.New("Server is required")
+	}
+
 	options := createOptions(config)
 	ch, err := credhubcli.New(config.Server, options...)
 	if err != nil {
@@ -29,6 +40,9 @@ func NewCredHubStore(config *CredHubStoreConfig) (*CredHubStore, error) {
 func createOptions(config *CredHubStoreConfig) []credhubcli.Option {
 	options := []credhubcli.Option{}
 	options = append(options, credhubcli.SkipTLSValidation(config.SkipTLSValidation))
+	if config.CaCert != "" {
+		options = append(options, credhubcli.CaCerts(config.CaCert))
+	}
 	options = append(options, credhubcli.Auth(
 		auth.UaaClientCredentials(
 			config.ClientID,
@@ -62,5 +76,10 @@ func (store *CredHubStore) GetType() string {
 }
 
 func (store *CredHubStore) Put(name string, value string) (string, error) {
-	return value, fmt.Errorf("not implemented")
+	ch := store.CredHub
+	_, err := ch.SetCredential(name, "value", value, credhubcli.Overwrite)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
 }
