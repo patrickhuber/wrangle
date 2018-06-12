@@ -55,7 +55,10 @@ func evaluateString(template string, resolver VariableResolver) (interface{}, er
 		subMatchEnd := submatches[3]
 
 		key := template[subMatchStart:subMatchEnd]
-		value := resolver.Get(string(key))
+		value, err := resolver.Get(string(key))
+		if err != nil {
+			return nil, err
+		}
 
 		// return the value if it is the only match
 		if matchStart == 0 && matchEnd == len(template) {

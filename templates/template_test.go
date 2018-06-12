@@ -6,21 +6,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type SimpleResolver struct {
-	Map map[string]interface{}
-}
-
-func (resolver *SimpleResolver) Get(key string) interface{} {
-	return resolver.Map[key]
-}
-
 func TestTemplate(t *testing.T) {
 
 	t.Run("CanEvaluateString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		resolver := &SimpleResolver{Map: make(map[string]interface{})}
-		resolver.Map["key"] = "value"
+		resolver, err := newSimpleResolver("key", "value")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		r.Equal("value", document)
@@ -29,8 +21,8 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanEvaluateTwoKeysInString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key)):((other))")
-		resolver := &SimpleResolver{
-			Map: map[string]interface{}{"key": "value", "other": "thing"}}
+		resolver, err := newSimpleResolver("key", "value", "other", "thing")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		r.Equal("value:thing", document)
@@ -40,9 +32,8 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		m := map[string]string{"key": "((key))"}
 		template := NewTemplate(m)
-		resolver := &SimpleResolver{
-			Map: map[string]interface{}{"key": "value"},
-		}
+		resolver, err := newSimpleResolver("key", "value")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		actual, ok := document.(map[string]interface{})
@@ -55,9 +46,8 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		m := map[string]interface{}{"key": "((key))"}
 		template := NewTemplate(m)
-		resolver := &SimpleResolver{
-			Map: map[string]interface{}{"key": "value"},
-		}
+		resolver, err := newSimpleResolver("key", "value")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		actual, ok := document.(map[string]interface{})
@@ -70,9 +60,8 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
 		template := NewTemplate(m)
-		resolver := &SimpleResolver{
-			Map: map[string]interface{}{"nested": "value"},
-		}
+		resolver, err := newSimpleResolver("nested", "value")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		actual, ok := document.(map[string]interface{})
@@ -88,9 +77,8 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		a := []string{"one", "((key))", "three"}
 		template := NewTemplate(a)
-		resolver := &SimpleResolver{
-			Map: map[string]interface{}{"key": "value"},
-		}
+		resolver, err := newSimpleResolver("key", "value")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		actual, ok := document.([]interface{})
@@ -103,9 +91,8 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		a := []interface{}{"one", "((key))", "three"}
 		template := NewTemplate(a)
-		resolver := &SimpleResolver{
-			Map: map[string]interface{}{"key": "value"},
-		}
+		resolver, err := newSimpleResolver("key", "value")
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		actual, ok := document.([]interface{})
@@ -117,9 +104,8 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanPatchInSliceForString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		m := make(map[string]interface{})
-		m["key"] = []string{"one", "two"}
-		resolver := &SimpleResolver{Map: m}
+		resolver, err := newSimpleResolver("key", []string{"one", "two"})
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		s, ok := document.([]string)
@@ -132,9 +118,8 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanPatchInMapForString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		m := make(map[string]interface{})
-		m["key"] = map[string]string{"one": "test", "two": "other"}
-		resolver := &SimpleResolver{Map: m}
+		resolver, err := newSimpleResolver("key", map[string]string{"one": "test", "two": "other"})
+		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
 		s, ok := document.(map[string]string)

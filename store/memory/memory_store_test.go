@@ -40,20 +40,6 @@ func TestMemoryStore(t *testing.T) {
 		require.Equal(value, data.GetValue())
 	})
 
-	t.Run("CanGetById", func(t *testing.T) {
-		require := require.New(t)
-
-		key := "key"
-		value := "value"
-
-		expected, err := put(memoryStore, t, key, value)
-		require.Nil(err)
-
-		actual, err := memoryStore.GetByID(expected.GetID())
-		require.Nil(err)
-		require.Equal(value, actual.GetValue())
-	})
-
 	t.Run("CanDeleteByKey", func(t *testing.T) {
 		require := require.New(t)
 
@@ -67,20 +53,19 @@ func TestMemoryStore(t *testing.T) {
 		require.Nil(err)
 		require.Equal(1, count)
 	})
-
 }
 
-func put(store *MemoryStore, t *testing.T, key string, value string) (store.Data, error) {
-	require := require.New(t)
+func put(store store.Store, t *testing.T, key string, value string) (store.Data, error) {
+	r := require.New(t)
 
-	id, err := store.Put(key, value)
-	data, err := store.GetByID(id)
+	_, err := store.Put(key, value)
+	r.Nil(err)
 
-	stringValue, ok := data.GetValue().(string)
-	require.True(ok)
-
-	err = assertPutDidNotFail(err, value, stringValue)
-	require.Nil(err)
+	data, err := store.GetByName(key)
+	value, ok := data.GetValue().(string)
+	r.True(ok)
+	err = assertPutDidNotFail(err, value, value)
+	r.Nil(err)
 
 	return data, nil
 }

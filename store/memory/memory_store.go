@@ -9,17 +9,17 @@ import (
 )
 
 // MemoryStore - Struct that represents a memory store
-type MemoryStore struct {
+type memoryStore struct {
 	Name    string
 	Data    map[string]store.Data
 	KeyToID map[string]string
 }
 
 // NewMemoryStore - Creates a new memory store with the given name
-func NewMemoryStore(name string) *MemoryStore {
+func NewMemoryStore(name string) store.Store {
 	data := map[string]store.Data{}
 	keyToID := map[string]string{}
-	return &MemoryStore{
+	return &memoryStore{
 		Name:    name,
 		Data:    data,
 		KeyToID: keyToID,
@@ -27,17 +27,17 @@ func NewMemoryStore(name string) *MemoryStore {
 }
 
 // GetName - Gets the name for the memory store
-func (store *MemoryStore) GetName() string {
+func (store *memoryStore) GetName() string {
 	return store.Name
 }
 
 // GetType - Gets the type for the store. Always "memory"
-func (store *MemoryStore) GetType() string {
+func (store *memoryStore) GetType() string {
 	return "memory"
 }
 
 // Put - Puts the config value under the value in the memory store
-func (memoryStore *MemoryStore) Put(key string, value string) (string, error) {
+func (memoryStore *memoryStore) Put(key string, value string) (string, error) {
 	data := store.NewData(
 		uuid.New().String(),
 		key,
@@ -49,7 +49,7 @@ func (memoryStore *MemoryStore) Put(key string, value string) (string, error) {
 }
 
 // GetByName - Gets the config value by name
-func (memoryStore *MemoryStore) GetByName(key string) (store.Data, error) {
+func (memoryStore *memoryStore) GetByName(key string) (store.Data, error) {
 	id, ok := memoryStore.KeyToID[key]
 	if !ok {
 		return nil, fmt.Errorf("Unable to find key %s", key)
@@ -58,7 +58,7 @@ func (memoryStore *MemoryStore) GetByName(key string) (store.Data, error) {
 }
 
 // GetByID - Gets the value by ID
-func (memoryStore *MemoryStore) GetByID(id string) (store.Data, error) {
+func (memoryStore *memoryStore) GetByID(id string) (store.Data, error) {
 	value, ok := memoryStore.Data[id]
 	if ok != true {
 		return nil, fmt.Errorf("Unable to find id %s", id)
@@ -67,7 +67,7 @@ func (memoryStore *MemoryStore) GetByID(id string) (store.Data, error) {
 }
 
 // Delete - Deletes the value from the config store
-func (memoryStore *MemoryStore) Delete(key string) (int, error) {
+func (memoryStore *memoryStore) Delete(key string) (int, error) {
 	data, err := memoryStore.GetByName(key)
 	if err != nil {
 		return 0, err
