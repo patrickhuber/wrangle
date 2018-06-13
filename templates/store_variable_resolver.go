@@ -16,5 +16,5 @@ func (resolver *storeVariableResolver) Get(name string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return data.GetValue(), nil
+	return data.Value(), nil
 }

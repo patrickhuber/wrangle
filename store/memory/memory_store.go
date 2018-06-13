@@ -43,9 +43,9 @@ func (memoryStore *memoryStore) Put(key string, value string) (string, error) {
 		key,
 		value,
 	)
-	memoryStore.Data[data.GetID()] = data
-	memoryStore.KeyToID[key] = data.GetID()
-	return data.GetID(), nil
+	memoryStore.Data[data.ID()] = data
+	memoryStore.KeyToID[key] = data.ID()
+	return data.ID(), nil
 }
 
 // GetByName - Gets the config value by name
@@ -73,6 +73,6 @@ func (memoryStore *memoryStore) Delete(key string) (int, error) {
 		return 0, err
 	}
 	delete(memoryStore.KeyToID, key)
-	delete(memoryStore.Data, data.GetID())
+	delete(memoryStore.Data, data.ID())
 	return 1, nil
 }

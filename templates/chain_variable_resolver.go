@@ -17,7 +17,7 @@ func (resolver *chainVariableResolver) Get(name string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	template := NewTemplate(data.GetValue())
+	template := NewTemplate(data.Value())
 	document, err := template.Evaluate(resolver.delegate)
 	if err != nil {
 		return nil, err

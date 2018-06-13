@@ -1,33 +1,33 @@
 package store
 
 type data struct {
-	ID    string
-	Name  string
-	Value interface{}
+	id    string
+	name  string
+	value interface{}
 }
 
 // Data represents data from the store
 type Data interface {
-	GetID() string
+	ID() string
 	SetID(id string)
-	GetName() string
+	Name() string
 	SetName(name string)
-	GetValue() interface{}
+	Value() interface{}
 	SetValue(value interface{})
 }
 
 // NewData returns a new data element with the specified properties set
 func NewData(id string, name string, value interface{}) Data {
 	return &data{
-		ID:    id,
-		Name:  name,
-		Value: value,
+		id:    id,
+		name:  name,
+		value: value,
 	}
 }
 
-func (data *data) GetID() string              { return data.ID }
-func (data *data) SetID(id string)            { data.ID = id }
-func (data *data) GetName() string            { return data.Name }
-func (data *data) SetName(name string)        { data.Name = name }
-func (data *data) GetValue() interface{}      { return data.Value }
-func (data *data) SetValue(value interface{}) { data.Value = value }
+func (data *data) ID() string                 { return data.id }
+func (data *data) SetID(id string)            { data.id = id }
+func (data *data) Name() string               { return data.name }
+func (data *data) SetName(name string)        { data.name = name }
+func (data *data) Value() interface{}         { return data.value }
+func (data *data) SetValue(value interface{}) { data.value = value }

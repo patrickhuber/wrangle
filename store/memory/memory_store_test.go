@@ -37,7 +37,7 @@ func TestMemoryStore(t *testing.T) {
 
 		data, err := memoryStore.GetByName(key)
 		require.Nil(err)
-		require.Equal(value, data.GetValue())
+		require.Equal(value, data.Value())
 	})
 
 	t.Run("CanDeleteByKey", func(t *testing.T) {
@@ -62,7 +62,7 @@ func put(store store.Store, t *testing.T, key string, value string) (store.Data,
 	r.Nil(err)
 
 	data, err := store.GetByName(key)
-	value, ok := data.GetValue().(string)
+	value, ok := data.Value().(string)
 	r.True(ok)
 	err = assertPutDidNotFail(err, value, value)
 	r.Nil(err)
