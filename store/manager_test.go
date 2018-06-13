@@ -30,11 +30,11 @@ func (store *dummyConfigStore) GetByName(name string) (Data, error) {
 	return &data{}, nil
 }
 
-func (store *dummyConfigStore) GetName() string {
+func (store *dummyConfigStore) Name() string {
 	return ""
 }
 
-func (store *dummyConfigStore) GetType() string {
+func (store *dummyConfigStore) Type() string {
 	return ""
 }
 

@@ -13,31 +13,31 @@ import (
 )
 
 type FileStore struct {
-	Name       string
-	Path       string
-	FileSystem afero.Fs
+	name       string
+	path       string
+	fileSystem afero.Fs
 }
 
 func NewFileStore(name string, path string, fileSystem afero.Fs) *FileStore {
 	return &FileStore{
-		Name:       name,
-		Path:       path,
-		FileSystem: fileSystem,
+		name:       name,
+		path:       path,
+		fileSystem: fileSystem,
 	}
 }
 
-func (config *FileStore) GetName() string {
-	return config.Name
+func (config *FileStore) Name() string {
+	return config.name
 }
 
-func (config *FileStore) GetType() string {
+func (config *FileStore) Type() string {
 	return "file"
 }
 
 func (fileStore *FileStore) GetByName(key string) (store.Data, error) {
 
 	// read the file store config as bytes
-	data, err := afero.ReadFile(fileStore.FileSystem, fileStore.Path)
+	data, err := afero.ReadFile(fileStore.fileSystem, fileStore.path)
 
 	// read the document
 	document := make(map[interface{}]interface{})
@@ -82,7 +82,7 @@ func (config *FileStore) Put(key string, value string) (string, error) {
 func readAllBytes(config *FileStore) (*[]byte, error) {
 
 	// open the file and defer close
-	file, err := config.FileSystem.Open(config.Path)
+	file, err := config.fileSystem.Open(config.path)
 	defer file.Close()
 	if err != nil {
 		return nil, err

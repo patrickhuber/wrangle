@@ -59,13 +59,13 @@ ssh:
 
 	t.Run("CanGetName", func(t *testing.T) {
 		require := require.New(t)
-		name := fileStore.GetName()
+		name := fileStore.Name()
 		require.Equal(name, fileStoreName)
 	})
 
 	t.Run("CanGetType", func(t *testing.T) {
 		require := require.New(t)
-		require.Equal("file", fileStore.GetType())
+		require.Equal("file", fileStore.Type())
 	})
 
 	t.Run("CanGetValueByName", func(t *testing.T) {

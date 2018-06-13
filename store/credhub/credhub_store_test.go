@@ -44,14 +44,14 @@ func NewDummyCredHub(server string, responseString string) (*credhubcli.CredHub,
 	return credhubcli.New(server, credhubcli.Auth(dummyAuth.Builder()))
 }
 
-func NewDummyCredHubStore(name string, server string, responseString string) (*CredHubStore, error) {
+func NewDummyCredHubStore(name string, server string, responseString string) (*credHubStore, error) {
 	ch, err := NewDummyCredHub(server, responseString)
 	if err != nil {
 		return nil, err
 	}
-	return &CredHubStore{
-		CredHub: ch,
-		Name:    name,
+	return &credHubStore{
+		credHub: ch,
+		name:    name,
 	}, nil
 }
 

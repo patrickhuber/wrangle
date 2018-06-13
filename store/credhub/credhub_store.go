@@ -10,12 +10,12 @@ import (
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
 )
 
-type CredHubStore struct {
-	Name    string
-	CredHub *credhubcli.CredHub
+type credHubStore struct {
+	name    string
+	credHub *credhubcli.CredHub
 }
 
-func NewCredHubStore(config *CredHubStoreConfig) (*CredHubStore, error) {
+func NewCredHubStore(config *CredHubStoreConfig) (*credHubStore, error) {
 	if config.ClientID == "" {
 		return nil, errors.New("ClientID is required")
 	}
@@ -31,9 +31,9 @@ func NewCredHubStore(config *CredHubStoreConfig) (*CredHubStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CredHubStore{
-		CredHub: ch,
-		Name:    config.Name,
+	return &credHubStore{
+		credHub: ch,
+		name:    config.Name,
 	}, nil
 }
 
@@ -50,12 +50,12 @@ func createOptions(config *CredHubStoreConfig) []credhubcli.Option {
 	return options
 }
 
-func (credHubStore *CredHubStore) GetName() string {
-	return credHubStore.Name
+func (s *credHubStore) Name() string {
+	return s.name
 }
 
-func (credHubStore *CredHubStore) GetByName(name string) (store.Data, error) {
-	ch := credHubStore.CredHub
+func (s *credHubStore) GetByName(name string) (store.Data, error) {
+	ch := s.credHub
 	cred, err := ch.GetLatestVersion(name)
 	if err != nil {
 		return nil, err
@@ -66,16 +66,16 @@ func (credHubStore *CredHubStore) GetByName(name string) (store.Data, error) {
 		cred.Value), nil
 }
 
-func (credHubStore *CredHubStore) Delete(name string) (int, error) {
+func (s *credHubStore) Delete(name string) (int, error) {
 	return 0, fmt.Errorf("not implemented")
 }
 
-func (credHubStore *CredHubStore) GetType() string {
+func (s *credHubStore) Type() string {
 	return "credhub"
 }
 
-func (credHubStore *CredHubStore) Put(name string, value string) (string, error) {
-	ch := credHubStore.CredHub
+func (s *credHubStore) Put(name string, value string) (string, error) {
+	ch := s.credHub
 	_, err := ch.SetCredential(name, "value", value, credhubcli.Overwrite)
 	if err != nil {
 		return "", err

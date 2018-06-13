@@ -14,12 +14,12 @@ func TestMemoryStore(t *testing.T) {
 
 	t.Run("CanGetName", func(t *testing.T) {
 		require := require.New(t)
-		require.Equal(memoryStoreName, memoryStore.GetName())
+		require.Equal(memoryStoreName, memoryStore.Name())
 	})
 
 	t.Run("CanGetType", func(t *testing.T) {
 		require := require.New(t)
-		require.Equal("memory", memoryStore.GetType())
+		require.Equal("memory", memoryStore.Type())
 	})
 
 	t.Run("CanPutValue", func(t *testing.T) {
