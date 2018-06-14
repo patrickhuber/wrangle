@@ -6,7 +6,7 @@ type storeVariableResolver struct {
 	store Store
 }
 
-// NewStoreVariableResolver returns new store variable resolver
+// NewStoreVariableResolver returns a new variable resolver that resolves variables from a store
 func NewStoreVariableResolver(store Store) templates.VariableResolver {
 	return &storeVariableResolver{store: store}
 }
