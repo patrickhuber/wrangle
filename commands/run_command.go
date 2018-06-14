@@ -9,7 +9,6 @@ import (
 
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/spf13/afero"
-	"github.com/urfave/cli"
 )
 
 type RunCommand struct {
@@ -18,6 +17,7 @@ type RunCommand struct {
 	processFactory     processes.ProcessFactory
 }
 
+// NewRunCommand - creates a new run command
 func NewRunCommand(
 	configStoreManager store.Manager,
 	fileSystem afero.Fs,
@@ -28,28 +28,25 @@ func NewRunCommand(
 		processFactory:     processFactory}
 }
 
-func (cmd *RunCommand) ExecuteCommand(c *cli.Context) error {
-	configFile := c.GlobalString("config")
-	processName := c.String("name")
-	environmenName := c.String("environment")
+func (cmd *RunCommand) ExecuteCommand(params RunCommandParams) error {
 
-	if processName == "" {
+	if params.ProcessName() == "" {
 		return errors.New("process name is required for the run command")
 	}
 
-	if environmenName == "" {
+	if params.EnvironmentName() == "" {
 		return errors.New("environment name is required for the run command")
 	}
 
 	configLoader := config.NewConfigLoader(cmd.fileSystem)
-	cfg, err := configLoader.Load(configFile)
+	cfg, err := configLoader.Load(params.ConfigFile())
 	if err != nil {
 		return err
 	}
 	if cfg == nil {
 		return errors.New("config is null")
 	}
-	return cmd.executeConfigItem(cfg, processName, environmenName)
+	return cmd.executeConfigItem(cfg, params.ProcessName(), params.EnvironmentName())
 }
 
 func (cmd *RunCommand) executeConfigItem(cfg *config.Config, processName string, environmentName string) error {

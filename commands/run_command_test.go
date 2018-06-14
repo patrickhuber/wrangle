@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"flag"
 	"strings"
 	"testing"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
-	"github.com/urfave/cli"
 )
 
 func TestRunCommand(t *testing.T) {
@@ -36,19 +34,9 @@ processes:
 		configStoreManager := store.NewManager()
 		runCommand := NewRunCommand(configStoreManager, fileSystem, processes.NewOsProcessFactory())
 
-		// global context
-		globalSet := flag.NewFlagSet("global", 0)
-		globalSet.String("config", "/config", "")
-		globalContext := cli.NewContext(nil, globalSet, nil)
-
-		// context
-		commandSet := flag.NewFlagSet("cmd", 0)
-		commandSet.String("name", "go", "")
-		commandSet.String("environment", "lab", "")
-		context := cli.NewContext(nil, commandSet, globalContext)
-
 		// run the run command
-		err = runCommand.ExecuteCommand(context)
+		err = runCommand.ExecuteCommand(
+			NewRunCommandParams("/config", "go", "lab"))
 		r.Nil(err)
 	})
 }
