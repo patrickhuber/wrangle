@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
 
 	"github.com/patrickhuber/cli-mgr/config"
@@ -14,13 +15,13 @@ import (
 type RunCommand struct {
 	configStoreManager store.Manager
 	fileSystem         afero.Fs
-	processFactory     ProcessFactory
+	processFactory     processes.ProcessFactory
 }
 
 func NewRunCommand(
 	configStoreManager store.Manager,
 	fileSystem afero.Fs,
-	processFactory ProcessFactory) *RunCommand {
+	processFactory processes.ProcessFactory) *RunCommand {
 	return &RunCommand{
 		configStoreManager: configStoreManager,
 		fileSystem:         fileSystem,

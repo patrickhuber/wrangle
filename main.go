@@ -10,6 +10,7 @@ import (
 	"github.com/patrickhuber/cli-mgr/commands"
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/option"
+	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
 
 	credhub "github.com/patrickhuber/cli-mgr/store/credhub"
@@ -45,7 +46,7 @@ func main() {
 	runCommand := commands.NewRunCommand(
 		configStoreManager,
 		fileSystem,
-		commands.NewOsProcessFactory())
+		processes.NewOsProcessFactory())
 
 	envCommand := commands.NewEnvCommand(
 		fileSystem)

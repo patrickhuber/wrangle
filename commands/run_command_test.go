@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
@@ -33,7 +34,7 @@ processes:
 
 		// create run command
 		configStoreManager := store.NewManager()
-		runCommand := NewRunCommand(configStoreManager, fileSystem, NewOsProcessFactory())
+		runCommand := NewRunCommand(configStoreManager, fileSystem, processes.NewOsProcessFactory())
 
 		// global context
 		globalSet := flag.NewFlagSet("global", 0)

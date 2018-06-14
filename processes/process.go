@@ -1,4 +1,4 @@
-package commands
+package processes
 
 import (
 	"os"
