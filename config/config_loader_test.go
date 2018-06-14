@@ -31,7 +31,7 @@ func TestConfigLoader(t *testing.T) {
 		r := require.New(t)
 		configFilePath := "/test/config.yml"
 		fileSystem := afero.NewMemMapFs()
-		loader := ConfigLoader{FileSystem: fileSystem}
+		loader := NewConfigLoader(fileSystem)
 		cfg, err := loader.Load(configFilePath)
 		r.Nil(err)
 		r.NotNil(cfg)
@@ -63,7 +63,7 @@ processes:
 
 	afero.WriteFile(fileSystem, configFilePath, []byte(content), 0644)
 
-	loader := ConfigLoader{FileSystem: fileSystem}
+	loader := NewConfigLoader(fileSystem)
 
 	cfg, err := loader.Load(configFilePath)
 	require.Nil(err)

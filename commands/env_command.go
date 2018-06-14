@@ -33,7 +33,7 @@ func (cmd *EnvCommand) ExecuteCommand(c *cli.Context) error {
 		return errors.New("environment name is required for the run command")
 	}
 
-	configLoader := config.ConfigLoader{FileSystem: cmd.fileSystem}
+	configLoader := config.NewConfigLoader(cmd.fileSystem)
 	cfg, err := configLoader.Load(configFile)
 	if err != nil {
 		return err

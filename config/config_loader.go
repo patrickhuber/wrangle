@@ -10,13 +10,27 @@ import (
 )
 
 // ConfigLoader - loads a config
-type ConfigLoader struct {
-	FileSystem afero.Fs
+type configLoader struct {
+	fileSystem afero.Fs
 }
 
-func (loader *ConfigLoader) Load(configPath string) (*Config, error) {
+type ConfigLoader interface {
+	FileSystem() afero.Fs
+	Load(configPath string) (*Config, error)
+}
+
+// NewConfigLoader creates a new config loader
+func NewConfigLoader(fileSystem afero.Fs) ConfigLoader {
+	return &configLoader{fileSystem: fileSystem}
+}
+
+func (loader *configLoader) FileSystem() afero.Fs {
+	return loader.fileSystem
+}
+
+func (loader *configLoader) Load(configPath string) (*Config, error) {
 	loader.ensureExists(configPath)
-	data, err := afero.ReadFile(loader.FileSystem, configPath)
+	data, err := afero.ReadFile(loader.fileSystem, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -25,6 +39,7 @@ func (loader *ConfigLoader) Load(configPath string) (*Config, error) {
 	return config, err
 }
 
+// GetConfigPath gets the config path from the options
 func GetConfigPath(op *option.Options) (string, error) {
 	if op.ConfigPath != "" {
 		return op.ConfigPath, nil
@@ -37,8 +52,8 @@ func GetConfigPath(op *option.Options) (string, error) {
 	return configDir, nil
 }
 
-func (loader *ConfigLoader) ensureExists(configFile string) error {
-	fileSystem := loader.FileSystem
+func (loader *configLoader) ensureExists(configFile string) error {
+	fileSystem := loader.FileSystem()
 	ok, err := afero.Exists(fileSystem, configFile)
 	if err != nil {
 		return err
