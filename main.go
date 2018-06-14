@@ -24,7 +24,7 @@ func main() {
 
 	fileSystem := afero.NewOsFs()
 
-	configPath, err := config.GetConfigPath(&option.Options{})
+	defaultConfigPath, err := config.GetConfigPath(&option.Options{})
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -39,7 +39,7 @@ func main() {
 			Name:   "config, c",
 			Usage:  "Load configuration from `FILE`",
 			EnvVar: "CLI_MGR_CONFIG",
-			Value:  configPath,
+			Value:  defaultConfigPath,
 		},
 	}
 	runCommand := commands.NewRunCommand(
@@ -47,12 +47,14 @@ func main() {
 		fileSystem,
 		commands.NewOsProcessFactory())
 
+	envCommand := commands.NewEnvCommand(
+		fileSystem)
+
 	app.Commands = []cli.Command{
 		{
 			Name:    "run",
 			Aliases: []string{"r"},
 			Usage:   "run a command",
-			Action:  runCommand.ExecuteCommand,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "name, n",
@@ -63,6 +65,7 @@ func main() {
 					Usage: "Use environment named `ENVIRONMENT`",
 				},
 			},
+			Action: runCommand.ExecuteCommand,
 		},
 		{
 			Name:    "env",
@@ -78,6 +81,7 @@ func main() {
 					Usage: "Use environment named `ENVIRONMENT`",
 				},
 			},
+			Action: envCommand.ExecuteCommand,
 		},
 	}
 

@@ -1,13 +1,13 @@
-package templates
+package store
 
-import "github.com/patrickhuber/cli-mgr/store"
+import "github.com/patrickhuber/cli-mgr/templates"
 
 type storeVariableResolver struct {
-	store store.Store
+	store Store
 }
 
 // NewStoreVariableResolver returns new store variable resolver
-func NewStoreVariableResolver(store store.Store) VariableResolver {
+func NewStoreVariableResolver(store Store) templates.VariableResolver {
 	return &storeVariableResolver{store: store}
 }
 
