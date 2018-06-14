@@ -88,7 +88,13 @@ func main() {
 					Usage: "Use environment named `ENVIRONMENT`",
 				},
 			},
-			Action: envCommand.ExecuteCommand,
+			Action: func(context *cli.Context) error {
+				configFile := context.GlobalString("config")
+				processName := context.String("name")
+				environmentName := context.String("environment")
+				params := commands.NewRunCommandParams(configFile, processName, environmentName)
+				return envCommand.ExecuteCommand(params)
+			},
 		},
 	}
 

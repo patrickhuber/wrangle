@@ -7,7 +7,6 @@ import (
 
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/spf13/afero"
-	"github.com/urfave/cli"
 )
 
 type EnvCommand struct {
@@ -19,11 +18,11 @@ func NewEnvCommand(fileSystem afero.Fs) *EnvCommand {
 		fileSystem: fileSystem}
 }
 
-func (cmd *EnvCommand) ExecuteCommand(c *cli.Context) error {
+func (cmd *EnvCommand) ExecuteCommand(params RunCommandParams) error {
 
-	configFile := c.GlobalString("config")
-	processName := c.String("name")
-	environmenName := c.String("environment")
+	configFile := params.ConfigFile()
+	processName := params.ProcessName()
+	environmenName := params.EnvironmentName()
 
 	if processName == "" {
 		return errors.New("process name is required for the run command")
