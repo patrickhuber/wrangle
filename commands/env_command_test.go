@@ -30,7 +30,8 @@ func TestEnvCommand(t *testing.T) {
 		// create and run command
 		cmd := NewEnvCommand(manager, fileSystem, "linux", console)
 		runCommandParams := NewRunCommandParams("/config", "echo", "lab")
-		cmd.ExecuteCommand(runCommandParams)
+		err := cmd.ExecuteCommand(runCommandParams)
+		r.Nil(err)
 
 		// verify output
 		b, ok := console.Out().(*bytes.Buffer)
