@@ -3,19 +3,31 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"runtime"
 
 	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/cli-mgr/ui"
 	"github.com/spf13/afero"
 )
 
 type EnvCommand struct {
 	fileSystem afero.Fs
+	platform   string
+	console    ui.Console
+	manager    store.Manager
 }
 
-func NewEnvCommand(fileSystem afero.Fs) *EnvCommand {
+// NewEnvCommand creates a new environment command
+func NewEnvCommand(
+	manager store.Manager,
+	fileSystem afero.Fs,
+	platform string,
+	console ui.Console) *EnvCommand {
 	return &EnvCommand{
-		fileSystem: fileSystem}
+		manager:    manager,
+		fileSystem: fileSystem,
+		platform:   platform,
+		console:    console}
 }
 
 func (cmd *EnvCommand) ExecuteCommand(params RunCommandParams) error {
@@ -44,8 +56,8 @@ func (cmd *EnvCommand) ExecuteCommand(params RunCommandParams) error {
 	if err != nil {
 		return err
 	}
-	renderer := NewEvnVarRenderer(runtime.GOOS)
-	fmt.Println(renderer.RenderEnvironment(variables))
+	renderer := NewEvnVarRenderer(cmd.platform)
+	fmt.Fprint(cmd.console.Out(), renderer.RenderEnvironment(variables))
 	return nil
 }
 

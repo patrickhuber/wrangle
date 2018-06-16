@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/spf13/afero"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/patrickhuber/cli-mgr/option"
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/cli-mgr/ui"
 
 	credhub "github.com/patrickhuber/cli-mgr/store/credhub"
 	file "github.com/patrickhuber/cli-mgr/store/file"
@@ -25,13 +27,16 @@ func main() {
 
 	fileSystem := afero.NewOsFs()
 	processFactory := processes.NewOsProcessFactory()
+	console := ui.NewOSConsole()
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template
 	app, err := createCliApplication(
 		configStoreManager,
 		fileSystem,
-		processFactory)
+		processFactory,
+		console,
+		runtime.GOOS)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -48,6 +53,8 @@ func createCliApplication(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	processFactory processes.ProcessFactory,
+	console ui.Console,
+	platform string,
 ) (*cli.App, error) {
 
 	defaultConfigPath, err := config.GetConfigPath(&option.Options{})
@@ -57,6 +64,9 @@ func createCliApplication(
 
 	app := cli.NewApp()
 	app.Usage = "a cli management tool"
+	app.Writer = console.Out()
+	app.ErrWriter = console.Error()
+
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "config, c",
@@ -68,12 +78,15 @@ func createCliApplication(
 
 	app.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory),
-		*createEnvCommand(fileSystem),
+		*createEnvCommand(manager, fileSystem, platform, console),
 	}
 	return app, nil
 }
 
-func createRunCommand(manager store.Manager, fileSystem afero.Fs, processFactory processes.ProcessFactory) *cli.Command {
+func createRunCommand(
+	manager store.Manager,
+	fileSystem afero.Fs,
+	processFactory processes.ProcessFactory) *cli.Command {
 	runCommand := commands.NewRunCommand(
 		manager,
 		fileSystem,
@@ -103,10 +116,17 @@ func createRunCommand(manager store.Manager, fileSystem afero.Fs, processFactory
 	}
 }
 
-func createEnvCommand(fileSystem afero.Fs) *cli.Command {
+func createEnvCommand(
+	manager store.Manager,
+	fileSystem afero.Fs,
+	platform string,
+	console ui.Console) *cli.Command {
 
 	envCommand := commands.NewEnvCommand(
-		fileSystem)
+		manager,
+		fileSystem,
+		platform,
+		console)
 
 	return &cli.Command{
 		Name:    "env",

@@ -5,13 +5,19 @@ import (
 	"github.com/patrickhuber/cli-mgr/store"
 )
 
-type MemoryStoreProvider struct {
+type memoryStoreProvider struct {
 }
 
-func (*MemoryStoreProvider) GetName() string {
-	return ""
+// NewMemoryStoreProvider creates a new memory store provider
+func NewMemoryStoreProvider() store.Provider {
+	return &memoryStoreProvider{}
 }
 
-func (*MemoryStoreProvider) Create(configSource *config.ConfigSource) (store.Store, error) {
-	return nil, nil
+func (*memoryStoreProvider) GetName() string {
+	return "memory"
+}
+
+func (*memoryStoreProvider) Create(configSource *config.ConfigSource) (store.Store, error) {
+
+	return NewMemoryStore(configSource.Name), nil
 }
