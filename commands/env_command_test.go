@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,6 +20,20 @@ func TestEnvCommand(t *testing.T) {
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
+
+		// create config file
+		configFileContent := `
+---
+config-sources:
+processes:
+- name: echo
+  environments:
+  - name: lab
+    process: echo
+    env:
+      CLI_MGR_TEST: value`
+		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
+		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 
 		// create store manager
 		manager := store.NewManager()

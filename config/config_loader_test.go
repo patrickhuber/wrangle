@@ -3,6 +3,7 @@ package config
 import (
 	"os/user"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -58,7 +59,10 @@ processes:
     process: go
     args:
     - version
+    env:
+      TEST: value
 `
+	content = strings.Replace(content, "\t", "  ", -1)
 	fileSystem := afero.NewMemMapFs()
 
 	afero.WriteFile(fileSystem, configFilePath, []byte(content), 0644)
