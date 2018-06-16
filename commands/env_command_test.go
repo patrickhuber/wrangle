@@ -16,13 +16,23 @@ import (
 func TestEnvCommand(t *testing.T) {
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
+
+		// create filesystem
 		fileSystem := afero.NewMemMapFs()
+
+		// create store manager
 		manager := store.NewManager()
-		console := ui.NewMemoryConsole()
 		manager.Register(memory.NewMemoryStoreProvider())
+
+		// create console
+		console := ui.NewMemoryConsole()
+
+		// create and run command
 		cmd := NewEnvCommand(manager, fileSystem, "linux", console)
 		runCommandParams := NewRunCommandParams("/config", "echo", "lab")
 		cmd.ExecuteCommand(runCommandParams)
+
+		// verify output
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)

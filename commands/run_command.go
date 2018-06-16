@@ -11,7 +11,12 @@ import (
 	"github.com/spf13/afero"
 )
 
-type RunCommand struct {
+// RunCommand represents a run subcommand for the application
+type RunCommand interface {
+	ExecuteCommand(params RunCommandParams) error
+}
+
+type runCommand struct {
 	configStoreManager store.Manager
 	fileSystem         afero.Fs
 	processFactory     processes.ProcessFactory
@@ -21,14 +26,14 @@ type RunCommand struct {
 func NewRunCommand(
 	configStoreManager store.Manager,
 	fileSystem afero.Fs,
-	processFactory processes.ProcessFactory) *RunCommand {
-	return &RunCommand{
+	processFactory processes.ProcessFactory) RunCommand {
+	return &runCommand{
 		configStoreManager: configStoreManager,
 		fileSystem:         fileSystem,
 		processFactory:     processFactory}
 }
 
-func (cmd *RunCommand) ExecuteCommand(params RunCommandParams) error {
+func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 
 	if params.ProcessName() == "" {
 		return errors.New("process name is required for the run command")
@@ -49,7 +54,7 @@ func (cmd *RunCommand) ExecuteCommand(params RunCommandParams) error {
 	return cmd.executeConfigItem(cfg, params.ProcessName(), params.EnvironmentName())
 }
 
-func (cmd *RunCommand) executeConfigItem(cfg *config.Config, processName string, environmentName string) error {
+func (cmd *runCommand) executeConfigItem(cfg *config.Config, processName string, environmentName string) error {
 	for _, p := range cfg.Processes {
 		if p.Name == processName {
 			for _, e := range p.Environments {
@@ -63,7 +68,7 @@ func (cmd *RunCommand) executeConfigItem(cfg *config.Config, processName string,
 	return fmt.Errorf("No Processes found in config that match '%s'", processName)
 }
 
-func (cmd *RunCommand) execute(processEnvironmentConfig *config.Environment) error {
+func (cmd *runCommand) execute(processEnvironmentConfig *config.Environment) error {
 	process := cmd.processFactory.Create(
 		processEnvironmentConfig.Process,
 		processEnvironmentConfig.Args,
