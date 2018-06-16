@@ -24,15 +24,37 @@ func main() {
 	validateConfigStoreManager(configStoreManager)
 
 	fileSystem := afero.NewOsFs()
+	processFactory := processes.NewOsProcessFactory()
 
-	defaultConfigPath, err := config.GetConfigPath(&option.Options{})
+	// creates the app
+	// see https://github.com/urfave/cli#customization-1 for template
+	app, err := createCliApplication(
+		configStoreManager,
+		fileSystem,
+		processFactory)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	// creates the app
-	// see https://github.com/urfave/cli#customization-1 for template
+	err = app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+}
+
+func createCliApplication(
+	manager store.Manager,
+	fileSystem afero.Fs,
+	processFactory processes.ProcessFactory,
+) (*cli.App, error) {
+
+	defaultConfigPath, err := config.GetConfigPath(&option.Options{})
+	if err != nil {
+		return nil, err
+	}
+
 	app := cli.NewApp()
 	app.Usage = "a cli management tool"
 	app.Flags = []cli.Flag{
@@ -43,65 +65,70 @@ func main() {
 			Value:  defaultConfigPath,
 		},
 	}
+
+	app.Commands = []cli.Command{
+		*createRunCommand(manager, fileSystem, processFactory),
+		*createEnvCommand(fileSystem),
+	}
+	return app, nil
+}
+
+func createRunCommand(manager store.Manager, fileSystem afero.Fs, processFactory processes.ProcessFactory) *cli.Command {
 	runCommand := commands.NewRunCommand(
-		configStoreManager,
+		manager,
 		fileSystem,
-		processes.NewOsProcessFactory())
+		processFactory)
+
+	return &cli.Command{
+		Name:    "run",
+		Aliases: []string{"r"},
+		Usage:   "run a command",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "name, n",
+				Usage: "Execute command named `NAME`",
+			},
+			cli.StringFlag{
+				Name:  "environment, e",
+				Usage: "Use environment named `ENVIRONMENT`",
+			},
+		},
+		Action: func(context *cli.Context) error {
+			configFile := context.GlobalString("config")
+			processName := context.String("name")
+			environmentName := context.String("environment")
+			params := commands.NewRunCommandParams(configFile, processName, environmentName)
+			return runCommand.ExecuteCommand(params)
+		},
+	}
+}
+
+func createEnvCommand(fileSystem afero.Fs) *cli.Command {
 
 	envCommand := commands.NewEnvCommand(
 		fileSystem)
 
-	app.Commands = []cli.Command{
-		{
-			Name:    "run",
-			Aliases: []string{"r"},
-			Usage:   "run a command",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "name, n",
-					Usage: "Execute command named `NAME`",
-				},
-				cli.StringFlag{
-					Name:  "environment, e",
-					Usage: "Use environment named `ENVIRONMENT`",
-				},
+	return &cli.Command{
+		Name:    "env",
+		Aliases: []string{"e"},
+		Usage:   "print command environemnt variables",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "name, n",
+				Usage: "Execute command named `NAME`",
 			},
-			Action: func(context *cli.Context) error {
-				configFile := context.GlobalString("config")
-				processName := context.String("name")
-				environmentName := context.String("environment")
-				params := commands.NewRunCommandParams(configFile, processName, environmentName)
-				return runCommand.ExecuteCommand(params)
+			cli.StringFlag{
+				Name:  "environment, e",
+				Usage: "Use environment named `ENVIRONMENT`",
 			},
 		},
-		{
-			Name:    "env",
-			Aliases: []string{"e"},
-			Usage:   "print command environemnt variables",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "name, n",
-					Usage: "Execute command named `NAME`",
-				},
-				cli.StringFlag{
-					Name:  "environment, e",
-					Usage: "Use environment named `ENVIRONMENT`",
-				},
-			},
-			Action: func(context *cli.Context) error {
-				configFile := context.GlobalString("config")
-				processName := context.String("name")
-				environmentName := context.String("environment")
-				params := commands.NewRunCommandParams(configFile, processName, environmentName)
-				return envCommand.ExecuteCommand(params)
-			},
+		Action: func(context *cli.Context) error {
+			configFile := context.GlobalString("config")
+			processName := context.String("name")
+			environmentName := context.String("environment")
+			params := commands.NewRunCommandParams(configFile, processName, environmentName)
+			return envCommand.ExecuteCommand(params)
 		},
-	}
-
-	err = app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
 	}
 }
 
