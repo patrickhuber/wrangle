@@ -27,10 +27,10 @@ type application struct {
 }
 
 func main() {
-	configStoreManager := createConfigStoreManager()
+	fileSystem := afero.NewOsFs()
+	configStoreManager := createConfigStoreManager(fileSystem)
 	validateConfigStoreManager(configStoreManager)
 
-	fileSystem := afero.NewOsFs()
 	processFactory := processes.NewOsProcessFactory()
 	console := ui.NewOSConsole()
 
@@ -173,10 +173,10 @@ func createEnvCommand(
 	}
 }
 
-func createConfigStoreManager() store.Manager {
+func createConfigStoreManager(fileSystem afero.Fs) store.Manager {
 	manager := store.NewManager()
 	manager.Register(credhub.NewCredHubStoreProvider())
-	manager.Register(file.NewFileStoreProvider())
+	manager.Register(file.NewFileStoreProvider(fileSystem))
 	return manager
 }
 

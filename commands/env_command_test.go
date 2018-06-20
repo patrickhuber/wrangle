@@ -9,7 +9,6 @@ import (
 
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/patrickhuber/cli-mgr/store/file"
-	"github.com/patrickhuber/cli-mgr/store/memory"
 
 	"github.com/patrickhuber/cli-mgr/ui"
 	"github.com/spf13/afero"
@@ -38,7 +37,7 @@ processes:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider())
+		manager.Register(file.NewFileStoreProvider(fileSystem))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -82,7 +81,7 @@ processes:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(memory.NewMemoryStoreProvider())
+		manager.Register(file.NewFileStoreProvider(fileSystem))
 
 		// create console
 		console := ui.NewMemoryConsole()

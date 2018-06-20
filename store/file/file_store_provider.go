@@ -7,11 +7,12 @@ import (
 )
 
 type fileStoreProvider struct {
+	fileSystem afero.Fs
 }
 
 // NewFileStoreProvider creates a new file store provider which implements the store.Provider interface
-func NewFileStoreProvider() store.Provider {
-	return &fileStoreProvider{}
+func NewFileStoreProvider(fileSystem afero.Fs) store.Provider {
+	return &fileStoreProvider{fileSystem: fileSystem}
 }
 
 func (provider *fileStoreProvider) GetName() string {
@@ -23,6 +24,6 @@ func (provider *fileStoreProvider) Create(configSource *config.ConfigSource) (st
 	if err != nil {
 		return nil, err
 	}
-	store := NewFileStore(cfg.Name, cfg.Path, afero.NewOsFs())
+	store := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem)
 	return store, nil
 }
