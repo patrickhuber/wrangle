@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/cli-mgr/store/file"
 	"github.com/patrickhuber/cli-mgr/store/memory"
 
 	"github.com/patrickhuber/cli-mgr/ui"
@@ -37,7 +38,7 @@ processes:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(memory.NewMemoryStoreProvider())
+		manager.Register(file.NewFileStoreProvider())
 
 		// create console
 		console := ui.NewMemoryConsole()

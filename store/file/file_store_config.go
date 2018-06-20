@@ -2,13 +2,13 @@ package file
 
 import "github.com/patrickhuber/cli-mgr/config"
 
-type FileConfigStoreConfig struct {
+type FileStoreConfig struct {
 	Name string
 	Path string
 }
 
-func NewFileConfigStoreConfig(configSource *config.ConfigSource) (*FileConfigStoreConfig, error) {
-	cfg := &FileConfigStoreConfig{}
+func NewFileStoreConfig(configSource *config.ConfigSource) (*FileStoreConfig, error) {
+	cfg := &FileStoreConfig{}
 	if value, ok := configSource.Params["path"]; ok {
 		cfg.Path = value
 	}

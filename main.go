@@ -175,8 +175,8 @@ func createEnvCommand(
 
 func createConfigStoreManager() store.Manager {
 	manager := store.NewManager()
-	manager.Register(&credhub.CredHubConfigStoreProvider{})
-	manager.Register(&file.FileConfigStoreProvider{})
+	manager.Register(credhub.NewCredHubStoreProvider())
+	manager.Register(file.NewFileStoreProvider())
 	return manager
 }
 

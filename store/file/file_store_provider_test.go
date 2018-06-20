@@ -7,17 +7,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFileConfigStoreProvider(t *testing.T) {
+func TestFileStoreProvider(t *testing.T) {
 	t.Run("CanGetByName", func(t *testing.T) {
 		r := require.New(t)
-		provider := FileConfigStoreProvider{}
+		provider := NewFileStoreProvider()
 		name := provider.GetName()
 		r.Equal("file", name)
 	})
 
 	t.Run("CanCreate", func(t *testing.T) {
 		r := require.New(t)
-		provider := FileConfigStoreProvider{}
+		provider := NewFileStoreProvider()
 		store, err := provider.Create(&config.ConfigSource{Name: ""})
 		r.Nil(err)
 		r.NotNil(store)

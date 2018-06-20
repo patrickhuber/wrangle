@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFileConfigStoreConfig(t *testing.T) {
+func TestFileStoreConfig(t *testing.T) {
 	t.Run("CanMapNameAndPath", func(t *testing.T) {
 		r := require.New(t)
 		configSource := &config.ConfigSource{
@@ -16,7 +16,7 @@ func TestFileConfigStoreConfig(t *testing.T) {
 				"path": "/test",
 			},
 		}
-		cfg, err := NewFileConfigStoreConfig(configSource)
+		cfg, err := NewFileStoreConfig(configSource)
 		r.Nil(err)
 		r.NotNil(cfg)
 		r.Equal("name", cfg.Name)
