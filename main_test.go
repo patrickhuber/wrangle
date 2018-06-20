@@ -2,11 +2,9 @@ package main
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
-	"gopkg.in/yaml.v2"
-
-	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/ui"
 	"github.com/stretchr/testify/require"
@@ -29,44 +27,21 @@ func TestMain(t *testing.T) {
 		processFactory := processes.NewOsProcessFactory() // change to fake process factory?
 		console := ui.NewMemoryConsole()
 
-		config := config.Config{
-			ConfigSources: []config.ConfigSource{
-				{
-					Name:             "test",
-					ConfigSourceType: "file",
-					Params: map[string]string{
-						"path": "/store1",
-					},
-				},
-				{
-					Name:             "test",
-					ConfigSourceType: "file",
-					Params: map[string]string{
-						"path": "/store2",
-					},
-				},
-			},
-			Processes: []config.Process{
-				{
-					Name: "echo",
-					Environments: []config.Environment{
-						{
-							Name:    "lab",
-							Config:  "store1",
-							Process: "echo",
-							Vars: map[string]string{
-								"CLI_MGR_TEST": "((key))",
-							},
-						},
-					},
-				},
-			},
-		}
-		configFileContent, err := yaml.Marshal(config)
-		r.Nil(err)
+		// create config file
+		configFileContent := `
+---
+config-sources:
+processes:
+- name: echo
+  environments:
+  - name: lab
+    process: echo
+    env:
+      CLI_MGR_TEST: ((key1))`
+		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
 
 		// create files
-		err = afero.WriteFile(fileSystem, "/config", configFileContent, 0644)
+		err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 		r.Nil(err)
 
 		err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((key1))"), 0644)
