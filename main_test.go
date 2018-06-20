@@ -31,6 +31,12 @@ func TestMain(t *testing.T) {
 		configFileContent := `
 ---
 config-sources:
+- name: store1
+  type: file
+  path: /store1
+- name: store2
+  type: file
+  path: /store2
 processes:
 - name: echo
   environments:
