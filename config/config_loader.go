@@ -39,17 +39,22 @@ func (loader *configLoader) Load(configPath string) (*Config, error) {
 	return config, err
 }
 
-// GetConfigPath gets the config path from the options
-func GetConfigPath(op *option.Options) (string, error) {
-	if op.ConfigPath != "" {
-		return op.ConfigPath, nil
-	}
+// GetDefaultConfigPath returns the default config path
+func GetDefaultConfigPath() (string, error) {
 	usr, err := user.Current()
 	if err != nil {
 		return "", err
 	}
 	configDir := filepath.Join(usr.HomeDir, ".cli-mgr", "config.yml")
 	return configDir, nil
+}
+
+// GetConfigPath gets the config path from the options
+func GetConfigPath(op *option.Options) (string, error) {
+	if op.ConfigPath != "" {
+		return op.ConfigPath, nil
+	}
+	return GetDefaultConfigPath()
 }
 
 func (loader *configLoader) ensureExists(configFile string) error {

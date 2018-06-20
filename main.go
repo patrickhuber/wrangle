@@ -21,6 +21,11 @@ import (
 	"github.com/urfave/cli"
 )
 
+type application struct {
+	cliApplication *cli.App
+	configuration  *config.Config
+}
+
 func main() {
 	configStoreManager := createConfigStoreManager()
 	validateConfigStoreManager(configStoreManager)
@@ -31,7 +36,7 @@ func main() {
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template
-	app, err := createCliApplication(
+	app, err := createApplication(
 		configStoreManager,
 		fileSystem,
 		processFactory,
@@ -42,32 +47,31 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = app.Run(os.Args)
+	err = app.cliApplication.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 }
 
-func createCliApplication(
+func createApplication(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	processFactory processes.ProcessFactory,
 	console ui.Console,
-	platform string,
-) (*cli.App, error) {
+	platform string) (*application, error) {
 
 	defaultConfigPath, err := config.GetConfigPath(&option.Options{})
 	if err != nil {
 		return nil, err
 	}
 
-	app := cli.NewApp()
-	app.Usage = "a cli management tool"
-	app.Writer = console.Out()
-	app.ErrWriter = console.Error()
+	cliApp := cli.NewApp()
+	cliApp.Usage = "a cli management tool"
+	cliApp.Writer = console.Out()
+	cliApp.ErrWriter = console.Error()
 
-	app.Flags = []cli.Flag{
+	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "config, c",
 			Usage:  "Load configuration from `FILE`",
@@ -76,10 +80,27 @@ func createCliApplication(
 		},
 	}
 
-	app.Commands = []cli.Command{
+	cliApp.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory),
 		*createEnvCommand(manager, fileSystem, platform, console),
 	}
+
+	app := &application{cliApplication: cliApp}
+
+	cliApp.Before = func(context *cli.Context) error {
+		configFile := context.GlobalString("config")
+		if configFile == "" {
+			configFile = defaultConfigPath
+		}
+		configLoader := config.NewConfigLoader(fileSystem)
+		configuration, err := configLoader.Load(configFile)
+		if err != nil {
+			return err
+		}
+		app.configuration = configuration
+		return nil
+	}
+
 	return app, nil
 }
 

@@ -76,7 +76,7 @@ func TestMain(t *testing.T) {
 		r.Nil(err)
 
 		// create cli
-		cli, err := createCliApplication(
+		app, err := createApplication(
 			storeManager,
 			fileSystem,
 			processFactory,
@@ -91,7 +91,7 @@ func TestMain(t *testing.T) {
 			"env",
 			"-n", "echo",
 			"-e", "lab"}
-		err = cli.Run(args)
+		err = app.cliApplication.Run(args)
 		r.Nil(err)
 
 		// get the output, validate the chaining works
