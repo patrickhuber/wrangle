@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/afero"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // ConfigLoader - loads a config
@@ -33,9 +32,7 @@ func (loader *configLoader) Load(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	config := &Config{}
-	err = yaml.UnmarshalStrict([]byte(data), config)
-	return config, err
+	return Serialize(data)
 }
 
 // GetDefaultConfigPath returns the default config path

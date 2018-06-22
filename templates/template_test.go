@@ -18,6 +18,16 @@ func TestTemplate(t *testing.T) {
 		r.Equal("value", document)
 	})
 
+	t.Run("CanEvaluateInt", func(t *testing.T) {
+		r := require.New(t)
+		template := NewTemplate("((key))")
+		resolver, err := newSimpleResolver("key", 1)
+		r.Nil(err)
+		document, err := template.Evaluate(resolver)
+		r.Nil(err)
+		r.Equal(1, document)
+	})
+
 	t.Run("CanEvaluateTwoKeysInString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key)):((other))")

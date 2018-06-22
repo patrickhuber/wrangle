@@ -74,7 +74,10 @@ func (p *pipeline) run(environment *config.Environment) (*config.Environment, er
 
 func (p *pipeline) createResolvers(configName string) ([]templates.VariableResolver, error) {
 	// create an ordered list of config sources based on the dependency order
-	orderedConfigSources := p.createOrderedListOfConfigSources(configName)
+	orderedConfigSources, err := p.createOrderedListOfConfigSources(configName)
+	if err != nil {
+		return nil, err
+	}
 
 	// traverse the list of config sources in reverse order creating resolvers
 	// and using those resolvers on any configuration params
@@ -91,17 +94,26 @@ func (p *pipeline) createResolvers(configName string) ([]templates.VariableResol
 	return resolvers, nil
 }
 
-func (p *pipeline) createOrderedListOfConfigSources(configName string) []*config.ConfigSource {
+func (p *pipeline) createOrderedListOfConfigSources(configName string) ([]*config.ConfigSource, error) {
 	configSourceMap := p.createMapOfConfigSources()
 
 	current := configName
 	orderedConfigSources := make([]*config.ConfigSource, 0)
+	visited := make(map[string]bool)
 	for current != "" {
-		configSource := configSourceMap[current]
+		configSource, ok := configSourceMap[current]
+		if !ok {
+			return nil, fmt.Errorf("unable to find config '%s' in config sources", current)
+		}
 		orderedConfigSources = append(orderedConfigSources, configSource)
+
+		visited[current] = true
+		if v, ok := visited[configSource.Config]; v && ok {
+			return nil, fmt.Errorf("loop in configuration detected for '%s' and '%s'", current, configSource.Config)
+		}
 		current = configSource.Config
 	}
-	return orderedConfigSources
+	return orderedConfigSources, nil
 }
 
 func (p *pipeline) createMapOfConfigSources() map[string]*config.ConfigSource {
@@ -135,7 +147,7 @@ func normalizeToMapStringOfString(document interface{}) (map[string]string, erro
 	case (map[string]interface{}):
 		newMap := make(map[string]string)
 		for k, v := range t {
-			newMap[k] = v.(string)
+			newMap[k] = fmt.Sprintf("%v", v)
 		}
 		return newMap, nil
 	case (map[string]string):
@@ -151,8 +163,8 @@ func normalizeToStringSlice(document interface{}) ([]string, error) {
 		return t, nil
 	case ([]interface{}):
 		slice := make([]string, len(t))
-		for _, item := range t {
-			slice = append(slice, item.(string))
+		for i, item := range t {
+			slice[i] = fmt.Sprintf("%v", item)
 		}
 		return slice, nil
 	}
