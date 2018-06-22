@@ -3,6 +3,7 @@ package file
 import (
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
@@ -22,8 +23,11 @@ func (provider *fileStoreProvider) GetName() string {
 func (provider *fileStoreProvider) Create(configSource *config.ConfigSource) (store.Store, error) {
 	cfg, err := NewFileStoreConfig(configSource)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to create file store config")
 	}
-	store := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem)
+	store, err := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create file store")
+	}
 	return store, nil
 }

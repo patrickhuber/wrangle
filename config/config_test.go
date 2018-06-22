@@ -33,6 +33,8 @@ processes:
 	err := yaml.Unmarshal([]byte(data), &config)
 	require.Nil(err)
 	require.Equal(1, len(config.ConfigSources))
+	require.Equal(1, len(config.ConfigSources[0].Params))
+	require.Equal("value", config.ConfigSources[0].Params["key"])
 	require.Equal(1, len(config.Processes))
 	require.Equal(1, len(config.Processes[0].Environments))
 	require.Equal(1, len(config.Processes[0].Environments[0].Args))

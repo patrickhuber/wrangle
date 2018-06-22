@@ -54,7 +54,8 @@ ssh:
 	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
 	r.Nil(err)
 
-	fileStore := NewFileStore(fileStoreName, "/test", fileSystem)
+	fileStore, err := NewFileStore(fileStoreName, "/test", fileSystem)
+	r.Nil(err)
 	r.NotNil(fileStore)
 
 	t.Run("CanGetName", func(t *testing.T) {

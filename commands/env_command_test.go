@@ -67,14 +67,16 @@ processes:
 config-sources:
 - name: store1
   type: file
-  path: /store1
+  params: 
+    path: /store1
 processes:
 - name: echo
   environments:
   - name: lab
     process: echo
+    config: store1
     env:
-      CLI_MGR_TEST: ((key))`
+      CLI_MGR_TEST: ((/key))`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
 		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 		afero.WriteFile(fileSystem, "/store1", []byte("key: value"), 0644)
@@ -97,5 +99,9 @@ processes:
 		r.True(ok)
 		r.NotNil(b)
 		r.Equal("export CLI_MGR_TEST=value\n", b.String())
+	})
+
+	t.Run("CanChainReplaceVariables", func(t *testing.T) {
+
 	})
 }

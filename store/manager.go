@@ -35,10 +35,10 @@ func (manager *manager) Register(provider Provider) {
 }
 
 func (manager *manager) Create(configSource *config.ConfigSource) (Store, error) {
-	name := configSource.Name
-	provider, ok := manager.Get(name)
+	configSourceType := configSource.ConfigSourceType
+	provider, ok := manager.Get(configSourceType)
 	if !ok {
-		return nil, fmt.Errorf("Unable to find key '%s' in manager.Providers. Did you forget to register it?", name)
+		return nil, fmt.Errorf("Unable to find key '%s' in manager.Providers. Did you forget to register it?", configSourceType)
 	}
 	return provider.Create(configSource)
 }

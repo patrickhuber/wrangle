@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
@@ -46,7 +47,7 @@ func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 	configLoader := config.NewConfigLoader(cmd.fileSystem)
 	cfg, err := configLoader.Load(params.ConfigFile())
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "error loading config from config file '%s'", params.ConfigFile())
 	}
 	if cfg == nil {
 		return errors.New("config is null")

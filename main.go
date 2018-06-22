@@ -10,7 +10,6 @@ import (
 
 	"github.com/patrickhuber/cli-mgr/commands"
 	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/option"
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/patrickhuber/cli-mgr/ui"
@@ -61,7 +60,7 @@ func createApplication(
 	console ui.Console,
 	platform string) (*application, error) {
 
-	defaultConfigPath, err := config.GetConfigPath(&option.Options{})
+	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
 		return nil, err
 	}

@@ -128,4 +128,16 @@ func TestTemplate(t *testing.T) {
 		r.Equal("test", s["one"])
 		r.Equal("other", s["two"])
 	})
+
+	t.Run("CanEvaluateResolverPipeline", func(t *testing.T) {
+		r := require.New(t)
+		template := NewTemplate("((key1))")
+		resolver1, err := newSimpleResolver("key1", "((key2))")
+		r.Nil(err)
+		resolver2, err := newSimpleResolver("key2", "value")
+		r.Nil(err)
+		document, err := template.Evaluate(resolver1, resolver2)
+		r.Nil(err)
+		r.Equal("value", document)
+	})
 }

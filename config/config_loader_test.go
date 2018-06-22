@@ -39,6 +39,23 @@ func TestConfigLoader(t *testing.T) {
 		r.Equal(0, len(cfg.Processes))
 		r.Equal(0, len(cfg.ConfigSources))
 	})
+
+	t.Run("WillFailIfExtraDataPresent", func(t *testing.T) {
+		r := require.New(t)
+		path := "/file"
+		var content = `
+config-sources:
+  - name: test
+    path: /test
+processes:`
+		content = strings.Replace(content, "\t", "  ", -1)
+		fileSystem := afero.NewMemMapFs()
+
+		afero.WriteFile(fileSystem, path, []byte(content), 0644)
+		loader := NewConfigLoader(fileSystem)
+		_, err := loader.Load(path)
+		r.NotNil(err)
+	})
 }
 
 func AssertFilePathIsCorrect(t *testing.T, configFilePath string) {

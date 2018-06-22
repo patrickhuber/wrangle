@@ -1,4 +1,4 @@
-package store
+package store_test
 
 import (
 	"fmt"
@@ -106,4 +106,14 @@ func TestCanParseMultiLine(test *testing.T) {
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(data), &m)
 	require.Nil(err)
+}
+
+func TestCanParseKeyValue(test *testing.T) {
+	r := require.New(test)
+	var data = "key: value"
+	m := make(map[interface{}]interface{})
+	err := yaml.Unmarshal([]byte(data), &m)
+	r.Nil(err)
+	r.Equal(1, len(m))
+	r.Equal("value", m["key"])
 }

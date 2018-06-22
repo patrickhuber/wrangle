@@ -35,7 +35,7 @@ func (store *dummyConfigStore) Name() string {
 }
 
 func (store *dummyConfigStore) Type() string {
-	return ""
+	return "dummy"
 }
 
 func (store *dummyConfigStore) Put(key string, value string) (string, error) {
@@ -55,9 +55,11 @@ func TestManager(t *testing.T) {
 	t.Run("CanCreateConfigStore", func(t *testing.T) {
 		r := require.New(t)
 		manager := NewManager()
-		manager.Register(&dummyConfigStoreProvider{Name: "test"})
+		manager.Register(&dummyConfigStoreProvider{Name: "dummy"})
 		store, err := manager.Create(&config.ConfigSource{
-			Name: "test",
+			Name:             "test",
+			Config:           "test",
+			ConfigSourceType: "dummy",
 		})
 		r.Nil(err)
 		r.NotNil(store)

@@ -20,7 +20,14 @@ func TestFileStoreProvider(t *testing.T) {
 	t.Run("CanCreate", func(t *testing.T) {
 		r := require.New(t)
 		provider := NewFileStoreProvider(afero.NewMemMapFs())
-		store, err := provider.Create(&config.ConfigSource{Name: ""})
+		configSource := &config.ConfigSource{
+			Name:             "test",
+			ConfigSourceType: "file",
+			Params: map[string]string{
+				"path": "/file",
+			},
+		}
+		store, err := provider.Create(configSource)
 		r.Nil(err)
 		r.NotNil(store)
 	})

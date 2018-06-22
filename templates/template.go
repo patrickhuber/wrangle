@@ -9,7 +9,7 @@ import (
 
 // Template - contains a go object document that contains placeholders for variables
 type Template interface {
-	Evaluate(resolver VariableResolver) (interface{}, error)
+	Evaluate(resolvers ...VariableResolver) (interface{}, error)
 }
 
 type template struct {
@@ -22,8 +22,16 @@ func NewTemplate(document interface{}) Template {
 }
 
 // Evaluate - Evaluates the tempalte using the variable resolver for variable lookup
-func (template template) Evaluate(resolver VariableResolver) (interface{}, error) {
-	return evaluate(template.document, resolver)
+func (template template) Evaluate(resolvers ...VariableResolver) (interface{}, error) {
+	var document = template.document
+	var err error
+	for _, resolver := range resolvers {
+		document, err = evaluate(document, resolver)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return document, nil
 }
 
 // evaluate - dispatches the template evaluation by type to a type specific resolver

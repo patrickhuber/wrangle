@@ -82,3 +82,7 @@ func (s *credHubStore) Put(name string, value string) (string, error) {
 	}
 	return value, nil
 }
+
+func (s *credHubStore) String() string {
+	return s.Name()
+}

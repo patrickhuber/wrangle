@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/patrickhuber/cli-mgr/processes"
+	file "github.com/patrickhuber/cli-mgr/store/file"
 	"github.com/patrickhuber/cli-mgr/ui"
 	"github.com/stretchr/testify/require"
 
@@ -24,6 +25,7 @@ func TestMain(t *testing.T) {
 		// create dependencies
 		fileSystem := afero.NewMemMapFs()
 		storeManager := store.NewManager()
+		storeManager.Register(file.NewFileStoreProvider(fileSystem))
 		processFactory := processes.NewOsProcessFactory() // change to fake process factory?
 		console := ui.NewMemoryConsole()
 
@@ -32,25 +34,29 @@ func TestMain(t *testing.T) {
 ---
 config-sources:
 - name: store1
+  config: store2
   type: file
-  path: /store1
+  params:
+    path: /store1
 - name: store2
-  type: file
-  path: /store2
+  type: file 
+  params:
+    path: /store2
 processes:
 - name: echo
   environments:
   - name: lab
     process: echo
+    config: store1
     env:
-      CLI_MGR_TEST: ((key1))`
+      CLI_MGR_TEST: ((/key))`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
 
 		// create files
 		err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 		r.Nil(err)
 
-		err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((key1))"), 0644)
+		err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((/key1))"), 0644)
 		r.Nil(err)
 
 		err = afero.WriteFile(fileSystem, "/store2", []byte("key1: value"), 0644)

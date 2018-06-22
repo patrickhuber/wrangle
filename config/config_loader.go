@@ -4,7 +4,6 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/patrickhuber/cli-mgr/option"
 	"github.com/spf13/afero"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -35,7 +34,7 @@ func (loader *configLoader) Load(configPath string) (*Config, error) {
 		return nil, err
 	}
 	config := &Config{}
-	err = yaml.Unmarshal([]byte(data), config)
+	err = yaml.UnmarshalStrict([]byte(data), config)
 	return config, err
 }
 
@@ -47,14 +46,6 @@ func GetDefaultConfigPath() (string, error) {
 	}
 	configDir := filepath.Join(usr.HomeDir, ".cli-mgr", "config.yml")
 	return configDir, nil
-}
-
-// GetConfigPath gets the config path from the options
-func GetConfigPath(op *option.Options) (string, error) {
-	if op.ConfigPath != "" {
-		return op.ConfigPath, nil
-	}
-	return GetDefaultConfigPath()
 }
 
 func (loader *configLoader) ensureExists(configFile string) error {

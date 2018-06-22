@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/store"
@@ -39,43 +40,28 @@ func (cmd *envCommand) ExecuteCommand(params RunCommandParams) error {
 
 	configFile := params.ConfigFile()
 	processName := params.ProcessName()
-	environmenName := params.EnvironmentName()
+	environmentName := params.EnvironmentName()
 
 	if processName == "" {
 		return errors.New("process name is required for the run command")
 	}
 
-	if environmenName == "" {
+	if environmentName == "" {
 		return errors.New("environment name is required for the run command")
 	}
 
 	configLoader := config.NewConfigLoader(cmd.fileSystem)
+
 	cfg, err := configLoader.Load(configFile)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error running configLoader.Load")
 	}
-	if cfg == nil {
-		return errors.New("config is null")
-	}
-	variables, err := cmd.getProcessEnvironmentVariables(cfg, processName, environmenName)
+	pipeline := store.NewPipeline(cmd.manager, cfg)
+	environment, err := pipeline.Run(processName, environmentName)
 	if err != nil {
 		return err
 	}
 	renderer := NewEvnVarRenderer(cmd.platform)
-	fmt.Fprint(cmd.console.Out(), renderer.RenderEnvironment(variables))
+	fmt.Fprint(cmd.console.Out(), renderer.RenderEnvironment(environment.Vars))
 	return nil
-}
-
-func (cmd *envCommand) getProcessEnvironmentVariables(cfg *config.Config, processName string, environmentName string) (map[string]string, error) {
-	for _, p := range cfg.Processes {
-		if p.Name == processName {
-			for _, e := range p.Environments {
-				if e.Name == environmentName {
-					return e.Vars, nil
-				}
-			}
-			return nil, fmt.Errorf("unable to find environment '%s' in process '%s'", environmentName, processName)
-		}
-	}
-	return nil, fmt.Errorf("No Processes found in config that match '%s'", processName)
 }
