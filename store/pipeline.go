@@ -47,25 +47,34 @@ func (p *pipeline) run(environment *config.Environment) (*config.Environment, er
 	if err != nil {
 		return nil, err
 	}
+
+	return evaluate(environment, resolvers)
+}
+
+func evaluate(environment *config.Environment, resolvers []templates.VariableResolver) (*config.Environment, error) {
+	const argsKey = "args"
+	const envKey = "env"
+
 	document := map[string]interface{}{
-		"args": environment.Args,
-		"vars": environment.Vars,
+		argsKey: environment.Args,
+		envKey:  environment.Vars,
 	}
 	template := templates.NewTemplate(document)
 	resolved, err := template.Evaluate(resolvers...)
 	if err != nil {
 		return nil, err
 	}
+
 	resolvedMap := resolved.(map[string]interface{})
-	args := resolvedMap["args"]
-	vars := resolvedMap["vars"]
+	args := resolvedMap[argsKey]
+	env := resolvedMap[envKey]
 
 	environment.Args, err = normalizeToStringSlice(args)
 	if err != nil {
 		return nil, err
 	}
 
-	environment.Vars, err = normalizeToMapStringOfString(vars)
+	environment.Vars, err = normalizeToMapStringOfString(env)
 	if err != nil {
 		return nil, err
 	}
