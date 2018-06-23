@@ -10,13 +10,15 @@ type envVarRenderer struct {
 	platform string
 }
 
+// EnvVarRenderer provides an interface for rendering environment variables
 type EnvVarRenderer interface {
 	RenderEnvironment(environmentVariables map[string]string) string
 	RenderEnvironmentVariable(variable string, value string) string
 	Platform() string
 }
 
-func NewEvnVarRenderer(platform string) EnvVarRenderer {
+// NewEnvVarRenderer creates a new environment variable renderer for the specified platform
+func NewEnvVarRenderer(platform string) EnvVarRenderer {
 	return &envVarRenderer{platform: platform}
 }
 

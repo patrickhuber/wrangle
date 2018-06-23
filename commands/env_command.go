@@ -61,7 +61,7 @@ func (cmd *envCommand) ExecuteCommand(params RunCommandParams) error {
 	if err != nil {
 		return err
 	}
-	renderer := NewEvnVarRenderer(cmd.platform)
+	renderer := NewEnvVarRenderer(cmd.platform)
 	fmt.Fprint(cmd.console.Out(), renderer.RenderEnvironment(environment.Vars))
 	return nil
 }

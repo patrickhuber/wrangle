@@ -22,6 +22,6 @@ func TestEnvVarRenderer(t *testing.T) {
 
 func getEnvironmentOutput(platform string) string {
 	vars := map[string]string{"TEST1": "VALUE1", "TEST2": "VALUE2"}
-	envRenderer := NewEvnVarRenderer(platform)
+	envRenderer := NewEnvVarRenderer(platform)
 	return envRenderer.RenderEnvironment(vars)
 }
