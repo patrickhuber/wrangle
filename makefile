@@ -1,4 +1,8 @@
 unit:
-	go test ./...
+	./scripts/unit_tests
+
 build:
-	go build -o cli-mgr main.go
+	./scripts/build
+	
+integration:
+	./scripts/integration_tests

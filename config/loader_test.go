@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfigLoader(t *testing.T) {
+func TestLoader(t *testing.T) {
 
 	t.Run("CanLoadDefaultConfigPath", func(t *testing.T) {
 		require := require.New(t)
@@ -32,7 +32,7 @@ func TestConfigLoader(t *testing.T) {
 		r := require.New(t)
 		configFilePath := "/test/config.yml"
 		fileSystem := afero.NewMemMapFs()
-		loader := NewConfigLoader(fileSystem)
+		loader := NewLoader(fileSystem)
 		cfg, err := loader.Load(configFilePath)
 		r.Nil(err)
 		r.NotNil(cfg)
@@ -52,7 +52,7 @@ processes:`
 		fileSystem := afero.NewMemMapFs()
 
 		afero.WriteFile(fileSystem, path, []byte(content), 0644)
-		loader := NewConfigLoader(fileSystem)
+		loader := NewLoader(fileSystem)
 		_, err := loader.Load(path)
 		r.NotNil(err)
 	})
@@ -84,7 +84,7 @@ processes:
 
 	afero.WriteFile(fileSystem, configFilePath, []byte(content), 0644)
 
-	loader := NewConfigLoader(fileSystem)
+	loader := NewLoader(fileSystem)
 
 	cfg, err := loader.Load(configFilePath)
 	require.Nil(err)

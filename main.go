@@ -91,7 +91,7 @@ func createApplication(
 		if configFile == "" {
 			configFile = defaultConfigPath
 		}
-		configLoader := config.NewConfigLoader(fileSystem)
+		configLoader := config.NewLoader(fileSystem)
 		configuration, err := configLoader.Load(configFile)
 		if err != nil {
 			return err

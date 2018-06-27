@@ -7,26 +7,26 @@ import (
 	"github.com/spf13/afero"
 )
 
-// ConfigLoader - loads a config
-type configLoader struct {
+type loader struct {
 	fileSystem afero.Fs
 }
 
-type ConfigLoader interface {
+// Loader - loads a config
+type Loader interface {
 	FileSystem() afero.Fs
 	Load(configPath string) (*Config, error)
 }
 
-// NewConfigLoader creates a new config loader
-func NewConfigLoader(fileSystem afero.Fs) ConfigLoader {
-	return &configLoader{fileSystem: fileSystem}
+// NewLoader creates a new config loader
+func NewLoader(fileSystem afero.Fs) Loader {
+	return &loader{fileSystem: fileSystem}
 }
 
-func (loader *configLoader) FileSystem() afero.Fs {
+func (loader *loader) FileSystem() afero.Fs {
 	return loader.fileSystem
 }
 
-func (loader *configLoader) Load(configPath string) (*Config, error) {
+func (loader *loader) Load(configPath string) (*Config, error) {
 	loader.ensureExists(configPath)
 	data, err := afero.ReadFile(loader.fileSystem, configPath)
 	if err != nil {
@@ -45,7 +45,7 @@ func GetDefaultConfigPath() (string, error) {
 	return configDir, nil
 }
 
-func (loader *configLoader) ensureExists(configFile string) error {
+func (loader *loader) ensureExists(configFile string) error {
 	fileSystem := loader.FileSystem()
 	ok, err := afero.Exists(fileSystem, configFile)
 	if err != nil {

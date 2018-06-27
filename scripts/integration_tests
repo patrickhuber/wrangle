@@ -1,6 +1,2 @@
 #!/bin/bash
-set -e
-if [[ -z "$DIR" ]]; then
-    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-fi
-go test ../... -tags=integration
+go test ./... -tags=integration
