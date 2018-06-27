@@ -1,8 +1,8 @@
 unit:
-	./scripts/unit_tests
+	go test ./...
 
 build:
-	./scripts/build
+	go build -o cli-mgr main.go
 	
 integration:
-	./scripts/integration_tests
+	go test ./... -tags=integration
