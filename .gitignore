@@ -22,3 +22,6 @@
 main
 cli-mgr
 bin/*
+
+# dependencies
+vendor/*
