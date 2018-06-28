@@ -38,6 +38,9 @@ func TestLoader(t *testing.T) {
 		r.NotNil(cfg)
 		r.Equal(0, len(cfg.Processes))
 		r.Equal(0, len(cfg.ConfigSources))
+		r.True(afero.Exists(fileSystem, configFilePath))
+		//content, err := afero.ReadFile(fileSystem, configFilePath)
+		//r.Nil(err)
 	})
 
 	t.Run("WillFailIfExtraDataPresent", func(t *testing.T) {

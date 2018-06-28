@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -46,7 +47,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = app.cliApplication.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -58,7 +59,7 @@ func createApplication(
 	fileSystem afero.Fs,
 	processFactory processes.ProcessFactory,
 	console ui.Console,
-	platform string) (*application, error) {
+	platform string) (*cli.App, error) {
 
 	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
@@ -82,11 +83,11 @@ func createApplication(
 	cliApp.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory),
 		*createEnvCommand(manager, fileSystem, platform, console),
+		*createProcessesCommand(fileSystem, console),
 	}
 
-	app := &application{cliApplication: cliApp}
-
 	cliApp.Before = func(context *cli.Context) error {
+
 		configFile := context.GlobalString("config")
 		if configFile == "" {
 			configFile = defaultConfigPath
@@ -96,11 +97,18 @@ func createApplication(
 		if err != nil {
 			return err
 		}
-		app.configuration = configuration
+
+		app := context.App
+		if app.Metadata == nil {
+			app.Metadata = make(map[string]interface{})
+		}
+
+		app.Metadata["configuration"] = configuration
+
 		return nil
 	}
 
-	return app, nil
+	return cliApp, nil
 }
 
 func createRunCommand(
@@ -127,10 +135,17 @@ func createRunCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			configFile := context.GlobalString("config")
+			configuration, ok := context.App.Metadata["configuration"]
+			if !ok {
+				return errors.New("unable to load configuration from configuration metadata")
+			}
+			cfg, ok := configuration.(*config.Config)
+			if !ok {
+				return errors.New("configuration loaded from metadata is not the expected type of *config.Config")
+			}
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			params := commands.NewRunCommandParams(configFile, processName, environmentName)
+			params := commands.NewRunCommandParams(cfg, processName, environmentName)
 			return runCommand.ExecuteCommand(params)
 		},
 	}
@@ -163,11 +178,37 @@ func createEnvCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			configFile := context.GlobalString("config")
+			configuration, ok := context.App.Metadata["configuration"]
+			if !ok {
+				return errors.New("unable to load configuration from configuration metadata")
+			}
+			cfg, ok := configuration.(*config.Config)
+			if !ok {
+				return errors.New("configuration loaded from metadata is not the expected type of *config.Config")
+			}
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			params := commands.NewRunCommandParams(configFile, processName, environmentName)
+			params := commands.NewRunCommandParams(cfg, processName, environmentName)
 			return envCommand.ExecuteCommand(params)
+		},
+	}
+}
+
+func createProcessesCommand(
+	fileSystem afero.Fs,
+	console ui.Console) *cli.Command {
+
+	processesCommand := commands.NewProcessesCommand(
+		fileSystem,
+		console)
+
+	return &cli.Command{
+		Name:    "processes",
+		Aliases: []string{"p"},
+		Usage:   "prints the list of processes in the config file",
+		Action: func(context *cli.Context) error {
+			configFile := context.GlobalString("config")
+			return processesCommand.ExecuteCommand(configFile)
 		},
 	}
 }

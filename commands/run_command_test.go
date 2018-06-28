@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/spf13/afero"
@@ -34,9 +35,14 @@ processes:
 		configStoreManager := store.NewManager()
 		runCommand := NewRunCommand(configStoreManager, fileSystem, processes.NewOsProcessFactory())
 
+		// load the config
+		loader := config.NewLoader(fileSystem)
+		cfg, err := loader.Load("/config")
+		r.Nil(err)
+
 		// run the run command
 		err = runCommand.ExecuteCommand(
-			NewRunCommandParams("/config", "go", "lab"))
+			NewRunCommandParams(cfg, "go", "lab"))
 		r.Nil(err)
 	})
 }

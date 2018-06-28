@@ -19,6 +19,9 @@ func TestMain(t *testing.T) {
 	t.Run("CanRunProcess", func(t *testing.T) {
 
 	})
+	t.Run("CanGetProcessList", func(t *testing.T) {
+
+	})
 	t.Run("CanChainConfigStores", func(t *testing.T) {
 		r := require.New(t)
 
@@ -78,7 +81,7 @@ processes:
 			"env",
 			"-n", "echo",
 			"-e", "lab"}
-		err = app.cliApplication.Run(args)
+		err = app.Run(args)
 		r.Nil(err)
 
 		// get the output, validate the chaining works

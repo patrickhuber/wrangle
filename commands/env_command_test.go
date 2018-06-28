@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/patrickhuber/cli-mgr/store/file"
 
@@ -42,10 +43,15 @@ processes:
 		// create console
 		console := ui.NewMemoryConsole()
 
+		// load the config
+		loader := config.NewLoader(fileSystem)
+		cfg, err := loader.Load("/config")
+		r.Nil(err)
+
 		// create and run command
 		cmd := NewEnvCommand(manager, fileSystem, "linux", console)
-		runCommandParams := NewRunCommandParams("/config", "echo", "lab")
-		err := cmd.ExecuteCommand(runCommandParams)
+		runCommandParams := NewRunCommandParams(cfg, "echo", "lab")
+		err = cmd.ExecuteCommand(runCommandParams)
 		r.Nil(err)
 
 		// verify output
@@ -88,10 +94,15 @@ processes:
 		// create console
 		console := ui.NewMemoryConsole()
 
+		// load the config
+		loader := config.NewLoader(fileSystem)
+		cfg, err := loader.Load("/config")
+		r.Nil(err)
+
 		// create and run command
 		cmd := NewEnvCommand(manager, fileSystem, "linux", console)
-		runCommandParams := NewRunCommandParams("/config", "echo", "lab")
-		err := cmd.ExecuteCommand(runCommandParams)
+		runCommandParams := NewRunCommandParams(cfg, "echo", "lab")
+		err = cmd.ExecuteCommand(runCommandParams)
 		r.Nil(err)
 
 		// verify output

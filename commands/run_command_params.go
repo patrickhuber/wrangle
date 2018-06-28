@@ -1,26 +1,28 @@
 package commands
 
+import "github.com/patrickhuber/cli-mgr/config"
+
 type runCommandParams struct {
-	configFile      string
+	config          *config.Config
 	processName     string
 	environmentName string
 }
 
 type RunCommandParams interface {
-	ConfigFile() string
+	Config() *config.Config
 	ProcessName() string
 	EnvironmentName() string
 }
 
-func NewRunCommandParams(configFile string, processName string, environmentName string) RunCommandParams {
+func NewRunCommandParams(config *config.Config, processName string, environmentName string) RunCommandParams {
 	return &runCommandParams{
-		configFile:      configFile,
+		config:          config,
 		processName:     processName,
 		environmentName: environmentName}
 }
 
-func (params *runCommandParams) ConfigFile() string {
-	return params.configFile
+func (params *runCommandParams) Config() *config.Config {
+	return params.config
 }
 
 func (params *runCommandParams) ProcessName() string {

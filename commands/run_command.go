@@ -34,7 +34,6 @@ func NewRunCommand(
 
 func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 
-	configFile := params.ConfigFile()
 	processName := params.ProcessName()
 	environmentName := params.EnvironmentName()
 
@@ -46,12 +45,11 @@ func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 		return errors.New("environment name is required for the run command")
 	}
 
-	configLoader := config.NewLoader(cmd.fileSystem)
-
-	cfg, err := configLoader.Load(configFile)
-	if err != nil {
-		return errors.Wrap(err, "error running configLoader.Load")
+	cfg := params.Config()
+	if cfg == nil {
+		return errors.New("unable to load configuration")
 	}
+
 	pipeline := store.NewPipeline(cmd.manager, cfg)
 	environment, err := pipeline.Run(processName, environmentName)
 	if err != nil {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/patrickhuber/cli-mgr/ui"
 	"github.com/spf13/afero"
@@ -38,7 +37,6 @@ func NewEnvCommand(
 
 func (cmd *envCommand) ExecuteCommand(params RunCommandParams) error {
 
-	configFile := params.ConfigFile()
 	processName := params.ProcessName()
 	environmentName := params.EnvironmentName()
 
@@ -50,12 +48,11 @@ func (cmd *envCommand) ExecuteCommand(params RunCommandParams) error {
 		return errors.New("environment name is required for the run command")
 	}
 
-	configLoader := config.NewLoader(cmd.fileSystem)
-
-	cfg, err := configLoader.Load(configFile)
-	if err != nil {
-		return errors.Wrap(err, "error running configLoader.Load")
+	cfg := params.Config()
+	if cfg == nil {
+		return errors.New("unable to load configuration")
 	}
+
 	pipeline := store.NewPipeline(cmd.manager, cfg)
 	environment, err := pipeline.Run(processName, environmentName)
 	if err != nil {
