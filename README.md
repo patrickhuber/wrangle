@@ -63,10 +63,10 @@ OPTIONS:
 
 ## building
 
-clone submodules
+to restore packages (requires dep)
 
 ```
-git submodule update --init --recursive
+make restore
 ```
 
 to perform a build
@@ -88,4 +88,3 @@ make unit
 [config file](doc/example-config.yml)
 
 [creds file](doc/example-creds.yml)
-
