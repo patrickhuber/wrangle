@@ -54,6 +54,28 @@ func (loader *loader) ensureExists(configFile string) error {
 	if ok {
 		return nil
 	}
+
+	configDirectory := filepath.Dir(configFile)
+	err = loader.ensureDirectoryExists(configDirectory)
+	if err != nil {
+		return err
+	}
+
 	data := "config-sources:\nprocesses:\n"
 	return afero.WriteFile(fileSystem, configFile, []byte(data), 0644)
+}
+
+func (loader *loader) ensureDirectoryExists(directory string) error {
+	fileSystem := loader.FileSystem()
+	ok, err := afero.DirExists(fileSystem, directory)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		err = fileSystem.MkdirAll(directory, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
