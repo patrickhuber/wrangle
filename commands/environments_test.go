@@ -24,7 +24,7 @@ environments:
 		afero.WriteFile(fileSystem, "/test", []byte(content), 0644)
 
 		console := ui.NewMemoryConsole()
-		command := commands.NewEnvironmentsCommand(fileSystem, console)
+		command := commands.NewEnvironments(fileSystem, console)
 		loader := config.NewLoader(fileSystem)
 		configuration, err := loader.Load("/test")
 		r.Nil(err)

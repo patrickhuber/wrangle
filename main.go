@@ -31,7 +31,7 @@ func main() {
 	configStoreManager := createConfigStoreManager(fileSystem)
 	validateConfigStoreManager(configStoreManager)
 
-	processFactory := processes.NewOsProcessFactory()
+	processFactory := processes.NewOsFactory()
 	console := ui.NewOSConsole()
 
 	// creates the app
@@ -57,7 +57,7 @@ func main() {
 func createApplication(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	processFactory processes.ProcessFactory,
+	processFactory processes.Factory,
 	console ui.Console,
 	platform string) (*cli.App, error) {
 
@@ -114,8 +114,8 @@ func createApplication(
 func createRunCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	processFactory processes.ProcessFactory) *cli.Command {
-	runCommand := commands.NewRunCommand(
+	processFactory processes.Factory) *cli.Command {
+	runCommand := commands.NewRun(
 		manager,
 		fileSystem,
 		processFactory)
@@ -142,7 +142,7 @@ func createRunCommand(
 			processName := context.String("name")
 			environmentName := context.String("environment")
 			params := commands.NewRunCommandParams(cfg, processName, environmentName)
-			return runCommand.ExecuteCommand(params)
+			return runCommand.Execute(params)
 		},
 	}
 }
@@ -153,7 +153,7 @@ func createPrintCommand(
 	platform string,
 	console ui.Console) *cli.Command {
 
-	printCommand := commands.NewPrintCommand(
+	printCommand := commands.NewPrint(
 		manager,
 		fileSystem,
 		platform,
@@ -181,7 +181,7 @@ func createPrintCommand(
 				return err
 			}
 			params := commands.NewRunCommandParams(cfg, processName, environmentName)
-			return printCommand.ExecuteCommand(params)
+			return printCommand.Execute(params)
 		},
 	}
 }
@@ -202,7 +202,7 @@ func createEnvironmentsCommand(
 	fileSystem afero.Fs,
 	console ui.Console) *cli.Command {
 
-	environmentsCommand := commands.NewEnvironmentsCommand(
+	environmentsCommand := commands.NewEnvironments(
 		fileSystem,
 		console)
 

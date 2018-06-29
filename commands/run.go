@@ -10,29 +10,29 @@ import (
 	"github.com/spf13/afero"
 )
 
-// RunCommand represents a run subcommand for the application
-type RunCommand interface {
-	ExecuteCommand(params RunCommandParams) error
+// Run represents a run subcommand for the application
+type Run interface {
+	Execute(params RunCommandParams) error
 }
 
-type runCommand struct {
+type run struct {
 	manager        store.Manager
 	fileSystem     afero.Fs
-	processFactory processes.ProcessFactory
+	processFactory processes.Factory
 }
 
-// NewRunCommand - creates a new run command
-func NewRunCommand(
+// NewRun - creates a new run command
+func NewRun(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	processFactory processes.ProcessFactory) RunCommand {
-	return &runCommand{
+	processFactory processes.Factory) Run {
+	return &run{
 		manager:        manager,
 		fileSystem:     fileSystem,
 		processFactory: processFactory}
 }
 
-func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
+func (cmd *run) Execute(params RunCommandParams) error {
 
 	processName := params.ProcessName()
 	environmentName := params.EnvironmentName()
@@ -59,7 +59,7 @@ func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 	return cmd.execute(environment)
 }
 
-func (cmd *runCommand) execute(processConfig *config.Process) error {
+func (cmd *run) execute(processConfig *config.Process) error {
 	process := cmd.processFactory.Create(
 		processConfig.Path,
 		processConfig.Args,

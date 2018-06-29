@@ -1,20 +1,20 @@
 package processes
 
-type ProcessFactory interface {
+type Factory interface {
 	Create(
 		executable string,
 		args []string,
 		environment map[string]string) Process
 }
 
-type processFactory struct {
+type factory struct {
 }
 
-func NewOsProcessFactory() ProcessFactory {
-	return &processFactory{}
+func NewOsFactory() Factory {
+	return &factory{}
 }
 
-func (processFactory *processFactory) Create(
+func (processFactory *factory) Create(
 	executable string,
 	args []string,
 	environment map[string]string) Process {

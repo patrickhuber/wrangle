@@ -33,7 +33,7 @@ environments:
 
 		// create run command
 		configStoreManager := store.NewManager()
-		runCommand := NewRunCommand(configStoreManager, fileSystem, processes.NewOsProcessFactory())
+		runCommand := NewRun(configStoreManager, fileSystem, processes.NewOsFactory())
 
 		// load the config
 		loader := config.NewLoader(fileSystem)
@@ -41,7 +41,7 @@ environments:
 		r.Nil(err)
 
 		// run the run command
-		err = runCommand.ExecuteCommand(
+		err = runCommand.Execute(
 			NewRunCommandParams(cfg, "go", "lab"))
 		r.Nil(err)
 	})

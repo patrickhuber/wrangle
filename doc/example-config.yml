@@ -27,14 +27,14 @@ config-sources:
     ca_cert: ((/credhub-ca-cert.certificate))
     skip_tls_validation: false
 
-processes:
+environments:
 
-- name: fly
-  environments:
+- name: lab
+  processes:
   
-  - name: lab
+  - name: fly
     config: bosh-lab-credhub
-    process: fly.exe
+    path: fly.exe
     args:
     - -t
     - main
@@ -43,12 +43,9 @@ processes:
     - atc
     - -p ((/bosh-1/concourse/atc_basic_auth_password))
 
-- name: credhub
-  environments:
-  
-  - name: lab-bosh
+  - name: bosh-credhub
     config: bosh-lab-yaml
-    process: credhub.exe
+    path: credhub.exe
     args:
     - login
     env:
@@ -57,13 +54,13 @@ processes:
       CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
       CREDHUB_SERVER: https://192.168.0.6:8844
 
-  - name: lab-atc
+  - name: concourse-credhub
     config: bosh-lab-credhub
-    process: credhub.exe
+    path: credhub.exe
     args:
     - login
     env:
       CREDHUB_CLIENT: ((/credhub-client))
       CREDHUB_SECRET: ((/credhub-secret))
       CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
-      CREDHUB_SERVER: https://192.168.0.6:8844
+      CREDHUB_SERVER: https://192.168.0.10:8844

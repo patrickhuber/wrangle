@@ -29,7 +29,7 @@ func TestMain(t *testing.T) {
 		fileSystem := afero.NewMemMapFs()
 		storeManager := store.NewManager()
 		storeManager.Register(file.NewFileStoreProvider(fileSystem))
-		processFactory := processes.NewOsProcessFactory() // change to fake process factory?
+		processFactory := processes.NewOsFactory() // change to fake process factory?
 		console := ui.NewMemoryConsole()
 
 		// create config file
