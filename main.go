@@ -82,7 +82,7 @@ func createApplication(
 
 	cliApp.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory),
-		*createEnvCommand(manager, fileSystem, platform, console),
+		*createPrintCommand(manager, fileSystem, platform, console),
 		*createEnvironmentsCommand(fileSystem, console),
 	}
 
@@ -147,26 +147,26 @@ func createRunCommand(
 	}
 }
 
-func createEnvCommand(
+func createPrintCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	platform string,
 	console ui.Console) *cli.Command {
 
-	envCommand := commands.NewEnvCommand(
+	printCommand := commands.NewPrintCommand(
 		manager,
 		fileSystem,
 		platform,
 		console)
 
 	return &cli.Command{
-		Name:    "env",
-		Aliases: []string{"e"},
+		Name:    "print",
+		Aliases: []string{"p"},
 		Usage:   "print command environemnt variables",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "name, n",
-				Usage: "Execute command named `NAME`",
+				Usage: "process named `NAME`",
 			},
 			cli.StringFlag{
 				Name:  "environment, e",
@@ -181,7 +181,7 @@ func createEnvCommand(
 				return err
 			}
 			params := commands.NewRunCommandParams(cfg, processName, environmentName)
-			return envCommand.ExecuteCommand(params)
+			return printCommand.ExecuteCommand(params)
 		},
 	}
 }
@@ -208,7 +208,7 @@ func createEnvironmentsCommand(
 
 	return &cli.Command{
 		Name:    "environments",
-		Aliases: []string{"p"},
+		Aliases: []string{"e"},
 		Usage:   "prints the list of environments in the config file",
 		Action: func(context *cli.Context) error {
 			cfg, err := getConfigurationFromCliContext(context)

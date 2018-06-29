@@ -19,7 +19,7 @@ func TestMain(t *testing.T) {
 	t.Run("CanRunProcess", func(t *testing.T) {
 
 	})
-	t.Run("CanGetProcessList", func(t *testing.T) {
+	t.Run("CanGetEnvironmentList", func(t *testing.T) {
 
 	})
 	t.Run("CanChainConfigStores", func(t *testing.T) {
@@ -78,7 +78,7 @@ environments:
 		args := []string{
 			"cli-mgr",
 			"-c", "/config",
-			"env",
+			"print",
 			"-n", "echo",
 			"-e", "lab"}
 		err = app.Run(args)

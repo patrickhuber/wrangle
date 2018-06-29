@@ -15,9 +15,10 @@ VERSION:
    0.0.0
 
 COMMANDS:
-     run, r   run a command
-     env, e   print command environemnt variables
-     help, h  Shows a list of commands or help for one command
+     run, r             run a command
+     print, p           print command environemnt variables
+     environments, e    lists the environments in the config
+     help, h            Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --config FILE, -c FILE  Load configuration from FILE (default: "C:\\Users\\patri\\.cli-mgr\\config.yml") [%CLI_MGR_CONFIG%]

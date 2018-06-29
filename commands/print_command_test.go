@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-func TestEnvCommand(t *testing.T) {
+func TestPrintCommand(t *testing.T) {
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
 
@@ -49,7 +49,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewEnvCommand(manager, fileSystem, "linux", console)
+		cmd := NewPrintCommand(manager, fileSystem, "linux", console)
 		runCommandParams := NewRunCommandParams(cfg, "echo", "lab")
 		err = cmd.ExecuteCommand(runCommandParams)
 		r.Nil(err)
@@ -100,7 +100,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewEnvCommand(manager, fileSystem, "linux", console)
+		cmd := NewPrintCommand(manager, fileSystem, "linux", console)
 		runCommandParams := NewRunCommandParams(cfg, "echo", "lab")
 		err = cmd.ExecuteCommand(runCommandParams)
 		r.Nil(err)
