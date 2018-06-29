@@ -11,7 +11,7 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanEvaluateString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		resolver, err := newSimpleResolver("key", "value")
+		resolver, err := newSimpleResolver("/key", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -21,7 +21,7 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanEvaluateInt", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		resolver, err := newSimpleResolver("key", 1)
+		resolver, err := newSimpleResolver("/key", 1)
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -31,7 +31,7 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanEvaluateTwoKeysInString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key)):((other))")
-		resolver, err := newSimpleResolver("key", "value", "other", "thing")
+		resolver, err := newSimpleResolver("/key", "value", "/other", "thing")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -42,7 +42,7 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		m := map[string]string{"key": "((key))"}
 		template := NewTemplate(m)
-		resolver, err := newSimpleResolver("key", "value")
+		resolver, err := newSimpleResolver("/key", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -56,7 +56,7 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		m := map[string]interface{}{"key": "((key))"}
 		template := NewTemplate(m)
-		resolver, err := newSimpleResolver("key", "value")
+		resolver, err := newSimpleResolver("/key", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -70,7 +70,7 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
 		template := NewTemplate(m)
-		resolver, err := newSimpleResolver("nested", "value")
+		resolver, err := newSimpleResolver("/nested", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -87,7 +87,7 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		a := []string{"one", "((key))", "three"}
 		template := NewTemplate(a)
-		resolver, err := newSimpleResolver("key", "value")
+		resolver, err := newSimpleResolver("/key", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -101,7 +101,7 @@ func TestTemplate(t *testing.T) {
 		r := require.New(t)
 		a := []interface{}{"one", "((key))", "three"}
 		template := NewTemplate(a)
-		resolver, err := newSimpleResolver("key", "value")
+		resolver, err := newSimpleResolver("/key", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -114,7 +114,7 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanPatchInSliceForString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		resolver, err := newSimpleResolver("key", []string{"one", "two"})
+		resolver, err := newSimpleResolver("/key", []string{"one", "two"})
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -128,7 +128,7 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanPatchInMapForString", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key))")
-		resolver, err := newSimpleResolver("key", map[string]string{"one": "test", "two": "other"})
+		resolver, err := newSimpleResolver("/key", map[string]string{"one": "test", "two": "other"})
 		r.Nil(err)
 		document, err := template.Evaluate(resolver)
 		r.Nil(err)
@@ -142,9 +142,9 @@ func TestTemplate(t *testing.T) {
 	t.Run("CanEvaluateResolverPipeline", func(t *testing.T) {
 		r := require.New(t)
 		template := NewTemplate("((key1))")
-		resolver1, err := newSimpleResolver("key1", "((key2))")
+		resolver1, err := newSimpleResolver("/key1", "((key2))")
 		r.Nil(err)
-		resolver2, err := newSimpleResolver("key2", "value")
+		resolver2, err := newSimpleResolver("/key2", "value")
 		r.Nil(err)
 		document, err := template.Evaluate(resolver1, resolver2)
 		r.Nil(err)

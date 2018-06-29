@@ -63,6 +63,9 @@ func evaluateString(template string, resolver VariableResolver) (interface{}, er
 		subMatchEnd := submatches[3]
 
 		key := template[subMatchStart:subMatchEnd]
+		if len(key) > 0 && key[0] != '/' {
+			key = string('/') + key
+		}
 		value, err := resolver.Get(string(key))
 		if err != nil {
 			return nil, err
