@@ -34,7 +34,7 @@ environments:
   
   - name: fly
     config: bosh-lab-credhub
-    path: fly.exe
+    path: fly
     args:
     - -t
     - main
@@ -45,7 +45,7 @@ environments:
 
   - name: bosh-credhub
     config: bosh-lab-yaml
-    path: credhub.exe
+    path: credhub
     args:
     - login
     env:
@@ -56,7 +56,7 @@ environments:
 
   - name: concourse-credhub
     config: bosh-lab-credhub
-    path: credhub.exe
+    path: credhub
     args:
     - login
     env:
@@ -64,3 +64,115 @@ environments:
       CREDHUB_SECRET: ((/credhub-secret))
       CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
       CREDHUB_SERVER: https://192.168.0.10:8844
+
+packages:
+
+- name: fly
+  version: 3.14.1
+  alias: fly
+  platforms:
+  - name: linux
+    type: binary
+    params:
+      url: https://github.com/concourse/concourse/releases/download/v((version))/fly_linux_amd64
+  - name: windows
+    type: binary
+    params:
+      url: https://github.com/concourse/concourse/releases/download/v((version))/fly_windows_amd64.exe
+  - name: darwin
+    type: binary
+    params:
+      url: https://github.com/concourse/concourse/releases/download/v((version))/fly_darwin_amd64
+
+- name: bbl
+  version: 6.7.15
+  alias: bbl
+  platforms:
+  - name: linux
+    type: binary
+    params:
+      url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_linux_x86-64      
+  - name: windows
+    type: binary
+    params:
+      url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_windows.exe
+  - name: darwin
+    type: binary
+    params:
+      url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_osx
+
+- name: bosh
+  version: 3.0.1
+  alias: bosh
+  platforms:
+  - name: linux
+    type: binary
+    params:
+      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
+  - name: windows
+    type: binary
+    params:
+      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
+  - name: darwin
+    type: binary
+    params:
+      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
+
+- name: credhub
+  version: 1.7.6
+  alias: credhub
+  platforms:
+  - name: linux
+    type: tgz
+    params: 
+      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz
+      filter: credhub
+      rename: credhub-((version))-linux
+  - name: darwin
+    type: tgz
+    params: 
+      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz
+      filter: credhub
+      rename: credhub-((version))-darwin
+  - name: windows
+    type: tgz
+    params: 
+      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
+      filter: credhub.exe
+      rename: credhub-((version))-windows.exe
+
+- name: cf
+  version: 6.37.0
+  alias: cf
+  platforms:
+  - name: linux
+    type: tgz
+    params:
+      url: https://packages.cloudfoundry.org/stable?release=linux64-binary&version=((version))&source=github-rel
+  - name: darwin
+    type: tgz
+    params:
+      url: https://packages.cloudfoundry.org/stable?release=macosx64-binary&version=((version))&source=github-rel
+  - name: windows
+    type: zip
+    params:
+      url: https://packages.cloudfoundry.org/stable?release=windows64-exe&version=((version))&source=github-rel
+      filter: cf.exe
+      rename: cf-((version))-windows.exe
+
+- name: bbr
+  version: 1.2.4
+  alias: bbr
+  platforms:
+  - name: linux
+    type: tar
+    params:
+      url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar
+      filter: bbr
+      rename: bbr-((version))-linux
+  - name: darwin
+    type: tar
+    params:
+      url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar
+      filter: bbr-mac
+      rename: bbr-((version))-darwin
