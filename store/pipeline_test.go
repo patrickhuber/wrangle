@@ -27,10 +27,10 @@ config-sources:
   type: file
   params:
     path: /test2
-processes:
-- name: echo
-  environments:
-  - name: lab
+environments:
+- name: lab
+  processes:
+  - name: echo
     config: one
     args:
     - ((/key))
@@ -60,10 +60,10 @@ config-sources:
   type: file
   params:
     path: /test
-processes:
-- name: echo
-  environments:
-  - name: lab
+environments:
+- name: lab
+  processes:
+  - name: echo
     config: one
     args:
     - ((/key))
@@ -106,10 +106,10 @@ config-sources:
   type: file  
   params:
     path: /test3
-processes:
-- name: echo
-  environments:
-  - name: lab
+environments:
+- name: lab
+  processes:
+  - name: echo
     config: one
     args:
     - ((/key1))
@@ -151,10 +151,10 @@ config-sources:
   config: one
   params:
     path: /test3
-processes:
-- name: echo
-  environments:
-  - name: lab
+environments:
+- name: lab
+  processes:
+  - name: echo
     config: one
     args:
     - ((/key1))

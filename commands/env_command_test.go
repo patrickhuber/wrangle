@@ -26,11 +26,11 @@ func TestEnvCommand(t *testing.T) {
 		configFileContent := `
 ---
 config-sources:
-processes:
-- name: echo
-  environments:
-  - name: lab
-    process: echo
+environments:
+- name: lab
+  processes:
+  - name: echo
+    path: echo
     env:
       CLI_MGR_TEST: value`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
@@ -75,11 +75,11 @@ config-sources:
   type: file
   params: 
     path: /store1
-processes:
-- name: echo
-  environments:
-  - name: lab
-    process: echo
+environments:
+- name: lab
+  processes:
+  - name: echo
+    path: echo
     config: store1
     env:
       CLI_MGR_TEST: ((/key))`

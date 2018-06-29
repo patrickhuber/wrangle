@@ -36,7 +36,7 @@ func TestLoader(t *testing.T) {
 		cfg, err := loader.Load(configFilePath)
 		r.Nil(err)
 		r.NotNil(cfg)
-		r.Equal(0, len(cfg.Processes))
+		r.Equal(0, len(cfg.Environments))
 		r.Equal(0, len(cfg.ConfigSources))
 		r.True(afero.Exists(fileSystem, configFilePath))
 		//content, err := afero.ReadFile(fileSystem, configFilePath)
@@ -50,7 +50,7 @@ func TestLoader(t *testing.T) {
 config-sources:
   - name: test
     path: /test
-processes:`
+environments:`
 		content = strings.Replace(content, "\t", "  ", -1)
 		fileSystem := afero.NewMemMapFs()
 
@@ -71,12 +71,12 @@ config-sources:
   config: config
   params:
     key: value
-processes:
+environments:
 - name: name
-  environments:
+  processes:
   - name: lab
     config: name
-    process: go
+    path: go
     args:
     - version
     env:
@@ -92,5 +92,5 @@ processes:
 	cfg, err := loader.Load(configFilePath)
 	require.Nil(err)
 	require.Equal(1, len(cfg.ConfigSources))
-	require.Equal(1, len(cfg.Processes))
+	require.Equal(1, len(cfg.Environments))
 }

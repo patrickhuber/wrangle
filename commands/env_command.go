@@ -54,7 +54,7 @@ func (cmd *envCommand) ExecuteCommand(params RunCommandParams) error {
 	}
 
 	pipeline := store.NewPipeline(cmd.manager, cfg)
-	environment, err := pipeline.Run(processName, environmentName)
+	environment, err := pipeline.Run(environmentName, processName)
 	if err != nil {
 		return err
 	}

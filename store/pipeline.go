@@ -14,7 +14,7 @@ type pipeline struct {
 
 // Pipeline resolves an environment configuration against the pipeline configuration
 type Pipeline interface {
-	Run(processName string, environmentName string) (*config.Environment, error)
+	Run(environmentName string, processName string) (*config.Process, error)
 }
 
 // NewPipeline creates a new pipeline with the given manager and configuration
@@ -25,39 +25,39 @@ func NewPipeline(manager Manager, configuration *config.Config) Pipeline {
 	}
 }
 
-func (p *pipeline) Run(processName string, environmentName string) (*config.Environment, error) {
-	for _, process := range p.configuration.Processes {
-		if process.Name == processName {
-			for j := range process.Environments {
-				environment := &process.Environments[j]
-				if environment.Name == environmentName {
-					return p.run(environment)
+func (p *pipeline) Run(processName string, environmentName string) (*config.Process, error) {
+	for _, environment := range p.configuration.Environments {
+		if environment.Name == environmentName {
+			for j := range environment.Processes {
+				process := &environment.Processes[j]
+				if process.Name == processName {
+					return p.run(process)
 				}
 			}
 		}
 	}
-	return nil, fmt.Errorf("Unable to find environment '%s' for process '%s'", processName, environmentName)
+	return nil, fmt.Errorf("Unable to find process '%s' for environment '%s'", processName, environmentName)
 }
 
-func (p *pipeline) run(environment *config.Environment) (*config.Environment, error) {
-	if environment.Config == "" {
-		return environment, nil
+func (p *pipeline) run(process *config.Process) (*config.Process, error) {
+	if process.Config == "" {
+		return process, nil
 	}
-	resolvers, err := p.createResolvers(environment.Config)
+	resolvers, err := p.createResolvers(process.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	return evaluate(environment, resolvers)
+	return evaluate(process, resolvers)
 }
 
-func evaluate(environment *config.Environment, resolvers []templates.VariableResolver) (*config.Environment, error) {
+func evaluate(process *config.Process, resolvers []templates.VariableResolver) (*config.Process, error) {
 	const argsKey = "args"
 	const envKey = "env"
 
 	document := map[string]interface{}{
-		argsKey: environment.Args,
-		envKey:  environment.Vars,
+		argsKey: process.Args,
+		envKey:  process.Vars,
 	}
 	template := templates.NewTemplate(document)
 	resolved, err := template.Evaluate(resolvers...)
@@ -69,16 +69,16 @@ func evaluate(environment *config.Environment, resolvers []templates.VariableRes
 	args := resolvedMap[argsKey]
 	env := resolvedMap[envKey]
 
-	environment.Args, err = normalizeToStringSlice(args)
+	process.Args, err = normalizeToStringSlice(args)
 	if err != nil {
 		return nil, err
 	}
 
-	environment.Vars, err = normalizeToMapStringOfString(env)
+	process.Vars, err = normalizeToMapStringOfString(env)
 	if err != nil {
 		return nil, err
 	}
-	return environment, nil
+	return process, nil
 }
 
 func (p *pipeline) createResolvers(configName string) ([]templates.VariableResolver, error) {

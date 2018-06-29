@@ -45,11 +45,11 @@ config-sources:
   type: file 
   params:
     path: /store2
-processes:
-- name: echo
-  environments:
-  - name: lab
-    process: echo
+environments:
+- name: lab
+  processes:
+  - name: echo
+    path: echo
     config: store1
     env:
       CLI_MGR_TEST: ((/key))`

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"fmt"
 	"os/user"
 	"path/filepath"
 
@@ -61,8 +63,10 @@ func (loader *loader) ensureExists(configFile string) error {
 		return err
 	}
 
-	data := "config-sources:\nprocesses:\n"
-	return afero.WriteFile(fileSystem, configFile, []byte(data), 0644)
+	data := bytes.Buffer{}
+	fmt.Println(data, "config-sources:")
+	fmt.Println(data, "environments:")
+	return afero.WriteFile(fileSystem, configFile, data.Bytes(), 0644)
 }
 
 func (loader *loader) ensureDirectoryExists(directory string) error {

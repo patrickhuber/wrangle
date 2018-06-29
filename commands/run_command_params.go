@@ -8,17 +8,19 @@ type runCommandParams struct {
 	environmentName string
 }
 
+// RunCommandParams defines a contract for running a command or executing its environment
 type RunCommandParams interface {
 	Config() *config.Config
 	ProcessName() string
 	EnvironmentName() string
 }
 
-func NewRunCommandParams(config *config.Config, processName string, environmentName string) RunCommandParams {
+// NewRunCommandParams creates run command parameters
+func NewRunCommandParams(config *config.Config, environmentName string, processName string) RunCommandParams {
 	return &runCommandParams{
 		config:          config,
-		processName:     processName,
-		environmentName: environmentName}
+		environmentName: environmentName,
+		processName:     processName}
 }
 
 func (params *runCommandParams) Config() *config.Config {

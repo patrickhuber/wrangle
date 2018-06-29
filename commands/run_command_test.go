@@ -18,11 +18,11 @@ func TestRunCommand(t *testing.T) {
 
 		// write out the config file
 		configFileData := `
-processes:
-- name: go
-  environments:
-  - name: lab
-    process: go
+environments:
+- name: lab
+  processes:
+  - name: go
+    path: go
     args:
     - version
 `

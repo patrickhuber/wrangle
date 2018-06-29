@@ -83,7 +83,7 @@ func createApplication(
 	cliApp.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory),
 		*createEnvCommand(manager, fileSystem, platform, console),
-		*createProcessesCommand(fileSystem, console),
+		*createEnvironmentsCommand(fileSystem, console),
 	}
 
 	cliApp.Before = func(context *cli.Context) error {
@@ -135,13 +135,9 @@ func createRunCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			configuration, ok := context.App.Metadata["configuration"]
-			if !ok {
-				return errors.New("unable to load configuration from configuration metadata")
-			}
-			cfg, ok := configuration.(*config.Config)
-			if !ok {
-				return errors.New("configuration loaded from metadata is not the expected type of *config.Config")
+			cfg, err := getConfigurationFromCliContext(context)
+			if err != nil {
+				return err
 			}
 			processName := context.String("name")
 			environmentName := context.String("environment")
@@ -178,37 +174,48 @@ func createEnvCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			configuration, ok := context.App.Metadata["configuration"]
-			if !ok {
-				return errors.New("unable to load configuration from configuration metadata")
-			}
-			cfg, ok := configuration.(*config.Config)
-			if !ok {
-				return errors.New("configuration loaded from metadata is not the expected type of *config.Config")
-			}
 			processName := context.String("name")
 			environmentName := context.String("environment")
+			cfg, err := getConfigurationFromCliContext(context)
+			if err != nil {
+				return err
+			}
 			params := commands.NewRunCommandParams(cfg, processName, environmentName)
 			return envCommand.ExecuteCommand(params)
 		},
 	}
 }
 
-func createProcessesCommand(
+func getConfigurationFromCliContext(context *cli.Context) (*config.Config, error) {
+	configuration, ok := context.App.Metadata["configuration"]
+	if !ok {
+		return nil, errors.New("unable to load configuration from configuration metadata")
+	}
+	cfg, ok := configuration.(*config.Config)
+	if !ok {
+		return nil, errors.New("configuration loaded from metadata is not the expected type of *config.Config")
+	}
+	return cfg, nil
+}
+
+func createEnvironmentsCommand(
 	fileSystem afero.Fs,
 	console ui.Console) *cli.Command {
 
-	processesCommand := commands.NewProcessesCommand(
+	environmentsCommand := commands.NewEnvironmentsCommand(
 		fileSystem,
 		console)
 
 	return &cli.Command{
-		Name:    "processes",
+		Name:    "environments",
 		Aliases: []string{"p"},
-		Usage:   "prints the list of processes in the config file",
+		Usage:   "prints the list of environments in the config file",
 		Action: func(context *cli.Context) error {
-			configFile := context.GlobalString("config")
-			return processesCommand.ExecuteCommand(configFile)
+			cfg, err := getConfigurationFromCliContext(context)
+			if err != nil {
+				return err
+			}
+			return environmentsCommand.ExecuteCommand(cfg)
 		},
 	}
 }

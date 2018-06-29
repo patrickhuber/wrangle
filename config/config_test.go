@@ -18,10 +18,10 @@ config-sources:
   config: config
   params:
     key: value
-processes:
-- name: go
-  environments:
-    - name: lab
+environments:
+- name: lab
+  processes:
+    - name: go
       args:
       - test
       env:
@@ -35,8 +35,8 @@ processes:
 	require.Equal(1, len(config.ConfigSources))
 	require.Equal(1, len(config.ConfigSources[0].Params))
 	require.Equal("value", config.ConfigSources[0].Params["key"])
-	require.Equal(1, len(config.Processes))
-	require.Equal(1, len(config.Processes[0].Environments))
-	require.Equal(1, len(config.Processes[0].Environments[0].Args))
-	require.Equal(1, len(config.Processes[0].Environments[0].Vars))
+	require.Equal(1, len(config.Environments))
+	require.Equal(1, len(config.Environments[0].Processes))
+	require.Equal(1, len(config.Environments[0].Processes[0].Args))
+	require.Equal(1, len(config.Environments[0].Processes[0].Vars))
 }

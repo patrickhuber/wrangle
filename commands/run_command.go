@@ -51,7 +51,7 @@ func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 	}
 
 	pipeline := store.NewPipeline(cmd.manager, cfg)
-	environment, err := pipeline.Run(processName, environmentName)
+	environment, err := pipeline.Run(environmentName, processName)
 	if err != nil {
 		return err
 	}
@@ -59,10 +59,10 @@ func (cmd *runCommand) ExecuteCommand(params RunCommandParams) error {
 	return cmd.execute(environment)
 }
 
-func (cmd *runCommand) execute(processEnvironmentConfig *config.Environment) error {
+func (cmd *runCommand) execute(processConfig *config.Process) error {
 	process := cmd.processFactory.Create(
-		processEnvironmentConfig.Process,
-		processEnvironmentConfig.Args,
-		processEnvironmentConfig.Vars)
+		processConfig.Path,
+		processConfig.Args,
+		processConfig.Vars)
 	return process.Dispatch()
 }
