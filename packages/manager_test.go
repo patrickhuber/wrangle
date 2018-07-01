@@ -27,8 +27,8 @@ func TestManager(t *testing.T) {
 		// create the package
 		outPath := "/test/bosh-cli-3.0.1-linux-amd64"
 		pkg := New(
-			server.URL,
-			outPath)
+			NewDownload(server.URL, outPath),
+			nil)
 
 		// create the filesystem and manager
 		fileSystem := afero.NewMemMapFs()
@@ -81,8 +81,8 @@ func testExtract(t *testing.T, fixture string) {
 	r.Nil(err)
 
 	pkg := New(
-		"",
-		outPath)
+		NewDownload("", outPath),
+		nil)
 
 	manager := NewManager(fileSystem)
 

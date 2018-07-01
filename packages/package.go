@@ -1,30 +1,25 @@
 package packages
 
-import (
-	"github.com/spf13/afero"
-)
-
-// Package represents an interface for downloading a binary package
+// Package represents an interface for a binary package of software
 type Package interface {
-	URL() string
-	Out() string
+	Download() Download
+	Extract() Extract
 }
 
 type pkg struct {
-	url        string
-	outPath    string
-	fileSystem afero.Fs
+	download Download
+	extract  Extract
 }
 
 // New creates a new package ready for download
-func New(url string, outPath string) Package {
-	return &pkg{url: url, outPath: outPath}
+func New(download Download, extract Extract) Package {
+	return &pkg{download: download, extract: extract}
 }
 
-func (p *pkg) URL() string {
-	return p.url
+func (p *pkg) Download() Download {
+	return p.download
 }
 
-func (p *pkg) Out() string {
-	return p.outPath
+func (p *pkg) Extract() Extract {
+	return p.extract
 }

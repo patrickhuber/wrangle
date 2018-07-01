@@ -31,14 +31,14 @@ func NewManager(fileSystem afero.Fs) Manager {
 func (m *manager) Download(p Package) error {
 
 	// create the file
-	file, err := m.fileSystem.Create(p.Out())
+	file, err := m.fileSystem.Create(p.Download().Out())
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	// get the file data
-	resp, err := http.Get(p.URL())
+	resp, err := http.Get(p.Download().URL())
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (m *manager) Download(p Package) error {
 func (m *manager) Extract(p Package) error {
 
 	// open the file for reading
-	file, err := m.fileSystem.Open(p.Out())
+	file, err := m.fileSystem.Open(p.Download().Out())
 
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (m *manager) Extract(p Package) error {
 	var reader io.Reader = file
 
 	// based on extension process the file differently
-	extension := filepath.Ext(p.Out())
+	extension := filepath.Ext(p.Download().Out())
 
 	// file is gzipped
 	if extension == ".tgz" || extension == ".gz" {
@@ -76,7 +76,7 @@ func (m *manager) Extract(p Package) error {
 			return err
 		}
 
-		if strings.HasSuffix(p.Out(), ".tar.gz") {
+		if strings.HasSuffix(p.Download().Out(), ".tar.gz") {
 			extension = ".tar"
 		}
 	}
