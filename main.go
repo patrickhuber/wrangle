@@ -84,6 +84,7 @@ func createApplication(
 		*createRunCommand(manager, fileSystem, processFactory),
 		*createPrintCommand(manager, fileSystem, platform, console),
 		*createEnvironmentsCommand(fileSystem, console),
+		*createPackagesCommand(console),
 	}
 
 	cliApp.Before = func(context *cli.Context) error {
@@ -182,6 +183,23 @@ func createPrintCommand(
 			}
 			params := commands.NewRunCommandParams(cfg, processName, environmentName)
 			return printCommand.Execute(params)
+		},
+	}
+}
+
+func createPackagesCommand(
+	console ui.Console) *cli.Command {
+	packagesCommand := commands.NewPackages(console)
+	return &cli.Command{
+		Name:    "packages",
+		Aliases: []string{"k"},
+		Usage:   "prints the list of packages and versions in the config file",
+		Action: func(context *cli.Context) error {
+			cfg, err := getConfigurationFromCliContext(context)
+			if err != nil {
+				return err
+			}
+			return packagesCommand.Execute(cfg)
 		},
 	}
 }
