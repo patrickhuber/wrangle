@@ -39,8 +39,9 @@ func TestLoader(t *testing.T) {
 		r.Equal(0, len(cfg.Environments))
 		r.Equal(0, len(cfg.ConfigSources))
 		r.True(afero.Exists(fileSystem, configFilePath))
-		//content, err := afero.ReadFile(fileSystem, configFilePath)
-		//r.Nil(err)
+		content, err := afero.ReadFile(fileSystem, configFilePath)
+		r.Nil(err)
+		r.Equal([]byte("config-sources:\nenvironments:\npackages:\n"), content)
 	})
 
 	t.Run("WillFailIfExtraDataPresent", func(t *testing.T) {
@@ -62,7 +63,7 @@ environments:`
 }
 
 func AssertFilePathIsCorrect(t *testing.T, configFilePath string) {
-	require := require.New(t)
+	r := require.New(t)
 
 	var content = `
 config-sources:
@@ -81,8 +82,24 @@ environments:
     - version
     env:
       TEST: value
+packages:
+- name: bbr
+  version: 11.2.3
+  alias: bbr
+  platforms:
+  - name: linux
+    download:
+      url: https://www.google.com
+      out: /test/out1
+    extract:
+      filter: "*.*"
+      out: /test/out3
+  - name: windows
+    download:
+      url: https://www.google.com
+      out: /test/out
 `
-	content = strings.Replace(content, "\t", "  ", -1)
+	r.False(strings.ContainsAny(content, "\t"), "tabs in content, must be spaces only for indention")
 	fileSystem := afero.NewMemMapFs()
 
 	afero.WriteFile(fileSystem, configFilePath, []byte(content), 0644)
@@ -90,7 +107,7 @@ environments:
 	loader := NewLoader(fileSystem)
 
 	cfg, err := loader.Load(configFilePath)
-	require.Nil(err)
-	require.Equal(1, len(cfg.ConfigSources))
-	require.Equal(1, len(cfg.Environments))
+	r.Nil(err)
+	r.Equal(1, len(cfg.ConfigSources))
+	r.Equal(1, len(cfg.Environments))
 }

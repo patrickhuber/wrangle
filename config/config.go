@@ -4,6 +4,7 @@ package config
 type Config struct {
 	ConfigSources []ConfigSource `yaml:"config-sources"`
 	Environments  []Environment  `yaml:"environments"`
+	Packages      []Package      `yaml:"packages"`
 }
 
 // ConfigSource represents a source of configuration
@@ -27,4 +28,31 @@ type Process struct {
 	Path   string            `yaml:"path"`
 	Args   []string          `yaml:"args"`
 	Vars   map[string]string `yaml:"env"`
+}
+
+// Package represents a versioned artifiact
+type Package struct {
+	Name      string     `yaml:"name"`
+	Version   string     `yaml:"version"`
+	Alias     string     `yaml:"alias"`
+	Platforms []Platform `yaml:"platforms"`
+}
+
+// Platform represents a package platform install instructions
+type Platform struct {
+	Name     string   `yaml:"name"`
+	Download Download `yaml:"download"`
+	Extract  Extract  `yaml:"extract"`
+}
+
+// Download represents a package download
+type Download struct {
+	Out string `yaml:"out"`
+	URL string `yaml:"url"`
+}
+
+// Extract represents package extract information
+type Extract struct {
+	Out    string `yaml:"out"`
+	Filter string `yaml:"filter"`
 }

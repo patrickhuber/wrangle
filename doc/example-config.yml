@@ -74,15 +74,15 @@ packages:
   - name: linux
     download:
       url: https://github.com/concourse/concourse/releases/download/v((version))/fly_linux_amd64
-      output: fly_((version))_linux_amd64
+      out: fly_((version))_linux_amd64
   - name: windows
     download:
       url: https://github.com/concourse/concourse/releases/download/v((version))/fly_windows_amd64.exe
-      output: fly_((version))_windows_amd64
+      out: fly_((version))_windows_amd64
   - name: darwin
     download:
       url: https://github.com/concourse/concourse/releases/download/v((version))/fly_darwin_amd64
-      output: fly_((version))_darwin_amd64
+      out: fly_((version))_darwin_amd64
 
 - name: bbl
   version: 6.7.15
@@ -91,15 +91,15 @@ packages:
   - name: linux
     download:
       url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_linux_x86-64      
-      output: bbl-v((version))_linux_x86-64
+      out: bbl-v((version))_linux_x86-64
   - name: windows
     download:
       url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_windows.exe
-      output: bbl-v((version))_windows.exe
+      out: bbl-v((version))_windows.exe
   - name: darwin
     download:
       url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_osx
-      output: bbl-v((version))_osx
+      out: bbl-v((version))_osx
 
 - name: bosh
   version: 3.0.1
@@ -108,15 +108,15 @@ packages:
   - name: linux
     download:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
-      output: bosh-cli-((version))-linux-amd64
+      out: bosh-cli-((version))-linux-amd64
   - name: windows
     download:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
-      output: bosh-cli-((version))-windows-amd64.exe
+      out: bosh-cli-((version))-windows-amd64.exe
   - name: darwin
     download:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
-      output: bosh-cli-((version))-darwin-amd64
+      out: bosh-cli-((version))-darwin-amd64
 
 - name: credhub
   version: 1.7.6
@@ -125,15 +125,15 @@ packages:
   - name: linux
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz      
-      output: credhub-((version))-linux.tgz
+      out: credhub-((version))-linux.tgz
   - name: darwin
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz      
-      output: credhub-((version))-darwin.tgz
+      out: credhub-((version))-darwin.tgz
   - name: windows
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
-      output: credhub-((version))-windows.tgz
+      out: credhub-((version))-windows.tgz
 
 - name: cf
   version: 6.37.0
@@ -142,24 +142,24 @@ packages:
   - name: linux
     download:
       url: https://packages.cloudfoundry.org/stable?release=linux64-binary&version=((version))&source=github-rel
-      output: cf-cli_((version))_linux_x86-64.tgz
+      out: cf-cli_((version))_linux_x86-64.tgz
     extract:
       filter: cf
-      output: cf_((version))_linux
+      out: cf_((version))_linux
   - name: darwin
     download:
       url: https://packages.cloudfoundry.org/stable?release=macosx64-binary&version=((version))&source=github-rel
-      output: cf-cli_6.37.0_osx.tgz
+      out: cf-cli_6.37.0_osx.tgz
     extract:
       filter: cf
-      output: cf_((version))_darwin
+      out: cf_((version))_darwin
   - name: windows
     download:
       url: https://packages.cloudfoundry.org/stable?release=windows64-exe&version=((version))&source=github-rel      
-      output: cf-cli_((version))_winx64.zip
+      out: cf-cli_((version))_winx64.zip
     extract:
       filter: cf.exe
-      output: cf_((version))_winx64.exe
+      out: cf_((version))_winx64.exe
 
 - name: bbr
   version: 1.2.4
@@ -168,14 +168,14 @@ packages:
   - name: linux
     download:
       url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
-      output: bbr-((version)).tar
+      out: bbr-((version)).tar
     extract:
       filter: bbr
-      output: bbr-((version))-linux
+      out: bbr-((version))-linux
   - name: darwin
     download:
       url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
-      output: bbr-((version)).tar
+      out: bbr-((version)).tar
     extract:
       filter: bbr-mac
-      output: bbr-((version))-darwin
+      out: bbr-((version))-darwin

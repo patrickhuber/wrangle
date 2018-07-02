@@ -63,9 +63,11 @@ func (loader *loader) ensureExists(configFile string) error {
 		return err
 	}
 
-	data := bytes.Buffer{}
-	fmt.Println(data, "config-sources:")
-	fmt.Println(data, "environments:")
+	data := &bytes.Buffer{}
+	fmt.Fprintln(data, "config-sources:")
+	fmt.Fprintln(data, "environments:")
+	fmt.Fprintln(data, "packages:")
+
 	return afero.WriteFile(fileSystem, configFile, data.Bytes(), 0644)
 }
 
