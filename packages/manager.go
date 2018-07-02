@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,8 +31,13 @@ func NewManager(fileSystem afero.Fs) Manager {
 
 func (m *manager) Download(p Package) error {
 
+	if p.Download() == nil {
+		return errors.New("package Download() is required")
+	}
+
 	// create the file
-	file, err := m.fileSystem.Create(p.Download().Out())
+	filePath := filepath.Join(p.Download().OutFolder(), p.Download().Out())
+	file, err := m.fileSystem.Create(filePath)
 	if err != nil {
 		return err
 	}
@@ -55,8 +61,16 @@ func (m *manager) Download(p Package) error {
 
 func (m *manager) Extract(p Package) error {
 
+	if p.Download() == nil {
+		return errors.New("package Download() is required")
+	}
+	if p.Extract() == nil {
+		return errors.New("package Extract() is required")
+	}
+
 	// open the file for reading
-	file, err := m.fileSystem.Open(p.Download().Out())
+	path := filepath.Join(p.Download().OutFolder(), p.Download().Out())
+	file, err := m.fileSystem.Open(path)
 
 	if err != nil {
 		return err
@@ -83,7 +97,7 @@ func (m *manager) Extract(p Package) error {
 
 	//  the file is a tar archive
 	if extension == ".tgz" || extension == ".tar" {
-		err = m.extractTar(reader, "*.*", "/tmp")
+		err = m.extractTar(reader, p.Extract())
 		if err != nil {
 			return err
 		}
@@ -92,7 +106,7 @@ func (m *manager) Extract(p Package) error {
 
 	// the file is a zip archive
 	if extension == ".zip" {
-		err = m.extractZip(file, "*.*", "/tmp")
+		err = m.extractZip(file, p.Extract())
 		if err != nil {
 			return err
 		}
@@ -101,7 +115,7 @@ func (m *manager) Extract(p Package) error {
 	return fmt.Errorf("unrecoginzed file extension '%s'", extension)
 }
 
-func (m *manager) extractTar(reader io.Reader, fileSpec string, targetDirectory string) error {
+func (m *manager) extractTar(reader io.Reader, extract Extract) error {
 	// https://gist.github.com/indraniel/1a91458984179ab4cf80
 	tarReader := tar.NewReader(reader)
 
@@ -123,7 +137,7 @@ func (m *manager) extractTar(reader io.Reader, fileSpec string, targetDirectory 
 			continue
 		case tar.TypeReg:
 			// create the destination file
-			targetFile := filepath.Join(targetDirectory, name)
+			targetFile := filepath.Join(extract.OutFolder(), name)
 			destination, err := m.fileSystem.Create(targetFile)
 			if err != nil {
 				return err
@@ -142,7 +156,7 @@ func (m *manager) extractTar(reader io.Reader, fileSpec string, targetDirectory 
 	return nil
 }
 
-func (m *manager) extractZip(file afero.File, fileSpec string, targetDirectory string) error {
+func (m *manager) extractZip(file afero.File, extract Extract) error {
 	// http://golang-examples.tumblr.com/post/104726613899/extract-an-uploaded-zip-file
 
 	// get file stat to get file size
@@ -159,7 +173,7 @@ func (m *manager) extractZip(file afero.File, fileSpec string, targetDirectory s
 
 	for _, zipFile := range reader.File {
 
-		targetFile := filepath.Join(targetDirectory, zipFile.Name)
+		targetFile := filepath.Join(extract.OutFolder(), zipFile.Name)
 
 		// open destination
 		destination, err := m.fileSystem.Create(targetFile)

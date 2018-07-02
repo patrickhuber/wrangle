@@ -25,21 +25,25 @@ func TestManager(t *testing.T) {
 		defer server.Close()
 
 		// create the package
-		outPath := "/test/bosh-cli-3.0.1-linux-amd64"
+		out := "bosh-cli-3.0.1-linux-amd64"
+		outFolder := "/test"
 		pkg := New(
-			NewDownload(server.URL, outPath),
+			NewDownload(server.URL, out, outFolder),
 			nil)
 
 		// create the filesystem and manager
 		fileSystem := afero.NewMemMapFs()
 		manager := NewManager(fileSystem)
 
-		// download the package
+		// download the package and verify it was written
 		err := manager.Download(pkg)
-
-		// verify written
 		r.Nil(err)
-		r.True(afero.Exists(fileSystem, outPath))
+
+		outPath := filepath.Join(outFolder, out)
+		ok, err := afero.Exists(fileSystem, outPath)
+		r.Nil(err)
+		r.True(ok)
+
 		content, err := afero.ReadFile(fileSystem, outPath)
 		r.Nil(err)
 		r.Equal(string(content), message)
@@ -73,16 +77,17 @@ func testExtract(t *testing.T, fixture string) {
 	content, err := afero.ReadFile(osFileSystem, fixture)
 	r.Nil(err)
 
-	_, file := filepath.Split(fixture)
-	outPath := filepath.Join("/test", file)
+	_, out := filepath.Split(fixture)
+	outFolder := "/test"
 
 	fileSystem := afero.NewMemMapFs()
+	outPath := filepath.Join(outFolder, out)
 	err = afero.WriteFile(fileSystem, outPath, content, 0644)
 	r.Nil(err)
 
 	pkg := New(
-		NewDownload("", outPath),
-		nil)
+		NewDownload("", out, outFolder),
+		NewExtract("*.*", outFolder, out+"1"))
 
 	manager := NewManager(fileSystem)
 
