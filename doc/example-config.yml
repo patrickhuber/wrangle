@@ -179,3 +179,20 @@ packages:
     extract:
       filter: bbr-mac
       out: bbr-((version))-darwin
+
+- name: om
+  version: 0.37.0
+  alias: om
+  platforms:
+  - name: linux
+    download:
+      url: https://github.com/pivotal-cf/om/releases/download/((version))/om-linux
+      out: om-((version))-linux
+  - name: darwin
+    download:
+      url: https://github.com/pivotal-cf/om/releases/download/((version))/om-darwin
+      out: om-((version))-darwin
+  - name: windows
+    download:
+      url: https://github.com/pivotal-cf/om/releases/download/((version))/om-windows.exe
+      out: om-((version))-windows.exe
