@@ -36,8 +36,7 @@ func (m *manager) Download(p Package) error {
 	}
 
 	// create the file
-	filePath := filepath.Join(p.Download().OutFolder(), p.Download().Out())
-	file, err := m.fileSystem.Create(filePath)
+	file, err := m.fileSystem.Create(p.Download().OutPath())
 	if err != nil {
 		return err
 	}
@@ -69,7 +68,7 @@ func (m *manager) Extract(p Package) error {
 	}
 
 	// open the file for reading
-	path := filepath.Join(p.Download().OutFolder(), p.Download().Out())
+	path := p.Download().OutPath()
 	file, err := m.fileSystem.Open(path)
 
 	if err != nil {
@@ -81,7 +80,7 @@ func (m *manager) Extract(p Package) error {
 	var reader io.Reader = file
 
 	// based on extension process the file differently
-	extension := filepath.Ext(p.Download().Out())
+	extension := filepath.Ext(p.Download().OutFile())
 
 	// file is gzipped
 	if extension == ".tgz" || extension == ".gz" {
@@ -90,7 +89,7 @@ func (m *manager) Extract(p Package) error {
 			return err
 		}
 
-		if strings.HasSuffix(p.Download().Out(), ".tar.gz") {
+		if strings.HasSuffix(p.Download().OutFile(), ".tar.gz") {
 			extension = ".tar"
 		}
 	}
@@ -137,7 +136,7 @@ func (m *manager) extractTar(reader io.Reader, extract Extract) error {
 			continue
 		case tar.TypeReg:
 			// create the destination file
-			targetFile := filepath.Join(extract.OutFolder(), name)
+			targetFile := extract.OutPath()
 			destination, err := m.fileSystem.Create(targetFile)
 			if err != nil {
 				return err
@@ -173,7 +172,7 @@ func (m *manager) extractZip(file afero.File, extract Extract) error {
 
 	for _, zipFile := range reader.File {
 
-		targetFile := filepath.Join(extract.OutFolder(), zipFile.Name)
+		targetFile := extract.OutPath()
 
 		// open destination
 		destination, err := m.fileSystem.Create(targetFile)
