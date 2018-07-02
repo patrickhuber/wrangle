@@ -87,10 +87,18 @@ func testExtract(t *testing.T, fixture string) {
 
 	pkg := New(
 		NewDownload("", out, outFolder),
-		NewExtract("*.*", outFolder, out+"1"))
+		NewExtract("*.*", out+"1", outFolder))
 
 	manager := NewManager(fileSystem)
 
 	err = manager.Extract(pkg)
 	r.Nil(err)
+
+	ok, err = afero.Exists(fileSystem, pkg.Extract().OutPath())
+	r.Nil(err)
+	r.True(ok)
+
+	content, err = afero.ReadFile(fileSystem, pkg.Extract().OutPath())
+	r.Nil(err)
+	r.Equal([]byte("test\n"), content)
 }
