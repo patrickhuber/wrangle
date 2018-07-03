@@ -28,6 +28,7 @@ func TestManager(t *testing.T) {
 		out := "bosh-cli-3.0.1-linux-amd64"
 		outFolder := "/test"
 		pkg := New(
+			"", "", "",
 			NewDownload(server.URL, out, outFolder),
 			nil)
 
@@ -86,6 +87,7 @@ func testExtract(t *testing.T, fixture string) {
 	r.Nil(err)
 
 	pkg := New(
+		"", "", "",
 		NewDownload("", out, outFolder),
 		NewExtract("*.*", out+"1", outFolder))
 

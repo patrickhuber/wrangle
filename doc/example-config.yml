@@ -12,19 +12,19 @@ config-sources:
     client_id: something
     client_secret: somethingelse
     username: director_to_credhub
-    password: ((/uaa_clients_director_to_credhub))
+    password: ((uaa_clients_director_to_credhub))
     server: https://192.168.3.11:4343
-    ca_cert: ((/credhub-ca-cert.certificate))
+    ca_cert: ((credhub-ca-cert.certificate))
     skip_tls_validation: false
 
 - name: concourse-lab-credhub
   type: credhub
   config: bosh-lab-credhub
   params:
-    client_id: ((/credhub-client))
+    client_id: ((credhub-client))
     client_secret: ((/credhub-secret))
     server: https://192.168.0.6:8844
-    ca_cert: ((/credhub-ca-cert.certificate))
+    ca_cert: ((credhub-ca-cert.certificate))
     skip_tls_validation: false
 
 environments:
@@ -49,9 +49,9 @@ environments:
     args:
     - login
     env:
-      CREDHUB_CLIENT: ((/credhub-client))
-      CREDHUB_SECRET: ((/credhub-secret))
-      CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: ((credhub-secret))
+      CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
       CREDHUB_SERVER: https://192.168.0.6:8844
 
   - name: concourse-credhub
@@ -60,9 +60,9 @@ environments:
     args:
     - login
     env:
-      CREDHUB_CLIENT: ((/credhub-client))
-      CREDHUB_SECRET: ((/credhub-secret))
-      CREDHUB_CA_CERT: ((/credhub-ca-cert.certificate))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: ((credhub-secret))
+      CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
       CREDHUB_SERVER: https://192.168.0.10:8844
 
 packages:
@@ -196,3 +196,20 @@ packages:
     download:
       url: https://github.com/pivotal-cf/om/releases/download/((version))/om-windows.exe
       out: om-((version))-windows.exe
+
+- name: yaml_patch
+  version: 0.0.11
+  alias: yaml_patch
+  platforms:
+  - name: linux
+    download:
+      url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_linux
+      out: yaml_patch_((version))_linux
+- name: darwin
+    download:
+      url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_darwin
+      out: yaml_patch_((version))_darwin
+- name: windows
+    download:
+      url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch.exe
+      out: yaml_patch_((version))_windows.exe

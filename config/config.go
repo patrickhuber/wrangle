@@ -40,9 +40,9 @@ type Package struct {
 
 // Platform represents a package platform install instructions
 type Platform struct {
-	Name     string   `yaml:"name"`
-	Download Download `yaml:"download"`
-	Extract  Extract  `yaml:"extract"`
+	Name     string    `yaml:"name"`
+	Download *Download `yaml:"download"`
+	Extract  *Extract  `yaml:"extract"`
 }
 
 // Download represents a package download
