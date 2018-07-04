@@ -44,6 +44,7 @@ func GetDefaultConfigPath() (string, error) {
 		return "", err
 	}
 	configDir := filepath.Join(usr.HomeDir, ".cli-mgr", "config.yml")
+	configDir = filepath.ToSlash(configDir)
 	return configDir, nil
 }
 

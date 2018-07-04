@@ -1,6 +1,7 @@
 package packages
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -21,5 +22,14 @@ func TestPackage(t *testing.T) {
 		r.Equal("*.*", p.Extract().Filter())
 		r.Equal("ab_1.2", p.Extract().OutFile())
 		r.Equal("/test/1.2", p.Extract().OutFolder())
+	})
+
+	t.Run("PathIsCombinedFolderAndFile", func(t *testing.T) {
+		r := require.New(t)
+		p := New("a", "1.2", "a",
+			NewDownload("https://www.google.com", "one", "/test"),
+			NewExtract("*.*", "two", "/test"))
+		r.Equal("/test/one", filepath.ToSlash(p.Download().OutPath()))
+		r.Equal("/test/two", filepath.ToSlash(p.Extract().OutPath()))
 	})
 }

@@ -20,6 +20,7 @@ type download struct {
 // NewDownload Creates a new download instance
 func NewDownload(url string, out string, outFolder string) Download {
 	outPath := filepath.Join(outFolder, out)
+	outPath = filepath.ToSlash(outPath)
 	return &download{
 		url:       url,
 		outFile:   out,

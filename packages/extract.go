@@ -19,7 +19,8 @@ type extract struct {
 
 // NewExtract Creates a new extract instance
 func NewExtract(filter string, out string, outFolder string) Extract {
-	outPath := filepath.Join(out, outFolder)
+	outPath := filepath.Join(outFolder, out)
+	outPath = filepath.ToSlash(outPath)
 	return &extract{
 		filter:    filter,
 		out:       out,

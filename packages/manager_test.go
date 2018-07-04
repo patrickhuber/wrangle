@@ -45,6 +45,7 @@ func TestManager(t *testing.T) {
 		r.Nil(err)
 
 		outPath := filepath.Join(outFolder, out)
+		outPath = filepath.ToSlash(outPath)
 		ok, err := afero.Exists(fileSystem, outPath)
 		r.Nil(err)
 		r.True(ok)
@@ -102,8 +103,10 @@ func createTar(files []testFile) (*bytes.Buffer, error) {
 	tarWriter := tar.NewWriter(&buf)
 
 	for _, file := range files {
+		outPath := filepath.Join(file.folder, file.name)
+		outPath = filepath.ToSlash(outPath)
 		header := &tar.Header{
-			Name:     filepath.Join(file.folder, file.name),
+			Name:     outPath,
 			Mode:     0600,
 			Size:     int64(len(file.body)),
 			Typeflag: tar.TypeReg,
@@ -148,6 +151,7 @@ func testExtract(t *testing.T, fileSystem afero.Fs, fixture string, filter strin
 
 	fileSystem = afero.NewMemMapFs()
 	outPath := filepath.Join(outFolder, out)
+	outPath = filepath.ToSlash(outPath)
 	err = afero.WriteFile(fileSystem, outPath, content, 0644)
 	r.Nil(err)
 
