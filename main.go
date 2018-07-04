@@ -217,14 +217,20 @@ func createInstallPackageCommand(
 				Name:  "name, n",
 				Usage: "package named `NAME`",
 			},
+			cli.StringFlag{
+				Name:   "path, p",
+				Usage:  "the package install path",
+				EnvVar: "CLI_MGR_PACKAGE_INSTALL_PATH",
+			},
 		},
 		Action: func(context *cli.Context) error {
 			cfg, err := getConfigurationFromCliContext(context)
 			packageName := context.String("name")
+			packageInstallPath := context.String("path")
 			if err != nil {
 				return err
 			}
-			installPackageCommand := commands.NewInstallPackage(platform, "c:\\temp", fileSystem)
+			installPackageCommand := commands.NewInstallPackage(platform, packageInstallPath, fileSystem, ui.NewOSConsole())
 			return installPackageCommand.Execute(cfg, packageName)
 		},
 	}

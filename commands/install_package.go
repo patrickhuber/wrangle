@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/packages"
+	"github.com/patrickhuber/cli-mgr/ui"
 	"github.com/spf13/afero"
 )
 
@@ -12,6 +13,7 @@ type installPackage struct {
 	platform     string
 	packagesPath string
 	fileSystem   afero.Fs
+	console      ui.Console
 }
 
 // InstallPackage defines an install package command
@@ -23,11 +25,13 @@ type InstallPackage interface {
 func NewInstallPackage(
 	platform string,
 	packagesPath string,
-	fileSystem afero.Fs) InstallPackage {
+	fileSystem afero.Fs,
+	console ui.Console) InstallPackage {
 	return &installPackage{
 		platform:     platform,
 		packagesPath: packagesPath,
-		fileSystem:   fileSystem}
+		fileSystem:   fileSystem,
+		console:      console}
 }
 
 func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error {
@@ -72,6 +76,9 @@ func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error
 			manager := packages.NewManager(cmd.fileSystem)
 
 			// download the package
+			fmt.Fprintf(cmd.console.Out(), "downloading '%s' to '%s'", pkg.Download().URL(), pkg.Download().OutPath())
+			fmt.Fprintln(cmd.console.Out())
+
 			err := manager.Download(pkg)
 			if err != nil {
 				return err
@@ -79,6 +86,10 @@ func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error
 
 			// extract the package if extraction was set
 			if extract != nil {
+
+				fmt.Fprintf(cmd.console.Out(), "extracting '%s' to '%s'", pkg.Download().OutPath(), pkg.Extract().OutPath())
+				fmt.Fprintln(cmd.console.Out())
+
 				err = manager.Extract(pkg)
 				if err != nil {
 					return err

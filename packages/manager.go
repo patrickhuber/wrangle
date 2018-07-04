@@ -156,6 +156,7 @@ func (m *manager) extractTar(reader io.Reader, extract Extract) error {
 			if err != nil {
 				return err
 			}
+			m.fileSystem.Chmod(targetFile, 0755)
 		default:
 			return fmt.Errorf("unable to determine type : '%c' for file '%s' in package", header.Typeflag, name)
 		}
@@ -210,6 +211,7 @@ func (m *manager) extractZip(file afero.File, extract Extract) error {
 		if err != nil {
 			return err
 		}
+		m.fileSystem.Chmod(targetFile, 0755)
 	}
 
 	return nil

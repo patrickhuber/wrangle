@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/cli-mgr/ui"
 )
 
 func TestInstallPackageCommand(t *testing.T) {
@@ -70,7 +71,7 @@ packages:
 
 	// create the filesystem and command
 	fileSystem := afero.NewMemMapFs()
-	command := NewInstallPackage(platform, outFolder, fileSystem)
+	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 
 	// execute
 	err = command.Execute(cfg, "fly")
@@ -126,7 +127,7 @@ packages:
 
 	// create the filesystem and command
 	fileSystem := afero.NewMemMapFs()
-	command := NewInstallPackage(platform, outFolder, fileSystem)
+	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 
 	// execute
 	err = command.Execute(cfg, "bbr")
