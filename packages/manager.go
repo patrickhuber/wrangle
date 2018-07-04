@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -130,6 +131,13 @@ func (m *manager) extractTar(reader io.Reader, extract Extract) error {
 		}
 
 		name := header.Name
+		match, err := isMatch(header.Name, extract.Filter())
+		if err != nil {
+			return err
+		}
+		if !match {
+			continue
+		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
@@ -153,6 +161,15 @@ func (m *manager) extractTar(reader io.Reader, extract Extract) error {
 		}
 	}
 	return nil
+}
+
+func isMatch(name string, filter string) (bool, error) {
+	normalizedName := strings.Replace(name, "\\", "/", -1)
+
+	if normalizedName == filter {
+		return true, nil
+	}
+	return regexp.MatchString(filter, normalizedName)
 }
 
 func (m *manager) extractZip(file afero.File, extract Extract) error {
