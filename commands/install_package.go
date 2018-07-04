@@ -16,7 +16,7 @@ type installPackage struct {
 
 // InstallPackage defines an install package command
 type InstallPackage interface {
-	Execute(pkg *config.Package) error
+	Execute(cfg *config.Config, packageName string) error
 }
 
 // NewInstallPackage creates a new install package command
@@ -30,7 +30,18 @@ func NewInstallPackage(
 		fileSystem:   fileSystem}
 }
 
-func (cmd *installPackage) Execute(configPackage *config.Package) error {
+func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error {
+	var configPackage *config.Package
+	for i := range cfg.Packages {
+		pkg := &cfg.Packages[i]
+		if pkg.Name == packageName {
+			configPackage = pkg
+			break
+		}
+	}
+	if configPackage == nil {
+		return fmt.Errorf("unable to locate a package named '%s' in configuration file", packageName)
+	}
 	for _, platform := range configPackage.Platforms {
 		if platform.Name == cmd.platform {
 

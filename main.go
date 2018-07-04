@@ -85,6 +85,7 @@ func createApplication(
 		*createPrintCommand(manager, fileSystem, platform, console),
 		*createEnvironmentsCommand(fileSystem, console),
 		*createPackagesCommand(console),
+		*createInstallPackageCommand(fileSystem, platform),
 	}
 
 	cliApp.Before = func(context *cli.Context) error {
@@ -200,6 +201,31 @@ func createPackagesCommand(
 				return err
 			}
 			return packagesCommand.Execute(cfg)
+		},
+	}
+}
+
+func createInstallPackageCommand(
+	fileSystem afero.Fs,
+	platform string) *cli.Command {
+	return &cli.Command{
+		Name:    "install-package",
+		Aliases: []string{"i"},
+		Usage:   "installs the package with the given `NAME` for the current platform",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "name, n",
+				Usage: "package named `NAME`",
+			},
+		},
+		Action: func(context *cli.Context) error {
+			cfg, err := getConfigurationFromCliContext(context)
+			packageName := context.String("name")
+			if err != nil {
+				return err
+			}
+			installPackageCommand := commands.NewInstallPackage(platform, "c:\\temp", fileSystem)
+			return installPackageCommand.Execute(cfg, packageName)
 		},
 	}
 }

@@ -73,7 +73,7 @@ packages:
 	command := NewInstallPackage(platform, outFolder, fileSystem)
 
 	// execute
-	err = command.Execute(&cfg.Packages[0])
+	err = command.Execute(cfg, "fly")
 	r.Nil(err)
 
 	// verify downloaded file extists
@@ -129,7 +129,7 @@ packages:
 	command := NewInstallPackage(platform, outFolder, fileSystem)
 
 	// execute
-	err = command.Execute(&cfg.Packages[0])
+	err = command.Execute(cfg, "bbr")
 	r.Nil(err)
 
 	// verify downloaded file extists
