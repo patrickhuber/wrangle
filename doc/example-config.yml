@@ -170,14 +170,14 @@ packages:
       url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
       out: bbr-((version)).tar
     extract:
-      filter: releases/bbr
+      filter: bbr
       out: bbr-((version))-linux
   - name: darwin
     download:
       url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
       out: bbr-((version)).tar
     extract:
-      filter: releases/bbr-mac
+      filter: bbr-mac
       out: bbr-((version))-darwin
 
 - name: om
