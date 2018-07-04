@@ -15,13 +15,15 @@ VERSION:
    0.0.0
 
 COMMANDS:
-     run, r             run a command
-     print, p           print command environemnt variables
-     environments, e    lists the environments in the config
-     help, h            Shows a list of commands or help for one command
+     run, r              run a command
+     print, p            print command environemnt variables
+     environments, e     prints the list of environments in the config file
+     packages, k         prints the list of packages and versions in the config file
+     install-package, i  installs the package with the given `NAME` for the current platform
+     help, h             Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --config FILE, -c FILE  Load configuration from FILE (default: "C:\\Users\\patri\\.cli-mgr\\config.yml") [%CLI_MGR_CONFIG%]
+   --config FILE, -c FILE  Load configuration from FILE (default: "/home/patrick/.cli-mgr/config.yml") [$CLI_MGR_CONFIG]
    --help, -h              show help
    --version, -v           print the version
 ```
@@ -44,22 +46,68 @@ OPTIONS:
    --environment ENVIRONMENT, -e ENVIRONMENT  Use environment named ENVIRONMENT
 ```
 
-### env command
+### print command
 
 ```bash
-cli-mgr env --help
+cli-mgr print --help
 ```
 
 ```
 NAME:
-   cli-mgr env - print command environemnt variables
+   cli-mgr print - print command environemnt variables
 
 USAGE:
-   cli-mgr env [command options] [arguments...]
+   cli-mgr print [command options] [arguments...]
 
 OPTIONS:
-   --name NAME, -n NAME                       Execute command named NAME
+   --name NAME, -n NAME                       process named NAME
    --environment ENVIRONMENT, -e ENVIRONMENT  Use environment named ENVIRONMENT
+```
+
+### environments command
+
+```bash
+cli-mgr environments --help
+```
+
+```
+NAME:
+   cli-mgr environments - prints the list of environments in the config file
+
+USAGE:
+   cli-mgr environments [arguments...]
+```
+
+### packages command
+
+```bash
+cli-mgr packages --help
+```
+
+```
+NAME:
+   cli-mgr packages - prints the list of packages and versions in the config file
+
+USAGE:
+   cli-mgr packages [arguments...]
+```
+
+### install-package command
+
+```bash
+cli-mgr install-package --help
+```
+
+```
+NAME:
+   cli-mgr install-package - installs the package with the given `NAME` for the current platform
+
+USAGE:
+   cli-mgr install-package [command options] [arguments...]
+
+OPTIONS:
+   --name NAME, -n NAME    package named NAME
+   --path value, -p value  the package install path [$CLI_MGR_PACKAGE_INSTALL_PATH]
 ```
 
 ## building
