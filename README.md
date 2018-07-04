@@ -1,4 +1,4 @@
-# Automation Manager CLI
+# CLI Manager
 
 Template and simplify command line operations for several CLIs in the cloud foundry ecosystem.
 
