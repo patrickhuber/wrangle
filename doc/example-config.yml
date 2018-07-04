@@ -205,11 +205,37 @@ packages:
     download:
       url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_linux
       out: yaml_patch_((version))_linux
-- name: darwin
+  - name: darwin
     download:
       url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_darwin
       out: yaml_patch_((version))_darwin
-- name: windows
+  - name: windows
     download:
       url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch.exe
       out: yaml_patch_((version))_windows.exe
+
+- name: vault
+  version: 0.10.3
+  alias: vault
+  platforms:
+  - name: linux
+    download:
+      url: https://releases.hashicorp.com/vault/((version))/vault_((version))_linux_amd64.zip
+      out: vault_((version))_linux_amd64.zip
+    extract:
+      filter: vault
+      out: vault_((version))_linux_amd64
+  - name: windows
+    download:
+      url: https://releases.hashicorp.com/vault/((version))/vault_((version))_windows_amd64.zip
+      out: vault_((version))_windows_amd64.zip
+    extract:
+      filter: vault.exe
+      out: vault_((version))_windows_amd64.exe
+  - name: darwin
+    download:
+      url: https://releases.hashicorp.com/vault/((version))/vault_((version))_darwin_amd64.zip
+      out: vault_((version))_darwin_amd64.zip
+    extract:
+      filter: vault
+      out: vault_((version))_darwin_amd64
