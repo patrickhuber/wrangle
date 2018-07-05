@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/filesystem"
 	"github.com/patrickhuber/cli-mgr/processes"
 	file "github.com/patrickhuber/cli-mgr/store/file"
 	"github.com/patrickhuber/cli-mgr/ui"
@@ -26,7 +27,7 @@ func TestMain(t *testing.T) {
 		r := require.New(t)
 
 		// create dependencies
-		fileSystem := afero.NewMemMapFs()
+		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
 		storeManager := store.NewManager()
 		storeManager.Register(file.NewFileStoreProvider(fileSystem))
 		processFactory := processes.NewOsFactory() // change to fake process factory?

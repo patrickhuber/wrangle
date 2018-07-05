@@ -10,7 +10,9 @@ import (
 func TestPackage(t *testing.T) {
 	t.Run("CanReplaceVersionInDownload", func(t *testing.T) {
 		r := require.New(t)
-		p := New("a", "1.2", "a", NewDownload("https://((version))", "a_((version)).exe", "a_((version))_b"), nil)
+		p := New("a", "1.2", "a",
+			NewDownload("https://((version))", "a_((version))_b", "a_((version)).exe"),
+			nil)
 		r.Equal("https://1.2", p.Download().URL())
 		r.Equal("a_1.2.exe", p.Download().OutFile())
 		r.Equal("a_1.2_b", p.Download().OutFolder())
@@ -18,7 +20,9 @@ func TestPackage(t *testing.T) {
 
 	t.Run("CanReplaceVersionInExtract", func(t *testing.T) {
 		r := require.New(t)
-		p := New("a", "1.2", "a", NewDownload("", "test", "/test"), NewExtract("*.*", "ab_((version))", "/test/((version))"))
+		p := New("a", "1.2", "a",
+			NewDownload("", "/test", "test"),
+			NewExtract("*.*", "/test/((version))", "ab_((version))"))
 		r.Equal("*.*", p.Extract().Filter())
 		r.Equal("ab_1.2", p.Extract().OutFile())
 		r.Equal("/test/1.2", p.Extract().OutFolder())
@@ -27,8 +31,8 @@ func TestPackage(t *testing.T) {
 	t.Run("PathIsCombinedFolderAndFile", func(t *testing.T) {
 		r := require.New(t)
 		p := New("a", "1.2", "a",
-			NewDownload("https://www.google.com", "one", "/test"),
-			NewExtract("*.*", "two", "/test"))
+			NewDownload("https://www.google.com", "/test", "one"),
+			NewExtract("*.*", "/test", "two"))
 		r.Equal("/test/one", filepath.ToSlash(p.Download().OutPath()))
 		r.Equal("/test/two", filepath.ToSlash(p.Extract().OutPath()))
 	})

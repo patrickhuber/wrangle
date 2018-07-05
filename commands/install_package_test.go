@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/cli-mgr/filesystem"
 	"github.com/patrickhuber/cli-mgr/ui"
 )
 
@@ -70,7 +71,7 @@ packages:
 	r.Nil(err)
 
 	// create the filesystem and command
-	fileSystem := afero.NewMemMapFs()
+	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
 	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 
 	// execute
@@ -126,7 +127,7 @@ packages:
 	r.Nil(err)
 
 	// create the filesystem and command
-	fileSystem := afero.NewMemMapFs()
+	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
 	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 
 	// execute

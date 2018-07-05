@@ -7,9 +7,11 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/patrickhuber/cli-mgr/filesystem"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )
@@ -18,57 +20,28 @@ func TestManager(t *testing.T) {
 
 	t.Run("CanDownloadFile", func(t *testing.T) {
 		r := require.New(t)
-
-		message := "this is a test"
-		// start the local http server
-		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			rw.Write([]byte(message))
-		}))
-
-		// close connection when test is finished
-		defer server.Close()
-
-		// create the package
-		out := "bosh-cli-3.0.1-linux-amd64"
-		outFolder := "/test"
-		pkg := New(
-			"", "", "",
-			NewDownload(server.URL, out, outFolder),
-			nil)
-
-		// create the filesystem and manager
-		fileSystem := afero.NewMemMapFs()
-		manager := NewManager(fileSystem)
-
-		// download the package and verify it was written
-		err := manager.Download(pkg)
-		r.Nil(err)
-
-		outPath := filepath.Join(outFolder, out)
-		outPath = filepath.ToSlash(outPath)
-		ok, err := afero.Exists(fileSystem, outPath)
-		r.Nil(err)
-		r.True(ok)
-
-		content, err := afero.ReadFile(fileSystem, outPath)
-		r.Nil(err)
-		r.Equal(string(content), message)
+		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		testDownloadFile(r, fileSystem, "/test", "bosh-cli-3.0.1-linux-amd64", "this is a test")
 	})
 
 	t.Run("CanExtractTar", func(t *testing.T) {
-		testExtract(t, afero.NewOsFs(), "fixtures/test.tar", ".*")
+		fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+		testExtract(t, fileSystem, "fixtures/test.tar", ".*")
 	})
 
 	t.Run("CanExtractTgz", func(t *testing.T) {
-		testExtract(t, afero.NewOsFs(), "fixtures/test.tgz", ".*")
+		fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+		testExtract(t, fileSystem, "fixtures/test.tgz", ".*")
 	})
 
 	t.Run("CanExtractZip", func(t *testing.T) {
-		testExtract(t, afero.NewOsFs(), "fixtures/test.zip", ".*")
+		fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+		testExtract(t, fileSystem, "fixtures/test.zip", ".*")
 	})
 
 	t.Run("CanExtractTarGz", func(t *testing.T) {
-		testExtract(t, afero.NewOsFs(), "fixtures/test.tar.gz", ".*")
+		fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+		testExtract(t, fileSystem, "fixtures/test.tar.gz", ".*")
 	})
 
 	t.Run("CanExtractNestedFileInTar", func(t *testing.T) {
@@ -84,17 +57,78 @@ func TestManager(t *testing.T) {
 		r.Nil(err)
 		r.NotNil(buf)
 
-		fileSystem := afero.NewMemMapFs()
+		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
 		fixture := "/fixtures/test.tar"
 		err = afero.WriteFile(fileSystem, fixture, buf.Bytes(), 0644)
 		r.Nil(err)
 
 		testExtract(t, fileSystem, fixture, "/parent/child/two")
 	})
+
+	t.Run("CanCreateSymLinkForBinary", func(t *testing.T) {
+		r := require.New(t)
+		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		testDownloadFile(r, fileSystem, "/test", "out", "this is a test")
+
+		ok, err := afero.Exists(fileSystem, "/test/alias")
+		r.Nil(err)
+		r.True(ok)
+
+		file, err := fileSystem.Stat("/test/out")
+		r.Nil(err)
+		r.Equal(file.Mode()&os.ModePerm, 0755&os.ModePerm, file.Mode().String())
+
+		file, err = fileSystem.Stat("/test/alias")
+		r.Nil(err)
+		r.Equal(file.Mode()&os.ModePerm, 0755&os.ModePerm, file.Mode().String())
+	})
+
+	t.Run("CanCreateSymLinkForArchive", func(t *testing.T) {
+
+	})
 }
 
 type testFile struct {
 	name, folder, body string
+}
+
+func testDownloadFile(
+	r *require.Assertions,
+	fileSystem filesystem.FsWrapper,
+	outFolder string,
+	outFile string,
+	content string) {
+
+	// start the local http server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(content))
+	}))
+
+	// close connection when test is finished
+	defer server.Close()
+
+	// create the package
+	pkg := New(
+		"", "", "alias",
+		NewDownload(server.URL, outFolder, outFile),
+		nil)
+
+	// create the filesystem and manager
+	manager := NewManager(fileSystem)
+
+	// download the package and verify it was written
+	err := manager.Download(pkg)
+	r.Nil(err)
+
+	outPath := filepath.Join(outFolder, outFile)
+	outPath = filepath.ToSlash(outPath)
+	ok, err := afero.Exists(fileSystem, outPath)
+	r.Nil(err)
+	r.True(ok)
+
+	newContent, err := afero.ReadFile(fileSystem, outPath)
+	r.Nil(err)
+	r.Equal(content, string(newContent))
 }
 
 // https://golang.org/src/archive/tar/example_test.go
@@ -136,7 +170,7 @@ func createZip(files []testFile) error {
 	return nil
 }
 
-func testExtract(t *testing.T, fileSystem afero.Fs, fixture string, filter string) {
+func testExtract(t *testing.T, fileSystem filesystem.FsWrapper, fixture string, filter string) {
 	r := require.New(t)
 
 	ok, err := afero.Exists(fileSystem, fixture)
@@ -149,7 +183,7 @@ func testExtract(t *testing.T, fileSystem afero.Fs, fixture string, filter strin
 	_, out := filepath.Split(fixture)
 	outFolder := "/test"
 
-	fileSystem = afero.NewMemMapFs()
+	fileSystem = filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
 	outPath := filepath.Join(outFolder, out)
 	outPath = filepath.ToSlash(outPath)
 	err = afero.WriteFile(fileSystem, outPath, content, 0644)
@@ -157,8 +191,8 @@ func testExtract(t *testing.T, fileSystem afero.Fs, fixture string, filter strin
 
 	pkg := New(
 		"", "", "",
-		NewDownload("", out, outFolder),
-		NewExtract(filter, out+"1", outFolder))
+		NewDownload("", outFolder, out),
+		NewExtract(filter, outFolder, out+"1"))
 
 	manager := NewManager(fileSystem)
 

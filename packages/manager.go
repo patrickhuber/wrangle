@@ -12,11 +12,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/patrickhuber/cli-mgr/filesystem"
 	"github.com/spf13/afero"
 )
 
 type manager struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FsWrapper
 }
 
 // Manager defines a manager interface
@@ -26,7 +27,7 @@ type Manager interface {
 }
 
 // NewManager creates a new package manager
-func NewManager(fileSystem afero.Fs) Manager {
+func NewManager(fileSystem filesystem.FsWrapper) Manager {
 	return &manager{fileSystem: fileSystem}
 }
 
@@ -52,11 +53,15 @@ func (m *manager) Download(p Package) error {
 
 	// Write the body to file
 	_, err = io.Copy(file, resp.Body)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	if isBinaryPackage(p) {
+		return m.postProcessPackage(p)
+	}
+	return err
+}
+
+func isBinaryPackage(p Package) bool {
+	return p.Extract() == nil
 }
 
 func (m *manager) Extract(p Package) error {
@@ -95,24 +100,21 @@ func (m *manager) Extract(p Package) error {
 		}
 	}
 
-	//  the file is a tar archive
-	if extension == ".tgz" || extension == ".tar" {
+	switch extension {
+	case ".tgz":
 		err = m.extractTar(reader, p.Extract())
-		if err != nil {
-			return err
-		}
-		return nil
+		break
+	case ".tar":
+		err = m.extractTar(reader, p.Extract())
+		break
+	case ".zip":
+		err = m.extractZip(file, p.Extract())
+		break
+	default:
+		return fmt.Errorf("unrecoginzed file extension '%s'", extension)
 	}
 
-	// the file is a zip archive
-	if extension == ".zip" {
-		err = m.extractZip(file, p.Extract())
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	return fmt.Errorf("unrecoginzed file extension '%s'", extension)
+	return m.postProcessPackage(p)
 }
 
 func (m *manager) extractTar(reader io.Reader, extract Extract) error {
@@ -156,7 +158,6 @@ func (m *manager) extractTar(reader io.Reader, extract Extract) error {
 			if err != nil {
 				return err
 			}
-			m.fileSystem.Chmod(targetFile, 0755)
 		default:
 			return fmt.Errorf("unable to determine type : '%c' for file '%s' in package", header.Typeflag, name)
 		}
@@ -211,8 +212,40 @@ func (m *manager) extractZip(file afero.File, extract Extract) error {
 		if err != nil {
 			return err
 		}
-		m.fileSystem.Chmod(targetFile, 0755)
 	}
 
 	return nil
+}
+
+func (m *manager) postProcessPackage(p Package) error {
+
+	// set the permissions of the pakcage output
+	if isBinaryPackage(p) {
+		return m.postProcessFile(
+			p.Alias(),
+			p.Download().OutFolder(),
+			p.Download().OutFile())
+	}
+	return m.postProcessFile(
+		p.Alias(),
+		p.Extract().OutFolder(),
+		p.Extract().OutFile())
+}
+
+func (m *manager) postProcessFile(alias string, sourceFolder string, sourceFile string) error {
+	sourcePath := filepath.Join(sourceFolder, sourceFile)
+	sourcePath = filepath.ToSlash(sourcePath)
+	err := m.fileSystem.Chmod(sourcePath, 0755)
+	if err != nil {
+		return err
+	}
+
+	// the file needs to have a symlink with the alias name
+	aliasPath := filepath.Join(sourceFolder, alias)
+	aliasPath = filepath.ToSlash(aliasPath)
+	err = m.fileSystem.Symlink(sourcePath, aliasPath)
+	if err != nil {
+		return err
+	}
+	return m.fileSystem.Chmod(aliasPath, 0755)
 }

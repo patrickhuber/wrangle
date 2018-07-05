@@ -7,6 +7,8 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/patrickhuber/cli-mgr/filesystem"
+
 	"github.com/spf13/afero"
 
 	"github.com/patrickhuber/cli-mgr/commands"
@@ -27,7 +29,7 @@ type application struct {
 }
 
 func main() {
-	fileSystem := afero.NewOsFs()
+	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
 	configStoreManager := createConfigStoreManager(fileSystem)
 	validateConfigStoreManager(configStoreManager)
 
@@ -56,7 +58,7 @@ func main() {
 
 func createApplication(
 	manager store.Manager,
-	fileSystem afero.Fs,
+	fileSystem filesystem.FsWrapper,
 	processFactory processes.Factory,
 	console ui.Console,
 	platform string) (*cli.App, error) {
@@ -206,7 +208,7 @@ func createPackagesCommand(
 }
 
 func createInstallPackageCommand(
-	fileSystem afero.Fs,
+	fileSystem filesystem.FsWrapper,
 	platform string) *cli.Command {
 	return &cli.Command{
 		Name:    "install-package",

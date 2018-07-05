@@ -9,6 +9,7 @@ type Package interface {
 	Download() Download
 	Extract() Extract
 	Version() string
+	Alias() string
 }
 
 type pkg struct {
@@ -41,6 +42,10 @@ func (p *pkg) Version() string {
 	return p.version
 }
 
+func (p *pkg) Alias() string {
+	return p.alias
+}
+
 func interpolateDownload(version string, download Download) Download {
 	if download == nil {
 		return nil
@@ -48,7 +53,7 @@ func interpolateDownload(version string, download Download) Download {
 	url := replaceVersion(download.URL(), version)
 	outFile := replaceVersion(download.OutFile(), version)
 	outFolder := replaceVersion(download.OutFolder(), version)
-	return NewDownload(url, outFile, outFolder)
+	return NewDownload(url, outFolder, outFile)
 }
 
 func interpolateExtract(version string, extract Extract) Extract {
@@ -58,7 +63,7 @@ func interpolateExtract(version string, extract Extract) Extract {
 	filter := replaceVersion(extract.Filter(), version)
 	outFile := replaceVersion(extract.OutFile(), version)
 	outFolder := replaceVersion(extract.OutFolder(), version)
-	return NewExtract(filter, outFile, outFolder)
+	return NewExtract(filter, outFolder, outFile)
 }
 
 func replaceVersion(input string, version string) string {

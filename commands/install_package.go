@@ -3,16 +3,17 @@ package commands
 import (
 	"fmt"
 
+	"github.com/patrickhuber/cli-mgr/filesystem"
+
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/packages"
 	"github.com/patrickhuber/cli-mgr/ui"
-	"github.com/spf13/afero"
 )
 
 type installPackage struct {
 	platform     string
 	packagesPath string
-	fileSystem   afero.Fs
+	fileSystem   filesystem.FsWrapper
 	console      ui.Console
 }
 
@@ -25,7 +26,7 @@ type InstallPackage interface {
 func NewInstallPackage(
 	platform string,
 	packagesPath string,
-	fileSystem afero.Fs,
+	fileSystem filesystem.FsWrapper,
 	console ui.Console) InstallPackage {
 	return &installPackage{
 		platform:     platform,
@@ -52,16 +53,16 @@ func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error
 			// create the download part of the package
 			download := packages.NewDownload(
 				platform.Download.URL,
-				platform.Download.Out,
-				cmd.packagesPath)
+				cmd.packagesPath,
+				platform.Download.Out)
 
 			// create the extraction part of the package
 			var extract packages.Extract
 			if platform.Extract != nil {
 				extract = packages.NewExtract(
 					platform.Extract.Filter,
-					platform.Extract.Out,
-					cmd.packagesPath)
+					cmd.packagesPath,
+					platform.Extract.Out)
 			}
 
 			// create the package with the download and extract params set

@@ -18,7 +18,7 @@ type download struct {
 }
 
 // NewDownload Creates a new download instance
-func NewDownload(url string, out string, outFolder string) Download {
+func NewDownload(url string, outFolder string, out string) Download {
 	outPath := filepath.Join(outFolder, out)
 	outPath = filepath.ToSlash(outPath)
 	return &download{
