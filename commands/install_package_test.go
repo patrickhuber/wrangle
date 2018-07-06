@@ -1,13 +1,13 @@
 package commands
 
 import (
-	"archive/tar"
-	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+
+	"github.com/patrickhuber/cli-mgr/archiver"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
@@ -17,19 +17,24 @@ import (
 	"github.com/patrickhuber/cli-mgr/ui"
 )
 
-func TestInstallPackageCommand(t *testing.T) {
-	t.Run("CanInstallBinaryPackageOnWindows", func(t *testing.T) {
-		canInstallBinaryPackage(t, "windows", "c:\\test")
-	})
-	t.Run("CanInstallBinaryPackageOnLinux", func(t *testing.T) {
-		canInstallBinaryPackage(t, "linux", "/test")
-	})
-	t.Run("CanInstallBinaryPackageOnMac", func(t *testing.T) {
-		canInstallBinaryPackage(t, "darwin", "/test")
-	})
-	t.Run("CanInstallTarPackageOnLinux", func(t *testing.T) {
-		canInstallTarPackage(t, "linux", "/test")
-	})
+func TestCanInstallBinaryPackageOnWindows(t *testing.T) {
+	canInstallBinaryPackage(t, "windows", "c:\\test")
+}
+
+func TestCanInstallBinaryPackageOnLinux(t *testing.T) {
+	canInstallBinaryPackage(t, "linux", "/test")
+}
+
+func TestCanInstallBinaryPackageOnMac(t *testing.T) {
+	canInstallBinaryPackage(t, "darwin", "/test")
+}
+
+func TestCanInstallTarPackageOnLinux(t *testing.T) {
+	canInstallTarPackage(t, "linux", "/test")
+}
+
+func TestCanInstallTgzPackageOnWindows(t *testing.T) {
+	canInstallTgzPackage(t, "windows", "c:\\test")
 }
 
 func canInstallBinaryPackage(t *testing.T, platform string, outFolder string) {
@@ -114,9 +119,35 @@ packages:
 `
 	// start the local http server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		file, _ := createTar([]testFile{
-			{"bbr", "/releases", "rando text"}})
-		rw.Write(file.Bytes())
+		fs := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		err := afero.WriteFile(fs, "/bbr", []byte("this is data"), 0666)
+		if err != nil {
+			rw.Write([]byte("error creating executable"))
+			rw.WriteHeader(400)
+			return
+		}
+		a := archiver.NewTarArchiver(fs)
+		file, err := fs.Create("/bbr.tar")
+		defer file.Close()
+		if err != nil {
+			rw.Write([]byte("error creating tar"))
+			rw.WriteHeader(400)
+			return
+		}
+		err = a.Write(file, []string{"/bbr"})
+		if err != nil {
+			rw.Write([]byte("error writing tar"))
+			rw.WriteHeader(400)
+			return
+		}
+
+		buf, err := afero.ReadFile(fs, "/bbr.tar")
+		if err != nil {
+			rw.Write([]byte("error reading tar"))
+			rw.WriteHeader(400)
+			return
+		}
+		rw.Write(buf)
 	}))
 
 	// close connection when test is finished
@@ -145,30 +176,97 @@ packages:
 	r.True(ok, "file %s does not exist", expectedPath)
 }
 
-type testFile struct {
-	name, folder, body string
-}
+func canInstallTgzPackage(t *testing.T, platform string, outFolder string) {
+	r := require.New(t)
+	content := `
+packages:
+- name: credhub
+  version: 1.7.6
+  platforms:
+  - name: linux
+    alias: credhub
+    download:
+      url: "%s"
+      out: credhub-((version))-linux.tgz
+    extract:
+      filter: credhub
+      out: credhub-((version))-linux
+  - name: darwin
+    alias: credhub
+    download:
+      url: "%s"
+      out: credhub-((version))-darwin.tgz
+    extract:
+      filter: credhub
+      out: credhub-((version))-darwin
+  - name: windows
+    alias: credhub.exe
+    download:
+      url: "%s"
+      out: credhub-((version))-windows.tgz
+    extract:
+      filter: credhub
+      out: credhub-((version))-windows.exe
+`
+	// start the local http server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		fs := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		err := afero.WriteFile(fs, "/credhub", []byte("this is data"), 0666)
+		if err != nil {
+			rw.Write([]byte("error creating executable"))
+			rw.WriteHeader(400)
+			return
+		}
+		a := archiver.NewTargzArchiver(fs)
+		file, err := fs.Create("/credhub.tgz")
+		defer file.Close()
+		if err != nil {
+			rw.Write([]byte("error creating tgz"))
+			rw.WriteHeader(400)
+			return
+		}
+		err = a.Write(file, []string{"/credhub"})
+		if err != nil {
+			rw.Write([]byte("error writing tgz"))
+			rw.WriteHeader(400)
+			return
+		}
 
-// https://golang.org/src/archive/tar/example_test.go
-func createTar(files []testFile) (*bytes.Buffer, error) {
-	var buf bytes.Buffer
-	tarWriter := tar.NewWriter(&buf)
+		buf, err := afero.ReadFile(fs, "/credhub.tgz")
+		if err != nil {
+			rw.Write([]byte("error reading tgz"))
+			rw.WriteHeader(400)
+			return
+		}
+		rw.Write(buf)
+	}))
 
-	for _, file := range files {
-		outPath := filepath.Join(file.folder, file.name)
-		outPath = filepath.ToSlash(outPath)
-		header := &tar.Header{
-			Name:     outPath,
-			Mode:     0600,
-			Size:     int64(len(file.body)),
-			Typeflag: tar.TypeReg,
-		}
-		if err := tarWriter.WriteHeader(header); err != nil {
-			return nil, err
-		}
-		if _, err := tarWriter.Write([]byte(file.body)); err != nil {
-			return nil, err
-		}
+	// close connection when test is finished
+	defer server.Close()
+
+	// replace the url in the content with the test server url
+	content = fmt.Sprintf(content, server.URL, server.URL, server.URL)
+
+	// serialize the config to a config object
+	cfg, err := config.SerializeString(content)
+	r.Nil(err)
+
+	// create the filesystem and command
+	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+
+	// execute
+	err = command.Execute(cfg, "credhub")
+	r.Nil(err)
+
+	// verify downloaded file extists
+	expectedExtension := ""
+	if platform == "windows" {
+		expectedExtension = ".exe"
 	}
-	return &buf, nil
+	expectedFileName := fmt.Sprintf("credhub-1.7.6-%s%s", platform, expectedExtension)
+	expectedPath := filepath.ToSlash(filepath.Join(outFolder, expectedFileName))
+	ok, err := afero.Exists(fileSystem, expectedPath)
+	r.Nil(err)
+	r.True(ok, "file %s does not exist", expectedPath)
 }

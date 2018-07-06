@@ -69,77 +69,94 @@ packages:
 
 - name: fly
   version: 3.14.1
-  alias: fly
   platforms:
   - name: linux
+    alias: fly
     download:
       url: https://github.com/concourse/concourse/releases/download/v((version))/fly_linux_amd64
       out: fly_((version))_linux_amd64
   - name: windows
+    alias: fly.exe
     download:
       url: https://github.com/concourse/concourse/releases/download/v((version))/fly_windows_amd64.exe
       out: fly_((version))_windows_amd64.exe
   - name: darwin
+    alias: fly
     download:
       url: https://github.com/concourse/concourse/releases/download/v((version))/fly_darwin_amd64
       out: fly_((version))_darwin_amd64
 
 - name: bbl
-  version: 6.7.15
-  alias: bbl
+  version: 6.7.15  
   platforms:
   - name: linux
+    alias: bbl
     download:
       url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_linux_x86-64      
       out: bbl-v((version))_linux_x86-64
   - name: windows
+    alias: bbl.exe
     download:
       url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_windows.exe
       out: bbl-v((version))_windows.exe
   - name: darwin
+    alias: bbl
     download:
       url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_osx
       out: bbl-v((version))_osx
 
 - name: bosh
-  version: 3.0.1
-  alias: bosh
+  version: 3.0.1  
   platforms:
   - name: linux
+    alias: bosh
     download:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
       out: bosh-cli-((version))-linux-amd64
   - name: windows
+    alias: bosh.exe
     download:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
       out: bosh-cli-((version))-windows-amd64.exe
   - name: darwin
+    alias: bosh
     download:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
       out: bosh-cli-((version))-darwin-amd64
 
 - name: credhub
-  version: 1.7.6
-  alias: credhub
-  platforms:
+  version: 1.7.6  
+  platforms:    
   - name: linux
+    alias: credhub
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz      
       out: credhub-((version))-linux.tgz
+    extract:
+      filter: credhub
+      out: credhub-((version))-linux
   - name: darwin
+    alias: credhub
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz      
       out: credhub-((version))-darwin.tgz
+    extract:
+      filter: credhub
+      out: credhub-((version))-darwin
   - name: windows
+    alias: credhub.exe
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
       out: credhub-((version))-windows.tgz
+    extract:
+      filter: credhub
+      out: credhub-((version))-windows.exe
 
 - name: cf
-  version: 6.37.0
-  alias: cf
+  version: 6.37.0  
   platforms:
   - name: linux
+    alias: cf
     download:
       url: https://packages.cloudfoundry.org/stable?release=linux64-binary&version=((version))&source=github-rel
       out: cf-cli_((version))_linux_x86-64.tgz
@@ -147,6 +164,7 @@ packages:
       filter: cf
       out: cf_((version))_linux
   - name: darwin
+    alias: cf
     download:
       url: https://packages.cloudfoundry.org/stable?release=macosx64-binary&version=((version))&source=github-rel
       out: cf-cli_6.37.0_osx.tgz
@@ -154,6 +172,7 @@ packages:
       filter: cf
       out: cf_((version))_darwin
   - name: windows
+    alias: cf.exe
     download:
       url: https://packages.cloudfoundry.org/stable?release=windows64-exe&version=((version))&source=github-rel      
       out: cf-cli_((version))_winx64.zip
@@ -162,10 +181,10 @@ packages:
       out: cf_((version))_winx64.exe
 
 - name: bbr
-  version: 1.2.4
-  alias: bbr
+  version: 1.2.4  
   platforms:
   - name: linux
+    alias: bbr
     download:
       url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
       out: bbr-((version)).tar
@@ -173,6 +192,7 @@ packages:
       filter: bbr$
       out: bbr-((version))-linux
   - name: darwin
+    alias: bbr
     download:
       url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
       out: bbr-((version)).tar
@@ -181,44 +201,48 @@ packages:
       out: bbr-((version))-darwin
 
 - name: om
-  version: 0.37.0
-  alias: om
+  version: 0.37.0  
   platforms:
   - name: linux
+    alias: om
     download:
       url: https://github.com/pivotal-cf/om/releases/download/((version))/om-linux
       out: om-((version))-linux
   - name: darwin
+    alias: om
     download:
       url: https://github.com/pivotal-cf/om/releases/download/((version))/om-darwin
       out: om-((version))-darwin
   - name: windows
+    alias: bbr.exe
     download:
       url: https://github.com/pivotal-cf/om/releases/download/((version))/om-windows.exe
       out: om-((version))-windows.exe
 
 - name: yaml_patch
-  version: 0.0.11
-  alias: yaml_patch
+  version: 0.0.11  
   platforms:
   - name: linux
+    alias: yaml_patch
     download:
       url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_linux
       out: yaml_patch_((version))_linux
   - name: darwin
+    alias: yaml_patch
     download:
       url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_darwin
       out: yaml_patch_((version))_darwin
   - name: windows
+    alias: yaml_patch.exe
     download:
       url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch.exe
       out: yaml_patch_((version))_windows.exe
 
 - name: vault
-  version: 0.10.3
-  alias: vault
-  platforms:
+  version: 0.10.3  
+  platforms:    
   - name: linux
+    alias: vault
     download:
       url: https://releases.hashicorp.com/vault/((version))/vault_((version))_linux_amd64.zip
       out: vault_((version))_linux_amd64.zip
@@ -226,6 +250,7 @@ packages:
       filter: vault
       out: vault_((version))_linux_amd64
   - name: windows
+    alias: vault.exe
     download:
       url: https://releases.hashicorp.com/vault/((version))/vault_((version))_windows_amd64.zip
       out: vault_((version))_windows_amd64.zip
@@ -233,6 +258,7 @@ packages:
       filter: vault.exe
       out: vault_((version))_windows_amd64.exe
   - name: darwin
+    alias: vault
     download:
       url: https://releases.hashicorp.com/vault/((version))/vault_((version))_darwin_amd64.zip
       out: vault_((version))_darwin_amd64.zip

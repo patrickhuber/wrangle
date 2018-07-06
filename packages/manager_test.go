@@ -82,10 +82,6 @@ func TestManager(t *testing.T) {
 		r.Nil(err)
 		r.Equal(file.Mode()&os.ModePerm, 0755&os.ModePerm, file.Mode().String())
 	})
-
-	t.Run("CanCreateSymLinkForArchive", func(t *testing.T) {
-
-	})
 }
 
 type testFile struct {
