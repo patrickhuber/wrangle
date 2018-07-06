@@ -7,12 +7,11 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/patrickhuber/cli-mgr/filesystem"
-
 	"github.com/spf13/afero"
 
 	"github.com/patrickhuber/cli-mgr/commands"
 	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/cli-mgr/filesystem"
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/patrickhuber/cli-mgr/ui"

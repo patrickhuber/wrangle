@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/patrickhuber/cli-mgr/filesystem"
 
@@ -36,6 +37,42 @@ func NewInstallPackage(
 }
 
 func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error {
+	configPackage, err := findConfigPackage(cfg, packageName)
+	if err != nil {
+		return err
+	}
+	pkg, err := cmd.createPackageFromConfig(configPackage)
+	if err != nil {
+		return err
+	}
+
+	// create the manager
+	manager := packages.NewManager(cmd.fileSystem)
+
+	// download the package
+	fmt.Fprintf(cmd.console.Out(), "downloading '%s' to '%s'", pkg.Download().URL(), pkg.Download().OutPath())
+	fmt.Fprintln(cmd.console.Out())
+
+	err = manager.Download(pkg)
+	if err != nil {
+		return err
+	}
+
+	// extract the package if extraction was set
+	if pkg.Extract() == nil {
+		return nil
+	}
+
+	fmt.Fprintf(cmd.console.Out(), "extracting '%s' to '%s'", pkg.Download().OutPath(), pkg.Extract().OutPath())
+	fmt.Fprintln(cmd.console.Out())
+
+	return manager.Extract(pkg)
+}
+
+func findConfigPackage(cfg *config.Config, packageName string) (*config.Package, error) {
+	if strings.TrimSpace(packageName) == "" {
+		return nil, fmt.Errorf("package name is required")
+	}
 	var configPackage *config.Package
 	for i := range cfg.Packages {
 		pkg := &cfg.Packages[i]
@@ -45,59 +82,45 @@ func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error
 		}
 	}
 	if configPackage == nil {
-		return fmt.Errorf("unable to locate a package named '%s' in configuration file", packageName)
+		return nil, fmt.Errorf("unable to locate a package named '%s' in configuration file", packageName)
 	}
-	for _, platform := range configPackage.Platforms {
+	return configPackage, nil
+}
+
+func (cmd *installPackage) createPackageFromConfig(configPackage *config.Package) (packages.Package, error) {
+	for i := range configPackage.Platforms {
+		platform := &configPackage.Platforms[i]
 		if platform.Name == cmd.platform {
-
-			// create the download part of the package
-			download := packages.NewDownload(
-				platform.Download.URL,
-				cmd.packagesPath,
-				platform.Download.Out)
-
-			// create the extraction part of the package
-			var extract packages.Extract
-			if platform.Extract != nil {
-				extract = packages.NewExtract(
-					platform.Extract.Filter,
-					cmd.packagesPath,
-					platform.Extract.Out)
-			}
-
-			// create the package with the download and extract params set
-			pkg := packages.New(
-				configPackage.Name,
-				configPackage.Version,
-				configPackage.Alias,
-				download,
-				extract)
-
-			// create the manager
-			manager := packages.NewManager(cmd.fileSystem)
-
-			// download the package
-			fmt.Fprintf(cmd.console.Out(), "downloading '%s' to '%s'", pkg.Download().URL(), pkg.Download().OutPath())
-			fmt.Fprintln(cmd.console.Out())
-
-			err := manager.Download(pkg)
-			if err != nil {
-				return err
-			}
-
-			// extract the package if extraction was set
-			if extract != nil {
-
-				fmt.Fprintf(cmd.console.Out(), "extracting '%s' to '%s'", pkg.Download().OutPath(), pkg.Extract().OutPath())
-				fmt.Fprintln(cmd.console.Out())
-
-				err = manager.Extract(pkg)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
+			return cmd.createPackageFromPlatformConfig(configPackage, platform)
 		}
 	}
-	return fmt.Errorf("unable to find platform '%s' in configuration for package '%s'", cmd.platform, configPackage.Name)
+	return nil, fmt.Errorf("Unable to find package '%s' for platform '%s'", configPackage.Name, cmd.platform)
+}
+
+func (cmd *installPackage) createPackageFromPlatformConfig(configPackage *config.Package, platform *config.Platform) (packages.Package, error) {
+
+	// create the download part of the package
+	download := packages.NewDownload(
+		platform.Download.URL,
+		cmd.packagesPath,
+		platform.Download.Out)
+
+	// create the extraction part of the package
+	var extract packages.Extract
+	if platform.Extract != nil {
+		extract = packages.NewExtract(
+			platform.Extract.Filter,
+			cmd.packagesPath,
+			platform.Extract.Out)
+	}
+
+	// create the package with the download and extract params set
+	pkg := packages.New(
+		configPackage.Name,
+		configPackage.Version,
+		configPackage.Alias,
+		download,
+		extract)
+
+	return pkg, nil
 }
