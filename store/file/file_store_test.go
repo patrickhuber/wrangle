@@ -111,6 +111,18 @@ ssh:
 		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", ca)
 	})
 
+	t.Run("CanGetCertificateByNameAndKey", func(t *testing.T) {
+		require := require.New(t)
+
+		data, err := fileStore.GetByName("/certificate.certificate")
+		require.Nil(err)
+		require.NotNil(data)
+
+		certificate, ok := data.Value().(string)
+		require.True(ok)
+		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", certificate)
+	})
+
 	t.Run("CanGetRSAByName", func(t *testing.T) {
 		require := require.New(t)
 

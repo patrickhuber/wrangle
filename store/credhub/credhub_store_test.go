@@ -153,6 +153,31 @@ func TestCredHubStore(t *testing.T) {
 		require.Equal(certificate, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
 	})
 
+	t.Run("CanGetCertificateByNameAndProperty", func(t *testing.T) {
+		require := require.New(t)
+		responseString := `{
+			"data": [ {
+    "id": "some-id",
+	"name": "/example-certificate",
+	"type": "certificate",
+	"value": {
+		"ca": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+		"certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+		"private_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+	},
+	"version_created_at": "2017-01-01T04:07:18Z"
+		  }]}`
+		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
+		require.Nil(err)
+
+		data, err := store.GetByName("/example-certificate.certificate")
+		require.Nil(err)
+
+		certificate, ok := data.Value().(string)
+		require.Truef(ok, "unable to find certificate")
+		require.Equal(certificate, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
+	})
+
 	t.Run("CanGetRSAByName", func(t *testing.T) {
 		require := require.New(t)
 		responseString := `{

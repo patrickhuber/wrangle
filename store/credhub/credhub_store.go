@@ -56,14 +56,47 @@ func (s *credHubStore) Name() string {
 
 func (s *credHubStore) GetByName(name string) (store.Data, error) {
 	ch := s.credHub
+	i := -1
+	for i = len(name) - 1; i >= 0; i-- {
+		if name[i] == '.' {
+			break
+		}
+		if name[i] == '/' {
+			i = -1
+			break
+		}
+	}
+	property := ""
+	if i > 0 {
+		property = name[i+1 : len(name)]
+		name = name[0:i]
+	}
 	cred, err := ch.GetLatestVersion(name)
 	if err != nil {
 		return nil, err
 	}
+
+	if property == "" {
+		return store.NewData(
+			cred.Id,
+			cred.Name,
+			cred.Value), nil
+	}
+
+	m, ok := cred.Value.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to find property '%s' in credential '%s'", property, name)
+	}
+	propertyValue, ok := m[property]
+	if !ok {
+		return nil, fmt.Errorf("unable to find property '%s' in credential '%s'", property, name)
+	}
+
 	return store.NewData(
 		cred.Id,
 		cred.Name,
-		cred.Value), nil
+		propertyValue,
+	), nil
 }
 
 func (s *credHubStore) Delete(name string) (int, error) {

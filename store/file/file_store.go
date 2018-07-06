@@ -61,8 +61,10 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 		return nil, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", fileStore.path)
 	}
 
+	name, property, err := splitToNamendProperty(key)
+
 	// turn the key into a patch pointer
-	pointer, err := patch.NewPointerFromString(key)
+	pointer, err := patch.NewPointerFromString(name)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to create patch pointer for key '%s'", key)
 	}
@@ -75,15 +77,49 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 
 	// map document to canonical type
 	// (for compatibilty with credhub return types)
+	var value interface{}
 	switch v := response.(type) {
 	case (map[interface{}]interface{}):
 		stringMap := make(map[string]interface{})
 		for key := range v {
 			stringMap[key.(string)] = v[key]
 		}
-		return store.NewData(key, key, stringMap), nil
+		if property == "" {
+			value = stringMap
+		} else {
+			value = stringMap[property]
+		}
+	case (map[string]interface{}):
+
+		if property == "" {
+			value = v
+		} else {
+			value = v[property]
+		}
+	default:
+		value = response
 	}
-	return store.NewData(key, key, response), nil
+	return store.NewData(name, name, value), nil
+}
+
+func splitToNamendProperty(key string) (name string, property string, err error) {
+	i := -1
+	for i = len(key) - 1; i >= 0; i-- {
+		if key[i] == '.' {
+			break
+		}
+		if key[i] == '/' {
+			i = -1
+			break
+		}
+	}
+	if i > 0 {
+		property = key[i+1 : len(key)]
+		name = key[0:i]
+		err = nil
+		return
+	}
+	return key, "", nil
 }
 
 func (config *fileStore) Delete(key string) (int, error) {
