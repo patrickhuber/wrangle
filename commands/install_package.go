@@ -97,7 +97,9 @@ func (cmd *installPackage) createPackageFromConfig(configPackage *config.Package
 	return nil, fmt.Errorf("Unable to find package '%s' for platform '%s'", configPackage.Name, cmd.platform)
 }
 
-func (cmd *installPackage) createPackageFromPlatformConfig(configPackage *config.Package, platform *config.Platform) (packages.Package, error) {
+func (cmd *installPackage) createPackageFromPlatformConfig(
+	configPackage *config.Package,
+	platform *config.Platform) (packages.Package, error) {
 
 	// create the download part of the package
 	download := packages.NewDownload(
@@ -118,7 +120,7 @@ func (cmd *installPackage) createPackageFromPlatformConfig(configPackage *config
 	pkg := packages.New(
 		configPackage.Name,
 		configPackage.Version,
-		configPackage.Alias,
+		platform.Alias,
 		download,
 		extract)
 

@@ -34,7 +34,6 @@ type Process struct {
 type Package struct {
 	Name      string     `yaml:"name"`
 	Version   string     `yaml:"version"`
-	Alias     string     `yaml:"alias"`
 	Platforms []Platform `yaml:"platforms"`
 }
 
@@ -42,6 +41,7 @@ type Package struct {
 type Platform struct {
 	Name     string    `yaml:"name"`
 	Download *Download `yaml:"download"`
+	Alias    string    `yaml:"alias"`
 	Extract  *Extract  `yaml:"extract"`
 }
 

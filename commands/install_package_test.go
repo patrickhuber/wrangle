@@ -37,18 +37,20 @@ func canInstallBinaryPackage(t *testing.T, platform string, outFolder string) {
 	content := `
 packages:
 - name: fly
-  version: 3.14.1
-  alias: fly
+  version: 3.14.1  
   platforms:
   - name: linux
+    alias: fly
     download:
       url: %s
       out: fly_((version))_linux_amd64
   - name: windows
+    alias: fly.exe
     download:
       url: %s
       out: fly_((version))_windows_amd64
   - name: darwin
+    alias: fly
     download:
       url: %s
       out: fly_((version))_darwin_amd64
@@ -91,10 +93,10 @@ func canInstallTarPackage(t *testing.T, platform string, outFolder string) {
 	content := `
 packages:
 - name: bbr
-  version: 1.2.4
-  alias: bbr
+  version: 1.2.4  
   platforms:
   - name: linux
+    alias: bbr
     download:
       url: "%s"
       out: bbr-((version)).tar
@@ -102,6 +104,7 @@ packages:
       filter: bbr
       out: bbr-((version))-linux
   - name: darwin
+    alias: bbr
     download:
       url: "%s"
       out: bbr-((version)).tar

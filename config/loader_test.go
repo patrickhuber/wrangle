@@ -85,10 +85,10 @@ environments:
       TEST: value
 packages:
 - name: bbr
-  version: 11.2.3
-  alias: bbr
+  version: 11.2.3  
   platforms:
   - name: linux
+    alias: bbr
     download:
       url: https://www.google.com
       out: /test/out1
@@ -96,7 +96,8 @@ packages:
       filter: "*.*"
       out: /test/out3
   - name: windows
-    download:
+    alias: bbr.exe
+    download:      
       url: https://www.google.com
       out: /test/out
 `
