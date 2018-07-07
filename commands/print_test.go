@@ -50,7 +50,7 @@ environments:
 
 		// create and run command
 		cmd := NewPrint(manager, fileSystem, "linux", console)
-		runCommandParams := NewRunCommandParams(cfg, "echo", "lab")
+		runCommandParams := NewRunCommandParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
 
@@ -101,7 +101,7 @@ environments:
 
 		// create and run command
 		cmd := NewPrint(manager, fileSystem, "linux", console)
-		runCommandParams := NewRunCommandParams(cfg, "echo", "lab")
+		runCommandParams := NewRunCommandParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
 

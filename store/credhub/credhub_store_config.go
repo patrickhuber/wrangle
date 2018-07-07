@@ -23,6 +23,7 @@ func NewCredHubStoreConfig(configSource *config.ConfigSource) (*CredHubStoreConf
 		SkipTLSValidation: false,
 	}
 
+	credHubStoreConfig.Name = configSource.Name
 	if value, ok := configSource.Params["skip_tls_validation"]; ok {
 		boolValue, err := strconv.ParseBool(value)
 		if err != nil {

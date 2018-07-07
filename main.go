@@ -145,7 +145,7 @@ func createRunCommand(
 			}
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			params := commands.NewRunCommandParams(cfg, processName, environmentName)
+			params := commands.NewRunCommandParams(cfg, environmentName, processName)
 			return runCommand.Execute(params)
 		},
 	}
@@ -184,7 +184,7 @@ func createPrintCommand(
 			if err != nil {
 				return err
 			}
-			params := commands.NewRunCommandParams(cfg, processName, environmentName)
+			params := commands.NewRunCommandParams(cfg, environmentName, processName)
 			return printCommand.Execute(params)
 		},
 	}

@@ -1,8 +1,9 @@
 package credhub
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 
 	"github.com/patrickhuber/cli-mgr/store"
 
@@ -73,7 +74,7 @@ func (s *credHubStore) GetByName(name string) (store.Data, error) {
 	}
 	cred, err := ch.GetLatestVersion(name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "unable to lookup credential '%s'.", name)
 	}
 
 	if property == "" {

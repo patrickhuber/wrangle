@@ -46,7 +46,7 @@ environments:
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
 		pipeline := store.NewPipeline(manager, configuration)
-		environment, err := pipeline.Run("echo", "lab")
+		environment, err := pipeline.Run("lab", "echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
@@ -80,7 +80,7 @@ environments:
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
 		pipeline := store.NewPipeline(manager, configuration)
-		environment, err := pipeline.Run("echo", "lab")
+		environment, err := pipeline.Run("lab", "echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("1", environment.Args[0])
@@ -126,7 +126,7 @@ environments:
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
 		pipeline := store.NewPipeline(manager, configuration)
-		environment, err := pipeline.Run("echo", "lab")
+		environment, err := pipeline.Run("lab", "echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
@@ -171,7 +171,49 @@ environments:
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
 		pipeline := store.NewPipeline(manager, configuration)
-		_, err = pipeline.Run("echo", "lab")
+		_, err = pipeline.Run("lab", "echo")
 		r.NotNil(err)
+	})
+
+	t.Run("PipelineCanLoadVariablesFromOtherStore", func(t *testing.T) {
+		r := require.New(t)
+		content := `
+config-sources:
+- name: one
+  type: file
+  params:
+    path: /one
+- name: two
+  type: file
+  config: one
+  params:
+    path: ((key))
+environments:
+- name: lab
+  processes:
+  - name: a
+    config: two
+    env:
+      A: ((a))
+      B: ((b))
+      C: ((c))`
+
+		configuration, err := config.SerializeString(content)
+		r.Nil(err)
+
+		fileSystem := afero.NewMemMapFs()
+		afero.WriteFile(fileSystem, "/one", []byte("key: /two"), 0666)
+		afero.WriteFile(fileSystem, "/two", []byte("a: a\nb: b\nc: c\n"), 0666)
+
+		manager := store.NewManager()
+		manager.Register(file.NewFileStoreProvider(fileSystem))
+
+		pipeline := store.NewPipeline(manager, configuration)
+		p, err := pipeline.Run("lab", "a")
+		r.Nil(err)
+
+		r.Equal("a", p.Vars["A"])
+		r.Equal("b", p.Vars["B"])
+		r.Equal("c", p.Vars["C"])
 	})
 }

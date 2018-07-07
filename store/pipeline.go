@@ -25,7 +25,7 @@ func NewPipeline(manager Manager, configuration *config.Config) Pipeline {
 	}
 }
 
-func (p *pipeline) Run(processName string, environmentName string) (*config.Process, error) {
+func (p *pipeline) Run(environmentName string, processName string) (*config.Process, error) {
 	for _, environment := range p.configuration.Environments {
 		if environment.Name == environmentName {
 			for j := range environment.Processes {
