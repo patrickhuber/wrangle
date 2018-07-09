@@ -12,7 +12,7 @@ import (
 
 // Run represents a run subcommand for the application
 type Run interface {
-	Execute(params RunCommandParams) error
+	Execute(params ProcessParams) error
 }
 
 type run struct {
@@ -32,7 +32,7 @@ func NewRun(
 		processFactory: processFactory}
 }
 
-func (cmd *run) Execute(params RunCommandParams) error {
+func (cmd *run) Execute(params ProcessParams) error {
 
 	processName := params.ProcessName()
 	environmentName := params.EnvironmentName()

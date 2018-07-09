@@ -71,7 +71,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.0.2"
+	cliApp.Version = "0.1.0"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -85,6 +85,7 @@ func createApplication(
 	cliApp.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory),
 		*createPrintCommand(manager, fileSystem, platform, console),
+		*createPrintEnvCommand(manager, fileSystem, platform, console),
 		*createEnvironmentsCommand(fileSystem, console),
 		*createPackagesCommand(console),
 		*createInstallPackageCommand(fileSystem, platform),
@@ -145,7 +146,7 @@ func createRunCommand(
 			}
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			params := commands.NewRunCommandParams(cfg, environmentName, processName)
+			params := commands.NewProcessParams(cfg, environmentName, processName)
 			return runCommand.Execute(params)
 		},
 	}
@@ -166,7 +167,7 @@ func createPrintCommand(
 	return &cli.Command{
 		Name:    "print",
 		Aliases: []string{"p"},
-		Usage:   "print command environemnt variables",
+		Usage:   "prints the process as it would be executed",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "name, n",
@@ -184,8 +185,46 @@ func createPrintCommand(
 			if err != nil {
 				return err
 			}
-			params := commands.NewRunCommandParams(cfg, environmentName, processName)
+			params := commands.NewProcessParams(cfg, environmentName, processName)
 			return printCommand.Execute(params)
+		},
+	}
+}
+
+func createPrintEnvCommand(
+	manager store.Manager,
+	fileSystem afero.Fs,
+	platform string,
+	console ui.Console) *cli.Command {
+
+	printEnvCommand := commands.NewPrintEnv(
+		manager,
+		fileSystem,
+		platform,
+		console)
+
+	return &cli.Command{
+		Name:  "print-env",
+		Usage: "print command environemnt variables",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "name, n",
+				Usage: "process named `NAME`",
+			},
+			cli.StringFlag{
+				Name:  "environment, e",
+				Usage: "Use environment named `ENVIRONMENT`",
+			},
+		},
+		Action: func(context *cli.Context) error {
+			processName := context.String("name")
+			environmentName := context.String("environment")
+			cfg, err := getConfigurationFromCliContext(context)
+			if err != nil {
+				return err
+			}
+			params := commands.NewProcessParams(cfg, environmentName, processName)
+			return printEnvCommand.Execute(params)
 		},
 	}
 }

@@ -42,7 +42,7 @@ environments:
 
 		// run the run command
 		err = runCommand.Execute(
-			NewRunCommandParams(cfg, "lab", "go"))
+			NewProcessParams(cfg, "lab", "go"))
 		r.Nil(err)
 	})
 }

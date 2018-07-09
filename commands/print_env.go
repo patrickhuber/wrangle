@@ -10,32 +10,32 @@ import (
 	"github.com/spf13/afero"
 )
 
-type print struct {
+type printEnv struct {
 	fileSystem afero.Fs
 	platform   string
 	console    ui.Console
 	manager    store.Manager
 }
 
-// Print represents an environment command
-type Print interface {
+// PrintEnv represents an environment command
+type PrintEnv interface {
 	Execute(params ProcessParams) error
 }
 
-// NewPrint creates a new environment command
-func NewPrint(
+// NewPrintEnv creates a new environment command
+func NewPrintEnv(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	platform string,
 	console ui.Console) PrintEnv {
-	return &print{
+	return &printEnv{
 		manager:    manager,
 		fileSystem: fileSystem,
 		platform:   platform,
 		console:    console}
 }
 
-func (cmd *print) Execute(params ProcessParams) error {
+func (cmd *printEnv) Execute(params ProcessParams) error {
 
 	processName := params.ProcessName()
 	environmentName := params.EnvironmentName()
@@ -59,11 +59,6 @@ func (cmd *print) Execute(params ProcessParams) error {
 		return err
 	}
 	renderer := NewProcessRenderer(cmd.platform)
-	fmt.Fprint(
-		cmd.console.Out(),
-		renderer.RenderProcess(
-			process.Path,
-			process.Args,
-			process.Vars))
+	fmt.Fprint(cmd.console.Out(), renderer.RenderEnvironment(process.Vars))
 	return nil
 }

@@ -90,6 +90,6 @@ environments:
 		r.True(ok)
 		r.NotNil(buffer)
 
-		r.Equal("export CLI_MGR_TEST=value\n", buffer.String())
+		r.Equal("export CLI_MGR_TEST=value\necho\n", buffer.String())
 	})
 }

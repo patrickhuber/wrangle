@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-func TestPrintCommand(t *testing.T) {
+func TestPrintEnvCommand(t *testing.T) {
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
 
@@ -49,7 +49,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", console)
+		cmd := NewPrintEnv(manager, fileSystem, "linux", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -58,7 +58,7 @@ environments:
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
-		r.Equal("export CLI_MGR_TEST=value\necho\n", b.String())
+		r.Equal("export CLI_MGR_TEST=value\n", b.String())
 	})
 
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
@@ -100,7 +100,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", console)
+		cmd := NewPrintEnv(manager, fileSystem, "linux", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -109,46 +109,9 @@ environments:
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
-		r.Equal("export CLI_MGR_TEST=value\necho\n", b.String())
+		r.Equal("export CLI_MGR_TEST=value\n", b.String())
 	})
 
-	t.Run("CanPrintOutArgumentsInCommand", func(t *testing.T) {
-		r := require.New(t)
-		content := `
-environments:
-- name: lab
-  processes:
-  - name: go
-    path: go
-    args: 
-    - version
-`
-
-		// create store manager
-		manager := store.NewManager()
-
-		fileSystem := afero.NewMemMapFs()
-		afero.WriteFile(fileSystem, "/config", []byte(content), 0444)
-		console := ui.NewMemoryConsole()
-
-		// load the config
-		loader := config.NewLoader(fileSystem)
-		cfg, err := loader.Load("/config")
-		r.Nil(err)
-
-		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", console)
-		runCommandParams := NewProcessParams(cfg, "lab", "go")
-		err = cmd.Execute(runCommandParams)
-		r.Nil(err)
-
-		// verify output
-		b, ok := console.Out().(*bytes.Buffer)
-		r.True(ok)
-		r.NotNil(b)
-		r.Equal("go version\n", b.String())
-
-	})
 	t.Run("CanChainReplaceVariables", func(t *testing.T) {
 
 	})

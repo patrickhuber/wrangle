@@ -2,35 +2,35 @@ package commands
 
 import "github.com/patrickhuber/cli-mgr/config"
 
-type runCommandParams struct {
+type processParams struct {
 	config          *config.Config
 	processName     string
 	environmentName string
 }
 
-// RunCommandParams defines a contract for running a command or executing its environment
-type RunCommandParams interface {
+// ProcessParams defines a contract for running a command or executing its environment
+type ProcessParams interface {
 	Config() *config.Config
 	ProcessName() string
 	EnvironmentName() string
 }
 
-// NewRunCommandParams creates run command parameters
-func NewRunCommandParams(config *config.Config, environmentName string, processName string) RunCommandParams {
-	return &runCommandParams{
+// NewProcessParams creates run command parameters
+func NewProcessParams(config *config.Config, environmentName string, processName string) ProcessParams {
+	return &processParams{
 		config:          config,
 		environmentName: environmentName,
 		processName:     processName}
 }
 
-func (params *runCommandParams) Config() *config.Config {
+func (params *processParams) Config() *config.Config {
 	return params.config
 }
 
-func (params *runCommandParams) ProcessName() string {
+func (params *processParams) ProcessName() string {
 	return params.processName
 }
 
-func (params *runCommandParams) EnvironmentName() string {
+func (params *processParams) EnvironmentName() string {
 	return params.environmentName
 }
