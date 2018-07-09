@@ -1,6 +1,7 @@
 package processes
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,16 +10,40 @@ import (
 func TestProcessDispatch(t *testing.T) {
 	t.Run("CanRunGoVersion", func(t *testing.T) {
 		r := require.New(t)
-
-		command := NewProcess("go", []string{"version"}, make(map[string]string))
+		stdOut := bytes.Buffer{}
+		stdErr := bytes.Buffer{}
+		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr)
 		err := command.Dispatch()
 		r.Nil(err)
 	})
 
 	t.Run("CanRunWithNilEnvironmentVariables", func(t *testing.T) {
 		r := require.New(t)
-		command := NewProcess("go", []string{"version"}, nil)
+		stdOut := bytes.Buffer{}
+		stdErr := bytes.Buffer{}
+		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr)
 		err := command.Dispatch()
 		r.Nil(err)
+	})
+
+	t.Run("WritesToStandardOut", func(t *testing.T) {
+		r := require.New(t)
+		stdOut := bytes.Buffer{}
+		stdErr := bytes.Buffer{}
+		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr)
+		err := command.Dispatch()
+		r.Nil(err)
+		r.NotEmpty(stdOut.String())
+		r.Empty(stdErr.String())
+	})
+
+	t.Run("WritesToStandardError", func(t *testing.T) {
+		r := require.New(t)
+		stdOut := bytes.Buffer{}
+		stdErr := bytes.Buffer{}
+		command := NewProcess("go", []string{}, make(map[string]string), &stdOut, &stdErr)
+		err := command.Dispatch()
+		r.NotNil(err)
+		r.NotEmpty(stdErr.String())
 	})
 }

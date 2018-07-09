@@ -83,7 +83,7 @@ func createApplication(
 	}
 
 	cliApp.Commands = []cli.Command{
-		*createRunCommand(manager, fileSystem, processFactory),
+		*createRunCommand(manager, fileSystem, processFactory, console),
 		*createPrintCommand(manager, fileSystem, platform, console),
 		*createPrintEnvCommand(manager, fileSystem, platform, console),
 		*createEnvironmentsCommand(fileSystem, console),
@@ -119,11 +119,13 @@ func createApplication(
 func createRunCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	processFactory processes.Factory) *cli.Command {
+	processFactory processes.Factory,
+	console ui.Console) *cli.Command {
 	runCommand := commands.NewRun(
 		manager,
 		fileSystem,
-		processFactory)
+		processFactory,
+		console)
 
 	return &cli.Command{
 		Name:    "run",

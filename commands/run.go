@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickhuber/cli-mgr/processes"
 	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/cli-mgr/ui"
 
 	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/spf13/afero"
@@ -19,17 +20,20 @@ type run struct {
 	manager        store.Manager
 	fileSystem     afero.Fs
 	processFactory processes.Factory
+	console        ui.Console
 }
 
 // NewRun - creates a new run command
 func NewRun(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	processFactory processes.Factory) Run {
+	processFactory processes.Factory,
+	console ui.Console) Run {
 	return &run{
 		manager:        manager,
 		fileSystem:     fileSystem,
-		processFactory: processFactory}
+		processFactory: processFactory,
+		console:        console}
 }
 
 func (cmd *run) Execute(params ProcessParams) error {
@@ -63,6 +67,8 @@ func (cmd *run) execute(processConfig *config.Process) error {
 	process := cmd.processFactory.Create(
 		processConfig.Path,
 		processConfig.Args,
-		processConfig.Vars)
+		processConfig.Vars,
+		cmd.console.Out(),
+		cmd.console.Error())
 	return process.Dispatch()
 }

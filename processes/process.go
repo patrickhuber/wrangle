@@ -1,10 +1,12 @@
 package processes
 
 import (
+	"io"
 	"os"
 	"os/exec"
 )
 
+// Process defines a process
 type Process interface {
 	GetArguments() []string
 	GetProcessName() string
@@ -13,28 +15,38 @@ type Process interface {
 }
 
 type process struct {
-	ExecutableName       string
-	Arguments            []string
-	EnvironmentVariables map[string]string
+	executableName       string
+	arguments            []string
+	environmentVariables map[string]string
+	stdErr               io.Writer
+	stdOut               io.Writer
 }
 
-func NewProcess(executableName string, arguments []string, environmentVariables map[string]string) Process {
+// NewProcess creates a new process
+func NewProcess(
+	executableName string,
+	arguments []string,
+	environmentVariables map[string]string,
+	standardOut io.Writer,
+	standardError io.Writer) Process {
 	return &process{
-		ExecutableName:       executableName,
-		Arguments:            arguments,
-		EnvironmentVariables: environmentVariables}
+		executableName:       executableName,
+		arguments:            arguments,
+		environmentVariables: environmentVariables,
+		stdErr:               standardError,
+		stdOut:               standardOut}
 }
 
 func (command *process) GetProcessName() string {
-	return command.ExecutableName
+	return command.executableName
 }
 
 func (command *process) GetArguments() []string {
-	return command.Arguments
+	return command.arguments
 }
 
 func (command *process) GetEnvironmentVariables() map[string]string {
-	return command.EnvironmentVariables
+	return command.environmentVariables
 }
 
 func (command *process) Dispatch() error {
@@ -43,6 +55,7 @@ func (command *process) Dispatch() error {
 	if arguments == nil {
 		arguments = []string{}
 	}
+
 	environmentVariables := command.GetEnvironmentVariables()
 	if environmentVariables == nil {
 		environmentVariables = map[string]string{}
@@ -53,6 +66,10 @@ func (command *process) Dispatch() error {
 	}
 
 	cmd := exec.Command(process, arguments...)
+
+	cmd.Stderr = command.stdErr
+	cmd.Stdout = command.stdOut
+
 	if err := cmd.Run(); err != nil {
 		return err
 	}
