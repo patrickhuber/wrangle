@@ -12,7 +12,8 @@ func TestProcessDispatch(t *testing.T) {
 		r := require.New(t)
 		stdOut := bytes.Buffer{}
 		stdErr := bytes.Buffer{}
-		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr)
+		stdIn := bytes.Buffer{}
+		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr, &stdIn)
 		err := command.Dispatch()
 		r.Nil(err)
 	})
@@ -21,7 +22,8 @@ func TestProcessDispatch(t *testing.T) {
 		r := require.New(t)
 		stdOut := bytes.Buffer{}
 		stdErr := bytes.Buffer{}
-		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr)
+		stdIn := bytes.Buffer{}
+		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr, &stdIn)
 		err := command.Dispatch()
 		r.Nil(err)
 	})
@@ -30,7 +32,8 @@ func TestProcessDispatch(t *testing.T) {
 		r := require.New(t)
 		stdOut := bytes.Buffer{}
 		stdErr := bytes.Buffer{}
-		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr)
+		stdIn := bytes.Buffer{}
+		command := NewProcess("go", []string{"version"}, make(map[string]string), &stdOut, &stdErr, &stdIn)
 		err := command.Dispatch()
 		r.Nil(err)
 		r.NotEmpty(stdOut.String())
@@ -41,7 +44,8 @@ func TestProcessDispatch(t *testing.T) {
 		r := require.New(t)
 		stdOut := bytes.Buffer{}
 		stdErr := bytes.Buffer{}
-		command := NewProcess("go", []string{}, make(map[string]string), &stdOut, &stdErr)
+		stdIn := bytes.Buffer{}
+		command := NewProcess("go", []string{}, make(map[string]string), &stdOut, &stdErr, &stdIn)
 		err := command.Dispatch()
 		r.NotNil(err)
 		r.NotEmpty(stdErr.String())

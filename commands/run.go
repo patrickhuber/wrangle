@@ -69,6 +69,7 @@ func (cmd *run) execute(processConfig *config.Process) error {
 		processConfig.Args,
 		processConfig.Vars,
 		cmd.console.Out(),
-		cmd.console.Error())
+		cmd.console.Error(),
+		cmd.console.In())
 	return process.Dispatch()
 }

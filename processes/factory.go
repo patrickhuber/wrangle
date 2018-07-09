@@ -8,7 +8,8 @@ type Factory interface {
 		args []string,
 		environment map[string]string,
 		standardOut io.Writer,
-		standardError io.Writer) Process
+		standardError io.Writer,
+		standardIn io.Reader) Process
 }
 
 type factory struct {
@@ -23,6 +24,7 @@ func (processFactory *factory) Create(
 	args []string,
 	environment map[string]string,
 	standardOut io.Writer,
-	standardError io.Writer) Process {
-	return NewProcess(executable, args, environment, standardOut, standardError)
+	standardError io.Writer,
+	standardIn io.Reader) Process {
+	return NewProcess(executable, args, environment, standardOut, standardError, standardIn)
 }

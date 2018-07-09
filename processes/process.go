@@ -20,6 +20,7 @@ type process struct {
 	environmentVariables map[string]string
 	stdErr               io.Writer
 	stdOut               io.Writer
+	stdIn                io.Reader
 }
 
 // NewProcess creates a new process
@@ -28,13 +29,15 @@ func NewProcess(
 	arguments []string,
 	environmentVariables map[string]string,
 	standardOut io.Writer,
-	standardError io.Writer) Process {
+	standardError io.Writer,
+	standardIn io.Reader) Process {
 	return &process{
 		executableName:       executableName,
 		arguments:            arguments,
 		environmentVariables: environmentVariables,
 		stdErr:               standardError,
-		stdOut:               standardOut}
+		stdOut:               standardOut,
+		stdIn:                standardIn}
 }
 
 func (command *process) GetProcessName() string {
@@ -69,6 +72,7 @@ func (command *process) Dispatch() error {
 
 	cmd.Stderr = command.stdErr
 	cmd.Stdout = command.stdOut
+	cmd.Stdin = command.stdIn
 
 	if err := cmd.Run(); err != nil {
 		return err
