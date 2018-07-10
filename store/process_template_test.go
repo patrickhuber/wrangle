@@ -3,24 +3,108 @@ package store_test
 import (
 	"testing"
 
-	"github.com/spf13/afero"
-
+	"github.com/patrickhuber/cli-mgr/config"
 	"github.com/patrickhuber/cli-mgr/store"
 	"github.com/patrickhuber/cli-mgr/store/file"
-
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )
 
-func TestPipeline(t *testing.T) {
+type fakeStore struct {
+	getByNameDelegate func(name string) (store.Data, error)
+	nameDelegate      func() string
+	typeDelegate      func() string
+	putDelegate       func(key string, value string) (string, error)
+	deleteDelegate    func(key string) (int, error)
+}
 
-	t.Run("PipelineCanResolveStoreParams", func(t *testing.T) {
+func (s *fakeStore) GetByName(name string) (store.Data, error) {
+	return s.getByNameDelegate(name)
+}
+
+func (s *fakeStore) Name() string {
+	return s.nameDelegate()
+}
+
+func (s *fakeStore) Type() string {
+	return s.typeDelegate()
+}
+
+func (s *fakeStore) Put(key string, value string) (string, error) {
+	return s.putDelegate(key, value)
+}
+
+func (s *fakeStore) Delete(key string) (int, error) {
+	return s.deleteDelegate(key)
+}
+
+type fakeProvider struct {
+	name           string
+	createDelegate func(source *config.ConfigSource) (store.Store, error)
+}
+
+func (p *fakeProvider) GetName() string {
+	return p.name
+}
+
+func (p *fakeProvider) Create(source *config.ConfigSource) (store.Store, error) {
+	return p.createDelegate(source)
+}
+
+func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
+	r := require.New(t)
+	data := `
+config-sources:
+- name: one
+  type: fake
+environments:
+- name: lab
+  processes:
+  - name: go
+    configurations:
+    - one
+    path: go
+    args:
+    - ((version))`
+	cfg, err := config.SerializeString(data)
+	r.Nil(err)
+
+	provider := &fakeProvider{
+		name: "fake",
+		createDelegate: func(source *config.ConfigSource) (store.Store, error) {
+			return &fakeStore{
+				getByNameDelegate: func(name string) (store.Data, error) {
+					return store.NewData("version", "version", "version"), nil
+				},
+			}, nil
+		},
+	}
+
+	manager := store.NewManager()
+	manager.Register(provider)
+
+	template, err := store.NewProcessTemplate(cfg, manager)
+	r.Nil(err)
+
+	environmentName := "lab"
+	processName := "go"
+	evaluated, err := template.Evaluate(environmentName, processName)
+	r.Nil(err)
+	r.NotNil(evaluated)
+
+	r.Equal("version", evaluated.Args[0])
+}
+
+func TestProcessTemplate(t *testing.T) {
+
+	t.Run("TemplateCanResolveStoreParams", func(t *testing.T) {
 		r := require.New(t)
 		content := `
 config-sources:
 - name: one
   type: file
-  config: two
+  configurations:
+  - two
   params:
     path: ((/file-name))
 - name: two
@@ -31,7 +115,8 @@ environments:
 - name: lab
   processes:
   - name: echo
-    config: one
+    configurations:
+    - one
     args:
     - ((/key))
 `
@@ -45,14 +130,15 @@ environments:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
-		pipeline := store.NewPipeline(manager, configuration)
-		environment, err := pipeline.Run("lab", "echo")
+		template, err := store.NewProcessTemplate(configuration, manager)
+		r.Nil(err)
+		environment, err := template.Evaluate("lab", "echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
 	})
 
-	t.Run("PipelineCanResolveProcessArgsAndVars", func(t *testing.T) {
+	t.Run("TemplateCanResolveProcessArgsAndVars", func(t *testing.T) {
 		r := require.New(t)
 		content := `
 config-sources:
@@ -64,7 +150,8 @@ environments:
 - name: lab
   processes:
   - name: echo
-    config: one
+    configurations:
+    - one
     args:
     - ((/key))
     env:
@@ -79,8 +166,9 @@ environments:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
-		pipeline := store.NewPipeline(manager, configuration)
-		environment, err := pipeline.Run("lab", "echo")
+		template, err := store.NewProcessTemplate(configuration, manager)
+		r.Nil(err)
+		environment, err := template.Evaluate("lab", "echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("1", environment.Args[0])
@@ -88,29 +176,30 @@ environments:
 		r.Equal("2", environment.Vars["prop"])
 	})
 
-	t.Run("PipelineCanChainConfigStores", func(t *testing.T) {
+	t.Run("TemplateCanCascadeConfigStores", func(t *testing.T) {
 		r := require.New(t)
 		content := `
 config-sources:
 - name: one
   type: file
-  config: two
   params:
     path: /test1
 - name: two
   type: file
-  config: three
   params:
     path: /test2
 - name: three
-  type: file  
+  type: file
   params:
     path: /test3
 environments:
 - name: lab
   processes:
   - name: echo
-    config: one
+    configurations:
+    - one
+    - two
+    - three
     args:
     - ((/key1))
 `
@@ -125,37 +214,42 @@ environments:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
-		pipeline := store.NewPipeline(manager, configuration)
-		environment, err := pipeline.Run("lab", "echo")
+		template, err := store.NewProcessTemplate(configuration, manager)
+		r.Nil(err)
+		environment, err := template.Evaluate("lab", "echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
 	})
 
-	t.Run("PipelineCanDetectLoops", func(t *testing.T) {
+	t.Run("TemplateCanDetectLoops", func(t *testing.T) {
 		r := require.New(t)
 		content := `
 config-sources:
 - name: one
   type: file
-  config: two
+  configurations:
+  - two
   params:
     path: /test1
 - name: two
   type: file
-  config: three
+  configurations:
+  - three
   params:
     path: /test2
 - name: three
-  type: file  
-  config: one
+  type: file
+  configurations:
+  - one
   params:
     path: /test3
 environments:
 - name: lab
   processes:
   - name: echo
-    config: one
+    configurations:
+    - one
     args:
     - ((/key1))
 `
@@ -170,12 +264,11 @@ environments:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
-		pipeline := store.NewPipeline(manager, configuration)
-		_, err = pipeline.Run("lab", "echo")
+		_, err = store.NewProcessTemplate(configuration, manager)
 		r.NotNil(err)
 	})
 
-	t.Run("PipelineCanLoadVariablesFromOtherStore", func(t *testing.T) {
+	t.Run("TemplateCanLoadVariablesFromOtherStore", func(t *testing.T) {
 		r := require.New(t)
 		content := `
 config-sources:
@@ -185,14 +278,16 @@ config-sources:
     path: /one
 - name: two
   type: file
-  config: one
+  configurations:
+  - one
   params:
     path: ((key))
 environments:
 - name: lab
   processes:
   - name: a
-    config: two
+    configurations:
+    - two
     env:
       A: ((a))
       B: ((b))
@@ -208,8 +303,9 @@ environments:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem))
 
-		pipeline := store.NewPipeline(manager, configuration)
-		p, err := pipeline.Run("lab", "a")
+		template, err := store.NewProcessTemplate(configuration, manager)
+		r.Nil(err)
+		p, err := template.Evaluate("lab", "a")
 		r.Nil(err)
 
 		r.Equal("a", p.Vars["A"])

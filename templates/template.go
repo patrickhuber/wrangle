@@ -21,7 +21,7 @@ func NewTemplate(document interface{}) Template {
 	return &template{document: document}
 }
 
-// Evaluate - Evaluates the tempalte using the variable resolver for variable lookup
+// Evaluate - Evaluates the template using the variable resolver for variable lookup
 func (template template) Evaluate(resolvers ...VariableResolver) (interface{}, error) {
 	var document = template.document
 	var err error

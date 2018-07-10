@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 
 	"github.com/patrickhuber/cli-mgr/filesystem"
@@ -23,7 +22,7 @@ func TestMain(t *testing.T) {
 	t.Run("CanGetEnvironmentList", func(t *testing.T) {
 
 	})
-	t.Run("CanChainConfigStores", func(t *testing.T) {
+	t.Run("CanCascadeConfigStores", func(t *testing.T) {
 		r := require.New(t)
 
 		// create dependencies
@@ -38,7 +37,6 @@ func TestMain(t *testing.T) {
 ---
 config-sources:
 - name: store1
-  config: store2
   type: file
   params:
     path: /store1
@@ -51,16 +49,17 @@ environments:
   processes:
   - name: echo
     path: echo
-    config: store1
+    configurations: 
+    - store1
+    - store2
     env:
-      CLI_MGR_TEST: ((/key))`
-		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
+      CLI_MGR_TEST: ((key))`
 
 		// create files
 		err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 		r.Nil(err)
 
-		err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((/key1))"), 0644)
+		err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((key1))"), 0644)
 		r.Nil(err)
 
 		err = afero.WriteFile(fileSystem, "/store2", []byte("key1: value"), 0644)

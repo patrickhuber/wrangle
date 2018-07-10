@@ -58,7 +58,7 @@ func TestManager(t *testing.T) {
 		manager.Register(&dummyConfigStoreProvider{Name: "dummy"})
 		store, err := manager.Create(&config.ConfigSource{
 			Name:             "test",
-			Config:           "test",
+			Configurations:   []string{"test"},
 			ConfigSourceType: "dummy",
 		})
 		r.Nil(err)

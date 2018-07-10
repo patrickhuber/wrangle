@@ -70,14 +70,14 @@ func AssertFilePathIsCorrect(t *testing.T, configFilePath string) {
 config-sources:
 - name: name
   type: type
-  config: config
+  configurations: [ config ]
   params:
     key: value
 environments:
 - name: name
   processes:
   - name: lab
-    config: name
+    configurations: [ name ]
     path: go
     args:
     - version

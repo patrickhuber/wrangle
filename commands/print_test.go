@@ -80,9 +80,9 @@ environments:
   processes:
   - name: echo
     path: echo
-    config: store1
+    configurations: [ store1 ]
     env:
-      CLI_MGR_TEST: ((/key))`
+      CLI_MGR_TEST: ((key))`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
 		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 		afero.WriteFile(fileSystem, "/store1", []byte("key: value"), 0644)

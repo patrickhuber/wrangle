@@ -80,7 +80,7 @@ environments:
   processes:
   - name: echo
     path: echo
-    config: store1
+    configurations: [ store1 ]
     env:
       CLI_MGR_TEST: ((/key))`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)

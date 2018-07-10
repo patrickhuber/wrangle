@@ -11,7 +11,7 @@ type Config struct {
 type ConfigSource struct {
 	Name             string            `yaml:"name"`
 	ConfigSourceType string            `yaml:"type"`
-	Config           string            `yaml:"config"`
+	Configurations   []string          `yaml:"configurations"`
 	Params           map[string]string `yaml:"params"`
 }
 
@@ -23,11 +23,11 @@ type Environment struct {
 
 // Process represents a process under the given environment
 type Process struct {
-	Name   string            `yaml:"name"`
-	Config string            `yaml:"config"`
-	Path   string            `yaml:"path"`
-	Args   []string          `yaml:"args"`
-	Vars   map[string]string `yaml:"env"`
+	Name           string            `yaml:"name"`
+	Configurations []string          `yaml:"configurations"`
+	Path           string            `yaml:"path"`
+	Args           []string          `yaml:"args"`
+	Vars           map[string]string `yaml:"env"`
 }
 
 // Package represents a versioned artifiact

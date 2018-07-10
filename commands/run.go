@@ -54,13 +54,16 @@ func (cmd *run) Execute(params ProcessParams) error {
 		return errors.New("unable to load configuration")
 	}
 
-	pipeline := store.NewPipeline(cmd.manager, cfg)
-	environment, err := pipeline.Run(environmentName, processName)
+	processTemplate, err := store.NewProcessTemplate(cfg, cmd.manager)
+	if err != nil {
+		return err
+	}
+	process, err := processTemplate.Evaluate(environmentName, processName)
 	if err != nil {
 		return err
 	}
 
-	return cmd.execute(environment)
+	return cmd.execute(process)
 }
 
 func (cmd *run) execute(processConfig *config.Process) error {

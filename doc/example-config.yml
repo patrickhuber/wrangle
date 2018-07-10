@@ -7,7 +7,8 @@ config-sources:
 
 - name: bosh-lab-credhub
   type: credhub
-  config: bosh-lab-yaml
+  configurations: 
+  - bosh-lab-yaml
   params:
     client_id: something
     client_secret: somethingelse
@@ -19,7 +20,8 @@ config-sources:
 
 - name: concourse-lab-credhub
   type: credhub
-  config: bosh-lab-credhub
+  configurations: 
+  - bosh-lab-credhub
   params:
     client_id: ((credhub-client))
     client_secret: ((/credhub-secret))
@@ -33,7 +35,8 @@ environments:
   processes:
   
   - name: fly
-    config: bosh-lab-credhub
+    configurations: 
+    - bosh-lab-credhub
     path: fly
     args:
     - -t
@@ -44,7 +47,8 @@ environments:
     - -p ((/bosh-1/concourse/atc_basic_auth_password))
 
   - name: bosh-credhub
-    config: bosh-lab-yaml
+    configurations: 
+    - bosh-lab-yaml
     path: credhub
     args:
     - login
@@ -55,7 +59,8 @@ environments:
       CREDHUB_SERVER: https://192.168.0.6:8844
 
   - name: concourse-credhub
-    config: bosh-lab-credhub
+    configurations: 
+    - bosh-lab-credhub
     path: credhub
     args:
     - login

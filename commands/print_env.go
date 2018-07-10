@@ -53,8 +53,11 @@ func (cmd *printEnv) Execute(params ProcessParams) error {
 		return errors.New("unable to load configuration")
 	}
 
-	pipeline := store.NewPipeline(cmd.manager, cfg)
-	process, err := pipeline.Run(environmentName, processName)
+	processTemplate, err := store.NewProcessTemplate(cfg, cmd.manager)
+	if err != nil {
+		return err
+	}
+	process, err := processTemplate.Evaluate(environmentName, processName)
 	if err != nil {
 		return err
 	}
