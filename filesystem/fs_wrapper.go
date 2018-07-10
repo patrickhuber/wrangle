@@ -56,6 +56,17 @@ func (wrapper *fsWrapper) fakeSymlink(oldname string, newname string) error {
 }
 
 func (wrapper *fsWrapper) Symlink(oldname string, newname string) error {
+	// remove the target just in case
+	exists, err := afero.Exists(wrapper.fileSystem, newname)
+	if err != nil {
+		return err
+	}
+	if exists {
+		err = wrapper.fileSystem.Remove(newname)
+		if err != nil {
+			return err
+		}
+	}
 	return wrapper.symlinkDelegate(oldname, newname)
 }
 
