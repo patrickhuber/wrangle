@@ -3,7 +3,7 @@ config-sources:
 - name: bosh-lab-yaml
   type: file
   params:
-    path: ~/deployments/bosh-1/no-commit/creds.yml
+    path: state/vars/director-vars-store.yml
 
 - name: bosh-lab-credhub
   type: credhub
