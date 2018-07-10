@@ -24,7 +24,7 @@ config-sources:
   - bosh-lab-credhub
   params:
     client_id: ((credhub-client))
-    client_secret: ((/credhub-secret))
+    client_secret: ((credhub-secret))
     server: https://192.168.0.6:8844
     ca_cert: ((credhub-ca-cert.certificate))
     skip_tls_validation: false
@@ -43,8 +43,9 @@ environments:
     - main
     - login
     - -u
-    - atc
-    - -p ((/bosh-1/concourse/atc_basic_auth_password))
+    - ((/bosh-lab/concourse/atc_basic_auth.username))
+    - -p 
+    - ((/bosh-lab/concourse/atc_basic_auth.password))
 
   - name: bosh-credhub
     configurations: 
