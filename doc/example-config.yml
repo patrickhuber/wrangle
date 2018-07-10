@@ -220,7 +220,7 @@ packages:
       url: https://github.com/pivotal-cf/om/releases/download/((version))/om-darwin
       out: om-((version))-darwin
   - name: windows
-    alias: bbr.exe
+    alias: om.exe
     download:
       url: https://github.com/pivotal-cf/om/releases/download/((version))/om-windows.exe
       out: om-((version))-windows.exe
