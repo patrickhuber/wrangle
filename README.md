@@ -19,10 +19,10 @@ Add move the binary to a folder under your PATH environment variable.
 
 ### Environment Variables
 
-For ease of use you can set the WRANGLE_CONFIG_FILE and WRANGLE_PACKAGE_INSTALL_PATH environment variables. 
+For ease of use you can set the WRANGLE_CONFIG_FILE and WRANGLE_PACKAGE_PATH environment variables. 
 
 * WRANGLE_CONFIG_FILE - specifies where the configuration will reside, similar to bosh bootloader's BBL_STATE_DIR, this is set to your working directory. You can also specify this file with the -c flag. 
-* WRANGLE_PACKAGE_INSTALL_PATH - specifies where packages will be extracted and linked. Make sure this is in your PATH environment variable as each CLI is stored here and a symlink is created for the most recentlly installed. You can also specify this path with the -p flag. 
+* WRANGLE_PACKAGE_PATH - specifies where packages will be extracted and linked. Make sure this is in your PATH environment variable as each CLI is stored here and a symlink is created for the most recentlly installed. You can also specify this path with the -p flag. 
 
 
 ### The Configuration File
@@ -309,7 +309,7 @@ USAGE:
 
 OPTIONS:
    --name NAME, -n NAME    package named NAME
-   --path value, -p value  the package install path [$WRANGLE_PACKAGE_INSTALL_PATH]
+   --path value, -p value  the package install path [$WRANGLE_PACKAGE_PATH]
 ```
 
 ## building
