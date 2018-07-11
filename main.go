@@ -77,7 +77,7 @@ func createApplication(
 		cli.StringFlag{
 			Name:   "config, c",
 			Usage:  "Load configuration from `FILE`",
-			EnvVar: "CLI_MGR_CONFIG",
+			EnvVar: "WRANGLE_CONFIG",
 			Value:  defaultConfigPath,
 		},
 	}
@@ -263,7 +263,7 @@ func createInstallPackageCommand(
 			cli.StringFlag{
 				Name:   "path, p",
 				Usage:  "the package install path",
-				EnvVar: "CLI_MGR_PACKAGE_INSTALL_PATH",
+				EnvVar: "WRANGLE_PACKAGE_PATH",
 			},
 		},
 		Action: func(context *cli.Context) error {

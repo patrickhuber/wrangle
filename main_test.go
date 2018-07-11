@@ -53,7 +53,7 @@ environments:
     - store1
     - store2
     env:
-      CLI_MGR_TEST: ((key))`
+      WRANGLE_TEST: ((key))`
 
 		// create files
 		err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
@@ -89,6 +89,6 @@ environments:
 		r.True(ok)
 		r.NotNil(buffer)
 
-		r.Equal("export CLI_MGR_TEST=value\necho\n", buffer.String())
+		r.Equal("export WRANGLE_TEST=value\necho\n", buffer.String())
 	})
 }

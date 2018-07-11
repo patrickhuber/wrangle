@@ -19,10 +19,10 @@ Add move the binary to a folder under your PATH environment variable.
 
 ### Environment Variables
 
-For ease of use you can set the CLI_MGR_CONFIG_FILE and CLI_MGR_PACKAGE_INSTALL_PATH environment variables. 
+For ease of use you can set the WRANGLE_CONFIG_FILE and WRANGLE_PACKAGE_INSTALL_PATH environment variables. 
 
-* CLI_MGR_CONFIG_FILE - specifies where the configuration will reside, similar to bosh bootloader's BBL_STATE_DIR, this is set to your working directory. You can also specify this file with the -c flag. 
-* CLI_MGR_PACKAGE_INSTALL_PATH - specifies where packages will be extracted and linked. Make sure this is in your PATH environment variable as each CLI is stored here and a symlink is created for the most recentlly installed. You can also specify this path with the -p flag. 
+* WRANGLE_CONFIG_FILE - specifies where the configuration will reside, similar to bosh bootloader's BBL_STATE_DIR, this is set to your working directory. You can also specify this file with the -c flag. 
+* WRANGLE_PACKAGE_INSTALL_PATH - specifies where packages will be extracted and linked. Make sure this is in your PATH environment variable as each CLI is stored here and a symlink is created for the most recentlly installed. You can also specify this path with the -p flag. 
 
 
 ### The Configuration File
@@ -118,7 +118,7 @@ environments:
     - ((/bosh-lab/concourse/atc_basic_auth.password))
 ```
 
-It assumes the cli is the environment PATH, if you placed your CLI_MGR_INSTALL_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 
+It assumes the cli is the environment PATH, if you placed your WRANGLE_INSTALL_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 
 
 This is an example of running the command above using the wrangle:
 
@@ -225,7 +225,7 @@ COMMANDS:
      help, h             Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --config FILE, -c FILE  Load configuration from FILE (default: "/home/patrick/.wrangle/config.yml") [$CLI_MGR_CONFIG]
+   --config FILE, -c FILE  Load configuration from FILE (default: "/home/patrick/.wrangle/config.yml") [$WRANGLE_CONFIG]
    --help, -h              show help
    --version, -v           print the version
 ```
@@ -309,7 +309,7 @@ USAGE:
 
 OPTIONS:
    --name NAME, -n NAME    package named NAME
-   --path value, -p value  the package install path [$CLI_MGR_PACKAGE_INSTALL_PATH]
+   --path value, -p value  the package install path [$WRANGLE_PACKAGE_INSTALL_PATH]
 ```
 
 ## building

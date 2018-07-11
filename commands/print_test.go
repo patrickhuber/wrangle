@@ -32,7 +32,7 @@ environments:
   - name: echo
     path: echo
     env:
-      CLI_MGR_TEST: value`
+      WRANGLE_TEST: value`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
 		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 
@@ -58,7 +58,7 @@ environments:
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
-		r.Equal("export CLI_MGR_TEST=value\necho\n", b.String())
+		r.Equal("export WRANGLE_TEST=value\necho\n", b.String())
 	})
 
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
@@ -82,7 +82,7 @@ environments:
     path: echo
     configurations: [ store1 ]
     env:
-      CLI_MGR_TEST: ((key))`
+      WRANGLE_TEST: ((key))`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)
 		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 		afero.WriteFile(fileSystem, "/store1", []byte("key: value"), 0644)
@@ -109,7 +109,7 @@ environments:
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
-		r.Equal("export CLI_MGR_TEST=value\necho\n", b.String())
+		r.Equal("export WRANGLE_TEST=value\necho\n", b.String())
 	})
 
 	t.Run("CanPrintOutArgumentsInCommand", func(t *testing.T) {
