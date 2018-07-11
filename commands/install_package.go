@@ -28,12 +28,16 @@ func NewInstallPackage(
 	platform string,
 	packagesPath string,
 	fileSystem filesystem.FsWrapper,
-	console ui.Console) InstallPackage {
+	console ui.Console) (InstallPackage, error) {
+	if packagesPath == "" {
+		return nil, fmt.Errorf("packages path can not be empty")
+	}
 	return &installPackage{
-		platform:     platform,
-		packagesPath: packagesPath,
-		fileSystem:   fileSystem,
-		console:      console}
+			platform:     platform,
+			packagesPath: packagesPath,
+			fileSystem:   fileSystem,
+			console:      console},
+		nil
 }
 
 func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error {

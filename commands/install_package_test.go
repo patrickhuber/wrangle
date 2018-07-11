@@ -37,6 +37,17 @@ func TestCanInstallTgzPackageOnWindows(t *testing.T) {
 	canInstallTgzPackage(t, "windows", "c:\\test")
 }
 
+func TestInstallPackages(t *testing.T) {
+	t.Run("PathIsRequired", func(t *testing.T) {
+		r := require.New(t)
+		platform := "windows"
+		outFolder := ""
+		fileSystem := filesystem.NewOsFsWrapper(afero.NewMemMapFs())
+		_, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+		r.NotNil(err)
+	})
+}
+
 func canInstallBinaryPackage(t *testing.T, platform string, outFolder string) {
 	r := require.New(t)
 	content := `
@@ -79,7 +90,8 @@ packages:
 
 	// create the filesystem and command
 	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
-	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	command, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	r.Nil(err)
 
 	// execute
 	err = command.Execute(cfg, "fly")
@@ -162,7 +174,8 @@ packages:
 
 	// create the filesystem and command
 	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
-	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	command, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	r.Nil(err)
 
 	// execute
 	err = command.Execute(cfg, "bbr")
@@ -253,7 +266,8 @@ packages:
 
 	// create the filesystem and command
 	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
-	command := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	command, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	r.Nil(err)
 
 	// execute
 	err = command.Execute(cfg, "credhub")

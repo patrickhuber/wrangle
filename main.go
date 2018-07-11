@@ -274,7 +274,10 @@ func createInstallPackageCommand(
 			if err != nil {
 				return err
 			}
-			installPackageCommand := commands.NewInstallPackage(platform, packageInstallPath, fileSystem, ui.NewOSConsole())
+			installPackageCommand, err := commands.NewInstallPackage(platform, packageInstallPath, fileSystem, ui.NewOSConsole())
+			if err != nil {
+				return err
+			}
 			return installPackageCommand.Execute(cfg, packageName)
 		},
 	}
