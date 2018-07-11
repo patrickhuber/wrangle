@@ -17,6 +17,7 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 
 	credhub "github.com/patrickhuber/wrangle/store/credhub"
+	"github.com/patrickhuber/wrangle/store/env"
 	file "github.com/patrickhuber/wrangle/store/file"
 
 	"github.com/urfave/cli"
@@ -71,7 +72,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.3.0"
+	cliApp.Version = "0.3.1"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -317,6 +318,7 @@ func createConfigStoreManager(fileSystem afero.Fs) store.Manager {
 	manager := store.NewManager()
 	manager.Register(credhub.NewCredHubStoreProvider())
 	manager.Register(file.NewFileStoreProvider(fileSystem))
+	manager.Register(env.NewEnvStoreProvider())
 	return manager
 }
 
