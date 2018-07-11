@@ -271,3 +271,31 @@ packages:
     extract:
       filter: vault
       out: vault_((version))_darwin_amd64
+
+- name: cli-mgr
+  version: 0.2.1
+  platforms:
+  - name: linux
+    alias: cli-mgr
+    download:
+      url: https://github.com/patrickhuber/cli-mgr/releases/download/((version))/cli-mgr-linux-amd64.tgz
+      out: cli-mgr-((version))-linux-amd64.tgz
+    extract:
+      filter: cli-mgr-linux-amd64
+      out: cli-mgr-((version))-linux-amd64
+  - name: windows
+    alias: cli-mgr.exe
+    download:
+      url: https://github.com/patrickhuber/cli-mgr/releases/download/((version))/cli-mgr-windows-amd64.tgz
+      out: cli-mgr-((version))-windows-amd64.tgz
+    extract:
+      filter: cli-mgr-windows-amd64.exe
+      out: cli-mgr-((version))-windows-amd64.exe
+  - name: darwin
+    alias: cli-mgr
+    download:
+      url: https://github.com/patrickhuber/cli-mgr/releases/download/((version))/cli-mgr-darwin-amd64.tgz
+      out: cli-mgr-((version))-darwin-amd64.tgz
+    extract:
+      filter: cli-mgr-darwin-amd64
+      out: cli-mgr-((version))-darwin-amd64
