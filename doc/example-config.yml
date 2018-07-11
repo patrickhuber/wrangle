@@ -272,30 +272,30 @@ packages:
       filter: vault
       out: vault_((version))_darwin_amd64
 
-- name: cli-mgr
+- name: wrangle
   version: 0.2.1
   platforms:
   - name: linux
-    alias: cli-mgr
+    alias: wrangle
     download:
-      url: https://github.com/patrickhuber/cli-mgr/releases/download/((version))/cli-mgr-linux-amd64.tgz
-      out: cli-mgr-((version))-linux-amd64.tgz
+      url: https://github.com/patrickhuber/wrangle/releases/download/((version))/wrangle-linux-amd64.tgz
+      out: wrangle-((version))-linux-amd64.tgz
     extract:
-      filter: cli-mgr-linux-amd64
-      out: cli-mgr-((version))-linux-amd64
+      filter: wrangle-linux-amd64
+      out: wrangle-((version))-linux-amd64
   - name: windows
-    alias: cli-mgr.exe
+    alias: wrangle.exe
     download:
-      url: https://github.com/patrickhuber/cli-mgr/releases/download/((version))/cli-mgr-windows-amd64.tgz
-      out: cli-mgr-((version))-windows-amd64.tgz
+      url: https://github.com/patrickhuber/wrangle/releases/download/((version))/wrangle-windows-amd64.tgz
+      out: wrangle-((version))-windows-amd64.tgz
     extract:
-      filter: cli-mgr-windows-amd64.exe
-      out: cli-mgr-((version))-windows-amd64.exe
+      filter: wrangle-windows-amd64.exe
+      out: wrangle-((version))-windows-amd64.exe
   - name: darwin
-    alias: cli-mgr
+    alias: wrangle
     download:
-      url: https://github.com/patrickhuber/cli-mgr/releases/download/((version))/cli-mgr-darwin-amd64.tgz
-      out: cli-mgr-((version))-darwin-amd64.tgz
+      url: https://github.com/patrickhuber/wrangle/releases/download/((version))/wrangle-darwin-amd64.tgz
+      out: wrangle-((version))-darwin-amd64.tgz
     extract:
-      filter: cli-mgr-darwin-amd64
-      out: cli-mgr-((version))-darwin-amd64
+      filter: wrangle-darwin-amd64
+      out: wrangle-((version))-darwin-amd64

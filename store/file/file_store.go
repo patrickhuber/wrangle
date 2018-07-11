@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/store"
 	"github.com/pkg/errors"
 
 	patch "github.com/cppforlife/go-patch/patch"

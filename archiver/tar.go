@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/patrickhuber/cli-mgr/filesystem"
+	"github.com/patrickhuber/wrangle/filesystem"
 
 	"github.com/spf13/afero"
 )

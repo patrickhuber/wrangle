@@ -3,7 +3,7 @@ package credhub
 import (
 	"strconv"
 
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/wrangle/config"
 )
 
 type CredHubStoreConfig struct {

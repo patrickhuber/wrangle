@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/commands"
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/ui"
+	"github.com/patrickhuber/wrangle/commands"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )

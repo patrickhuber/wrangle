@@ -3,7 +3,7 @@ package memory
 import (
 	"fmt"
 
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/store"
 
 	uuid "github.com/google/uuid"
 )

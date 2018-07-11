@@ -1,8 +1,8 @@
 package memory
 
 import (
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/store"
 )
 
 type memoryStoreProvider struct {

@@ -1,6 +1,6 @@
 package commands
 
-import "github.com/patrickhuber/cli-mgr/config"
+import "github.com/patrickhuber/wrangle/config"
 
 type processParams struct {
 	config          *config.Config

@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/stretchr/testify/require"
 )
 

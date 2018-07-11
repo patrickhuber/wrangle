@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/patrickhuber/cli-mgr/filesystem"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 // https://github.com/mholt/archiver/blob/master/targz.go

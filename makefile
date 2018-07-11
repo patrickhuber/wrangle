@@ -2,7 +2,7 @@ unit:
 	go test ./...
 
 build:
-	go build -o bin/cli-mgr main.go
+	go build -o bin/wrangle main.go
 
 restore:
 	dep ensure

@@ -20,7 +20,7 @@
 
 # binaries
 main
-cli-mgr
+wrangle
 bin/*
 
 # dependencies

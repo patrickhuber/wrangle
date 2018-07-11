@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/filesystem"
-	"github.com/patrickhuber/cli-mgr/processes"
-	file "github.com/patrickhuber/cli-mgr/store/file"
-	"github.com/patrickhuber/cli-mgr/ui"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/processes"
+	file "github.com/patrickhuber/wrangle/store/file"
+	"github.com/patrickhuber/wrangle/ui"
 	"github.com/stretchr/testify/require"
 
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/store"
 
 	"github.com/spf13/afero"
 )
@@ -76,7 +76,7 @@ environments:
 
 		// run command
 		args := []string{
-			"cli-mgr",
+			"wrangle",
 			"-c", "/config",
 			"print",
 			"-n", "echo",

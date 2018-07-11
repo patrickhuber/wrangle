@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/patrickhuber/cli-mgr/filesystem"
+	"github.com/patrickhuber/wrangle/filesystem"
 
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/packages"
-	"github.com/patrickhuber/cli-mgr/ui"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/ui"
 )
 
 type installPackage struct {

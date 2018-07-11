@@ -3,9 +3,9 @@ package store
 import (
 	"fmt"
 
-	"github.com/patrickhuber/cli-mgr/collections"
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/templates"
+	"github.com/patrickhuber/wrangle/collections"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/templates"
 )
 
 type processTemplate struct {

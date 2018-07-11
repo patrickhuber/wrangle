@@ -3,8 +3,8 @@ package archiver_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/archiver"
-	"github.com/patrickhuber/cli-mgr/filesystem"
+	"github.com/patrickhuber/wrangle/archiver"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )

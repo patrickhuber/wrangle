@@ -3,7 +3,7 @@ package store
 import (
 	"fmt"
 
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/wrangle/config"
 )
 
 type manager struct {

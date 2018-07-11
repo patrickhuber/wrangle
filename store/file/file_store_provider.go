@@ -1,8 +1,8 @@
 package file
 
 import (
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/store"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )

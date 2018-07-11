@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/store"
 	"github.com/stretchr/testify/require"
 )
 

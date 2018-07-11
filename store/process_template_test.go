@@ -3,9 +3,9 @@ package store_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/store"
-	"github.com/patrickhuber/cli-mgr/store/file"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/store/file"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )

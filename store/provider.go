@@ -1,6 +1,6 @@
 package store
 
-import "github.com/patrickhuber/cli-mgr/config"
+import "github.com/patrickhuber/wrangle/config"
 
 // Provider provides a store given the config source
 type Provider interface {

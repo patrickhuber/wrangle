@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/pkg/errors"
 )
 

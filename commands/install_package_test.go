@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/archiver"
+	"github.com/patrickhuber/wrangle/archiver"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/filesystem"
-	"github.com/patrickhuber/cli-mgr/ui"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/ui"
 )
 
 func TestCanInstallBinaryPackageOnWindows(t *testing.T) {

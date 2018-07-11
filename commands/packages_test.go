@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/config"
-	"github.com/patrickhuber/cli-mgr/ui"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/ui"
 	"github.com/stretchr/testify/require"
 )
 

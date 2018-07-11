@@ -19,7 +19,7 @@ func TestLoader(t *testing.T) {
 		usr, err := user.Current()
 		require.Nil(err)
 
-		configFilePath := filepath.Join(usr.HomeDir, ".cli-mgr", "config.yml")
+		configFilePath := filepath.Join(usr.HomeDir, ".wrangle", "config.yml")
 		configFilePath = filepath.ToSlash(configFilePath)
 		AssertFilePathIsCorrect(t, configFilePath)
 	})

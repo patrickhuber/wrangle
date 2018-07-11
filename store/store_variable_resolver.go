@@ -1,6 +1,6 @@
 package store
 
-import "github.com/patrickhuber/cli-mgr/templates"
+import "github.com/patrickhuber/wrangle/templates"
 
 type storeVariableResolver struct {
 	store Store

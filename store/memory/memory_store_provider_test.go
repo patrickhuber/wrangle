@@ -3,7 +3,7 @@ package memory
 import (
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/config"
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/stretchr/testify/require"
 )
 

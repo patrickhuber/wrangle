@@ -3,8 +3,8 @@ package store_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/cli-mgr/store"
-	"github.com/patrickhuber/cli-mgr/store/memory"
+	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/store/memory"
 	"github.com/stretchr/testify/require"
 )
 

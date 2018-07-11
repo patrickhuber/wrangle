@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/patrickhuber/cli-mgr/store"
+	"github.com/patrickhuber/wrangle/store"
 
 	credhubcli "github.com/cloudfoundry-incubator/credhub-cli/credhub"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"

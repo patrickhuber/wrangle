@@ -1,6 +1,6 @@
-# CLI Manager
+# Wrangle
 
-Template and simplify command line operations for several CLIs in the cloud foundry ecosystem.
+Wrangle is a solution for managing multiple configuration stores and multiple command line interfaces across multiple environments. It is meant to address team collaboration by using declarative configuration that is committed to source control. 
 
 ## Getting Started
 
@@ -8,7 +8,7 @@ Template and simplify command line operations for several CLIs in the cloud foun
 
 The latest release can be found on the releases page of github. Download the release for your target platform
 
-https://github.com/patrickhuber/cli-mgr/releases
+https://github.com/patrickhuber/wrangle/releases
 
 
 ### Install
@@ -33,11 +33,11 @@ The default location for the configuration file is in your user directory under:
 
 > mac & linux
 
-`~/.cli-mgr/config.yml`
+`~/.wrangle/config.yml`
 
 > windows
 
-`%userprofile%\.cli-mgr\config.yml`
+`%userprofile%\.wrangle\config.yml`
 
 The config file has the following structure:
 
@@ -120,23 +120,23 @@ environments:
 
 It assumes the cli is the environment PATH, if you placed your CLI_MGR_INSTALL_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 
 
-This is an example of running the command above using the cli-mgr:
+This is an example of running the command above using the wrangle:
 
 ```bash
-cli-mgr run -e lab -n fly
+wrangle run -e lab -n fly
 ```
 
 If you would like to see the output that would be executed you can use the `print` command
 
 ```bash
-cli-mgr print -e lab -n fly
+wrangle print -e lab -n fly
 ```
 
 If you would just like to print the environment variables you can use the `print-env` command
 
 
 ```bash
-cli-mgr print-env -e lab -n fly
+wrangle print-env -e lab -n fly
 ```
 
 #### Packages
@@ -208,10 +208,10 @@ This example simply downloads the binary and doesn't do any extraction
 
 ```
 NAME:
-   cli-mgr - a cli management tool
+   wrangle - a cli management tool
 
 USAGE:
-   cli-mgr [global options] command [command options] [arguments...]
+   wrangle [global options] command [command options] [arguments...]
 
 VERSION:
    0.0.0
@@ -225,7 +225,7 @@ COMMANDS:
      help, h             Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --config FILE, -c FILE  Load configuration from FILE (default: "/home/patrick/.cli-mgr/config.yml") [$CLI_MGR_CONFIG]
+   --config FILE, -c FILE  Load configuration from FILE (default: "/home/patrick/.wrangle/config.yml") [$CLI_MGR_CONFIG]
    --help, -h              show help
    --version, -v           print the version
 ```
@@ -233,15 +233,15 @@ GLOBAL OPTIONS:
 ### run command
 
 ```bash
-cli-mgr run --help
+wrangle run --help
 ```
 
 ```
 NAME:
-   cli-mgr run - run a command
+   wrangle run - run a command
 
 USAGE:
-   cli-mgr run [command options] [arguments...]
+   wrangle run [command options] [arguments...]
 
 OPTIONS:
    --name NAME, -n NAME                       Execute command named NAME
@@ -251,15 +251,15 @@ OPTIONS:
 ### print command
 
 ```bash
-cli-mgr print --help
+wrangle print --help
 ```
 
 ```
 NAME:
-   cli-mgr print - print command environemnt variables
+   wrangle print - print command environemnt variables
 
 USAGE:
-   cli-mgr print [command options] [arguments...]
+   wrangle print [command options] [arguments...]
 
 OPTIONS:
    --name NAME, -n NAME                       process named NAME
@@ -269,43 +269,43 @@ OPTIONS:
 ### environments command
 
 ```bash
-cli-mgr environments --help
+wrangle environments --help
 ```
 
 ```
 NAME:
-   cli-mgr environments - prints the list of environments in the config file
+   wrangle environments - prints the list of environments in the config file
 
 USAGE:
-   cli-mgr environments [arguments...]
+   wrangle environments [arguments...]
 ```
 
 ### packages command
 
 ```bash
-cli-mgr packages --help
+wrangle packages --help
 ```
 
 ```
 NAME:
-   cli-mgr packages - prints the list of packages and versions in the config file
+   wrangle packages - prints the list of packages and versions in the config file
 
 USAGE:
-   cli-mgr packages [arguments...]
+   wrangle packages [arguments...]
 ```
 
 ### install-package command
 
 ```bash
-cli-mgr install-package --help
+wrangle install-package --help
 ```
 
 ```
 NAME:
-   cli-mgr install-package - installs the package with the given `NAME` for the current platform
+   wrangle install-package - installs the package with the given `NAME` for the current platform
 
 USAGE:
-   cli-mgr install-package [command options] [arguments...]
+   wrangle install-package [command options] [arguments...]
 
 OPTIONS:
    --name NAME, -n NAME    package named NAME
