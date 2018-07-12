@@ -1,18 +1,18 @@
 package config
 
-// Config represents a grouping of environments and config sources
+// Config represents a grouping of environments, stores and packages
 type Config struct {
-	ConfigSources []ConfigSource `yaml:"config-sources"`
-	Environments  []Environment  `yaml:"environments"`
-	Packages      []Package      `yaml:"packages"`
+	Stores       []Store       `yaml:"stores"`
+	Environments []Environment `yaml:"environments"`
+	Packages     []Package     `yaml:"packages"`
 }
 
-// ConfigSource represents a source of configuration
-type ConfigSource struct {
-	Name             string            `yaml:"name"`
-	ConfigSourceType string            `yaml:"type"`
-	Configurations   []string          `yaml:"configurations"`
-	Params           map[string]string `yaml:"params"`
+// Store represents a configuration store
+type Store struct {
+	Name      string            `yaml:"name"`
+	StoreType string            `yaml:"type"`
+	Stores    []string          `yaml:"stores"`
+	Params    map[string]string `yaml:"params"`
 }
 
 // Environment represents a grouping of processes
@@ -23,11 +23,11 @@ type Environment struct {
 
 // Process represents a process under the given environment
 type Process struct {
-	Name           string            `yaml:"name"`
-	Configurations []string          `yaml:"configurations"`
-	Path           string            `yaml:"path"`
-	Args           []string          `yaml:"args"`
-	Vars           map[string]string `yaml:"env"`
+	Name   string            `yaml:"name"`
+	Stores []string          `yaml:"stores"`
+	Path   string            `yaml:"path"`
+	Args   []string          `yaml:"args"`
+	Vars   map[string]string `yaml:"env"`
 }
 
 // Package represents a versioned artifiact

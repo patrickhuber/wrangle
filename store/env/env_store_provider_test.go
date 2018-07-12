@@ -28,9 +28,9 @@ func TestEnvStoreProvider(t *testing.T) {
 		val1 := "abc123"
 		val2 := "zyx987"
 
-		source := &config.ConfigSource{
-			Name:             "env",
-			ConfigSourceType: "env",
+		source := &config.Store{
+			Name:      "env",
+			StoreType: "env",
 			Params: map[string]string{
 				prop1: env1,
 				prop2: env2,

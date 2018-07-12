@@ -25,7 +25,7 @@ func TestPrintCommand(t *testing.T) {
 		// create config file
 		configFileContent := `
 ---
-config-sources:
+stores:
 environments:
 - name: lab
   processes:
@@ -70,7 +70,7 @@ environments:
 		// create config file
 		configFileContent := `
 ---
-config-sources:
+stores:
 - name: store1
   type: file
   params: 
@@ -80,7 +80,7 @@ environments:
   processes:
   - name: echo
     path: echo
-    configurations: [ store1 ]
+    stores: [ store1 ]
     env:
       WRANGLE_TEST: ((key))`
 		configFileContent = strings.Replace(configFileContent, "\t", "  ", -1)

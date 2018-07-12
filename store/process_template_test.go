@@ -40,28 +40,28 @@ func (s *fakeStore) Delete(key string) (int, error) {
 
 type fakeProvider struct {
 	name           string
-	createDelegate func(source *config.ConfigSource) (store.Store, error)
+	createDelegate func(source *config.Store) (store.Store, error)
 }
 
 func (p *fakeProvider) GetName() string {
 	return p.name
 }
 
-func (p *fakeProvider) Create(source *config.ConfigSource) (store.Store, error) {
+func (p *fakeProvider) Create(source *config.Store) (store.Store, error) {
 	return p.createDelegate(source)
 }
 
 func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
 	r := require.New(t)
 	data := `
-config-sources:
+stores:
 - name: one
   type: fake
 environments:
 - name: lab
   processes:
   - name: go
-    configurations:
+    stores:
     - one
     path: go
     args:
@@ -71,7 +71,7 @@ environments:
 
 	provider := &fakeProvider{
 		name: "fake",
-		createDelegate: func(source *config.ConfigSource) (store.Store, error) {
+		createDelegate: func(source *config.Store) (store.Store, error) {
 			return &fakeStore{
 				getByNameDelegate: func(name string) (store.Data, error) {
 					return store.NewData("version", "version", "version"), nil
@@ -100,10 +100,10 @@ func TestProcessTemplate(t *testing.T) {
 	t.Run("TemplateCanResolveStoreParams", func(t *testing.T) {
 		r := require.New(t)
 		content := `
-config-sources:
+stores:
 - name: one
   type: file
-  configurations:
+  stores:
   - two
   params:
     path: ((/file-name))
@@ -115,7 +115,7 @@ environments:
 - name: lab
   processes:
   - name: echo
-    configurations:
+    stores:
     - one
     args:
     - ((/key))
@@ -141,7 +141,7 @@ environments:
 	t.Run("TemplateCanResolveProcessArgsAndVars", func(t *testing.T) {
 		r := require.New(t)
 		content := `
-config-sources:
+stores:
 - name: one
   type: file
   params:
@@ -150,7 +150,7 @@ environments:
 - name: lab
   processes:
   - name: echo
-    configurations:
+    stores:
     - one
     args:
     - ((/key))
@@ -179,7 +179,7 @@ environments:
 	t.Run("TemplateCanCascadeConfigStores", func(t *testing.T) {
 		r := require.New(t)
 		content := `
-config-sources:
+stores:
 - name: one
   type: file
   params:
@@ -196,7 +196,7 @@ environments:
 - name: lab
   processes:
   - name: echo
-    configurations:
+    stores:
     - one
     - two
     - three
@@ -225,22 +225,22 @@ environments:
 	t.Run("TemplateCanDetectLoops", func(t *testing.T) {
 		r := require.New(t)
 		content := `
-config-sources:
+stores:
 - name: one
   type: file
-  configurations:
+  stores:
   - two
   params:
     path: /test1
 - name: two
   type: file
-  configurations:
+  stores:
   - three
   params:
     path: /test2
 - name: three
   type: file
-  configurations:
+  stores:
   - one
   params:
     path: /test3
@@ -248,7 +248,7 @@ environments:
 - name: lab
   processes:
   - name: echo
-    configurations:
+    stores:
     - one
     args:
     - ((/key1))
@@ -271,14 +271,14 @@ environments:
 	t.Run("TemplateCanLoadVariablesFromOtherStore", func(t *testing.T) {
 		r := require.New(t)
 		content := `
-config-sources:
+stores:
 - name: one
   type: file
   params:
     path: /one
 - name: two
   type: file
-  configurations:
+  stores:
   - one
   params:
     path: ((key))
@@ -286,7 +286,7 @@ environments:
 - name: lab
   processes:
   - name: a
-    configurations:
+    stores:
     - two
     env:
       A: ((a))

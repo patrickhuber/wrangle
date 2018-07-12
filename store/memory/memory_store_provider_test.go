@@ -13,7 +13,7 @@ func TestMemoryStoreProvider(t *testing.T) {
 		provider := NewMemoryStoreProvider()
 		name := provider.GetName()
 		r.Equal("memory", name)
-		store, err := provider.Create(&config.ConfigSource{})
+		store, err := provider.Create(&config.Store{})
 		r.Nil(err)
 		r.NotNil(store)
 	})

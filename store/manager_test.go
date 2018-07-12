@@ -15,7 +15,7 @@ func (provider *dummyConfigStoreProvider) GetName() string {
 	return provider.Name
 }
 
-func (provider *dummyConfigStoreProvider) Create(configSource *config.ConfigSource) (Store, error) {
+func (provider *dummyConfigStoreProvider) Create(store *config.Store) (Store, error) {
 	return &dummyConfigStore{}, nil
 }
 
@@ -56,10 +56,10 @@ func TestManager(t *testing.T) {
 		r := require.New(t)
 		manager := NewManager()
 		manager.Register(&dummyConfigStoreProvider{Name: "dummy"})
-		store, err := manager.Create(&config.ConfigSource{
-			Name:             "test",
-			Configurations:   []string{"test"},
-			ConfigSourceType: "dummy",
+		store, err := manager.Create(&config.Store{
+			Name:      "test",
+			Stores:    []string{"test"},
+			StoreType: "dummy",
 		})
 		r.Nil(err)
 		r.NotNil(store)
@@ -68,7 +68,7 @@ func TestManager(t *testing.T) {
 	t.Run("MissingConfigStoreProviderThrowsError", func(t *testing.T) {
 		r := require.New(t)
 		manager := NewManager()
-		_, err := manager.Create(&config.ConfigSource{Name: "test"})
+		_, err := manager.Create(&config.Store{Name: "test"})
 		r.NotNil(err)
 	})
 }

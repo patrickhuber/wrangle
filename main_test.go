@@ -2,6 +2,10 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/patrickhuber/wrangle/filesystem"
@@ -26,7 +30,7 @@ func TestMain(t *testing.T) {
 		r := require.New(t)
 
 		// create dependencies
-		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		fileSystem := filesystem.NewMemMapFs()
 		storeManager := store.NewManager()
 		storeManager.Register(file.NewFileStoreProvider(fileSystem))
 		processFactory := processes.NewOsFactory() // change to fake process factory?
@@ -35,7 +39,7 @@ func TestMain(t *testing.T) {
 		// create config file
 		configFileContent := `
 ---
-config-sources:
+stores:
 - name: store1
   type: file
   params:
@@ -49,7 +53,7 @@ environments:
   processes:
   - name: echo
     path: echo
-    configurations: 
+    stores: 
     - store1
     - store2
     env:
@@ -90,5 +94,69 @@ environments:
 		r.NotNil(buffer)
 
 		r.Equal("export WRANGLE_TEST=value\necho\n", buffer.String())
+	})
+
+	t.Run("CanRunInstallWithEnvironmentVars", func(t *testing.T) {
+		r := require.New(t)
+		manager := store.NewManager()
+		fileSystem := filesystem.NewMemMapFs()
+		factory := processes.NewOsFactory()
+		console := ui.NewMemoryConsole()
+		platform := "linux"
+		app, err := createApplication(
+			manager,
+			fileSystem,
+			factory,
+			console,
+			platform,
+		)
+		r.Nil(err)
+		r.NotNil(app)
+
+		// setup the test server
+		message := "this is a message"
+
+		// start the local http server
+		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			rw.Write([]byte(message))
+		}))
+
+		// reset the environment
+		os.Clearenv()
+		os.Setenv("WRANGLE_CONFIG", "/config")
+		os.Setenv("WRANGLE_PACKAGE_PATH", "/packages")
+
+		// close connection when test is finished
+		defer server.Close()
+
+		// write the config and package directories
+		content := `
+packages:
+- name: test
+  platforms:
+  - name: linux
+    download:
+      url: %s
+      out: test.html
+`
+		content = fmt.Sprintf(content, server.URL)
+
+		err = afero.WriteFile(fileSystem, "/config", []byte(content), 0666)
+		r.Nil(err)
+		err = fileSystem.Mkdir("/packages", 0666)
+		r.Nil(err)
+
+		// run the app
+		err = app.Run([]string{
+			"wrangle",
+			"install",
+			"-n",
+			"test",
+		})
+		r.Nil(err)
+
+		ok, err := afero.Exists(fileSystem, "/packages/test.html")
+		r.Nil(err)
+		r.True(ok)
 	})
 }

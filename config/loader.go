@@ -65,7 +65,7 @@ func (loader *loader) ensureExists(configFile string) error {
 	}
 
 	data := &bytes.Buffer{}
-	fmt.Fprintln(data, "config-sources:")
+	fmt.Fprintln(data, "stores:")
 	fmt.Fprintln(data, "environments:")
 	fmt.Fprintln(data, "packages:")
 

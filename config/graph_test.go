@@ -9,21 +9,21 @@ import (
 func TestConfigurationGraphCanLoadLinear(t *testing.T) {
 	r := require.New(t)
 	data := `
-config-sources:
+stores:
 - name: head
   type: file
-  configurations:
+  stores:
   params:
     path: /test/head.yml
 - name: middle
   type: file
-  configurations:
+  stores:
   - head
   params:
     path: /test/middle.yml
 - name: tail
   type: file
-  configurations:
+  stores:
   - middle
   params:
     path: /test/tail.yml
@@ -50,29 +50,29 @@ config-sources:
 	r.Equal(0, len(tail.Children()))
 	r.Equal(1, len(tail.Parents()))
 
-	r.NotNil(graph.Source("tail"))
-	r.NotNil(graph.Source("head"))
-	r.NotNil(graph.Source("middle"))
+	r.NotNil(graph.Store("tail"))
+	r.NotNil(graph.Store("head"))
+	r.NotNil(graph.Store("middle"))
 }
 
 func TestConfigurationGraphCanLoadTree(t *testing.T) {
 	r := require.New(t)
 	data := `
-config-sources:
+stores:
 - name: root
   type: file
-  configurations:
+  stores:
   params:
     path: /test/root.yml
 - name: left-child
   type: file
-  configurations:
+  stores:
   - root
   params:
     path: /test/left-child.yml
 - name: right-child
   type: file
-  configurations:
+  stores:
   - root
   params:
     path: /test/right-child.yml
@@ -100,29 +100,29 @@ config-sources:
 	r.Equal(0, len(rightChild.Children()))
 	r.Equal(1, len(rightChild.Parents()))
 
-	r.NotNil(graph.Source("root"))
-	r.NotNil(graph.Source("left-child"))
-	r.NotNil(graph.Source("right-child"))
+	r.NotNil(graph.Store("root"))
+	r.NotNil(graph.Store("left-child"))
+	r.NotNil(graph.Store("right-child"))
 }
 
 func TestConfigurationGraphCanLoadGraph(t *testing.T) {
 	r := require.New(t)
 	data := `
-config-sources:
+stores:
 - name: root
   type: file
-  configurations:
+  stores:
   params:
     path: /test/root.yml
 - name: left-child
   type: file
-  configurations:
+  stores:
   - root
   params:
     path: /test/left-child.yml
 - name: right-child
   type: file
-  configurations:
+  stores:
   - root
   - left-child
   params:
@@ -151,30 +151,30 @@ config-sources:
 	r.Equal(0, len(rightChild.Children()))
 	r.Equal(2, len(rightChild.Parents()))
 
-	r.NotNil(graph.Source("root"))
-	r.NotNil(graph.Source("left-child"))
-	r.NotNil(graph.Source("right-child"))
+	r.NotNil(graph.Store("root"))
+	r.NotNil(graph.Store("left-child"))
+	r.NotNil(graph.Store("right-child"))
 }
 
 func TestConfigurationGraphFailsToCreateCycles(t *testing.T) {
 	r := require.New(t)
 	data := `
-config-sources:
+stores:
 - name: one
   type: file
-  configurations:
+  stores:
   - three
   params:
     path: /test/one.yml
 - name: two
   type: file
-  configurations:
+  stores:
   - one
   params:
     path: /test/two.yml
 - name: three
   type: file
-  configurations:
+  stores:
   - two
   params:
     path: /test/three.yml

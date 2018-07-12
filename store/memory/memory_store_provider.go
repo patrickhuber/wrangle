@@ -17,7 +17,7 @@ func (*memoryStoreProvider) GetName() string {
 	return "memory"
 }
 
-func (*memoryStoreProvider) Create(configSource *config.ConfigSource) (store.Store, error) {
+func (*memoryStoreProvider) Create(configSource *config.Store) (store.Store, error) {
 
 	return NewMemoryStore(configSource.Name), nil
 }

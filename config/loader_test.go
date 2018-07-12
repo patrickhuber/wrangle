@@ -38,18 +38,18 @@ func TestLoader(t *testing.T) {
 		r.Nil(err)
 		r.NotNil(cfg)
 		r.Equal(0, len(cfg.Environments))
-		r.Equal(0, len(cfg.ConfigSources))
+		r.Equal(0, len(cfg.Stores))
 		r.True(afero.Exists(fileSystem, configFilePath))
 		content, err := afero.ReadFile(fileSystem, configFilePath)
 		r.Nil(err)
-		r.Equal([]byte("config-sources:\nenvironments:\npackages:\n"), content)
+		r.Equal([]byte("stores:\nenvironments:\npackages:\n"), content)
 	})
 
 	t.Run("WillFailIfExtraDataPresent", func(t *testing.T) {
 		r := require.New(t)
 		path := "/file"
 		var content = `
-config-sources:
+stores:
   - name: test
     path: /test
 environments:`
@@ -67,17 +67,17 @@ func AssertFilePathIsCorrect(t *testing.T, configFilePath string) {
 	r := require.New(t)
 
 	var content = `
-config-sources:
+stores:
 - name: name
   type: type
-  configurations: [ config ]
+  stores: [ config ]
   params:
     key: value
 environments:
 - name: name
   processes:
   - name: lab
-    configurations: [ name ]
+    stores: [ name ]
     path: go
     args:
     - version
@@ -110,6 +110,6 @@ packages:
 
 	cfg, err := loader.Load(configFilePath)
 	r.Nil(err)
-	r.Equal(1, len(cfg.ConfigSources))
+	r.Equal(1, len(cfg.Stores))
 	r.Equal(1, len(cfg.Environments))
 }

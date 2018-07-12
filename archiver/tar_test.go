@@ -12,7 +12,7 @@ import (
 func TestCanRoundTripTar(t *testing.T) {
 	r := require.New(t)
 
-	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 
 	err := afero.WriteFile(fileSystem, "/tmp/test", []byte("this is a test"), 0666)
 	r.Nil(err)

@@ -10,7 +10,7 @@ type FileStoreConfig struct {
 	Path string
 }
 
-func NewFileStoreConfig(configSource *config.ConfigSource) (*FileStoreConfig, error) {
+func NewFileStoreConfig(configSource *config.Store) (*FileStoreConfig, error) {
 	cfg := &FileStoreConfig{}
 	value, ok := configSource.Params["path"]
 	if !ok {

@@ -1,4 +1,4 @@
-config-sources:
+stores:
 
 - name: bosh-lab-yaml
   type: file
@@ -7,7 +7,7 @@ config-sources:
 
 - name: bosh-lab-credhub
   type: credhub
-  configurations: 
+  stores: 
   - bosh-lab-yaml
   params:
     client_id: director_to_credhub
@@ -20,7 +20,7 @@ config-sources:
 
 - name: concourse-lab-credhub
   type: credhub
-  configurations: 
+  stores: 
   - bosh-lab-credhub
   params:
     client_id: ((credhub-client))
@@ -35,7 +35,7 @@ environments:
   processes:
   
   - name: fly
-    configurations: 
+    stores: 
     - bosh-lab-credhub
     path: fly
     args:
@@ -48,7 +48,7 @@ environments:
     - ((/bosh-lab/concourse/atc_basic_auth.password))
 
   - name: bosh-credhub
-    configurations: 
+    stores: 
     - bosh-lab-yaml
     path: credhub
     args:
@@ -60,7 +60,7 @@ environments:
       CREDHUB_SERVER: https://192.168.0.6:8844
 
   - name: concourse-credhub
-    configurations: 
+    stores: 
     - bosh-lab-credhub
     path: credhub
     args:

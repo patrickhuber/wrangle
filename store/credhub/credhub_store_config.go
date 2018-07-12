@@ -17,7 +17,7 @@ type CredHubStoreConfig struct {
 	SkipTLSValidation bool
 }
 
-func NewCredHubStoreConfig(configSource *config.ConfigSource) (*CredHubStoreConfig, error) {
+func NewCredHubStoreConfig(configSource *config.Store) (*CredHubStoreConfig, error) {
 
 	credHubStoreConfig := &CredHubStoreConfig{
 		SkipTLSValidation: false,

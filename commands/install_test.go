@@ -43,7 +43,7 @@ func TestInstallPackages(t *testing.T) {
 		platform := "windows"
 		outFolder := ""
 		fileSystem := filesystem.NewOsFsWrapper(afero.NewMemMapFs())
-		_, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+		_, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 		r.NotNil(err)
 	})
 }
@@ -89,8 +89,8 @@ packages:
 	r.Nil(err)
 
 	// create the filesystem and command
-	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
-	command, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
+	command, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 	r.Nil(err)
 
 	// execute
@@ -131,7 +131,7 @@ packages:
 `
 	// start the local http server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		fs := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		fs := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 		err := afero.WriteFile(fs, "/bbr", []byte("this is data"), 0666)
 		if err != nil {
 			rw.Write([]byte("error creating executable"))
@@ -173,8 +173,8 @@ packages:
 	r.Nil(err)
 
 	// create the filesystem and command
-	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
-	command, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
+	command, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 	r.Nil(err)
 
 	// execute
@@ -223,7 +223,7 @@ packages:
 `
 	// start the local http server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		fs := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		fs := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 		err := afero.WriteFile(fs, "/credhub", []byte("this is data"), 0666)
 		if err != nil {
 			rw.Write([]byte("error creating executable"))
@@ -265,8 +265,8 @@ packages:
 	r.Nil(err)
 
 	// create the filesystem and command
-	fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
-	command, err := NewInstallPackage(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
+	command, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
 	r.Nil(err)
 
 	// execute

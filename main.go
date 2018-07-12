@@ -72,7 +72,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.3.1"
+	cliApp.Version = "0.4.0"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -253,7 +253,7 @@ func createInstallPackageCommand(
 	fileSystem filesystem.FsWrapper,
 	platform string) *cli.Command {
 	return &cli.Command{
-		Name:    "install-package",
+		Name:    "install",
 		Aliases: []string{"i"},
 		Usage:   "installs the package with the given `NAME` for the current platform",
 		Flags: []cli.Flag{
@@ -274,7 +274,7 @@ func createInstallPackageCommand(
 			if err != nil {
 				return err
 			}
-			installPackageCommand, err := commands.NewInstallPackage(platform, packageInstallPath, fileSystem, ui.NewOSConsole())
+			installPackageCommand, err := commands.NewInstall(platform, packageInstallPath, fileSystem, ui.NewOSConsole())
 			if err != nil {
 				return err
 			}

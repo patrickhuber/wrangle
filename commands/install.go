@@ -11,28 +11,28 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 )
 
-type installPackage struct {
+type install struct {
 	platform     string
 	packagesPath string
 	fileSystem   filesystem.FsWrapper
 	console      ui.Console
 }
 
-// InstallPackage defines an install package command
-type InstallPackage interface {
+// Install defines an install package command
+type Install interface {
 	Execute(cfg *config.Config, packageName string) error
 }
 
-// NewInstallPackage creates a new install package command
-func NewInstallPackage(
+// NewInstall creates a new install package command
+func NewInstall(
 	platform string,
 	packagesPath string,
 	fileSystem filesystem.FsWrapper,
-	console ui.Console) (InstallPackage, error) {
+	console ui.Console) (Install, error) {
 	if packagesPath == "" {
 		return nil, fmt.Errorf("packages path can not be empty")
 	}
-	return &installPackage{
+	return &install{
 			platform:     platform,
 			packagesPath: packagesPath,
 			fileSystem:   fileSystem,
@@ -40,7 +40,7 @@ func NewInstallPackage(
 		nil
 }
 
-func (cmd *installPackage) Execute(cfg *config.Config, packageName string) error {
+func (cmd *install) Execute(cfg *config.Config, packageName string) error {
 	configPackage, err := findConfigPackage(cfg, packageName)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func findConfigPackage(cfg *config.Config, packageName string) (*config.Package,
 	return configPackage, nil
 }
 
-func (cmd *installPackage) createPackageFromConfig(configPackage *config.Package) (packages.Package, error) {
+func (cmd *install) createPackageFromConfig(configPackage *config.Package) (packages.Package, error) {
 	for i := range configPackage.Platforms {
 		platform := &configPackage.Platforms[i]
 		if platform.Name == cmd.platform {
@@ -101,9 +101,13 @@ func (cmd *installPackage) createPackageFromConfig(configPackage *config.Package
 	return nil, fmt.Errorf("Unable to find package '%s' for platform '%s'", configPackage.Name, cmd.platform)
 }
 
-func (cmd *installPackage) createPackageFromPlatformConfig(
+func (cmd *install) createPackageFromPlatformConfig(
 	configPackage *config.Package,
 	platform *config.Platform) (packages.Package, error) {
+
+	if platform.Download == nil {
+		return nil, fmt.Errorf("platform 'download' element is required for package '%s' platform '%s'", configPackage.Name, platform.Name)
+	}
 
 	// create the download part of the package
 	download := packages.NewDownload(

@@ -18,6 +18,10 @@ type FsWrapper interface {
 	Symlink(oldname string, newname string) error
 }
 
+func NewOsFs() FsWrapper {
+	return NewOsFsWrapper(afero.NewOsFs())
+}
+
 func NewOsFsWrapper(fileSystem afero.Fs) FsWrapper {
 	return &fsWrapper{
 		fileSystem:      fileSystem,
@@ -25,7 +29,11 @@ func NewOsFsWrapper(fileSystem afero.Fs) FsWrapper {
 	}
 }
 
-func NewMemoryMappedFsWrapper(fileSystem afero.Fs) FsWrapper {
+func NewMemMapFs() FsWrapper {
+	return NewMemMapFsWrapper(afero.NewMemMapFs())
+}
+
+func NewMemMapFsWrapper(fileSystem afero.Fs) FsWrapper {
 	wrapper := &fsWrapper{
 		fileSystem: fileSystem,
 	}

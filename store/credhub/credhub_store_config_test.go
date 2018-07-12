@@ -21,9 +21,9 @@ func TestCredHubStoreConfig(t *testing.T) {
 		clientID := "client_id"
 		clientSecret := "client_secret"
 
-		configSource := &config.ConfigSource{
-			Name:             name,
-			ConfigSourceType: configSourceType,
+		configSource := &config.Store{
+			Name:      name,
+			StoreType: configSourceType,
 			Params: map[string]string{
 				"ca_cert":       certificate,
 				"username":      username,

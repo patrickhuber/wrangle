@@ -15,7 +15,7 @@ func (provider *credHubConfigStoreProvider) GetName() string {
 	return "credhub"
 }
 
-func (provider *credHubConfigStoreProvider) Create(configSource *config.ConfigSource) (store.Store, error) {
+func (provider *credHubConfigStoreProvider) Create(configSource *config.Store) (store.Store, error) {
 	configStoreConfig, err := NewCredHubStoreConfig(configSource)
 	if err != nil {
 		return nil, err

@@ -20,7 +20,7 @@ func (provider *fileStoreProvider) GetName() string {
 	return "file"
 }
 
-func (provider *fileStoreProvider) Create(configSource *config.ConfigSource) (store.Store, error) {
+func (provider *fileStoreProvider) Create(configSource *config.Store) (store.Store, error) {
 	cfg, err := NewFileStoreConfig(configSource)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create file store config")

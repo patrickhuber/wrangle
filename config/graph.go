@@ -9,8 +9,8 @@ type node struct {
 }
 
 type graph struct {
-	nodes   map[string]*node
-	sources map[string]*ConfigSource
+	nodes  map[string]*node
+	stores map[string]*Store
 }
 
 // Node represents a node in the graph
@@ -26,33 +26,33 @@ type Node interface {
 type Graph interface {
 	Nodes() []Node
 	Node(name string) Node
-	Source(name string) *ConfigSource
+	Store(name string) *Store
 }
 
 // NewConfigurationGraph creates a graph from the configuration
 func NewConfigurationGraph(configuration *Config) (Graph, error) {
 
 	nodes := make(map[string]*node)
-	sources := make(map[string]*ConfigSource)
+	stores := make(map[string]*Store)
 
 	// create the nodes
-	for i := range configuration.ConfigSources {
+	for i := range configuration.Stores {
 
 		// create the node and assign the config source
-		source := configuration.ConfigSources[i]
-		n := newNode(source.Name)
+		store := configuration.Stores[i]
+		n := newNode(store.Name)
 
 		// create maps for easy lookup when resolving references
-		sources[source.Name] = &source
-		nodes[source.Name] = n
+		stores[store.Name] = &store
+		nodes[store.Name] = n
 	}
 
 	// loop over the config sources now that we have a full
 	// node list to use when building links
-	for i := range configuration.ConfigSources {
-		source := configuration.ConfigSources[i]
-		n := nodes[source.Name]
-		for _, parentName := range source.Configurations {
+	for i := range configuration.Stores {
+		store := configuration.Stores[i]
+		n := nodes[store.Name]
+		for _, parentName := range store.Stores {
 			parent := nodes[parentName]
 			parent.children[n.name] = n
 			n.parents[parentName] = parent
@@ -60,8 +60,8 @@ func NewConfigurationGraph(configuration *Config) (Graph, error) {
 	}
 
 	g := &graph{
-		nodes:   nodes,
-		sources: sources,
+		nodes:  nodes,
+		stores: stores,
 	}
 
 	if g.isCyclic() {
@@ -115,8 +115,8 @@ func (g *graph) Node(name string) Node {
 	return g.nodes[name]
 }
 
-func (g *graph) Source(name string) *ConfigSource {
-	return g.sources[name]
+func (g *graph) Store(name string) *Store {
+	return g.stores[name]
 }
 
 func newNode(name string) *node {

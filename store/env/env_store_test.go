@@ -29,6 +29,7 @@ func TestEnvStore(t *testing.T) {
 	t.Run("CanReadEnvironmentVariableWithPrefixedName", func(t *testing.T) {
 		r := require.New(t)
 		err := os.Setenv("TEST123", "abc123")
+
 		r.Nil(err)
 		lookup := map[string]string{
 			"somevalue": "TEST123",
@@ -41,6 +42,19 @@ func TestEnvStore(t *testing.T) {
 		r.Nil(err)
 		r.NotNil(data)
 		r.Equal("abc123", data.Value())
+	})
+
+	t.Run("ErrorsIfEnvironmentVariableNotSet", func(t *testing.T) {
+		r := require.New(t)
+		lookup := map[string]string{
+			"somevalue": "TEST123",
+		}
+		store := NewEnvStore("", lookup)
+		r.NotNil(store)
+
+		os.Clearenv()
+		_, err := store.GetByName("somevalue")
+		r.NotNil(err)
 	})
 
 	t.Run("CanGetStoreName", func(t *testing.T) {

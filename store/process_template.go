@@ -47,11 +47,11 @@ func (t *processTemplate) Evaluate(environmentName string, processName string) (
 
 func (t *processTemplate) evaluate(process *config.Process) (*config.Process, error) {
 	// create the resolvers needed to evaluate just this process template
-	err := t.populateResolvers(process.Configurations)
+	err := t.populateResolvers(process.Stores)
 	if err != nil {
 		return nil, err
 	}
-	resolvers := t.getResolvers(process.Configurations)
+	resolvers := t.getResolvers(process.Stores)
 
 	const argsKey = "args"
 	const envKey = "env"
@@ -113,7 +113,7 @@ func (t *processTemplate) populateResolvers(configurations []string) error {
 			continue
 		}
 
-		configSource := t.graph.Source(node.Name())
+		configSource := t.graph.Store(node.Name())
 		resolver, err := t.createResolver(configSource)
 		if err != nil {
 			return err
@@ -124,7 +124,7 @@ func (t *processTemplate) populateResolvers(configurations []string) error {
 }
 
 func (t *processTemplate) createResolver(
-	configSource *config.ConfigSource) (templates.VariableResolver, error) {
+	configSource *config.Store) (templates.VariableResolver, error) {
 	configSource, err := t.resolveConfigSourceParameters(configSource)
 	if err != nil {
 		return nil, err
@@ -139,13 +139,13 @@ func (t *processTemplate) createResolver(
 	return NewStoreVariableResolver(configStore), nil
 }
 
-func (t *processTemplate) resolveConfigSourceParameters(configSource *config.ConfigSource) (*config.ConfigSource, error) {
-	shouldResolveConfigSourceParameters := configSource.Configurations != nil && len(configSource.Configurations) > 0
+func (t *processTemplate) resolveConfigSourceParameters(configSource *config.Store) (*config.Store, error) {
+	shouldResolveConfigSourceParameters := configSource.Stores != nil && len(configSource.Stores) > 0
 	if !shouldResolveConfigSourceParameters {
 		return configSource, nil
 	}
 
-	resolvers := t.getResolvers(configSource.Configurations)
+	resolvers := t.getResolvers(configSource.Stores)
 	// create a template and use the template to resolve the params with the current in-order resolvers
 	template := templates.NewTemplate(configSource.Params)
 	document, err := template.Evaluate(resolvers...)

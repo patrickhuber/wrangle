@@ -42,28 +42,29 @@ The default location for the configuration file is in your user directory under:
 The config file has the following structure:
 
 ```
-config-sources:
+stores:
 environments:
 packages:
 ```
 
-#### Config Sources
+#### Stores
 
-Config Sources are the configuration sources that can be cascaded to configure the cli commands. There are two config sources by default:
+Stores are configuration sources that can be cascaded to configure the cli commands. There are two config sources by default:
 
-1. File - loads yaml files 
-2. CredHub - loads creds from credhub
+1. file - loads yaml files 
+2. credHub - loads creds from credhub
+3. env - loads from environment variables
 
 Additional config sources could be other key managers like Vault, LastPass, Amazon Key Management service etc. 
 
-Config Sources can receive configuration from othe config sources through their "configurations: " list. 
+Stores can receive configuration from other stores through their "stores: " list. 
 
 ##### FILE
 
 this is an example file config
 
 ```yml
-config-sources:
+stores:
 
 - name: bosh-lab-yaml
   type: file
@@ -76,9 +77,10 @@ config-sources:
 This is an example credhub config. You can see this config references the bosh-lab-yaml configuration where it will read any variables defined in the params.  
 
 ```yml
+stores:
 - name: bosh-lab-credhub
   type: credhub
-  configurations: 
+  stores: 
   - bosh-lab-yaml
   params:
     client_id: credhub_admin
@@ -87,6 +89,20 @@ This is an example credhub config. You can see this config references the bosh-l
     ca_cert: ((credhub_ca.certificate))
     skip_tls_validation: false
 ```
+
+##### ENV
+
+This is an example env config. You can load any enivironment variable as a config variable. The environment variable must be present, or the lookup will fail. If the variable is defined but is empty the lookup will succeed.
+
+```yml
+stores:
+- name: environment
+  type: env
+  params:
+    some_variable: SOME_VARIABLE 
+```
+
+With the configuration example above, `some_variable` is now available as a variable in consumers of this store.
 
 #### Environments
 
@@ -105,7 +121,7 @@ environments:
   processes:
   
   - name: fly
-    configurations: 
+    stores: 
     - bosh-lab-credhub
     path: fly
     args:
@@ -118,7 +134,7 @@ environments:
     - ((/bosh-lab/concourse/atc_basic_auth.password))
 ```
 
-It assumes the cli is the environment PATH, if you placed your WRANGLE_INSTALL_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 
+It assumes the cli is the environment PATH, if you placed your WRANGLE_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 
 
 This is an example of running the command above using the wrangle:
 
@@ -221,7 +237,7 @@ COMMANDS:
      print, p            print command environemnt variables
      environments, e     prints the list of environments in the config file
      packages, k         prints the list of packages and versions in the config file
-     install-package, i  installs the package with the given `NAME` for the current platform
+     install, i  installs the package with the given `NAME` for the current platform
      help, h             Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:

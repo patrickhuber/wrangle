@@ -38,7 +38,10 @@ func (s *envStore) GetByName(name string) (store.Data, error) {
 	}
 
 	// look up the environment variable
-	data := os.Getenv(environmentVariableName)
+	data, ok := os.LookupEnv(environmentVariableName)
+	if !ok {
+		return nil, fmt.Errorf("variable '%s' is not set in the environment variables", environmentVariableName)
+	}
 
 	return store.NewData(name, name, data), nil
 }

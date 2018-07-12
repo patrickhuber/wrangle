@@ -20,7 +20,7 @@ func TestManager(t *testing.T) {
 
 	t.Run("CanDownloadFile", func(t *testing.T) {
 		r := require.New(t)
-		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 		testDownloadFile(r, fileSystem, "/test", "bosh-cli-3.0.1-linux-amd64", "this is a test")
 	})
 
@@ -57,7 +57,7 @@ func TestManager(t *testing.T) {
 		r.Nil(err)
 		r.NotNil(buf)
 
-		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 		fixture := "/fixtures/test.tar"
 		err = afero.WriteFile(fileSystem, fixture, buf.Bytes(), 0644)
 		r.Nil(err)
@@ -67,7 +67,7 @@ func TestManager(t *testing.T) {
 
 	t.Run("CanCreateSymLinkForBinary", func(t *testing.T) {
 		r := require.New(t)
-		fileSystem := filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+		fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 		testDownloadFile(r, fileSystem, "/test", "out", "this is a test")
 
 		ok, err := afero.Exists(fileSystem, "/test/alias")
@@ -179,7 +179,7 @@ func testExtract(t *testing.T, fileSystem filesystem.FsWrapper, fixture string, 
 	_, out := filepath.Split(fixture)
 	outFolder := "/test"
 
-	fileSystem = filesystem.NewMemoryMappedFsWrapper(afero.NewMemMapFs())
+	fileSystem = filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
 	outPath := filepath.Join(outFolder, out)
 	outPath = filepath.ToSlash(outPath)
 	err = afero.WriteFile(fileSystem, outPath, content, 0644)

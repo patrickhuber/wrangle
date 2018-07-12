@@ -14,7 +14,7 @@ type manager struct {
 type Manager interface {
 	Get(name string) (Provider, bool)
 	Register(provider Provider)
-	Create(configSource *config.ConfigSource) (Store, error)
+	Create(configSource *config.Store) (Store, error)
 }
 
 // NewManager creates a new manager
@@ -34,8 +34,8 @@ func (manager *manager) Register(provider Provider) {
 	manager.providers[provider.GetName()] = provider
 }
 
-func (manager *manager) Create(configSource *config.ConfigSource) (Store, error) {
-	configSourceType := configSource.ConfigSourceType
+func (manager *manager) Create(configSource *config.Store) (Store, error) {
+	configSourceType := configSource.StoreType
 	provider, ok := manager.Get(configSourceType)
 	if !ok {
 		return nil, fmt.Errorf("Unable to find key '%s' in manager.Providers. Did you forget to register it?", configSourceType)

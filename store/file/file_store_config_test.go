@@ -10,7 +10,7 @@ import (
 func TestFileStoreConfig(t *testing.T) {
 	t.Run("CanMapNameAndPath", func(t *testing.T) {
 		r := require.New(t)
-		configSource := &config.ConfigSource{
+		configSource := &config.Store{
 			Name: "name",
 			Params: map[string]string{
 				"path": "/test",

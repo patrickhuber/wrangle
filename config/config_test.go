@@ -12,7 +12,7 @@ func TestCanParseConfig(t *testing.T) {
 	r := require.New(t)
 
 	var data = `
-config-sources:
+stores:
 - name: name
   type: type
   config: config
@@ -53,9 +53,9 @@ packages:
 	r.Nil(err)
 
 	// config sources)
-	r.Equal(1, len(config.ConfigSources))
-	r.Equal(1, len(config.ConfigSources[0].Params))
-	r.Equal("value", config.ConfigSources[0].Params["key"])
+	r.Equal(1, len(config.Stores))
+	r.Equal(1, len(config.Stores[0].Params))
+	r.Equal("value", config.Stores[0].Params["key"])
 
 	// environments
 	r.Equal(1, len(config.Environments))
