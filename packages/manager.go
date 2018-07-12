@@ -4,13 +4,14 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/spf13/afero"
@@ -37,25 +38,26 @@ func (m *manager) Download(p Package) error {
 		return errors.New("package Download() is required")
 	}
 
-	// create the file
-	file, err := m.fileSystem.Create(p.Download().OutPath())
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	// get the file data
 	resp, err := http.Get(p.Download().URL())
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("error downloading '%s'. http status code: '%d'. http status: '%s'",
 			p.Download().URL(),
 			resp.StatusCode,
 			resp.Status)
 	}
-	defer resp.Body.Close()
+
+	// create the file
+	file, err := m.fileSystem.Create(p.Download().OutPath())
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
 	// Write the body to file
 	_, err = io.Copy(file, resp.Body)

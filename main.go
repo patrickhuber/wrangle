@@ -72,7 +72,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.4.2"
+	cliApp.Version = "0.4.3"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{

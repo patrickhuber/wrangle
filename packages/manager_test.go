@@ -82,6 +82,57 @@ func TestManager(t *testing.T) {
 		r.Nil(err)
 		r.Equal(file.Mode()&os.ModePerm, 0755&os.ModePerm, file.Mode().String())
 	})
+
+	t.Run("FailsWhenDownloadIsNotSuccessful", func(t *testing.T) {
+
+		fileSystem := filesystem.NewMemMapFs()
+
+		// start the local http server
+		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			rw.WriteHeader(404)
+			rw.Write([]byte("failure"))
+		}))
+
+		defer server.Close()
+
+		pkg := New(
+			"", "", "",
+			NewDownload(server.URL, "", ""),
+			nil)
+
+		manager := NewManager(fileSystem)
+
+		err := manager.Download(pkg)
+		r := require.New(t)
+		r.NotNil(err)
+	})
+
+	t.Run("CleansUpFileWhenDownloadFails", func(t *testing.T) {
+		fileSystem := filesystem.NewMemMapFs()
+
+		// start the local http server
+		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			rw.WriteHeader(404)
+			rw.Write([]byte("failure"))
+		}))
+
+		defer server.Close()
+
+		pkg := New(
+			"", "", "",
+			NewDownload(server.URL, "/test", "file"),
+			nil)
+
+		manager := NewManager(fileSystem)
+
+		err := manager.Download(pkg)
+		r := require.New(t)
+		r.NotNil(err)
+
+		ok, err := afero.Exists(fileSystem, "/test/file")
+		r.Nil(err)
+		r.False(ok)
+	})
 }
 
 type testFile struct {
