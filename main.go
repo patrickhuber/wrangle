@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
@@ -72,13 +72,13 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.4.0"
+	cliApp.Version = "0.4.2"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "config, c",
 			Usage:  "Load configuration from `FILE`",
-			EnvVar: "WRANGLE_CONFIG",
+			EnvVar: global.ConfigFileKey,
 			Value:  defaultConfigPath,
 		},
 	}
@@ -88,32 +88,10 @@ func createApplication(
 		*createPrintCommand(manager, fileSystem, platform, console),
 		*createPrintEnvCommand(manager, fileSystem, platform, console),
 		*createEnvironmentsCommand(fileSystem, console),
-		*createPackagesCommand(console),
-		*createInstallPackageCommand(fileSystem, platform),
+		*createPackagesCommand(fileSystem, console),
+		*createInstallCommand(fileSystem, platform),
+		*createEnvCommand(console),
 	}
-
-	cliApp.Before = func(context *cli.Context) error {
-
-		configFile := context.GlobalString("config")
-		if configFile == "" {
-			configFile = defaultConfigPath
-		}
-		configLoader := config.NewLoader(fileSystem)
-		configuration, err := configLoader.Load(configFile)
-		if err != nil {
-			return err
-		}
-
-		app := context.App
-		if app.Metadata == nil {
-			app.Metadata = make(map[string]interface{})
-		}
-
-		app.Metadata["configuration"] = configuration
-
-		return nil
-	}
-
 	return cliApp, nil
 }
 
@@ -143,7 +121,7 @@ func createRunCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			cfg, err := getConfigurationFromCliContext(context)
+			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
@@ -184,7 +162,7 @@ func createPrintCommand(
 		Action: func(context *cli.Context) error {
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			cfg, err := getConfigurationFromCliContext(context)
+			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
@@ -222,7 +200,7 @@ func createPrintEnvCommand(
 		Action: func(context *cli.Context) error {
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			cfg, err := getConfigurationFromCliContext(context)
+			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
@@ -233,6 +211,7 @@ func createPrintEnvCommand(
 }
 
 func createPackagesCommand(
+	fileSystem afero.Fs,
 	console ui.Console) *cli.Command {
 	packagesCommand := commands.NewPackages(console)
 	return &cli.Command{
@@ -240,7 +219,7 @@ func createPackagesCommand(
 		Aliases: []string{"k"},
 		Usage:   "prints the list of packages and versions in the config file",
 		Action: func(context *cli.Context) error {
-			cfg, err := getConfigurationFromCliContext(context)
+			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
@@ -249,7 +228,7 @@ func createPackagesCommand(
 	}
 }
 
-func createInstallPackageCommand(
+func createInstallCommand(
 	fileSystem filesystem.FsWrapper,
 	platform string) *cli.Command {
 	return &cli.Command{
@@ -264,11 +243,11 @@ func createInstallPackageCommand(
 			cli.StringFlag{
 				Name:   "path, p",
 				Usage:  "the package install path",
-				EnvVar: "WRANGLE_PACKAGE_PATH",
+				EnvVar: global.PackagePathKey,
 			},
 		},
 		Action: func(context *cli.Context) error {
-			cfg, err := getConfigurationFromCliContext(context)
+			cfg, err := createConfiguration(context, fileSystem)
 			packageName := context.String("name")
 			packageInstallPath := context.String("path")
 			if err != nil {
@@ -283,16 +262,14 @@ func createInstallPackageCommand(
 	}
 }
 
-func getConfigurationFromCliContext(context *cli.Context) (*config.Config, error) {
-	configuration, ok := context.App.Metadata["configuration"]
-	if !ok {
-		return nil, errors.New("unable to load configuration from configuration metadata")
+func createEnvCommand(console ui.Console) *cli.Command {
+	return &cli.Command{
+		Name:  "env",
+		Usage: "prints values of all associated environment variables",
+		Action: func(context *cli.Context) error {
+			return commands.NewEnv(console).Execute()
+		},
 	}
-	cfg, ok := configuration.(*config.Config)
-	if !ok {
-		return nil, errors.New("configuration loaded from metadata is not the expected type of *config.Config")
-	}
-	return cfg, nil
 }
 
 func createEnvironmentsCommand(
@@ -308,13 +285,26 @@ func createEnvironmentsCommand(
 		Aliases: []string{"e"},
 		Usage:   "prints the list of environments in the config file",
 		Action: func(context *cli.Context) error {
-			cfg, err := getConfigurationFromCliContext(context)
+			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
 			return environmentsCommand.ExecuteCommand(cfg)
 		},
 	}
+}
+
+func createConfiguration(context *cli.Context, fileSystem afero.Fs) (*config.Config, error) {
+	configFile := context.GlobalString("config")
+	var err error
+	if configFile == "" {
+		configFile, err = config.GetDefaultConfigPath()
+		if err != nil {
+			return nil, err
+		}
+	}
+	configLoader := config.NewLoader(fileSystem)
+	return configLoader.Load(configFile)
 }
 
 func createConfigStoreManager(fileSystem afero.Fs) store.Manager {

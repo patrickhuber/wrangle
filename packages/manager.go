@@ -49,6 +49,12 @@ func (m *manager) Download(p Package) error {
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("error downloading '%s'. http status code: '%d'. http status: '%s'",
+			p.Download().URL(),
+			resp.StatusCode,
+			resp.Status)
+	}
 	defer resp.Body.Close()
 
 	// Write the body to file

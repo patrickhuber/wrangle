@@ -52,7 +52,7 @@ func TestEnvStore(t *testing.T) {
 		store := NewEnvStore("", lookup)
 		r.NotNil(store)
 
-		os.Clearenv()
+		os.Unsetenv("TEST123")
 		_, err := store.GetByName("somevalue")
 		r.NotNil(err)
 	})

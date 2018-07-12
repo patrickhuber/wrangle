@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
 	file "github.com/patrickhuber/wrangle/store/file"
 	"github.com/patrickhuber/wrangle/ui"
@@ -122,9 +123,10 @@ environments:
 		}))
 
 		// reset the environment
-		os.Clearenv()
-		os.Setenv("WRANGLE_CONFIG", "/config")
-		os.Setenv("WRANGLE_PACKAGE_PATH", "/packages")
+		os.Unsetenv(global.ConfigFileKey)
+		os.Unsetenv(global.PackagePathKey)
+		os.Setenv(global.ConfigFileKey, "/config")
+		os.Setenv(global.PackagePathKey, "/packages")
 
 		// close connection when test is finished
 		defer server.Close()
