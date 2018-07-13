@@ -109,7 +109,7 @@ environments:
 		r.Equal("export WRANGLE_TEST=value\n", b.String())
 	})
 
-	t.Run("BashShellOverridesPlatform", func(t *testing.T) {
+	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
 
 		// create filesystem

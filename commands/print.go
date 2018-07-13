@@ -35,6 +35,7 @@ func NewPrint(
 		manager:    manager,
 		fileSystem: fileSystem,
 		platform:   platform,
+		shell:      shell,
 		console:    console}
 }
 
