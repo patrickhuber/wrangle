@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
@@ -13,6 +14,7 @@ import (
 type printEnv struct {
 	fileSystem afero.Fs
 	platform   string
+	shell      string
 	console    ui.Console
 	manager    store.Manager
 }
@@ -27,11 +29,13 @@ func NewPrintEnv(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	platform string,
+	shell string,
 	console ui.Console) PrintEnv {
 	return &printEnv{
 		manager:    manager,
 		fileSystem: fileSystem,
 		platform:   platform,
+		shell:      shell,
 		console:    console}
 }
 
@@ -57,11 +61,18 @@ func (cmd *printEnv) Execute(params ProcessParams) error {
 	if err != nil {
 		return err
 	}
+
 	process, err := processTemplate.Evaluate(environmentName, processName)
 	if err != nil {
 		return err
 	}
-	renderer := NewProcessRenderer(cmd.platform)
+
+	renderer, err := renderers.NewFactory().Create(cmd.shell, cmd.platform)
+	if err != nil {
+		return err
+	}
+
 	fmt.Fprint(cmd.console.Out(), renderer.RenderEnvironment(process.Vars))
+
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
@@ -13,6 +14,7 @@ import (
 type print struct {
 	fileSystem afero.Fs
 	platform   string
+	shell      string
 	console    ui.Console
 	manager    store.Manager
 }
@@ -27,6 +29,7 @@ func NewPrint(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	platform string,
+	shell string,
 	console ui.Console) PrintEnv {
 	return &print{
 		manager:    manager,
@@ -63,7 +66,11 @@ func (cmd *print) Execute(params ProcessParams) error {
 		return err
 	}
 
-	renderer := NewProcessRenderer(cmd.platform)
+	renderer, err := renderers.NewFactory().Create(cmd.shell, cmd.platform)
+	if err != nil {
+		return err
+	}
+
 	fmt.Fprint(
 		cmd.console.Out(),
 		renderer.RenderProcess(

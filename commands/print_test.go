@@ -49,7 +49,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", console)
+		cmd := NewPrint(manager, fileSystem, "linux", "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -100,7 +100,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", console)
+		cmd := NewPrint(manager, fileSystem, "linux", "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -137,7 +137,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", console)
+		cmd := NewPrint(manager, fileSystem, "linux", "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "go")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)

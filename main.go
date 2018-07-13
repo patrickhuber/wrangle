@@ -143,6 +143,7 @@ func createPrintCommand(
 		manager,
 		fileSystem,
 		platform,
+		"",
 		console)
 
 	return &cli.Command{
@@ -158,10 +159,15 @@ func createPrintCommand(
 				Name:  "environment, e",
 				Usage: "Use environment named `ENVIRONMENT`",
 			},
+			cli.StringFlag{
+				Name:  "shell, s",
+				Usage: "Print for shell `SHELL` (bash|powershell)",
+			},
 		},
 		Action: func(context *cli.Context) error {
 			processName := context.String("name")
 			environmentName := context.String("environment")
+
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
@@ -182,6 +188,7 @@ func createPrintEnvCommand(
 		manager,
 		fileSystem,
 		platform,
+		"",
 		console)
 
 	return &cli.Command{
