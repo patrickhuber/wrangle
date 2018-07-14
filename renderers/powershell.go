@@ -34,7 +34,11 @@ func (renderer *powershell) RenderEnvironment(environmentVariables map[string]st
 
 func (renderer *powershell) RenderEnvironmentVariable(variable string, value string) string {
 	if strings.ContainsAny(value, "\n") {
-		return fmt.Sprintf("$env:%s='\r\n%s\r\n'", variable, value)
+		suffix := ""
+		if !strings.HasSuffix(value, "\n") {
+			suffix = "\r\n"
+		}
+		return fmt.Sprintf("$env:%s='\r\n%s%s'", variable, value, suffix)
 	}
 	return fmt.Sprintf("$env:%s=\"%s\"", variable, value)
 }
