@@ -17,6 +17,14 @@ func TestPowershell(t *testing.T) {
 	})
 	t.Run("CanRenderMultiLineVariable", func(t *testing.T) {
 		key := "KEY"
+		value := "1\r\n2\r\n3\r\n4\r\n"
+		renderer := NewPowershell()
+		result := renderer.RenderEnvironmentVariable(key, value)
+		r := require.New(t)
+		r.Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'", result)
+	})
+	t.Run("AppendsNewLineIfMultiLineAndDoesNotEndInNewLine", func(t *testing.T) {
+		key := "KEY"
 		value := "1\r\n2\r\n3\r\n4"
 		renderer := NewPowershell()
 		result := renderer.RenderEnvironmentVariable(key, value)
