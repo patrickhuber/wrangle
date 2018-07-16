@@ -90,6 +90,10 @@ stores:
     skip_tls_validation: false
 ```
 
+> note
+
+If the `CREDHUB_PROXY` environment variable is set, wrangle will use it to make the connection. This is the default behavior of the credhub cli and wrangle imports that cli as a library.
+
 ##### ENV
 
 This is an example env config. You can load any enivironment variable as a config variable. The environment variable must be present, or the lookup will fail. If the variable is defined but is empty the lookup will succeed.

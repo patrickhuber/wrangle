@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"text/tabwriter"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
@@ -22,9 +23,13 @@ func NewPackages(console ui.Console) PackagesCommand {
 }
 
 func (cmd *packagesCommand) Execute(configuration *config.Config) error {
-	for _, p := range configuration.Packages {
-		fmt.Fprintf(cmd.console.Out(), "%s - %s", p.Name, p.Version)
-		fmt.Fprintln(cmd.console.Out())
+	w := tabwriter.NewWriter(cmd.console.Out(), 0, 0, 1, ' ', 0)
+	fmt.Fprintln(w, "name\tversion")
+	fmt.Fprintln(w, "----\t-------")
+	for _, item := range configuration.Packages {
+		fmt.Fprintf(w, "%s\t%s", item.Name, item.Version)
+		fmt.Fprintln(w)
 	}
+	w.Flush()
 	return nil
 }

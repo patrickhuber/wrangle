@@ -38,6 +38,6 @@ packages:
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
-		r.Equal("one - 0.1.1\ntwo - 2.3.1\n", b.String())
+		r.Equal("name version\n---- -------\none  0.1.1\ntwo  2.3.1\n", b.String())
 	})
 }

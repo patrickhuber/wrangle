@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"text/tabwriter"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
@@ -10,7 +11,7 @@ import (
 
 // Environments is an interface for a ProcessesCommand
 type Environments interface {
-	ExecuteCommand(configuration *config.Config) error
+	Execute(configuration *config.Config) error
 }
 
 type environments struct {
@@ -26,9 +27,14 @@ func NewEnvironments(fileSystem afero.Fs, console ui.Console) Environments {
 	}
 }
 
-func (cmd *environments) ExecuteCommand(configuration *config.Config) error {
-	for _, environment := range configuration.Environments {
-		fmt.Fprintln(cmd.console.Out(), environment.Name)
+func (cmd *environments) Execute(configuration *config.Config) error {
+	w := tabwriter.NewWriter(cmd.console.Out(), 0, 0, 1, ' ', 0)
+	fmt.Fprintln(w, "name")
+	fmt.Fprintln(w, "----")
+	for _, item := range configuration.Environments {
+		fmt.Fprintf(w, "%s", item.Name)
+		fmt.Fprintln(w)
 	}
+	w.Flush()
 	return nil
 }

@@ -72,7 +72,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.4.5"
+	cliApp.Version = "0.4.6"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -91,6 +91,8 @@ func createApplication(
 		*createPackagesCommand(fileSystem, console),
 		*createInstallCommand(fileSystem, platform),
 		*createEnvCommand(console),
+		*createStoresCommand(fileSystem, console),
+		*createListProcessesCommand(fileSystem, console),
 	}
 	return cliApp, nil
 }
@@ -296,7 +298,58 @@ func createEnvironmentsCommand(
 			if err != nil {
 				return err
 			}
-			return environmentsCommand.ExecuteCommand(cfg)
+			return environmentsCommand.Execute(cfg)
+		},
+	}
+}
+
+func createListProcessesCommand(
+	fileSystem afero.Fs,
+	console ui.Console) *cli.Command {
+
+	listProcessesCommand := commands.NewListProcesses(
+		console)
+
+	return &cli.Command{
+		Name:  "processes",
+		Usage: "prints the list of processes for the given environment in the config file",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "environment, e",
+				Usage: "the environment name",
+			},
+		},
+		Action: func(context *cli.Context) error {
+			if !context.IsSet("environment") {
+				return fmt.Errorf("environment flag is required")
+			}
+			environmentName := context.String("environment")
+			cfg, err := createConfiguration(context, fileSystem)
+			if err != nil {
+				return err
+			}
+			return listProcessesCommand.Execute(cfg, environmentName)
+		},
+	}
+}
+
+func createStoresCommand(
+	fileSystem afero.Fs,
+	console ui.Console) *cli.Command {
+
+	listStoresCommand := commands.NewStores(
+		console)
+
+	return &cli.Command{
+		Name:    "stores",
+		Aliases: []string{"s"},
+		Usage:   "prints the list of stores in the config file",
+		Action: func(context *cli.Context) error {
+			cfg, err := createConfiguration(context, fileSystem)
+			if err != nil {
+				return err
+			}
+			return listStoresCommand.Execute(cfg)
 		},
 	}
 }

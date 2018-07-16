@@ -28,12 +28,12 @@ environments:
 		loader := config.NewLoader(fileSystem)
 		configuration, err := loader.Load("/test")
 		r.Nil(err)
-		err = command.ExecuteCommand(configuration)
+		err = command.Execute(configuration)
 		r.Nil(err)
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
 
-		r.Equal("one\ntwo\nthree\n", b.String())
+		r.Equal("name\n----\none\ntwo\nthree\n", b.String())
 	})
 }
