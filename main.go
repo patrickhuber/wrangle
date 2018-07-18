@@ -10,6 +10,7 @@ import (
 
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
@@ -29,8 +30,13 @@ type application struct {
 }
 
 func main() {
+	platform := runtime.GOOS
 	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
-	configStoreManager := createConfigStoreManager(fileSystem)
+	configStoreManager, err := createConfigStoreManager(fileSystem, platform)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 	validateConfigStoreManager(configStoreManager)
 
 	processFactory := processes.NewOsFactory()
@@ -43,7 +49,7 @@ func main() {
 		fileSystem,
 		processFactory,
 		console,
-		runtime.GOOS)
+		platform)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -367,12 +373,16 @@ func createConfiguration(context *cli.Context, fileSystem afero.Fs) (*config.Con
 	return configLoader.Load(configFile)
 }
 
-func createConfigStoreManager(fileSystem afero.Fs) store.Manager {
+func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manager, error) {
 	manager := store.NewManager()
+	factory, err := crypto.NewPgpFactory(fileSystem, platform)
+	if err != nil {
+		return nil, err
+	}
 	manager.Register(credhub.NewCredHubStoreProvider())
-	manager.Register(file.NewFileStoreProvider(fileSystem))
+	manager.Register(file.NewFileStoreProvider(fileSystem, factory))
 	manager.Register(env.NewEnvStoreProvider())
-	return manager
+	return manager, nil
 }
 
 func validateConfigStoreManager(manager store.Manager) {

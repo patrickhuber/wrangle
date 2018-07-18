@@ -18,7 +18,7 @@ import (
 func TestPrintCommand(t *testing.T) {
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
-
+		platform := "linux"
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
 
@@ -38,7 +38,7 @@ environments:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -49,7 +49,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", "", console)
+		cmd := NewPrint(manager, fileSystem, platform, "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -63,7 +63,7 @@ environments:
 
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
 		r := require.New(t)
-
+		platform := "linux"
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
 
@@ -89,7 +89,7 @@ environments:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -100,7 +100,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", "", console)
+		cmd := NewPrint(manager, fileSystem, platform, "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -152,6 +152,7 @@ environments:
 
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
+		platform := "linux"
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -171,7 +172,7 @@ environments:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -182,7 +183,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", "powershell", console)
+		cmd := NewPrint(manager, fileSystem, platform, "powershell", console)
 		processParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(processParams)
 		r.Nil(err)

@@ -128,7 +128,7 @@ environments:
 		afero.WriteFile(fileSystem, "/test2", []byte("file-name: /test1"), 0644)
 
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
@@ -164,7 +164,7 @@ environments:
 		afero.WriteFile(fileSystem, "/test", []byte("key: 1\nprop: 2"), 0644)
 
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
@@ -212,7 +212,7 @@ environments:
 		afero.WriteFile(fileSystem, "/test3", []byte("key3: value"), 0644)
 
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
@@ -262,7 +262,7 @@ environments:
 		afero.WriteFile(fileSystem, "/test3", []byte("key3: value"), 0644)
 
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		_, err = store.NewProcessTemplate(configuration, manager)
 		r.NotNil(err)
@@ -301,7 +301,7 @@ environments:
 		afero.WriteFile(fileSystem, "/two", []byte("a: a\nb: b\nc: c\n"), 0666)
 
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)

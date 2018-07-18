@@ -34,9 +34,11 @@ environments:
       WRANGLE_TEST: value`
 		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 
+		platform := "linux"
+
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -47,7 +49,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrintEnv(manager, fileSystem, "linux", "", console)
+		cmd := NewPrintEnv(manager, fileSystem, platform, "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -61,6 +63,8 @@ environments:
 
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
 		r := require.New(t)
+
+		platform := "linux"
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -86,7 +90,7 @@ environments:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -97,7 +101,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrintEnv(manager, fileSystem, "linux", "", console)
+		cmd := NewPrintEnv(manager, fileSystem, platform, "", console)
 		runCommandParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(runCommandParams)
 		r.Nil(err)
@@ -111,7 +115,7 @@ environments:
 
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
-
+		platform := "linux"
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
 
@@ -130,7 +134,7 @@ environments:
 
 		// create store manager
 		manager := store.NewManager()
-		manager.Register(file.NewFileStoreProvider(fileSystem))
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		// create console
 		console := ui.NewMemoryConsole()
@@ -141,7 +145,7 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrintEnv(manager, fileSystem, "linux", "powershell", console)
+		cmd := NewPrintEnv(manager, fileSystem, platform, "powershell", console)
 		processParams := NewProcessParams(cfg, "lab", "echo")
 		err = cmd.Execute(processParams)
 		r.Nil(err)

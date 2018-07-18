@@ -4,6 +4,9 @@ import (
 	"reflect"
 	"testing"
 
+	"golang.org/x/crypto/openpgp"
+
+	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )
@@ -51,12 +54,32 @@ ssh:
   private_key: private-key
   public_key_fingerprint: public-key-fingerprint`
 
+	platform := "linux"
 	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
 	r.Nil(err)
 
-	fileStore, err := NewFileStore(fileStoreName, "/test", fileSystem)
+	file := "/test"
+	fileStore, err := NewFileStore(fileStoreName, file, fileSystem, nil)
 	r.Nil(err)
 	r.NotNil(fileStore)
+
+	factory, err := crypto.NewPgpFactory(fileSystem, platform)
+	r.Nil(err)
+
+	err = createEncryptionKey(fileSystem, factory.Context())
+	r.Nil(err)
+
+	encryptor, err := factory.CreateEncryptor()
+	r.Nil(err)
+
+	err = crypto.EncryptFile(fileSystem, encryptor, file, file+".gpg")
+	r.Nil(err)
+
+	decryptor, err := factory.CreateDecryptor()
+	r.Nil(err)
+
+	encryptedFileStore, err := NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decryptor)
+	r.Nil(err)
 
 	t.Run("CanGetName", func(t *testing.T) {
 		require := require.New(t)
@@ -164,4 +187,42 @@ ssh:
 		require.True(ok)
 		require.Equal("public-key-fingerprint", publicKeyFingerprint)
 	})
+
+	t.Run("CanReadGpgEncryptedFile", func(t *testing.T) {
+		require := require.New(t)
+		data, err := encryptedFileStore.GetByName("/value")
+		require.Nil(err)
+		require.Equal("aaaaaaaaaaaaaaaa", data.Value())
+	})
+}
+
+func createEncryptionKey(fs afero.Fs, context crypto.PgpContext) error {
+
+	// create the key
+	entity, err := openpgp.NewEntity("test", "test", "test@test.com", nil)
+	if err != nil {
+		return err
+	}
+
+	pubringFile := context.PublicKeyRing().FullPath()
+	secringFile := context.SecureKeyRing().FullPath()
+
+	pubring, err := fs.Create(pubringFile)
+	if err != nil {
+		return err
+	}
+	defer pubring.Close()
+
+	secring, err := fs.Create(secringFile)
+	if err != nil {
+		return err
+	}
+	defer secring.Close()
+
+	err = entity.Serialize(pubring)
+	if err != nil {
+		return err
+	}
+
+	return entity.SerializePrivate(secring, nil)
 }

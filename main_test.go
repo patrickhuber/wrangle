@@ -31,9 +31,10 @@ func TestMain(t *testing.T) {
 		r := require.New(t)
 
 		// create dependencies
+		platform := "linux"
 		fileSystem := filesystem.NewMemMapFs()
 		storeManager := store.NewManager()
-		storeManager.Register(file.NewFileStoreProvider(fileSystem))
+		storeManager.Register(file.NewFileStoreProvider(fileSystem, nil))
 		processFactory := processes.NewOsFactory() // change to fake process factory?
 		console := ui.NewMemoryConsole()
 
@@ -76,7 +77,7 @@ environments:
 			fileSystem,
 			processFactory,
 			console,
-			"linux")
+			platform)
 		r.Nil(err)
 
 		// run command

@@ -2,8 +2,11 @@ package file
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"path/filepath"
 
+	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/pkg/errors"
 
@@ -17,9 +20,11 @@ type fileStore struct {
 	name       string
 	path       string
 	fileSystem afero.Fs
+	decryptor  crypto.Decryptor
+	cache      []byte
 }
 
-func NewFileStore(name string, path string, fileSystem afero.Fs) (store.Store, error) {
+func NewFileStore(name string, path string, fileSystem afero.Fs, decryptor crypto.Decryptor) (store.Store, error) {
 
 	if path == "" {
 		return nil, errors.New("file path is required")
@@ -30,11 +35,11 @@ func NewFileStore(name string, path string, fileSystem afero.Fs) (store.Store, e
 	if fileSystem == nil {
 		return nil, errors.New("fileSystem parameter is required")
 	}
-
 	return &fileStore{
 		name:       name,
 		path:       path,
 		fileSystem: fileSystem,
+		decryptor:  decryptor,
 	}, nil
 }
 
@@ -48,10 +53,9 @@ func (config *fileStore) Type() string {
 
 func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 
-	// read the file store config as bytes
-	data, err := afero.ReadFile(fileStore.fileSystem, fileStore.path)
+	data, err := fileStore.getFileData()
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to read file '%s'", fileStore.path)
+		return nil, err
 	}
 
 	// read the document
@@ -61,7 +65,10 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 		return nil, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", fileStore.path)
 	}
 
-	name, property, err := splitToNamendProperty(key)
+	name, property, err := splitToNameAndProperty(key)
+	if err != nil {
+		return nil, err
+	}
 
 	// turn the key into a patch pointer
 	pointer, err := patch.NewPointerFromString(name)
@@ -102,7 +109,33 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 	return store.NewData(name, name, value), nil
 }
 
-func splitToNamendProperty(key string) (name string, property string, err error) {
+func (fileStore *fileStore) getFileData() ([]byte, error) {
+	// read the file store config as bytes
+	data, err := afero.ReadFile(fileStore.fileSystem, fileStore.path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to read file '%s'", fileStore.path)
+	}
+
+	extension := filepath.Ext(fileStore.path)
+	if extension != ".gpg" {
+		return data, nil
+	}
+
+	if fileStore.decryptor == nil {
+		return nil, fmt.Errorf("decryptor is nil. A decryptor must be specified to decrypt gpg files")
+	}
+
+	decrypted := &bytes.Buffer{}
+	err = fileStore.decryptor.Decrypt(bytes.NewBuffer(data), decrypted)
+	if err != nil {
+		return nil, err
+	}
+
+	data = decrypted.Bytes()
+	return data, nil
+}
+
+func splitToNameAndProperty(key string) (name string, property string, err error) {
 	i := -1
 	for i = len(key) - 1; i >= 0; i-- {
 		if key[i] == '.' {
