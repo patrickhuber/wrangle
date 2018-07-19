@@ -72,6 +72,40 @@ stores:
     path: state/vars/director-vars-store.yml
 ```
 
+Gpg encrypted files are supported when the path points to a file with 'gpg' extension. The default gnupg keyring is used. These are the search  paths:
+
+> windows
+
+```
+%APPDATA%\gnupg\pubring.gpg
+%APPDATA%\gnupg\secring.gpg
+```
+
+> linux and darwin
+
+```
+$HOME/.gnupg/pubring.gpg
+$HOME/.gnupg/secring.gpg
+```
+
+Golang only support gnupg v1 pubring.gpg and secring.gpg key files. If you have v2, you need to export the secret and public keys using the following commands from the gnupg directory:
+
+> windows
+
+```
+cd %APPDATA%\gnupg
+gpg --export-secret-keys --output secring.gpg
+gpg --export --output pubring.gpg
+```
+
+> linux and darwin
+
+```
+cd $HOME/.gnupg
+gpg --export-secret-keys --output secring.gpg
+gpg --export --output pubring.gpg
+```
+
 ##### CREDHUB
 
 This is an example credhub config. You can see this config references the bosh-lab-yaml configuration where it will read any variables defined in the params.  

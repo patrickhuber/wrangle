@@ -27,18 +27,17 @@ func NewPlatformPgpContext(platform string) (PgpContext, error) {
 	}
 
 	gpgDirectory := ""
-
+	username := u.Username
+	if strings.Contains(username, "\\") {
+		split := strings.Split(username, "\\")
+		username = split[1]
+	}
 	if platform == "windows" {
-		username := u.Username
-		if strings.Contains(username, "\\") {
-			split := strings.Split(username, "\\")
-			username = split[1]
-		}
 		gpgDirectory = filepath.Join("c:/Users", username, "/AppData/Roaming/gnupg")
 	} else {
-		gpgDirectory = filepath.Join("/home", u.Username, ".gnupg")
+		gpgDirectory = filepath.Join("/home", username, ".gnupg")
 	}
-
+	gpgDirectory = filepath.ToSlash(gpgDirectory)
 	return NewPgpContextFromFolder(gpgDirectory), nil
 }
 

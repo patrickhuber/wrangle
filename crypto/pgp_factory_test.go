@@ -22,6 +22,7 @@ func TestFactory(t *testing.T) {
 
 		_, err = factory.CreateEncryptor()
 		r.NotNil(err)
+		r.Contains(err.Error(), "gpg v2 keyring is not supported")
 	})
 
 	t.Run("CanDetectGpgV2FilesOther", func(t *testing.T) {
@@ -37,6 +38,7 @@ func TestFactory(t *testing.T) {
 
 		_, err = factory.CreateEncryptor()
 		r.NotNil(err)
+		r.Contains(err.Error(), "gpg v2 keyring is not supported")
 	})
 
 	t.Run("CanCreateEncryptor", func(t *testing.T) {
@@ -78,7 +80,7 @@ func createV2Files(fs afero.Fs, platform string) error {
 		return err
 	}
 	baseDir := context.PublicKeyRing().Directory()
-	pubring := filepath.Join(baseDir, "pubring.kdb")
+	pubring := filepath.Join(baseDir, "pubring.kbx")
 	pubring = filepath.ToSlash(pubring)
 	return afero.WriteFile(fs, pubring, []byte(""), 0666)
 }
