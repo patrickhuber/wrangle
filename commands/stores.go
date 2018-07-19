@@ -29,6 +29,5 @@ func (cmd *stores) Execute(cfg *config.Config) error {
 		fmt.Fprintf(w, "%s\t%s", item.Name, item.StoreType)
 		fmt.Fprintln(w)
 	}
-	w.Flush()
-	return nil
+	return w.Flush()
 }

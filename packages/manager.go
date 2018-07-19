@@ -61,11 +61,14 @@ func (m *manager) Download(p Package) error {
 
 	// Write the body to file
 	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return err
+	}
 
 	if isBinaryPackage(p) {
 		return m.postProcessPackage(p)
 	}
-	return err
+	return nil
 }
 
 func isBinaryPackage(p Package) bool {
@@ -120,6 +123,9 @@ func (m *manager) Extract(p Package) error {
 		break
 	default:
 		return fmt.Errorf("unrecoginzed file extension '%s'", extension)
+	}
+	if err != nil {
+		return err
 	}
 
 	return m.postProcessPackage(p)
@@ -251,9 +257,5 @@ func (m *manager) postProcessFile(alias string, sourceFolder string, sourceFile 
 	// the file needs to have a symlink with the alias name
 	aliasPath := filepath.Join(sourceFolder, alias)
 	aliasPath = filepath.ToSlash(aliasPath)
-	err = m.fileSystem.Symlink(sourcePath, aliasPath)
-	if err != nil {
-		return err
-	}
-	return m.fileSystem.Chmod(aliasPath, 0755)
+	return m.fileSystem.Symlink(sourcePath, aliasPath)
 }

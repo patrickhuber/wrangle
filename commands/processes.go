@@ -35,8 +35,7 @@ func (cmd *listProcesses) Execute(cfg *config.Config, environmentName string) er
 			fmt.Fprintln(w)
 		}
 
-		w.Flush()
-		return nil
+		return w.Flush()
 	}
 	return fmt.Errorf("unable to find environment name '%s'", environmentName)
 }

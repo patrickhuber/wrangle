@@ -30,6 +30,5 @@ func (cmd *packagesCommand) Execute(configuration *config.Config) error {
 		fmt.Fprintf(w, "%s\t%s", item.Name, item.Version)
 		fmt.Fprintln(w)
 	}
-	w.Flush()
-	return nil
+	return w.Flush()
 }

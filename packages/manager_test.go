@@ -77,10 +77,6 @@ func TestManager(t *testing.T) {
 		file, err := fileSystem.Stat("/test/out")
 		r.Nil(err)
 		r.Equal(file.Mode()&os.ModePerm, 0755&os.ModePerm, file.Mode().String())
-
-		file, err = fileSystem.Stat("/test/alias")
-		r.Nil(err)
-		r.Equal(file.Mode()&os.ModePerm, 0755&os.ModePerm, file.Mode().String())
 	})
 
 	t.Run("FailsWhenDownloadIsNotSuccessful", func(t *testing.T) {
@@ -132,6 +128,41 @@ func TestManager(t *testing.T) {
 		ok, err := afero.Exists(fileSystem, "/test/file")
 		r.Nil(err)
 		r.False(ok)
+	})
+
+	t.Run("DeletesSymlinkWhenOneExists", func(t *testing.T) {
+		r := require.New(t)
+
+		fs := filesystem.NewOsFs()
+
+		dir, err := afero.TempDir(fs, "", "fixtures")
+		r.Nil(err)
+
+		oldname := filepath.ToSlash(filepath.Join(dir, "test"))
+		newname := filepath.ToSlash(filepath.Join(dir, "symlink"))
+
+		err = afero.WriteFile(fs, oldname, []byte("ok"), 0666)
+		r.Nil(err)
+
+		err = fs.Symlink(oldname, newname)
+		r.Nil(err)
+
+		// start the local http server
+		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			rw.WriteHeader(200)
+			rw.Write([]byte("Ok"))
+		}))
+
+		defer server.Close()
+
+		pkg := New("", "", "symlink",
+			NewDownload(server.URL, "fixtures", "test"),
+			nil)
+
+		manager := NewManager(fs)
+		err = manager.Download(pkg)
+		r.Nil(err)
+
 	})
 }
 

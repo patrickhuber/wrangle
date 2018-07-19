@@ -29,7 +29,10 @@ func (loader *loader) FileSystem() afero.Fs {
 }
 
 func (loader *loader) Load(configPath string) (*Config, error) {
-	loader.ensureExists(configPath)
+	err := loader.ensureExists(configPath)
+	if err != nil {
+		return nil, err
+	}
 	data, err := afero.ReadFile(loader.fileSystem, configPath)
 	if err != nil {
 		return nil, err

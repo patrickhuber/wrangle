@@ -65,7 +65,10 @@ func (command *process) Dispatch() error {
 	}
 
 	for key := range environmentVariables {
-		os.Setenv(key, environmentVariables[key])
+		err := os.Setenv(key, environmentVariables[key])
+		if err != nil {
+			return err
+		}
 	}
 
 	cmd := exec.Command(process, arguments...)

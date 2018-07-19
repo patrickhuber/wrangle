@@ -35,6 +35,5 @@ func (cmd *environments) Execute(configuration *config.Config) error {
 		fmt.Fprintf(w, "%s", item.Name)
 		fmt.Fprintln(w)
 	}
-	w.Flush()
-	return nil
+	return w.Flush()
 }

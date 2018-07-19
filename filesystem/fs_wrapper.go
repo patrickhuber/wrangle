@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
@@ -65,17 +66,20 @@ func (wrapper *fsWrapper) fakeSymlink(oldname string, newname string) error {
 
 func (wrapper *fsWrapper) Symlink(oldname string, newname string) error {
 	// remove the target just in case
-	exists, err := afero.Exists(wrapper.fileSystem, newname)
+	err := wrapper.fileSystem.Remove(newname)
 	if err != nil {
-		return err
-	}
-	if exists {
-		err = wrapper.fileSystem.Remove(newname)
-		if err != nil {
+		if !os.IsNotExist(err) {
 			return err
 		}
 	}
-	return wrapper.symlinkDelegate(oldname, newname)
+	err = wrapper.symlinkDelegate(oldname, newname)
+	if err != nil {
+		if !os.IsPermission(err) {
+			return err
+		}
+		return errors.Wrapf(err, "unable to create symlink '%s' -> '%s'. Insufficient privelages", oldname, newname)
+	}
+	return nil
 }
 
 func (wrapper *fsWrapper) Create(name string) (afero.File, error) {
