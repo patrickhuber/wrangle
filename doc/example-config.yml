@@ -95,17 +95,17 @@ packages:
   version: 0.0.91
   platforms:
   - name: linux
-    alias: wrangle
+    alias: cfmgmtconfig
     download:
       url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-config-linux
       out: cf-mgmt-config-((version))-linux
   - name: windows
-    alias: wrangle.exe
+    alias: cfmgmtconfig.exe
     download:
       url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt.exe
       out: cf-mgmt-config-((version))-windows.exe
   - name: darwin
-    alias: wrangle
+    alias: cfmgmtconfig
     download:
       url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-config-osx
       out: cf-mgmt-config-((version))-darwin
