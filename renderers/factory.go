@@ -3,16 +3,19 @@ package renderers
 import "fmt"
 
 type factory struct {
+	platform string
 }
 
 // Factory defines a new renderer factory
 type Factory interface {
-	Create(shell string, platform string) (Renderer, error)
+	Create(shell string) (Renderer, error)
 }
 
 // NewFactory creates a new factory
-func NewFactory() Factory {
-	return &factory{}
+func NewFactory(platform string) Factory {
+	return &factory{
+		platform: platform,
+	}
 }
 
 func (f *factory) createFromPlatform(platform string) (Renderer, error) {
@@ -35,9 +38,9 @@ func (f *factory) createFromShell(shell string) (Renderer, error) {
 	}
 }
 
-func (f *factory) Create(shell string, platform string) (Renderer, error) {
+func (f *factory) Create(shell string) (Renderer, error) {
 	if shell == "" {
-		return f.createFromPlatform(platform)
+		return f.createFromPlatform(f.platform)
 	}
 	return f.createFromShell(shell)
 }

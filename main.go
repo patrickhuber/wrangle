@@ -14,6 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 
@@ -69,6 +70,8 @@ func createApplication(
 	console ui.Console,
 	platform string) (*cli.App, error) {
 
+	rendererFactory := renderers.NewFactory(platform)
+
 	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
 		return nil, err
@@ -91,8 +94,8 @@ func createApplication(
 
 	cliApp.Commands = []cli.Command{
 		*createRunCommand(manager, fileSystem, processFactory, console),
-		*createPrintCommand(manager, fileSystem, platform, console),
-		*createPrintEnvCommand(manager, fileSystem, platform, console),
+		*createPrintCommand(manager, fileSystem, console, rendererFactory),
+		*createPrintEnvCommand(manager, fileSystem, console, rendererFactory),
 		*createEnvironmentsCommand(fileSystem, console),
 		*createPackagesCommand(fileSystem, console),
 		*createInstallCommand(fileSystem, platform),
@@ -144,15 +147,14 @@ func createRunCommand(
 func createPrintCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	platform string,
-	console ui.Console) *cli.Command {
+	console ui.Console,
+	rendererFactory renderers.Factory) *cli.Command {
 
 	printCommand := commands.NewPrint(
 		manager,
 		fileSystem,
-		platform,
-		"",
-		console)
+		console,
+		rendererFactory)
 
 	return &cli.Command{
 		Name:    "print",
@@ -175,12 +177,19 @@ func createPrintCommand(
 		Action: func(context *cli.Context) error {
 			processName := context.String("name")
 			environmentName := context.String("environment")
+			shell := context.String("shell")
 
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
-			params := commands.NewProcessParams(cfg, environmentName, processName)
+			params := &commands.PrintParams{
+				Configuration:   cfg,
+				EnvironmentName: environmentName,
+				ProcessName:     processName,
+				Shell:           shell,
+			}
+
 			return printCommand.Execute(params)
 		},
 	}
@@ -189,15 +198,14 @@ func createPrintCommand(
 func createPrintEnvCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	platform string,
-	console ui.Console) *cli.Command {
+	console ui.Console,
+	rendererFactory renderers.Factory) *cli.Command {
 
 	printEnvCommand := commands.NewPrintEnv(
 		manager,
 		fileSystem,
-		platform,
-		"",
-		console)
+		console,
+		rendererFactory)
 
 	return &cli.Command{
 		Name:  "print-env",
@@ -219,7 +227,10 @@ func createPrintEnvCommand(
 			if err != nil {
 				return err
 			}
-			params := commands.NewProcessParams(cfg, environmentName, processName)
+			params := &commands.PrintEnvParams{
+				Configuration:   cfg,
+				EnvironmentName: environmentName,
+				ProcessName:     processName}
 			return printEnvCommand.Execute(params)
 		},
 	}

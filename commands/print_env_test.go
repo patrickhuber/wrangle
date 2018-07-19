@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/file"
 
@@ -35,6 +36,8 @@ environments:
 		afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 
 		platform := "linux"
+		// create renderer factory
+		rendererFactory := renderers.NewFactory(platform)
 
 		// create store manager
 		manager := store.NewManager()
@@ -49,9 +52,13 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrintEnv(manager, fileSystem, platform, "", console)
-		runCommandParams := NewProcessParams(cfg, "lab", "echo")
-		err = cmd.Execute(runCommandParams)
+		cmd := NewPrintEnv(manager, fileSystem, console, rendererFactory)
+		params := &PrintEnvParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "echo",
+			Shell:           ""}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output
@@ -65,6 +72,7 @@ environments:
 		r := require.New(t)
 
 		platform := "linux"
+		rendererFactory := renderers.NewFactory(platform)
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -101,9 +109,13 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrintEnv(manager, fileSystem, platform, "", console)
-		runCommandParams := NewProcessParams(cfg, "lab", "echo")
-		err = cmd.Execute(runCommandParams)
+		cmd := NewPrintEnv(manager, fileSystem, console, rendererFactory)
+		params := &PrintEnvParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "echo",
+			Shell:           ""}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output
@@ -116,6 +128,8 @@ environments:
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
+		rendererFactory := renderers.NewFactory(platform)
+
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
 
@@ -145,9 +159,13 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrintEnv(manager, fileSystem, platform, "powershell", console)
-		processParams := NewProcessParams(cfg, "lab", "echo")
-		err = cmd.Execute(processParams)
+		cmd := NewPrintEnv(manager, fileSystem, console, rendererFactory)
+		params := &PrintEnvParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "echo",
+			Shell:           "powershell"}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output

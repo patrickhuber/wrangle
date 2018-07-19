@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
@@ -12,50 +13,55 @@ import (
 )
 
 type printEnv struct {
-	fileSystem afero.Fs
-	platform   string
-	shell      string
-	console    ui.Console
-	manager    store.Manager
+	fileSystem      afero.Fs
+	rendererFactory renderers.Factory
+	console         ui.Console
+	manager         store.Manager
+}
+
+// PrintEnvParams defines parameters for the print env command
+type PrintEnvParams struct {
+	Configuration   *config.Config
+	EnvironmentName string
+	ProcessName     string
+	Shell           string
 }
 
 // PrintEnv represents an environment command
 type PrintEnv interface {
-	Execute(params ProcessParams) error
+	Execute(*PrintEnvParams) error
 }
 
 // NewPrintEnv creates a new environment command
 func NewPrintEnv(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	platform string,
-	shell string,
-	console ui.Console) PrintEnv {
+	console ui.Console,
+	rendererFactory renderers.Factory) PrintEnv {
 	return &printEnv{
-		manager:    manager,
-		fileSystem: fileSystem,
-		platform:   platform,
-		shell:      shell,
-		console:    console}
+		manager:         manager,
+		fileSystem:      fileSystem,
+		rendererFactory: rendererFactory,
+		console:         console}
 }
 
-func (cmd *printEnv) Execute(params ProcessParams) error {
+func (cmd *printEnv) Execute(
+	params *PrintEnvParams) error {
 
-	processName := params.ProcessName()
-	environmentName := params.EnvironmentName()
-
-	if processName == "" {
+	if params.ProcessName == "" {
 		return errors.New("process name is required for the run command")
 	}
+	processName := params.ProcessName
 
-	if environmentName == "" {
+	if params.EnvironmentName == "" {
 		return errors.New("environment name is required for the run command")
 	}
+	environmentName := params.EnvironmentName
 
-	cfg := params.Config()
-	if cfg == nil {
+	if params.Configuration == nil {
 		return errors.New("unable to load configuration")
 	}
+	cfg := params.Configuration
 
 	processTemplate, err := store.NewProcessTemplate(cfg, cmd.manager)
 	if err != nil {
@@ -67,7 +73,7 @@ func (cmd *printEnv) Execute(params ProcessParams) error {
 		return err
 	}
 
-	renderer, err := renderers.NewFactory().Create(cmd.shell, cmd.platform)
+	renderer, err := cmd.rendererFactory.Create(params.Shell)
 	if err != nil {
 		return err
 	}

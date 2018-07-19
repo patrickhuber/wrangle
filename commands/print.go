@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
@@ -12,37 +13,42 @@ import (
 )
 
 type print struct {
-	fileSystem afero.Fs
-	platform   string
-	shell      string
-	console    ui.Console
-	manager    store.Manager
+	fileSystem      afero.Fs
+	console         ui.Console
+	manager         store.Manager
+	rendererFactory renderers.Factory
+}
+
+// PrintParams defines parameters for the print command
+type PrintParams struct {
+	Configuration   *config.Config
+	EnvironmentName string
+	ProcessName     string
+	Shell           string
 }
 
 // Print represents an environment command
 type Print interface {
-	Execute(params ProcessParams) error
+	Execute(params *PrintParams) error
 }
 
 // NewPrint creates a new environment command
 func NewPrint(
 	manager store.Manager,
 	fileSystem afero.Fs,
-	platform string,
-	shell string,
-	console ui.Console) PrintEnv {
+	console ui.Console,
+	rendererFactory renderers.Factory) Print {
 	return &print{
-		manager:    manager,
-		fileSystem: fileSystem,
-		platform:   platform,
-		shell:      shell,
-		console:    console}
+		manager:         manager,
+		fileSystem:      fileSystem,
+		console:         console,
+		rendererFactory: rendererFactory}
 }
 
-func (cmd *print) Execute(params ProcessParams) error {
+func (cmd *print) Execute(params *PrintParams) error {
 
-	processName := params.ProcessName()
-	environmentName := params.EnvironmentName()
+	processName := params.ProcessName
+	environmentName := params.EnvironmentName
 
 	if processName == "" {
 		return errors.New("process name is required for the run command")
@@ -52,7 +58,7 @@ func (cmd *print) Execute(params ProcessParams) error {
 		return errors.New("environment name is required for the run command")
 	}
 
-	cfg := params.Config()
+	cfg := params.Configuration
 	if cfg == nil {
 		return errors.New("unable to load configuration")
 	}
@@ -67,7 +73,7 @@ func (cmd *print) Execute(params ProcessParams) error {
 		return err
 	}
 
-	renderer, err := renderers.NewFactory().Create(cmd.shell, cmd.platform)
+	renderer, err := cmd.rendererFactory.Create(params.Shell)
 	if err != nil {
 		return err
 	}

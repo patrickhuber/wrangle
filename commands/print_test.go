@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/file"
 
@@ -16,9 +17,12 @@ import (
 )
 
 func TestPrintCommand(t *testing.T) {
+
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
+		rendererFactory := renderers.NewFactory(platform)
+
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
 
@@ -49,9 +53,12 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, platform, "", console)
-		runCommandParams := NewProcessParams(cfg, "lab", "echo")
-		err = cmd.Execute(runCommandParams)
+		cmd := NewPrint(manager, fileSystem, console, rendererFactory)
+		params := &PrintParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "echo"}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output
@@ -64,6 +71,8 @@ environments:
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
+		rendererFactory := renderers.NewFactory(platform)
+
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
 
@@ -100,9 +109,12 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, platform, "", console)
-		runCommandParams := NewProcessParams(cfg, "lab", "echo")
-		err = cmd.Execute(runCommandParams)
+		cmd := NewPrint(manager, fileSystem, console, rendererFactory)
+		params := &PrintParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "echo"}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output
@@ -123,6 +135,8 @@ environments:
     args: 
     - version
 `
+		platform := "linux"
+		rendererFactory := renderers.NewFactory(platform)
 
 		// create store manager
 		manager := store.NewManager()
@@ -137,9 +151,12 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, "linux", "", console)
-		runCommandParams := NewProcessParams(cfg, "lab", "go")
-		err = cmd.Execute(runCommandParams)
+		cmd := NewPrint(manager, fileSystem, console, rendererFactory)
+		params := &PrintParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "go"}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output
@@ -153,6 +170,7 @@ environments:
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
+		rendererFactory := renderers.NewFactory(platform)
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -183,9 +201,14 @@ environments:
 		r.Nil(err)
 
 		// create and run command
-		cmd := NewPrint(manager, fileSystem, platform, "powershell", console)
-		processParams := NewProcessParams(cfg, "lab", "echo")
-		err = cmd.Execute(processParams)
+		cmd := NewPrint(manager, fileSystem, console, rendererFactory)
+		params := &PrintParams{
+			Configuration:   cfg,
+			EnvironmentName: "lab",
+			ProcessName:     "echo",
+			Shell:           "powershell",
+		}
+		err = cmd.Execute(params)
 		r.Nil(err)
 
 		// verify output

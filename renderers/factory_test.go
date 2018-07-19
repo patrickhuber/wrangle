@@ -11,8 +11,8 @@ func TestFactory(t *testing.T) {
 		r := require.New(t)
 		platform := "windows"
 		shell := ""
-		factory := NewFactory()
-		renderer, err := factory.Create(shell, platform)
+		factory := NewFactory(platform)
+		renderer, err := factory.Create(shell)
 		r.Nil(err)
 		r.Equal("powershell", renderer.Shell())
 	})
@@ -21,8 +21,8 @@ func TestFactory(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
 		shell := ""
-		factory := NewFactory()
-		renderer, err := factory.Create(shell, platform)
+		factory := NewFactory(platform)
+		renderer, err := factory.Create(shell)
 		r.Nil(err)
 		r.Equal("bash", renderer.Shell())
 	})
@@ -31,8 +31,8 @@ func TestFactory(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
 		shell := ""
-		factory := NewFactory()
-		renderer, err := factory.Create(shell, platform)
+		factory := NewFactory(platform)
+		renderer, err := factory.Create(shell)
 		r.Nil(err)
 		r.Equal("bash", renderer.Shell())
 	})
@@ -41,8 +41,8 @@ func TestFactory(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
 		shell := "bash"
-		factory := NewFactory()
-		renderer, err := factory.Create(shell, platform)
+		factory := NewFactory(platform)
+		renderer, err := factory.Create(shell)
 		r.Nil(err)
 		r.Equal("bash", renderer.Shell())
 	})
@@ -51,8 +51,8 @@ func TestFactory(t *testing.T) {
 		r := require.New(t)
 		platform := "windows"
 		shell := "powershell"
-		factory := NewFactory()
-		renderer, err := factory.Create(shell, platform)
+		factory := NewFactory(platform)
+		renderer, err := factory.Create(shell)
 		r.Nil(err)
 		r.Equal("powershell", renderer.Shell())
 	})
@@ -61,8 +61,8 @@ func TestFactory(t *testing.T) {
 		r := require.New(t)
 		platform := "windows"
 		shell := "bash"
-		factory := NewFactory()
-		renderer, err := factory.Create(shell, platform)
+		factory := NewFactory(platform)
+		renderer, err := factory.Create(shell)
 		r.Nil(err)
 		r.Equal("bash", renderer.Shell())
 	})
