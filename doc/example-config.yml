@@ -72,6 +72,43 @@ environments:
       CREDHUB_SERVER: https://192.168.0.10:8844
 
 packages:
+- name: cf-mgmt
+  version: 0.0.91
+  platforms:
+  - name: linux
+    alias: cfmgmt
+    download:
+      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-linux
+      out: cf-mgmt-((version))-linux
+  - name: windows
+    alias: cfmgmt.exe
+    download:
+      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt.exe
+      out: cf-mgmt-((version))-windows.exe
+  - name: darwin
+    alias: cfmgmt
+    download:
+      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-osx
+      out: cf-mgmt-((version))-darwin
+
+- name: cf-mgmt-config
+  version: 0.0.91
+  platforms:
+  - name: linux
+    alias: wrangle
+    download:
+      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-config-linux
+      out: cf-mgmt-config-((version))-linux
+  - name: windows
+    alias: wrangle.exe
+    download:
+      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt.exe
+      out: cf-mgmt-config-((version))-windows.exe
+  - name: darwin
+    alias: wrangle
+    download:
+      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-config-osx
+      out: cf-mgmt-config-((version))-darwin
 
 - name: fly
   version: 3.14.1
