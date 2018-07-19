@@ -15,10 +15,12 @@ type processTemplate struct {
 	resolvers map[string]templates.VariableResolver
 }
 
+// ProcessTemplate defines a template for processes
 type ProcessTemplate interface {
 	Evaluate(environmentName string, processName string) (*config.Process, error)
 }
 
+// NewProcessTemplate  creates a new process template with the given config and manager
 func NewProcessTemplate(cfg *config.Config, manager Manager) (ProcessTemplate, error) {
 	g, err := config.NewConfigurationGraph(cfg)
 	if err != nil {

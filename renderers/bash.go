@@ -10,6 +10,7 @@ import (
 type bash struct {
 }
 
+// NewBash defines a new bash renderer
 func NewBash() Renderer {
 	return &bash{}
 }

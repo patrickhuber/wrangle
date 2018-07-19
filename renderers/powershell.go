@@ -10,6 +10,7 @@ import (
 type powershell struct {
 }
 
+// NewPowershell creates a new Powershell Renderer
 func NewPowershell() Renderer {
 	return &powershell{}
 }

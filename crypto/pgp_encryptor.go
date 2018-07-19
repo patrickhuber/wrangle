@@ -12,6 +12,7 @@ type pgpEncryptor struct {
 	entityList openpgp.EntityList
 }
 
+// NewPgpEncryptor creates a new pgp encryptor using the given public key ring
 func NewPgpEncryptor(publicKeyRingReader io.Reader) (Encryptor, error) {
 	// load the entity list
 	entitylist, err := openpgp.ReadKeyRing(publicKeyRingReader)

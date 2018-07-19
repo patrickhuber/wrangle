@@ -13,11 +13,13 @@ type pgpContext struct {
 	secureKeyRing filesystem.FilePath
 }
 
+// PgpContext defines the context for pgp encryption and decryption
 type PgpContext interface {
 	PublicKeyRing() filesystem.FilePath
 	SecureKeyRing() filesystem.FilePath
 }
 
+// NewPlatformPgpContext creates a new platform pgp context using the default folders for the specified platform
 func NewPlatformPgpContext(platform string) (PgpContext, error) {
 
 	// get user directory
@@ -41,6 +43,7 @@ func NewPlatformPgpContext(platform string) (PgpContext, error) {
 	return NewPgpContextFromFolder(gpgDirectory), nil
 }
 
+// NewPgpContextFromFolder creates a pgp context from a specified folder but using the default pubring and secring files
 func NewPgpContextFromFolder(gnupgFolder string) PgpContext {
 	return &pgpContext{
 		publicKeyRing: filesystem.NewFilePathFromDirectoryAndFile(gnupgFolder, "pubring.gpg"),
@@ -48,6 +51,7 @@ func NewPgpContextFromFolder(gnupgFolder string) PgpContext {
 	}
 }
 
+// NewPgpContext creates a pgp context  from the specified pubring and secring files
 func NewPgpContext(publicKeyRingFullPath string, secretKeyRingFullPath string) PgpContext {
 	return &pgpContext{
 		publicKeyRing: filesystem.NewFilePathFromFullPath(publicKeyRingFullPath),

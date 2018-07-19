@@ -2,6 +2,7 @@ package processes
 
 import "io"
 
+// Factory defines a process factory
 type Factory interface {
 	Create(
 		executable string,
@@ -15,6 +16,7 @@ type Factory interface {
 type factory struct {
 }
 
+// NewOsFactory creates an os factory for processes
 func NewOsFactory() Factory {
 	return &factory{}
 }

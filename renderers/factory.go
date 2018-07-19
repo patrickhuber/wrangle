@@ -5,10 +5,12 @@ import "fmt"
 type factory struct {
 }
 
+// Factory defines a new renderer factory
 type Factory interface {
 	Create(shell string, platform string) (Renderer, error)
 }
 
+// NewFactory creates a new factory
 func NewFactory() Factory {
 	return &factory{}
 }

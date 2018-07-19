@@ -18,7 +18,7 @@ type tarArchiver struct {
 	fileSystem filesystem.FsWrapper
 }
 
-// NewTarArchive creates a new tar archive
+// NewTarArchiver creates a new tar archive
 func NewTarArchiver(fileSystem filesystem.FsWrapper) Archiver {
 	return &tarArchiver{fileSystem: fileSystem}
 }

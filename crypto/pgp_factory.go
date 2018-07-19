@@ -13,11 +13,13 @@ type pgpFactory struct {
 	context    PgpContext
 }
 
+// PgpFactory implemments crypto.Factory and adds pgp context
 type PgpFactory interface {
 	Context() PgpContext
 	Factory
 }
 
+// NewPgpFactory creates a pgp factory for the given filesystem and platform
 func NewPgpFactory(fileSystem afero.Fs, platform string) (PgpFactory, error) {
 	context, err := NewPlatformPgpContext(platform)
 	if err != nil {
