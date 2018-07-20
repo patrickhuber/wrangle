@@ -20,7 +20,12 @@ import (
 	"github.com/spf13/afero"
 )
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
+	os.Unsetenv("PSModulePath")
+	m.Run()
+}
+
+func TestMainCommands(t *testing.T) {
 	t.Run("CanRunProcess", func(t *testing.T) {
 
 	})

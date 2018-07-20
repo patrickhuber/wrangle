@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 
@@ -15,6 +16,11 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 )
+
+func TestMain(m *testing.M) {
+	os.Unsetenv("PSModulePath")
+	m.Run()
+}
 
 func TestPrintCommand(t *testing.T) {
 

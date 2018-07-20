@@ -1,6 +1,9 @@
 package renderers
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type factory struct {
 	platform string
@@ -19,12 +22,16 @@ func NewFactory(platform string) Factory {
 }
 
 func (f *factory) createFromPlatform(platform string) (Renderer, error) {
+	shell := "bash"
 	switch platform {
 	case "windows":
-		return f.createFromShell("powershell")
+		shell = "powershell"
 	default:
-		return f.createFromShell("bash")
+		if _, ok := os.LookupEnv("PSModulePath"); ok {
+			shell = "powershell"
+		}
 	}
+	return f.createFromShell(shell)
 }
 
 func (f *factory) createFromShell(shell string) (Renderer, error) {
