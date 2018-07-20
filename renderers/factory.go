@@ -2,11 +2,13 @@ package renderers
 
 import (
 	"fmt"
-	"os"
+
+	"github.com/patrickhuber/wrangle/collections"
 )
 
 type factory struct {
 	platform string
+	env      collections.Dictionary
 }
 
 // Factory defines a new renderer factory
@@ -15,9 +17,10 @@ type Factory interface {
 }
 
 // NewFactory creates a new factory
-func NewFactory(platform string) Factory {
+func NewFactory(platform string, env collections.Dictionary) Factory {
 	return &factory{
 		platform: platform,
+		env:      env,
 	}
 }
 
@@ -27,7 +30,7 @@ func (f *factory) createFromPlatform(platform string) (Renderer, error) {
 	case "windows":
 		shell = "powershell"
 	default:
-		if _, ok := os.LookupEnv("PSModulePath"); ok {
+		if _, ok := f.env.Lookup("PSModulePath"); ok {
 			shell = "powershell"
 		}
 	}

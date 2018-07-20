@@ -1,109 +1,108 @@
-package renderers
+package renderers_test
 
 import (
-	"os"
-	"testing"
+	"github.com/patrickhuber/wrangle/collections"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/patrickhuber/wrangle/renderers"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestMain(m *testing.M) {
-	os.Unsetenv("PSModulePath")
-	m.Run()
-}
+var _ = Describe("Factory", func() {
+	var (
+		dictionary collections.Dictionary
+		platform   string
+		factory    Factory
+	)
 
-func TestFactory(t *testing.T) {
-	t.Run("WindowsCreatesPowershellRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "windows"
-		shell := ""
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-		r.Equal("powershell", renderer.Shell())
+	Describe("Create", func() {
+		Context("WhenWindows", func() {
+			BeforeEach(func() {
+				platform = "windows"
+				dictionary = collections.NewDictionary()
+				factory = NewFactory(platform, dictionary)
+			})
+			Context("WhenDefaultShell", func() {
+				It("should be powershell", func() {
+					shell := ""
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("powershell"))
+				})
+			})
+			Context("WhenShellBash", func() {
+				It("should be bash", func() {
+					shell := "bash"
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("bash"))
+				})
+			})
+		})
+		Context("WhenDarwin", func() {
+			BeforeEach(func() {
+				platform = "darwin"
+				dictionary = collections.NewDictionary()
+				factory = NewFactory(platform, dictionary)
+			})
+			Context("WhenDefaultShell", func() {
+				It("should be bash", func() {
+					shell := ""
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("bash"))
+				})
+			})
+			Context("WhenShellPowershell", func() {
+				It("should be powershell", func() {
+					shell := "powershell"
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("powershell"))
+				})
+			})
+			Context("WhenPSModulePathEnvVarSet", func() {
+				It("should be powershell", func() {
+					shell := ""
+					dictionary.Set("PSModulePath", "test")
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("powershell"))
+				})
+			})
+		})
+		Context("WhenLinux", func() {
+			BeforeEach(func() {
+				platform = "linux"
+				dictionary = collections.NewDictionary()
+				factory = NewFactory(platform, dictionary)
+			})
+			Context("WhenDefaultShell", func() {
+				It("should be bash", func() {
+					shell := ""
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("bash"))
+				})
+			})
+			Context("WhenShellPowershell", func() {
+				It("should be powershell", func() {
+					shell := "powershell"
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("powershell"))
+				})
+			})
+			Context("WhenPSModulePathEnvVarSet", func() {
+				It("should be powershell", func() {
+					shell := ""
+					dictionary.Set("PSModulePath", "test")
+					renderer, err := factory.Create(shell)
+					Expect(err).To(BeNil())
+					Expect(renderer.Shell()).To(Equal("powershell"))
+				})
+			})
+		})
 	})
-
-	t.Run("LinuxCreatesBashRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "linux"
-		shell := ""
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-		r.Equal("bash", renderer.Shell())
-	})
-
-	t.Run("DarwinCreatesBashRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "linux"
-		shell := ""
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-		r.Equal("bash", renderer.Shell())
-	})
-
-	t.Run("LinuxWithPsModuelPathCreatesPowershellRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "linux"
-		shell := ""
-		err := os.Setenv("PSModulePath", "test")
-		r.Nil(err)
-
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-
-		err = os.Unsetenv("PSModulePath")
-		r.Nil(err)
-
-		r.Equal("powershell", renderer.Shell())
-	})
-
-	t.Run("DarwinWithPsModuelPathCreatesPowershellRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "darwin"
-		shell := ""
-		err := os.Setenv("PSModulePath", "test")
-		r.Nil(err)
-
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-
-		err = os.Unsetenv("PSModulePath")
-		r.Nil(err)
-
-		r.Equal("powershell", renderer.Shell())
-	})
-
-	t.Run("BashCreatesBashRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "linux"
-		shell := "bash"
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-		r.Equal("bash", renderer.Shell())
-	})
-
-	t.Run("PowershellCreatesPowershellRenderer", func(t *testing.T) {
-		r := require.New(t)
-		platform := "windows"
-		shell := "powershell"
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-		r.Equal("powershell", renderer.Shell())
-	})
-
-	t.Run("PlatformIsIgnoredIfShellIsSpecified", func(t *testing.T) {
-		r := require.New(t)
-		platform := "windows"
-		shell := "bash"
-		factory := NewFactory(platform)
-		renderer, err := factory.Create(shell)
-		r.Nil(err)
-		r.Equal("bash", renderer.Shell())
-	})
-}
+})
