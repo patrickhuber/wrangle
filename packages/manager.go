@@ -224,11 +224,6 @@ func (m *manager) extractZip(file afero.File, extract Extract) error {
 }
 
 func (m *manager) Link(p Package) error {
-	return m.postProcessPackage(p)
-}
-
-func (m *manager) postProcessPackage(p Package) error {
-
 	// set the permissions of the package output
 	if isBinaryPackage(p) {
 		return m.postProcessFile(
