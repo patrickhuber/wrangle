@@ -25,6 +25,7 @@ type manager struct {
 type Manager interface {
 	Download(p Package) error
 	Extract(p Package) error
+	Link(p Package) error
 }
 
 // NewManager creates a new package manager
@@ -61,14 +62,8 @@ func (m *manager) Download(p Package) error {
 
 	// Write the body to file
 	_, err = io.Copy(file, resp.Body)
-	if err != nil {
-		return err
-	}
 
-	if isBinaryPackage(p) {
-		return m.postProcessPackage(p)
-	}
-	return nil
+	return err
 }
 
 func isBinaryPackage(p Package) bool {
@@ -124,11 +119,8 @@ func (m *manager) Extract(p Package) error {
 	default:
 		return fmt.Errorf("unrecoginzed file extension '%s'", extension)
 	}
-	if err != nil {
-		return err
-	}
 
-	return m.postProcessPackage(p)
+	return err
 }
 
 func (m *manager) extractTar(reader io.Reader, extract Extract) error {
@@ -231,9 +223,13 @@ func (m *manager) extractZip(file afero.File, extract Extract) error {
 	return nil
 }
 
+func (m *manager) Link(p Package) error {
+	return m.postProcessPackage(p)
+}
+
 func (m *manager) postProcessPackage(p Package) error {
 
-	// set the permissions of the pakcage output
+	// set the permissions of the package output
 	if isBinaryPackage(p) {
 		return m.postProcessFile(
 			p.Alias(),

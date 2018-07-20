@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/patrickhuber/wrangle/filesystem"
@@ -62,15 +63,29 @@ func (cmd *install) Execute(cfg *config.Config, packageName string) error {
 		return err
 	}
 
+	// initialize the link source for console output
+	linkSource := pkg.Download().OutPath()
+
 	// extract the package if extraction was set
-	if pkg.Extract() == nil {
-		return nil
+	if pkg.Extract() != nil {
+		fmt.Fprintf(cmd.console.Out(), "extracting '%s' to '%s'", pkg.Download().OutPath(), pkg.Extract().OutPath())
+		fmt.Fprintln(cmd.console.Out())
+		err = manager.Extract(pkg)
+		if err != nil {
+			return err
+		}
+		// the link source is now the extracted binary
+		linkSource = pkg.Extract().OutPath()
 	}
 
-	fmt.Fprintf(cmd.console.Out(), "extracting '%s' to '%s'", pkg.Download().OutPath(), pkg.Extract().OutPath())
+	linkTarget := filepath.Join(pkg.Download().OutFolder(), pkg.Alias())
+	linkTarget = filepath.ToSlash(linkTarget)
+
+	fmt.Fprintf(cmd.console.Out(), "linking '%s' to '%s'", linkSource, linkTarget)
 	fmt.Fprintln(cmd.console.Out())
 
-	return manager.Extract(pkg)
+	// link the package
+	return manager.Link(pkg)
 }
 
 func findConfigPackage(cfg *config.Config, packageName string) (*config.Package, error) {

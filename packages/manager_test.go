@@ -162,7 +162,6 @@ func TestManager(t *testing.T) {
 		manager := NewManager(fs)
 		err = manager.Download(pkg)
 		r.Nil(err)
-
 	})
 }
 
@@ -196,6 +195,9 @@ func testDownloadFile(
 
 	// download the package and verify it was written
 	err := manager.Download(pkg)
+	r.Nil(err)
+
+	err = manager.Link(pkg)
 	r.Nil(err)
 
 	outPath := filepath.Join(outFolder, outFile)
