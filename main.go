@@ -11,6 +11,7 @@ import (
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
+	"github.com/patrickhuber/wrangle/env"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
@@ -19,7 +20,7 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 
 	credhub "github.com/patrickhuber/wrangle/store/credhub"
-	"github.com/patrickhuber/wrangle/store/env"
+	store_env "github.com/patrickhuber/wrangle/store/env"
 	file "github.com/patrickhuber/wrangle/store/file"
 
 	"github.com/urfave/cli"
@@ -70,7 +71,7 @@ func createApplication(
 	console ui.Console,
 	platform string) (*cli.App, error) {
 
-	rendererFactory := renderers.NewFactory(platform)
+	rendererFactory := renderers.NewFactory(platform, env.NewDictionary())
 
 	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
@@ -392,7 +393,7 @@ func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manag
 	}
 	manager.Register(credhub.NewCredHubStoreProvider())
 	manager.Register(file.NewFileStoreProvider(fileSystem, factory))
-	manager.Register(env.NewEnvStoreProvider())
+	manager.Register(store_env.NewEnvStoreProvider())
 	return manager, nil
 }
 

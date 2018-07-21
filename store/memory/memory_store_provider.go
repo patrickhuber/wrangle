@@ -13,7 +13,7 @@ func NewMemoryStoreProvider() store.Provider {
 	return &memoryStoreProvider{}
 }
 
-func (*memoryStoreProvider) GetName() string {
+func (*memoryStoreProvider) Name() string {
 	return "memory"
 }
 

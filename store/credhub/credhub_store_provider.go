@@ -11,7 +11,7 @@ type credHubConfigStoreProvider struct {
 func NewCredHubStoreProvider() store.Provider {
 	return &credHubConfigStoreProvider{}
 }
-func (provider *credHubConfigStoreProvider) GetName() string {
+func (provider *credHubConfigStoreProvider) Name() string {
 	return "credhub"
 }
 

@@ -43,7 +43,7 @@ type fakeProvider struct {
 	createDelegate func(source *config.Store) (store.Store, error)
 }
 
-func (p *fakeProvider) GetName() string {
+func (p *fakeProvider) Name() string {
 	return p.name
 }
 

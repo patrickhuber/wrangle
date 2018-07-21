@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
@@ -27,7 +28,8 @@ func TestPrintCommand(t *testing.T) {
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
-		rendererFactory := renderers.NewFactory(platform)
+
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -77,7 +79,8 @@ environments:
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
-		rendererFactory := renderers.NewFactory(platform)
+
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -142,7 +145,8 @@ environments:
     - version
 `
 		platform := "linux"
-		rendererFactory := renderers.NewFactory(platform)
+
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create store manager
 		manager := store.NewManager()
@@ -176,7 +180,8 @@ environments:
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
-		rendererFactory := renderers.NewFactory(platform)
+
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()

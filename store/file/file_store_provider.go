@@ -18,7 +18,7 @@ func NewFileStoreProvider(fileSystem afero.Fs, factory crypto.PgpFactory) store.
 	return &fileStoreProvider{fileSystem: fileSystem, factory: factory}
 }
 
-func (provider *fileStoreProvider) GetName() string {
+func (provider *fileStoreProvider) Name() string {
 	return "file"
 }
 

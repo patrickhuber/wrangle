@@ -14,7 +14,7 @@ func NewEnvStoreProvider() store.Provider {
 	return &envStoreProvider{}
 }
 
-func (p *envStoreProvider) GetName() string {
+func (p *envStoreProvider) Name() string {
 	return "env"
 }
 
@@ -25,7 +25,7 @@ func (p *envStoreProvider) Create(source *config.Store) (store.Store, error) {
 	if envStore.Type() != source.StoreType {
 		return nil, fmt.Errorf(
 			"provider '%s' can not create stores of type '%s'",
-			p.GetName(),
+			p.Name(),
 			source.StoreType)
 	}
 	return envStore, nil

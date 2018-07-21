@@ -31,7 +31,7 @@ func (manager *manager) Get(name string) (Provider, bool) {
 }
 
 func (manager *manager) Register(provider Provider) {
-	manager.providers[provider.GetName()] = provider
+	manager.providers[provider.Name()] = provider
 }
 
 func (manager *manager) Create(configSource *config.Store) (Store, error) {

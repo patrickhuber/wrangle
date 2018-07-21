@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
@@ -37,7 +38,7 @@ environments:
 
 		platform := "linux"
 		// create renderer factory
-		rendererFactory := renderers.NewFactory(platform)
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create store manager
 		manager := store.NewManager()
@@ -72,7 +73,7 @@ environments:
 		r := require.New(t)
 
 		platform := "linux"
-		rendererFactory := renderers.NewFactory(platform)
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -128,7 +129,7 @@ environments:
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
 		platform := "linux"
-		rendererFactory := renderers.NewFactory(platform)
+		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()

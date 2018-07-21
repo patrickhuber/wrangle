@@ -13,7 +13,7 @@ func TestEnvStoreProvider(t *testing.T) {
 	t.Run("CanCreateEnvStoreProvider", func(t *testing.T) {
 		r := require.New(t)
 		provider := NewEnvStoreProvider()
-		name := provider.GetName()
+		name := provider.Name()
 		r.Equal("env", name)
 	})
 

@@ -11,7 +11,7 @@ func TestMemoryStoreProvider(t *testing.T) {
 	t.Run("CanCreateMemoryStore", func(t *testing.T) {
 		r := require.New(t)
 		provider := NewMemoryStoreProvider()
-		name := provider.GetName()
+		name := provider.Name()
 		r.Equal("memory", name)
 		store, err := provider.Create(&config.Store{})
 		r.Nil(err)

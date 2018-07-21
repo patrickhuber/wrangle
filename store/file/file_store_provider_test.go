@@ -22,7 +22,7 @@ func TestFileStoreProvider(t *testing.T) {
 		r.Nil(err)
 
 		provider := NewFileStoreProvider(afero.NewMemMapFs(), factory)
-		name := provider.GetName()
+		name := provider.Name()
 		r.Equal("file", name)
 	})
 

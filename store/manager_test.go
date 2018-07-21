@@ -8,11 +8,11 @@ import (
 )
 
 type dummyConfigStoreProvider struct {
-	Name string
+	name string
 }
 
-func (provider *dummyConfigStoreProvider) GetName() string {
-	return provider.Name
+func (provider *dummyConfigStoreProvider) Name() string {
+	return provider.name
 }
 
 func (provider *dummyConfigStoreProvider) Create(store *config.Store) (Store, error) {
@@ -47,7 +47,7 @@ func TestManager(t *testing.T) {
 	t.Run("CanRegisterProvider", func(t *testing.T) {
 		r := require.New(t)
 		manager := NewManager()
-		manager.Register(&dummyConfigStoreProvider{Name: "test"})
+		manager.Register(&dummyConfigStoreProvider{name: "test"})
 		_, ok := manager.Get("test")
 		r.True(ok)
 	})
@@ -55,7 +55,7 @@ func TestManager(t *testing.T) {
 	t.Run("CanCreateConfigStore", func(t *testing.T) {
 		r := require.New(t)
 		manager := NewManager()
-		manager.Register(&dummyConfigStoreProvider{Name: "dummy"})
+		manager.Register(&dummyConfigStoreProvider{name: "dummy"})
 		store, err := manager.Create(&config.Store{
 			Name:      "test",
 			Stores:    []string{"test"},

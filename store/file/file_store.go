@@ -51,9 +51,9 @@ func (config *fileStore) Type() string {
 	return "file"
 }
 
-func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
+func (config *fileStore) GetByName(key string) (store.Data, error) {
 
-	data, err := fileStore.getFileData()
+	data, err := config.getFileData()
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 	document := make(map[interface{}]interface{})
 	err = yaml.Unmarshal(data, &document)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", fileStore.path)
+		return nil, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", config.path)
 	}
 
 	name, property, err := splitToNameAndProperty(key)
@@ -79,7 +79,7 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 	// find the pointer in the document
 	response, err := patch.FindOp{Path: pointer}.Apply(document)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to find key '%s' in file '%s'", key, fileStore.path)
+		return nil, errors.Wrapf(err, "unable to find key '%s' in file '%s'", key, config.path)
 	}
 
 	// map document to canonical type
@@ -109,24 +109,24 @@ func (fileStore *fileStore) GetByName(key string) (store.Data, error) {
 	return store.NewData(name, name, value), nil
 }
 
-func (fileStore *fileStore) getFileData() ([]byte, error) {
+func (config *fileStore) getFileData() ([]byte, error) {
 	// read the file store config as bytes
-	data, err := afero.ReadFile(fileStore.fileSystem, fileStore.path)
+	data, err := afero.ReadFile(config.fileSystem, config.path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to read file '%s'", fileStore.path)
+		return nil, errors.Wrapf(err, "unable to read file '%s'", config.path)
 	}
 
-	extension := filepath.Ext(fileStore.path)
+	extension := filepath.Ext(config.path)
 	if extension != ".gpg" {
 		return data, nil
 	}
 
-	if fileStore.decryptor == nil {
+	if config.decryptor == nil {
 		return nil, fmt.Errorf("decryptor is nil. A decryptor must be specified to decrypt gpg files")
 	}
 
 	decrypted := &bytes.Buffer{}
-	err = fileStore.decryptor.Decrypt(bytes.NewBuffer(data), decrypted)
+	err = config.decryptor.Decrypt(bytes.NewBuffer(data), decrypted)
 	if err != nil {
 		return nil, err
 	}
