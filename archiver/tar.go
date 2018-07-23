@@ -8,18 +8,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/patrickhuber/wrangle/filesystem"
-
 	"github.com/spf13/afero"
 )
 
 // https://github.com/mholt/archiver/blob/master/tar.go
 type tarArchiver struct {
-	fileSystem filesystem.FsWrapper
+	fileSystem afero.Fs
 }
 
 // NewTarArchiver creates a new tar archive
-func NewTarArchiver(fileSystem filesystem.FsWrapper) Archiver {
+func NewTarArchiver(fileSystem afero.Fs) Archiver {
 	return &tarArchiver{fileSystem: fileSystem}
 }
 
@@ -27,14 +25,14 @@ func (archive *tarArchiver) Write(output io.Writer, filePaths []string) error {
 	return writeTar(archive.fileSystem, filePaths, output, "")
 }
 
-func writeTar(fileSystem filesystem.FsWrapper, filePaths []string, output io.Writer, dest string) error {
+func writeTar(fileSystem afero.Fs, filePaths []string, output io.Writer, dest string) error {
 	tarWriter := tar.NewWriter(output)
 	defer tarWriter.Close()
 
 	return tarball(fileSystem, filePaths, tarWriter, dest)
 }
 
-func tarball(fileSystem filesystem.FsWrapper, filePaths []string, tarWriter *tar.Writer, dest string) error {
+func tarball(fileSystem afero.Fs, filePaths []string, tarWriter *tar.Writer, dest string) error {
 	for _, fpath := range filePaths {
 		err := tarFile(fileSystem, tarWriter, fpath, dest)
 		if err != nil {
@@ -44,7 +42,7 @@ func tarball(fileSystem filesystem.FsWrapper, filePaths []string, tarWriter *tar
 	return nil
 }
 
-func tarFile(fileSystem filesystem.FsWrapper, tarWriter *tar.Writer, source string, dest string) error {
+func tarFile(fileSystem afero.Fs, tarWriter *tar.Writer, source string, dest string) error {
 	sourceInfo, err := fileSystem.Stat(source)
 	if err != nil {
 		return err
@@ -121,7 +119,7 @@ func (archive *tarArchiver) Read(input io.Reader, destination string) error {
 	return nil
 }
 
-func untarFile(fileSystem filesystem.FsWrapper, tarReader *tar.Reader, header *tar.Header, destination string) error {
+func untarFile(fileSystem afero.Fs, tarReader *tar.Reader, header *tar.Header, destination string) error {
 	destpath := filepath.Join(destination, header.Name)
 	switch header.Typeflag {
 	case tar.TypeDir:

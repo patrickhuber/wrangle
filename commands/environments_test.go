@@ -2,18 +2,18 @@ package commands_test
 
 import (
 	"bytes"
-	"testing"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/require"
 )
 
-func TestEnvironmentsCommand(t *testing.T) {
-	t.Run("CanGetListOfEnvironments", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("Environments", func() {
+	It("can get list of environments", func() {
 		fileSystem := afero.NewMemMapFs()
 		content := `
 environments:
@@ -27,13 +27,14 @@ environments:
 		command := commands.NewEnvironments(fileSystem, console)
 		loader := config.NewLoader(fileSystem)
 		configuration, err := loader.Load("/test")
-		r.Nil(err)
-		err = command.Execute(configuration)
-		r.Nil(err)
-		b, ok := console.Out().(*bytes.Buffer)
-		r.True(ok)
-		r.NotNil(b)
+		Expect(err).To(BeNil())
 
-		r.Equal("name\n----\none\ntwo\nthree\n", b.String())
+		err = command.Execute(configuration)
+		Expect(err).To(BeNil())
+
+		b, ok := console.Out().(*bytes.Buffer)
+		Expect(ok).To(BeTrue())
+		Expect(b).ToNot(BeNil())
+		Expect(b.String()).To(Equal("name\n----\none\ntwo\nthree\n"))
 	})
-}
+})

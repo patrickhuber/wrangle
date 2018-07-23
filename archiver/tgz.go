@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/spf13/afero"
 )
 
 // https://github.com/mholt/archiver/blob/master/targz.go
 type targzArchiver struct {
-	fileSystem filesystem.FsWrapper
+	fileSystem afero.Fs
 }
 
 // NewTargzArchiver returns a new targz archiver
-func NewTargzArchiver(fileSystem filesystem.FsWrapper) Archiver {
+func NewTargzArchiver(fileSystem afero.Fs) Archiver {
 	return &targzArchiver{fileSystem: fileSystem}
 }
 
@@ -22,7 +22,7 @@ func (archive *targzArchiver) Write(output io.Writer, filePaths []string) error 
 	return writeTarGz(archive.fileSystem, filePaths, output, "")
 }
 
-func writeTarGz(fileSystem filesystem.FsWrapper, filePaths []string, output io.Writer, dest string) error {
+func writeTarGz(fileSystem afero.Fs, filePaths []string, output io.Writer, dest string) error {
 	gzw := gzip.NewWriter(output)
 	defer gzw.Close()
 
