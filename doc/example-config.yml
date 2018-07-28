@@ -310,7 +310,7 @@ packages:
       out: vault_((version))_darwin_amd64
 
 - name: wrangle
-  version: 0.3.0
+  version: 0.6.0
   platforms:
   - name: linux
     alias: wrangle
