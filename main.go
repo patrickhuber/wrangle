@@ -6,6 +6,8 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/patrickhuber/wrangle/collections"
+
 	"github.com/spf13/afero"
 
 	"github.com/patrickhuber/wrangle/commands"
@@ -43,6 +45,7 @@ func main() {
 
 	processFactory := processes.NewOsFactory()
 	console := ui.NewOSConsole()
+	envDictionary := env.NewDictionary()
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template
@@ -51,7 +54,8 @@ func main() {
 		fileSystem,
 		processFactory,
 		console,
-		platform)
+		platform,
+		envDictionary)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -69,9 +73,10 @@ func createApplication(
 	fileSystem filesystem.FsWrapper,
 	processFactory processes.Factory,
 	console ui.Console,
-	platform string) (*cli.App, error) {
+	platform string,
+	envDictionary collections.Dictionary) (*cli.App, error) {
 
-	rendererFactory := renderers.NewFactory(platform, env.NewDictionary())
+	rendererFactory := renderers.NewFactory(env.NewDictionary())
 
 	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
@@ -100,7 +105,7 @@ func createApplication(
 		*createEnvironmentsCommand(fileSystem, console),
 		*createPackagesCommand(fileSystem, console),
 		*createInstallCommand(fileSystem, platform),
-		*createEnvCommand(console),
+		*createEnvCommand(console, envDictionary),
 		*createStoresCommand(fileSystem, console),
 		*createListProcessesCommand(fileSystem, console),
 	}
@@ -171,14 +176,14 @@ func createPrintCommand(
 				Usage: "Use environment named `ENVIRONMENT`",
 			},
 			cli.StringFlag{
-				Name:  "shell, s",
-				Usage: "Print for shell `SHELL` (bash|powershell)",
+				Name:  "format, f",
+				Usage: "Print for with the given format (bash|powershell)",
 			},
 		},
 		Action: func(context *cli.Context) error {
 			processName := context.String("name")
 			environmentName := context.String("environment")
-			shell := context.String("shell")
+			format := context.String("format")
 
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
@@ -188,7 +193,7 @@ func createPrintCommand(
 				Configuration:   cfg,
 				EnvironmentName: environmentName,
 				ProcessName:     processName,
-				Shell:           shell,
+				Format:          format,
 			}
 
 			return printCommand.Execute(params)
@@ -220,10 +225,15 @@ func createPrintEnvCommand(
 				Name:  "environment, e",
 				Usage: "Use environment named `ENVIRONMENT`",
 			},
+			cli.StringFlag{
+				Name:  "format, f",
+				Usage: "Print for with the given format (bash|powershell)",
+			},
 		},
 		Action: func(context *cli.Context) error {
 			processName := context.String("name")
 			environmentName := context.String("environment")
+			format := context.String("format")
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
@@ -231,7 +241,8 @@ func createPrintEnvCommand(
 			params := &commands.PrintEnvParams{
 				Configuration:   cfg,
 				EnvironmentName: environmentName,
-				ProcessName:     processName}
+				ProcessName:     processName,
+				Format:          format}
 			return printEnvCommand.Execute(params)
 		},
 	}
@@ -289,12 +300,12 @@ func createInstallCommand(
 	}
 }
 
-func createEnvCommand(console ui.Console) *cli.Command {
+func createEnvCommand(console ui.Console, dictionary collections.Dictionary) *cli.Command {
 	return &cli.Command{
 		Name:  "env",
 		Usage: "prints values of all associated environment variables",
 		Action: func(context *cli.Context) error {
-			return commands.NewEnv(console).Execute()
+			return commands.NewEnv(console, dictionary).Execute()
 		},
 	}
 }

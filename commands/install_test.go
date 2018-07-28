@@ -2,285 +2,222 @@ package commands
 
 import (
 	"fmt"
-	"net/http"
 	"net/http/httptest"
-	"path/filepath"
-	"testing"
+	"strings"
 
-	"github.com/patrickhuber/wrangle/archiver"
+	"github.com/patrickhuber/wrangle/filepath"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/ui"
 )
 
-func TestCanInstallBinaryPackageOnWindows(t *testing.T) {
-	canInstallBinaryPackage(t, "windows", "c:\\test")
-}
+var _ = Describe("Install", func() {
+	Describe("NewInstall", func() {
+		It("returns value", func() {
+			platform := "windows"
+			outFolder := ""
+			fileSystem := filesystem.NewOsFsWrapper(afero.NewMemMapFs())
+			_, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
+			Expect(err).ToNot(BeNil())
+		})
 
-func TestCanInstallBinaryPackageOnLinux(t *testing.T) {
-	canInstallBinaryPackage(t, "linux", "/test")
-}
-
-func TestCanInstallBinaryPackageOnMac(t *testing.T) {
-	canInstallBinaryPackage(t, "darwin", "/test")
-}
-
-func TestCanInstallTarPackageOnLinux(t *testing.T) {
-	canInstallTarPackage(t, "linux", "/test")
-}
-
-func TestCanInstallTgzPackageOnWindows(t *testing.T) {
-	canInstallTgzPackage(t, "windows", "c:\\test")
-}
-
-func TestInstallPackages(t *testing.T) {
-	t.Run("PathIsRequired", func(t *testing.T) {
-		r := require.New(t)
-		platform := "windows"
-		outFolder := ""
-		fileSystem := filesystem.NewOsFsWrapper(afero.NewMemMapFs())
-		_, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
-		r.NotNil(err)
 	})
-}
+	Describe("Execute", func() {
+		var (
+			platform   string
+			outFolder  string
+			fileName   string
+			extractOut string
+			server     *httptest.Server
+		)
+		BeforeSuite(func() {
+			server = fakes.NewHTTPServerWithArchive(
+				[]fakes.TestFile{
+					{Path: "/test", Data: "this is data"},
+					{Path: "/test.exe", Data: "this is data"},
+				})
+		})
+		AfterSuite(func() {
+			server.Close()
+		})
+		AfterEach(func() {
+			url := server.URL
+			if !strings.HasSuffix(url, "/") {
+				url += "/"
+			}
+			url += fileName
+			err := runInstallCommand(platform, outFolder, url, fileName, extractOut)
+			Expect(err).To(BeNil())
+		})
+		Context("WhenWindows", func() {
+			BeforeEach(func() {
+				platform = "windows"
+				outFolder = "c:\\out"
+				extractOut = "test.exe"
+			})
+			Context("WhenTar", func() {
+				It("installs", func() {
+					fileName = "test.tar"
+				})
+			})
+			Context("WhenTgz", func() {
+				It("installs", func() {
+					fileName = "test.tgz"
+				})
+			})
+			Context("WhenZip", func() {
+				It("installs", func() {
+					fileName = "test.zip"
+				})
+			})
+			Context("WhenBinary", func() {
+				It("installs", func() {
+					fileName = "test.exe"
+					extractOut = ""
+				})
+			})
+		})
+		Context("WhenDarwin", func() {
+			BeforeEach(func() {
+				platform = "darwin"
+				outFolder = "/out"
+				extractOut = "test"
+			})
+			Context("WhenTar", func() {
+				It("installs", func() {
+					fileName = "test.tar"
+				})
+			})
+			Context("WhenTgz", func() {
+				It("installs", func() {
+					fileName = "test.tgz"
+				})
+			})
+			Context("WhenZip", func() {
+				It("installs", func() {
+					fileName = "test.zip"
+				})
+			})
+			Context("WhenBinary", func() {
+				It("installs", func() {
+					extractOut = ""
+					fileName = "test"
+				})
+			})
+		})
+		Context("WhenLinux", func() {
+			BeforeEach(func() {
+				platform = "darwin"
+				outFolder = "/out"
+				extractOut = "test"
+			})
+			Context("WhenTar", func() {
+				It("installs", func() {
+					fileName = "test.tar"
+				})
+			})
+			Context("WhenTgz", func() {
+				It("installs", func() {
+					fileName = "test.tgz"
+				})
+			})
+			Context("WhenZip", func() {
+				It("installs", func() {
+					fileName = "test.zip"
+				})
+			})
+			Context("WhenBinary", func() {
+				It("installs", func() {
+					fileName = "test"
+					extractOut = ""
+				})
+			})
+		})
+	})
+})
 
-func canInstallBinaryPackage(t *testing.T, platform string, outFolder string) {
-	r := require.New(t)
-	content := `
-packages:
-- name: fly
-  version: 3.14.1  
-  platforms:
-  - name: linux
-    alias: fly
-    download:
-      url: %s
-      out: fly_((version))_linux_amd64
-  - name: windows
-    alias: fly.exe
-    download:
-      url: %s
-      out: fly_((version))_windows_amd64
-  - name: darwin
-    alias: fly
-    download:
-      url: %s
-      out: fly_((version))_darwin_amd64
-`
-	message := "this is a message"
+func runInstallCommand(platform, outFolder, downloadURL, downloadOut, extractOut string) error {
+	version := "1.0.0"
+	name := "test"
+	alias := "alias"
+	extractFilter := extractOut
 
-	// start the local http server
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(message))
-	}))
-
-	// close connection when test is finished
-	defer server.Close()
-
-	// replace the url in the content with the test server url
-	content = fmt.Sprintf(content, server.URL, server.URL, server.URL)
-
-	// serialize the config to a config object
-	cfg, err := config.SerializeString(content)
-	r.Nil(err)
-
-	// create the filesystem and command
-	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
-	command, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
-	r.Nil(err)
-
-	// execute
-	err = command.Execute(cfg, "fly")
-	r.Nil(err)
-
-	// verify downloaded file extists
-	expectedFileName := fmt.Sprintf("fly_3.14.1_%s_amd64", platform)
-	expectedPath := filepath.ToSlash(filepath.Join(outFolder, expectedFileName))
-	ok, err := afero.Exists(fileSystem, expectedPath)
-	r.Nil(err)
-	r.True(ok, "file %s does not exist", expectedPath)
-}
-
-func canInstallTarPackage(t *testing.T, platform string, outFolder string) {
-	r := require.New(t)
-	content := `
-packages:
-- name: bbr
-  version: 1.2.4  
-  platforms:
-  - name: linux
-    alias: bbr
-    download:
-      url: "%s"
-      out: bbr-((version)).tar
-    extract:
-      filter: bbr
-      out: bbr-((version))-linux
-  - name: darwin
-    alias: bbr
-    download:
-      url: "%s"
-      out: bbr-((version)).tar
-    extract:
-      filter: bbr-mac
-      out: bbr-((version))-darwin
-`
-	// start the local http server
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		fs := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
-		err := afero.WriteFile(fs, "/bbr", []byte("this is data"), 0666)
-		if err != nil {
-			rw.Write([]byte("error creating executable"))
-			rw.WriteHeader(400)
-			return
-		}
-		a := archiver.NewTarArchiver(fs)
-		file, err := fs.Create("/bbr.tar")
-		defer file.Close()
-		if err != nil {
-			rw.Write([]byte("error creating tar"))
-			rw.WriteHeader(400)
-			return
-		}
-		err = a.Write(file, []string{"/bbr"})
-		if err != nil {
-			rw.Write([]byte("error writing tar"))
-			rw.WriteHeader(400)
-			return
-		}
-
-		buf, err := afero.ReadFile(fs, "/bbr.tar")
-		if err != nil {
-			rw.Write([]byte("error reading tar"))
-			rw.WriteHeader(400)
-			return
-		}
-		rw.Write(buf)
-	}))
-
-	// close connection when test is finished
-	defer server.Close()
-
-	// replace the url in the content with the test server url
-	content = fmt.Sprintf(content, server.URL, server.URL)
-
-	// serialize the config to a config object
-	cfg, err := config.SerializeString(content)
-	r.Nil(err)
-
-	// create the filesystem and command
-	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
-	command, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
-	r.Nil(err)
-
-	// execute
-	err = command.Execute(cfg, "bbr")
-	r.Nil(err)
-
-	// verify downloaded file extists
-	expectedFileName := fmt.Sprintf("bbr-1.2.4-%s", platform)
-	expectedPath := filepath.ToSlash(filepath.Join(outFolder, expectedFileName))
-	ok, err := afero.Exists(fileSystem, expectedPath)
-	r.Nil(err)
-	r.True(ok, "file %s does not exist", expectedPath)
-}
-
-func canInstallTgzPackage(t *testing.T, platform string, outFolder string) {
-	r := require.New(t)
-	content := `
-packages:
-- name: credhub
-  version: 1.7.6
-  platforms:
-  - name: linux
-    alias: credhub
-    download:
-      url: "%s"
-      out: credhub-((version))-linux.tgz
-    extract:
-      filter: credhub
-      out: credhub-((version))-linux
-  - name: darwin
-    alias: credhub
-    download:
-      url: "%s"
-      out: credhub-((version))-darwin.tgz
-    extract:
-      filter: credhub
-      out: credhub-((version))-darwin
-  - name: windows
-    alias: credhub.exe
-    download:
-      url: "%s"
-      out: credhub-((version))-windows.tgz
-    extract:
-      filter: credhub
-      out: credhub-((version))-windows.exe
-`
-	// start the local http server
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		fs := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
-		err := afero.WriteFile(fs, "/credhub", []byte("this is data"), 0666)
-		if err != nil {
-			rw.Write([]byte("error creating executable"))
-			rw.WriteHeader(400)
-			return
-		}
-		a := archiver.NewTargzArchiver(fs)
-		file, err := fs.Create("/credhub.tgz")
-		defer file.Close()
-		if err != nil {
-			rw.Write([]byte("error creating tgz"))
-			rw.WriteHeader(400)
-			return
-		}
-		err = a.Write(file, []string{"/credhub"})
-		if err != nil {
-			rw.Write([]byte("error writing tgz"))
-			rw.WriteHeader(400)
-			return
-		}
-
-		buf, err := afero.ReadFile(fs, "/credhub.tgz")
-		if err != nil {
-			rw.Write([]byte("error reading tgz"))
-			rw.WriteHeader(400)
-			return
-		}
-		rw.Write(buf)
-	}))
-
-	// close connection when test is finished
-	defer server.Close()
-
-	// replace the url in the content with the test server url
-	content = fmt.Sprintf(content, server.URL, server.URL, server.URL)
-
-	// serialize the config to a config object
-	cfg, err := config.SerializeString(content)
-	r.Nil(err)
-
-	// create the filesystem and command
-	fileSystem := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
-	command, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
-	r.Nil(err)
-
-	// execute
-	err = command.Execute(cfg, "credhub")
-	r.Nil(err)
-
-	// verify downloaded file extists
-	expectedExtension := ""
-	if platform == "windows" {
-		expectedExtension = ".exe"
+	content := getContent(name, version, platform, alias, downloadURL, downloadOut, extractFilter, extractOut)
+	fs := filesystem.NewMemMapFs()
+	command, err := NewInstall(platform, outFolder, fs, ui.NewMemoryConsole())
+	if err != nil {
+		return err
 	}
-	expectedFileName := fmt.Sprintf("credhub-1.7.6-%s%s", platform, expectedExtension)
-	expectedPath := filepath.ToSlash(filepath.Join(outFolder, expectedFileName))
-	ok, err := afero.Exists(fileSystem, expectedPath)
-	r.Nil(err)
-	r.True(ok, "file %s does not exist", expectedPath)
+
+	cfg, err := config.SerializeString(content)
+	if err != nil {
+		return err
+	}
+
+	err = command.Execute(cfg, name)
+	if err != nil {
+		return err
+	}
+
+	// verify the downloaded file exists
+	expectedFilePath := filepath.Join(outFolder, downloadOut)
+	expectedFilePath = filepath.ToSlash(expectedFilePath)
+	ok, err := afero.Exists(fs, expectedFilePath)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("unable to find file '%s'", expectedFilePath)
+	}
+
+	if extractFilter != "" && extractOut != "" {
+		// verify the extracted file exists
+		expectedFilePath = filepath.Join(outFolder, extractOut)
+		expectedFilePath = filepath.ToSlash(expectedFilePath)
+		ok, err := afero.Exists(fs, expectedFilePath)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return fmt.Errorf("unable to find file '%s'", expectedFilePath)
+		}
+	}
+	return nil
+}
+
+func getContent(name, version, platform, alias, downloadURL, downloadOut, extractFilter, extractOut string) string {
+	content := `
+packages:
+- name: ((name))
+  version: ((version))
+  platforms:
+  - name: ((platform))
+    alias: ((alias))
+    download:
+      url: ((download_url))
+      out: ((download_out))
+`
+	if extractFilter != "" && extractOut != "" {
+		content += `
+    extract:
+      filter: ((extract_filter))
+      out: ((extract_out))
+`
+		content = strings.Replace(content, "((extract_filter))", extractFilter, -1)
+		content = strings.Replace(content, "((extract_out))", extractOut, -1)
+	}
+	content = strings.Replace(content, "((name))", name, -1)
+	content = strings.Replace(content, "((version))", version, -1)
+	content = strings.Replace(content, "((platform))", platform, -1)
+	content = strings.Replace(content, "((alias))", alias, -1)
+	content = strings.Replace(content, "((download_url))", downloadURL, -1)
+	content = strings.Replace(content, "((download_out))", downloadOut, -1)
+	return content
 }

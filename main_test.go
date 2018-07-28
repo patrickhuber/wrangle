@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/patrickhuber/wrangle/collections"
+
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
@@ -82,7 +84,8 @@ environments:
 			fileSystem,
 			processFactory,
 			console,
-			platform)
+			platform,
+			collections.NewDictionary())
 		r.Nil(err)
 
 		// run command
@@ -116,7 +119,7 @@ environments:
 			factory,
 			console,
 			platform,
-		)
+			collections.NewDictionary())
 		r.Nil(err)
 		r.NotNil(app)
 

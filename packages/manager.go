@@ -3,13 +3,15 @@ package packages
 import (
 	"archive/tar"
 	"archive/zip"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/patrickhuber/wrangle/archiver"
+	fp "github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/pkg/errors"
 
@@ -89,38 +91,27 @@ func (m *manager) Extract(p Package) error {
 
 	defer file.Close()
 
-	var reader io.Reader = file
-
-	// based on extension process the file differently
-	extension := filepath.Ext(p.Download().OutFile())
-
-	// file is gzipped
-	if extension == ".tgz" || extension == ".gz" {
-		reader, err = gzip.NewReader(reader)
-		if err != nil {
-			return err
-		}
-
-		if strings.HasSuffix(p.Download().OutFile(), ".tar.gz") {
-			extension = ".tar"
-		}
+	extension := filepath.Ext(path)
+	if strings.HasSuffix(path, ".tar.gz") {
+		extension = ".tgz"
 	}
 
+	var a archiver.Archiver
 	switch extension {
 	case ".tgz":
-		err = m.extractTar(reader, p.Extract())
+		a = archiver.NewTargzArchiver(m.fileSystem)
 		break
 	case ".tar":
-		err = m.extractTar(reader, p.Extract())
+		a = archiver.NewTarArchiver(m.fileSystem)
 		break
 	case ".zip":
-		err = m.extractZip(file, p.Extract())
+		a = archiver.NewZipArchiver(m.fileSystem)
 		break
 	default:
 		return fmt.Errorf("unrecoginzed file extension '%s'", extension)
 	}
 
-	return err
+	return a.Extract(file, p.Extract().Filter(), p.Extract().OutPath())
 }
 
 func (m *manager) extractTar(reader io.Reader, extract Extract) error {
@@ -238,15 +229,13 @@ func (m *manager) Link(p Package) error {
 }
 
 func (m *manager) postProcessFile(alias string, sourceFolder string, sourceFile string) error {
-	sourcePath := filepath.Join(sourceFolder, sourceFile)
-	sourcePath = filepath.ToSlash(sourcePath)
+	sourcePath := fp.Join(sourceFolder, sourceFile)
 	err := m.fileSystem.Chmod(sourcePath, 0755)
 	if err != nil {
 		return err
 	}
 
 	// the file needs to have a symlink with the alias name
-	aliasPath := filepath.Join(sourceFolder, alias)
-	aliasPath = filepath.ToSlash(aliasPath)
+	aliasPath := fp.Join(sourceFolder, alias)
 	return m.fileSystem.Symlink(sourcePath, aliasPath)
 }

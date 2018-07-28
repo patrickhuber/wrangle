@@ -2,7 +2,8 @@ package crypto
 
 import (
 	"fmt"
-	"path/filepath"
+
+	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"

@@ -1,7 +1,7 @@
 package crypto
 
 import (
-	"path/filepath"
+	"github.com/patrickhuber/wrangle/filepath"
 	"testing"
 
 	"github.com/spf13/afero"

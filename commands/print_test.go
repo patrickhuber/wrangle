@@ -27,9 +27,8 @@ func TestPrintCommand(t *testing.T) {
 
 	t.Run("CanRunCommand", func(t *testing.T) {
 		r := require.New(t)
-		platform := "linux"
 
-		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
+		rendererFactory := renderers.NewFactory(collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -78,9 +77,8 @@ environments:
 
 	t.Run("CanRunReplaceVariable", func(t *testing.T) {
 		r := require.New(t)
-		platform := "linux"
 
-		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
+		rendererFactory := renderers.NewFactory(collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -144,9 +142,8 @@ environments:
     args: 
     - version
 `
-		platform := "linux"
 
-		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
+		rendererFactory := renderers.NewFactory(collections.NewDictionary())
 
 		// create store manager
 		manager := store.NewManager()
@@ -179,9 +176,8 @@ environments:
 
 	t.Run("ShellOverridesPlatform", func(t *testing.T) {
 		r := require.New(t)
-		platform := "linux"
 
-		rendererFactory := renderers.NewFactory(platform, collections.NewDictionary())
+		rendererFactory := renderers.NewFactory(collections.NewDictionary())
 
 		// create filesystem
 		fileSystem := afero.NewMemMapFs()
@@ -217,7 +213,7 @@ environments:
 			Configuration:   cfg,
 			EnvironmentName: "lab",
 			ProcessName:     "echo",
-			Shell:           "powershell",
+			Format:          renderers.PowershellFormat,
 		}
 		err = cmd.Execute(params)
 		r.Nil(err)

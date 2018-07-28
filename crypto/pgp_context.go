@@ -2,8 +2,9 @@ package crypto
 
 import (
 	"os/user"
-	"path/filepath"
 	"strings"
+
+	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/patrickhuber/wrangle/filesystem"
 )

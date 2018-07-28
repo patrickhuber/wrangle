@@ -24,7 +24,7 @@ type PrintParams struct {
 	Configuration   *config.Config
 	EnvironmentName string
 	ProcessName     string
-	Shell           string
+	Format          string
 }
 
 // Print represents an environment command
@@ -73,7 +73,7 @@ func (cmd *print) Execute(params *PrintParams) error {
 		return err
 	}
 
-	renderer, err := cmd.rendererFactory.Create(params.Shell)
+	renderer, err := cmd.rendererFactory.Create(params.Format)
 	if err != nil {
 		return err
 	}

@@ -53,6 +53,6 @@ func (renderer *powershell) RenderProcess(path string, args []string, environmen
 	return result + "\r\n"
 }
 
-func (renderer *powershell) Shell() string {
-	return "powershell"
+func (renderer *powershell) Format() string {
+	return PowershellFormat
 }

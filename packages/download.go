@@ -1,6 +1,6 @@
 package packages
 
-import "path/filepath"
+import "github.com/patrickhuber/wrangle/filepath"
 
 // Download represents an interface for downloading a package
 type Download interface {

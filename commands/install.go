@@ -2,8 +2,9 @@ package commands
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
+
+	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/patrickhuber/wrangle/filesystem"
 
@@ -77,6 +78,7 @@ func (cmd *install) Execute(cfg *config.Config, packageName string) error {
 		// the link source is now the extracted binary
 		linkSource = pkg.Extract().OutPath()
 	}
+	linkSource = filepath.ToSlash(linkSource)
 
 	linkTarget := filepath.Join(pkg.Download().OutFolder(), pkg.Alias())
 	linkTarget = filepath.ToSlash(linkTarget)

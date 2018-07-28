@@ -7,8 +7,7 @@ import (
 )
 
 type factory struct {
-	platform string
-	env      collections.Dictionary
+	env collections.Dictionary
 }
 
 // Factory defines a new renderer factory
@@ -17,40 +16,34 @@ type Factory interface {
 }
 
 // NewFactory creates a new factory
-func NewFactory(platform string, env collections.Dictionary) Factory {
+func NewFactory(env collections.Dictionary) Factory {
 	return &factory{
-		platform: platform,
-		env:      env,
+		env: env,
 	}
 }
 
-func (f *factory) createFromPlatform(platform string) (Renderer, error) {
-	shell := "bash"
-	switch platform {
-	case "windows":
-		shell = "powershell"
-	default:
-		if _, ok := f.env.Lookup("PSModulePath"); ok {
-			shell = "powershell"
-		}
+func (f *factory) createFromDefault() (Renderer, error) {
+	format := PosixFormat
+	if _, ok := f.env.Lookup("PSModulePath"); ok {
+		format = PowershellFormat
 	}
-	return f.createFromShell(shell)
+	return f.createFromFormat(format)
 }
 
-func (f *factory) createFromShell(shell string) (Renderer, error) {
-	switch shell {
-	case "powershell":
+func (f *factory) createFromFormat(format string) (Renderer, error) {
+	switch format {
+	case PowershellFormat:
 		return NewPowershell(), nil
-	case "bash":
-		return NewBash(), nil
+	case PosixFormat:
+		return NewPosix(), nil
 	default:
-		return nil, fmt.Errorf("unrecognized shell '%s'", shell)
+		return nil, fmt.Errorf("unrecognized format '%s'", format)
 	}
 }
 
-func (f *factory) Create(shell string) (Renderer, error) {
-	if shell == "" {
-		return f.createFromPlatform(f.platform)
+func (f *factory) Create(format string) (Renderer, error) {
+	if format == "" {
+		return f.createFromDefault()
 	}
-	return f.createFromShell(shell)
+	return f.createFromFormat(format)
 }

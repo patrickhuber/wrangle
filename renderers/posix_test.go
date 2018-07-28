@@ -1,8 +1,9 @@
-package renderers
+package renderers_test
 
 import (
 	"testing"
 
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -10,7 +11,7 @@ func TestBashRenderer(t *testing.T) {
 	t.Run("CanRenderSingleLineVariable", func(t *testing.T) {
 		key := "KEY"
 		value := "VALUE"
-		renderer := NewBash()
+		renderer := renderers.NewPosix()
 		result := renderer.RenderEnvironmentVariable(key, value)
 		r := require.New(t)
 		r.Equal("export KEY=VALUE", result)
@@ -18,13 +19,13 @@ func TestBashRenderer(t *testing.T) {
 	t.Run("CanRenderMultiLineVariable", func(t *testing.T) {
 		key := "KEY"
 		value := "1\n2\n3\n4"
-		renderer := NewBash()
+		renderer := renderers.NewPosix()
 		result := renderer.RenderEnvironmentVariable(key, value)
 		r := require.New(t)
 		r.Equal("export KEY='1\n2\n3\n4'", result)
 	})
 	t.Run("CanRenderMultipleEnvironmentVariables", func(t *testing.T) {
-		renderer := NewBash()
+		renderer := renderers.NewPosix()
 		result := renderer.RenderEnvironment(
 			map[string]string{
 				"KEY":   "VALUE",
@@ -34,7 +35,7 @@ func TestBashRenderer(t *testing.T) {
 		r.Equal("export KEY=VALUE\nexport OTHER=OTHER\n", result)
 	})
 	t.Run("CanRenderProcess", func(t *testing.T) {
-		renderer := NewBash()
+		renderer := renderers.NewPosix()
 		actual := renderer.RenderProcess(
 			"go",
 			[]string{"version"},
@@ -43,9 +44,9 @@ func TestBashRenderer(t *testing.T) {
 		r := require.New(t)
 		r.Equal(expected, actual)
 	})
-	t.Run("ShellIsBash", func(t *testing.T) {
-		renderer := NewBash()
+	t.Run("FormatIsPosix", func(t *testing.T) {
+		renderer := renderers.NewPosix()
 		r := require.New(t)
-		r.Equal(renderer.Shell(), "bash")
+		r.Equal(renderer.Format(), renderers.PosixFormat)
 	})
 }

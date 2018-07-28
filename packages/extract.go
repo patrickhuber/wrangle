@@ -1,6 +1,6 @@
 package packages
 
-import "path/filepath"
+import "github.com/patrickhuber/wrangle/filepath"
 
 // Extract represents an interface for extracting a package of software
 type Extract interface {

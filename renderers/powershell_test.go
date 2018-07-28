@@ -1,8 +1,9 @@
-package renderers
+package renderers_test
 
 import (
 	"testing"
 
+	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -10,7 +11,7 @@ func TestPowershell(t *testing.T) {
 	t.Run("CanRenderSingleLineVariable", func(t *testing.T) {
 		key := "KEY"
 		value := "VALUE"
-		renderer := NewPowershell()
+		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironmentVariable(key, value)
 		r := require.New(t)
 		r.Equal("$env:KEY=\"VALUE\"", result)
@@ -18,7 +19,7 @@ func TestPowershell(t *testing.T) {
 	t.Run("CanRenderMultiLineVariable", func(t *testing.T) {
 		key := "KEY"
 		value := "1\r\n2\r\n3\r\n4\r\n"
-		renderer := NewPowershell()
+		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironmentVariable(key, value)
 		r := require.New(t)
 		r.Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'", result)
@@ -26,13 +27,13 @@ func TestPowershell(t *testing.T) {
 	t.Run("AppendsNewLineIfMultiLineAndDoesNotEndInNewLine", func(t *testing.T) {
 		key := "KEY"
 		value := "1\r\n2\r\n3\r\n4"
-		renderer := NewPowershell()
+		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironmentVariable(key, value)
 		r := require.New(t)
 		r.Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'", result)
 	})
 	t.Run("CanRenderMultipleEnvironmentVariables", func(t *testing.T) {
-		renderer := NewPowershell()
+		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironment(
 			map[string]string{
 				"KEY":   "VALUE",
@@ -42,7 +43,7 @@ func TestPowershell(t *testing.T) {
 		r.Equal("$env:KEY=\"VALUE\"\r\n$env:OTHER=\"OTHER\"\r\n", result)
 	})
 	t.Run("CanRenderProcess", func(t *testing.T) {
-		renderer := NewPowershell()
+		renderer := renderers.NewPowershell()
 		actual := renderer.RenderProcess(
 			"go",
 			[]string{"version"},
@@ -51,9 +52,9 @@ func TestPowershell(t *testing.T) {
 		r := require.New(t)
 		r.Equal(expected, actual)
 	})
-	t.Run("ShellIsPowershell", func(t *testing.T) {
-		renderer := NewPowershell()
+	t.Run("FormatIsPowershell", func(t *testing.T) {
+		renderer := renderers.NewPowershell()
 		r := require.New(t)
-		r.Equal(renderer.Shell(), "powershell")
+		r.Equal(renderer.Format(), renderers.PowershellFormat)
 	})
 }

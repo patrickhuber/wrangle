@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type bash struct {
+type posix struct {
 }
 
-// NewBash defines a new bash renderer
-func NewBash() Renderer {
-	return &bash{}
+// NewPosix defines a new bash renderer
+func NewPosix() Renderer {
+	return &posix{}
 }
 
-func (renderer *bash) RenderEnvironment(environmentVariables map[string]string) string {
+func (renderer *posix) RenderEnvironment(environmentVariables map[string]string) string {
 	buffer := bytes.Buffer{}
 
 	// sort the keys because the tests will fail if they are out of order
@@ -33,14 +33,14 @@ func (renderer *bash) RenderEnvironment(environmentVariables map[string]string) 
 	return buffer.String()
 }
 
-func (renderer *bash) RenderEnvironmentVariable(variable string, value string) string {
+func (renderer *posix) RenderEnvironmentVariable(variable string, value string) string {
 	if strings.ContainsAny(value, "\n") {
 		return fmt.Sprintf("export %s='%s'", variable, value)
 	}
 	return fmt.Sprintf("export %s=%s", variable, value)
 }
 
-func (renderer *bash) RenderProcess(
+func (renderer *posix) RenderProcess(
 	path string,
 	args []string,
 	environmentVariables map[string]string) string {
@@ -53,6 +53,6 @@ func (renderer *bash) RenderProcess(
 	return result + "\n"
 }
 
-func (renderer *bash) Shell() string {
-	return "bash"
+func (renderer *posix) Format() string {
+	return PosixFormat
 }

@@ -2,9 +2,10 @@ package config
 
 import (
 	"os/user"
-	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/spf13/afero"
 

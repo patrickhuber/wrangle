@@ -4,10 +4,11 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
-	"strings"
+	"regexp"
 
+	"github.com/patrickhuber/wrangle/filepath"
+
+	fp "github.com/patrickhuber/wrangle/filepath"
 	"github.com/spf13/afero"
 )
 
@@ -21,20 +22,21 @@ func NewTarArchiver(fileSystem afero.Fs) Archiver {
 	return &tarArchiver{fileSystem: fileSystem}
 }
 
-func (archive *tarArchiver) Write(output io.Writer, filePaths []string) error {
-	return writeTar(archive.fileSystem, filePaths, output, "")
+func (archive *tarArchiver) Archive(output io.Writer, filePaths []string) error {
+	return writeTar(archive.fileSystem, filePaths, output)
 }
 
-func writeTar(fileSystem afero.Fs, filePaths []string, output io.Writer, dest string) error {
+func writeTar(fileSystem afero.Fs, filePaths []string, output io.Writer) error {
 	tarWriter := tar.NewWriter(output)
 	defer tarWriter.Close()
 
-	return tarball(fileSystem, filePaths, tarWriter, dest)
+	return tarFiles(fileSystem, filePaths, tarWriter)
 }
 
-func tarball(fileSystem afero.Fs, filePaths []string, tarWriter *tar.Writer, dest string) error {
-	for _, fpath := range filePaths {
-		err := tarFile(fileSystem, tarWriter, fpath, dest)
+func tarFiles(fs afero.Fs, filePaths []string, tarWriter *tar.Writer) error {
+	baseDirectory := commonDirectory(filePaths...)
+	for _, file := range filePaths {
+		err := tarSingleFile(fs, tarWriter, baseDirectory, file)
 		if err != nil {
 			return err
 		}
@@ -42,68 +44,49 @@ func tarball(fileSystem afero.Fs, filePaths []string, tarWriter *tar.Writer, des
 	return nil
 }
 
-func tarFile(fileSystem afero.Fs, tarWriter *tar.Writer, source string, dest string) error {
-	sourceInfo, err := fileSystem.Stat(source)
+func tarSingleFile(fs afero.Fs, tarWriter *tar.Writer, baseDirectory string, source string) error {
+	sourceInfo, err := fs.Stat(source)
 	if err != nil {
 		return err
 	}
 
-	var baseDir string
-	if sourceInfo.IsDir() {
-		baseDir = filepath.Base(source)
+	relativePath, err := filepath.Rel(baseDirectory, source)
+	if err != nil {
+		return err
+	}
+	relativePath = fp.ToSlash(relativePath)
+
+	header, err := tar.FileInfoHeader(sourceInfo, "")
+	if err != nil {
+		return err
 	}
 
-	return afero.Walk(fileSystem, source, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return fmt.Errorf("error walking to %s: %v", path, err)
-		}
+	header.Name = relativePath
 
-		header, err := tar.FileInfoHeader(info, path)
-		if err != nil {
-			return fmt.Errorf("%s: making header: %v", path, err)
-		}
+	err = tarWriter.WriteHeader(header)
+	if err != nil {
+		return fmt.Errorf("%s: writing header: %v", relativePath, err)
+	}
 
-		if baseDir != "" {
-			header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, source))
-		}
+	file, err := fs.Open(source)
+	if err != nil {
+		return fmt.Errorf("%s: open: %v", source, err)
+	}
+	defer file.Close()
 
-		if header.Name == dest {
-			// our new tar file is inside the directory being archived; skip it
-			return nil
-		}
-		if info.IsDir() {
-			header.Name += "/"
-		}
+	_, err = io.CopyN(tarWriter, file, sourceInfo.Size())
+	if err != nil && err != io.EOF {
+		return fmt.Errorf("%s: copying contents: %v", source, err)
+	}
 
-		err = tarWriter.WriteHeader(header)
-		if err != nil {
-			return fmt.Errorf("%s: writing header: %v", path, err)
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		if header.Typeflag != tar.TypeReg {
-			return nil
-		}
-
-		file, err := fileSystem.Open(path)
-		if err != nil {
-			return fmt.Errorf("%s: open: %v", path, err)
-		}
-		defer file.Close()
-
-		_, err = io.CopyN(tarWriter, file, info.Size())
-		if err != nil && err != io.EOF {
-			return fmt.Errorf("%s: copying contents: %v", path, err)
-		}
-
-		return nil
-	})
+	return nil
 }
 
-func (archive *tarArchiver) Read(input io.Reader, destination string) error {
+func (archive *tarArchiver) Extract(input io.Reader, filter string, destination string) error {
+	return archive.ExtractReader(input, filter, destination)
+}
+
+func (archive *tarArchiver) ExtractReader(input io.Reader, filter string, destination string) error {
 	tarReader := tar.NewReader(input)
 	for {
 		header, err := tarReader.Next()
@@ -111,6 +94,13 @@ func (archive *tarArchiver) Read(input io.Reader, destination string) error {
 			break
 		} else if err != nil {
 			return err
+		}
+		matched, err := regexp.MatchString(filter, header.Name)
+		if err != nil {
+			return err
+		}
+		if !matched {
+			continue
 		}
 		if err := untarFile(archive.fileSystem, tarReader, header, destination); err != nil {
 			return err

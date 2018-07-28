@@ -1,107 +1,57 @@
 package renderers_test
 
 import (
-	"github.com/patrickhuber/wrangle/collections"
-
-	. "github.com/patrickhuber/wrangle/renderers"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/collections"
+	"github.com/patrickhuber/wrangle/renderers"
 )
 
 var _ = Describe("Factory", func() {
 	var (
 		dictionary collections.Dictionary
 		platform   string
-		factory    Factory
+		factory    renderers.Factory
 	)
 
 	Describe("Create", func() {
-		Context("WhenWindows", func() {
-			BeforeEach(func() {
-				platform = "windows"
-				dictionary = collections.NewDictionary()
-				factory = NewFactory(platform, dictionary)
-			})
-			Context("WhenDefaultShell", func() {
-				It("should be powershell", func() {
-					shell := ""
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("powershell"))
-				})
-			})
-			Context("WhenShellBash", func() {
-				It("should be bash", func() {
-					shell := "bash"
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("bash"))
-				})
+
+		BeforeEach(func() {
+			platform = "darwin"
+			dictionary = collections.NewDictionary()
+			factory = renderers.NewFactory(dictionary)
+		})
+		Context("WhenDefaultFormat", func() {
+			It("should be posix", func() {
+				format := ""
+				renderer, err := factory.Create(format)
+				Expect(err).To(BeNil())
+				Expect(renderer.Format()).To(Equal(renderers.PosixFormat))
 			})
 		})
-		Context("WhenDarwin", func() {
-			BeforeEach(func() {
-				platform = "darwin"
-				dictionary = collections.NewDictionary()
-				factory = NewFactory(platform, dictionary)
-			})
-			Context("WhenDefaultShell", func() {
-				It("should be bash", func() {
-					shell := ""
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("bash"))
-				})
-			})
-			Context("WhenShellPowershell", func() {
-				It("should be powershell", func() {
-					shell := "powershell"
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("powershell"))
-				})
-			})
-			Context("WhenPSModulePathEnvVarSet", func() {
-				It("should be powershell", func() {
-					shell := ""
-					dictionary.Set("PSModulePath", "test")
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("powershell"))
-				})
+		Context("WhenFormatPosix", func() {
+			It("should be posix", func() {
+				format := ""
+				renderer, err := factory.Create(format)
+				Expect(err).To(BeNil())
+				Expect(renderer.Format()).To(Equal(renderers.PosixFormat))
 			})
 		})
-		Context("WhenLinux", func() {
-			BeforeEach(func() {
-				platform = "linux"
-				dictionary = collections.NewDictionary()
-				factory = NewFactory(platform, dictionary)
+		Context("WhenFormatPowershell", func() {
+			It("should be powershell", func() {
+				format := renderers.PowershellFormat
+				renderer, err := factory.Create(format)
+				Expect(err).To(BeNil())
+				Expect(renderer.Format()).To(Equal(renderers.PowershellFormat))
 			})
-			Context("WhenDefaultShell", func() {
-				It("should be bash", func() {
-					shell := ""
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("bash"))
-				})
-			})
-			Context("WhenShellPowershell", func() {
-				It("should be powershell", func() {
-					shell := "powershell"
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("powershell"))
-				})
-			})
-			Context("WhenPSModulePathEnvVarSet", func() {
-				It("should be powershell", func() {
-					shell := ""
-					dictionary.Set("PSModulePath", "test")
-					renderer, err := factory.Create(shell)
-					Expect(err).To(BeNil())
-					Expect(renderer.Shell()).To(Equal("powershell"))
-				})
+		})
+		Context("WhenPSModulePathEnvVarSet", func() {
+			It("should be powershell", func() {
+				format := ""
+				dictionary.Set("PSModulePath", "test")
+				renderer, err := factory.Create(format)
+				Expect(err).To(BeNil())
+				Expect(renderer.Format()).To(Equal(renderers.PowershellFormat))
 			})
 		})
 	})

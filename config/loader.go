@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/user"
-	"path/filepath"
+	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/spf13/afero"
 )
