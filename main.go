@@ -87,7 +87,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.6.0"
+	cliApp.Version = "0.7.0"
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -194,6 +194,9 @@ func createPrintCommand(
 				EnvironmentName: environmentName,
 				ProcessName:     processName,
 				Format:          format,
+				Include: commands.PrintParamsInclude{
+					ProcessAndArgs: true,
+				},
 			}
 
 			return printCommand.Execute(params)
@@ -207,7 +210,7 @@ func createPrintEnvCommand(
 	console ui.Console,
 	rendererFactory renderers.Factory) *cli.Command {
 
-	printEnvCommand := commands.NewPrintEnv(
+	printCommand := commands.NewPrint(
 		manager,
 		fileSystem,
 		console,
@@ -238,12 +241,12 @@ func createPrintEnvCommand(
 			if err != nil {
 				return err
 			}
-			params := &commands.PrintEnvParams{
+			params := &commands.PrintParams{
 				Configuration:   cfg,
 				EnvironmentName: environmentName,
 				ProcessName:     processName,
 				Format:          format}
-			return printEnvCommand.Execute(params)
+			return printCommand.Execute(params)
 		},
 	}
 }

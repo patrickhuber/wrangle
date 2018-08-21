@@ -174,26 +174,26 @@ packages:
     alias: credhub
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz      
-      out: credhub-((version))-linux.tgz
+      out: credhub-linux-((version)).tgz
     extract:
       filter: credhub
-      out: credhub-((version))-linux
+      out: credhub-linux-((version))
   - name: darwin
     alias: credhub
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz      
-      out: credhub-((version))-darwin.tgz
+      out: credhub-darwin-((version)).tgz
     extract:
       filter: credhub
-      out: credhub-((version))-darwin
+      out: credhub-darwin-((version))
   - name: windows
     alias: credhub.exe
     download: 
       url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
-      out: credhub-((version))-windows.tgz
+      out: credhub-windows-((version)).tgz
     extract:
       filter: credhub
-      out: credhub-((version))-windows.exe
+      out: credhub-windows-((version)).exe
 
 - name: cf
   version: 6.37.0  

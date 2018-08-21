@@ -105,17 +105,17 @@ func (archive *tarArchiver) ExtractReader(input io.Reader, filter string, destin
 		if err := untarFile(archive.fileSystem, tarReader, header, destination); err != nil {
 			return err
 		}
+		return nil
 	}
 	return nil
 }
 
 func untarFile(fileSystem afero.Fs, tarReader *tar.Reader, header *tar.Header, destination string) error {
-	destpath := filepath.Join(destination, header.Name)
 	switch header.Typeflag {
 	case tar.TypeDir:
-		return fileSystem.Mkdir(destpath, 0666)
+		return fileSystem.Mkdir(destination, 0666)
 	case tar.TypeReg, tar.TypeRegA, tar.TypeChar, tar.TypeBlock, tar.TypeFifo:
-		return afero.WriteReader(fileSystem, destpath, tarReader)
+		return afero.WriteReader(fileSystem, destination, tarReader)
 	case tar.TypeSymlink:
 		return fmt.Errorf("TypeSymlink not implemented")
 	case tar.TypeLink:

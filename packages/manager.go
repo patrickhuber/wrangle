@@ -1,8 +1,6 @@
 package packages
 
 import (
-	"archive/tar"
-	"archive/zip"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/spf13/afero"
 )
 
 type manager struct {
@@ -114,54 +111,6 @@ func (m *manager) Extract(p Package) error {
 	return a.Extract(file, p.Extract().Filter(), p.Extract().OutPath())
 }
 
-func (m *manager) extractTar(reader io.Reader, extract Extract) error {
-	// https://gist.github.com/indraniel/1a91458984179ab4cf80
-	tarReader := tar.NewReader(reader)
-
-	for {
-		header, err := tarReader.Next()
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			return err
-		}
-
-		name := header.Name
-		match, err := isMatch(header.Name, extract.Filter())
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			continue
-		case tar.TypeReg:
-			// create the destination file
-			targetFile := extract.OutPath()
-			destination, err := m.fileSystem.Create(targetFile)
-			if err != nil {
-				return err
-			}
-			defer destination.Close()
-
-			// copy the data to the destination file
-			_, err = io.Copy(destination, tarReader)
-			if err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("unable to determine type : '%c' for file '%s' in package", header.Typeflag, name)
-		}
-	}
-	return nil
-}
-
 func isMatch(name string, filter string) (bool, error) {
 	normalizedName := strings.Replace(name, "\\", "/", -1)
 
@@ -169,49 +118,6 @@ func isMatch(name string, filter string) (bool, error) {
 		return true, nil
 	}
 	return regexp.MatchString(filter, normalizedName)
-}
-
-func (m *manager) extractZip(file afero.File, extract Extract) error {
-	// http://golang-examples.tumblr.com/post/104726613899/extract-an-uploaded-zip-file
-
-	// get file stat to get file size
-	stat, err := file.Stat()
-	if err != nil {
-		return err
-	}
-
-	// create reader
-	reader, err := zip.NewReader(file, stat.Size())
-	if err != nil {
-		return err
-	}
-
-	for _, zipFile := range reader.File {
-
-		targetFile := extract.OutPath()
-
-		// open destination
-		destination, err := m.fileSystem.Create(targetFile)
-		if err != nil {
-			return err
-		}
-		defer destination.Close()
-
-		// open source
-		source, err := zipFile.Open()
-		if err != nil {
-			return err
-		}
-		defer source.Close()
-
-		// copy to the destination
-		_, err = io.Copy(destination, source)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (m *manager) Link(p Package) error {

@@ -12,16 +12,12 @@ import (
 	"github.com/spf13/afero"
 )
 
-type TestFile struct {
-	Path string
-	Data string
-}
-
 // NewHTTPServer creates a new http server
 func NewHTTPServer() *httptest.Server {
 	return NewHTTPServerWithArchive([]TestFile{{"/data", "this is data"}})
 }
 
+// NewHTTPServerWithArchive creates a new http server with
 func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		path := req.URL.Path

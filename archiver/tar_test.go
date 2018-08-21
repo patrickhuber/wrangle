@@ -45,7 +45,7 @@ var _ = Describe("Tar", func() {
 		Context("WhenFilterIsSet", func() {
 			It("extracts only matching files", func() {
 
-				testExtractTar(fs, a, tarPath, "^test$", "/out")
+				testExtractTar(fs, a, tarPath, "^test$", "/out/test")
 				assertExists(fs, "/out/test")
 				assertNotExists(fs, "/out/test1")
 			})

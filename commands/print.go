@@ -19,12 +19,18 @@ type print struct {
 	rendererFactory renderers.Factory
 }
 
+// PrintParamsInclude defines what additional output to include
+type PrintParamsInclude struct {
+	ProcessAndArgs bool
+}
+
 // PrintParams defines parameters for the print command
 type PrintParams struct {
 	Configuration   *config.Config
 	EnvironmentName string
 	ProcessName     string
 	Format          string
+	Include         PrintParamsInclude
 }
 
 // Print represents an environment command
@@ -78,11 +84,15 @@ func (cmd *print) Execute(params *PrintParams) error {
 		return err
 	}
 
-	fmt.Fprint(
-		cmd.console.Out(),
-		renderer.RenderProcess(
+	var renderedOutput string
+	if params.Include.ProcessAndArgs {
+		renderedOutput = renderer.RenderProcess(
 			process.Path,
 			process.Args,
-			process.Vars))
-	return nil
+			process.Vars)
+	} else {
+		renderedOutput = renderer.RenderEnvironment(process.Vars)
+	}
+	_, err = fmt.Fprint(cmd.console.Out(), renderedOutput)
+	return err
 }
