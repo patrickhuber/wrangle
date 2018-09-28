@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/patrickhuber/wrangle/collections"
 
@@ -273,14 +275,11 @@ func createInstallCommand(
 	fileSystem filesystem.FsWrapper,
 	platform string) *cli.Command {
 	return &cli.Command{
-		Name:    "install",
-		Aliases: []string{"i"},
-		Usage:   "installs the package with the given `NAME` for the current platform",
+		Name:      "install",
+		Aliases:   []string{"i"},
+		Usage:     "installs the package with the given `NAME` for the current platform",
+		ArgsUsage: "<package name>",
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "name, n",
-				Usage: "package named `NAME`",
-			},
 			cli.StringFlag{
 				Name:   "path, p",
 				Usage:  "the package install path",
@@ -289,7 +288,10 @@ func createInstallCommand(
 		},
 		Action: func(context *cli.Context) error {
 			cfg, err := createConfiguration(context, fileSystem)
-			packageName := context.String("name")
+			packageName := context.Args().First()
+			if strings.TrimSpace(packageName) == "" {
+				return errors.New("missing required argument package name")
+			}
 			packageInstallPath := context.String("path")
 			if err != nil {
 				return err

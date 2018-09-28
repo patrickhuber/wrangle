@@ -10,7 +10,16 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
+
+var _ = Describe("Execute", func() {
+	It("", func() {
+		Expect(true).To(BeTrue())
+	})
+})
 
 func TestRunCommand(t *testing.T) {
 
