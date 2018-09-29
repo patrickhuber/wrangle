@@ -126,17 +126,15 @@ func createRunCommand(
 		console)
 
 	return &cli.Command{
-		Name:    "run",
-		Aliases: []string{"r"},
-		Usage:   "run a command",
+		Name:      "run",
+		Aliases:   []string{"r"},
+		Usage:     "run a command",
+		ArgsUsage: "<process name> [arguments]",
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name:  "name, n",
-				Usage: "Execute command named `NAME`",
-			},
-			cli.StringFlag{
-				Name:  "environment, e",
-				Usage: "Use environment named `ENVIRONMENT`",
+				Name:   "environment, e",
+				Usage:  "Use environment named `ENVIRONMENT`",
+				EnvVar: "WRANGLE_ENVIRONMENT",
 			},
 		},
 		Action: func(context *cli.Context) error {
@@ -144,9 +142,17 @@ func createRunCommand(
 			if err != nil {
 				return err
 			}
-			processName := context.String("name")
+
+			processName := context.Args().First()
+			if strings.TrimSpace(processName) == "" {
+				return errors.New("process name argument is required")
+			}
+
 			environmentName := context.String("environment")
-			params := commands.NewProcessParams(cfg, environmentName, processName)
+
+			additionalArguments := context.Args().Tail()
+
+			params := commands.NewProcessParams(cfg, environmentName, processName, additionalArguments...)
 			return runCommand.Execute(params)
 		},
 	}

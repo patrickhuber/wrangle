@@ -161,7 +161,6 @@ packages:
 		err = app.Run([]string{
 			"wrangle",
 			"install",
-			"-n",
 			"test",
 		})
 		r.Nil(err)
