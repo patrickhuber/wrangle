@@ -6,61 +6,57 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"testing"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/collections"
-
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
+	"github.com/patrickhuber/wrangle/store"
 	file "github.com/patrickhuber/wrangle/store/file"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/stretchr/testify/require"
-
-	"github.com/patrickhuber/wrangle/store"
-
 	"github.com/spf13/afero"
 )
 
-func TestMain(m *testing.M) {
-	os.Unsetenv("PSModulePath")
-	m.Run()
-}
+var _ = Describe("Main", func() {
 
-func TestMainCommands(t *testing.T) {
-	t.Run("CanRunProcess", func(t *testing.T) {
+	AfterEach(func() {
+		os.Unsetenv(global.ConfigFileKey)
+		os.Unsetenv(global.PackagePathKey)
+	})
+	Describe("Run", func() {
 
 	})
-	t.Run("CanGetEnvironmentList", func(t *testing.T) {
+	Describe("Environment", func() {
 
 	})
-	t.Run("CanCascadeConfigStores", func(t *testing.T) {
-		r := require.New(t)
+	Describe("Print", func() {
+		It("can config cascade configurations", func() {
+			// create dependencies
+			platform := "linux"
+			fileSystem := filesystem.NewMemMapFs()
+			storeManager := store.NewManager()
+			storeManager.Register(file.NewFileStoreProvider(fileSystem, nil))
+			processFactory := processes.NewOsFactory() // change to fake process factory?
+			console := ui.NewMemoryConsole()
 
-		// create dependencies
-		platform := "linux"
-		fileSystem := filesystem.NewMemMapFs()
-		storeManager := store.NewManager()
-		storeManager.Register(file.NewFileStoreProvider(fileSystem, nil))
-		processFactory := processes.NewOsFactory() // change to fake process factory?
-		console := ui.NewMemoryConsole()
-
-		// create config file
-		configFileContent := `
+			// create config file
+			configFileContent := `
 ---
 stores:
 - name: store1
-  type: file
-  params:
+    type: file
+    params:
     path: /store1
 - name: store2
-  type: file 
-  params:
+    type: file 
+    params:
     path: /store2
 environments:
 - name: lab
-  processes:
-  - name: echo
+    processes:
+    - name: echo
     path: echo
     stores: 
     - store1
@@ -68,80 +64,79 @@ environments:
     env:
       WRANGLE_TEST: ((key))`
 
-		// create files
-		err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
-		r.Nil(err)
+			// create files
+			err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
+			Expect(err).To(BeNil())
 
-		err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((key1))"), 0644)
-		r.Nil(err)
+			err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((key1))"), 0644)
+			Expect(err).To(BeNil())
 
-		err = afero.WriteFile(fileSystem, "/store2", []byte("key1: value"), 0644)
-		r.Nil(err)
+			err = afero.WriteFile(fileSystem, "/store2", []byte("key1: value"), 0644)
+			Expect(err).To(BeNil())
 
-		// create cli
-		app, err := createApplication(
-			storeManager,
-			fileSystem,
-			processFactory,
-			console,
-			platform,
-			collections.NewDictionary())
-		r.Nil(err)
+			// create cli
+			app, err := createApplication(
+				storeManager,
+				fileSystem,
+				processFactory,
+				console,
+				platform,
+				collections.NewDictionary())
+			Expect(err).To(BeNil())
+			Expect(app).ToNot(BeNil())
 
-		// run command
-		args := []string{
-			"wrangle",
-			"-c", "/config",
-			"print",
-			"-n", "echo",
-			"-e", "lab"}
-		err = app.Run(args)
-		r.Nil(err)
+			// run command
+			args := []string{
+				"wrangle",
+				"-c", "/config",
+				"print",
+				"-n", "echo",
+				"-e", "lab"}
+			err = app.Run(args)
+			Expect(err).To(BeNil())
 
-		// get the output, validate the chaining works
-		buffer, ok := console.Out().(*bytes.Buffer)
-		r.True(ok)
-		r.NotNil(buffer)
-
-		r.Equal("export WRANGLE_TEST=value\necho\n", buffer.String())
+			// get the output, validate the chaining works
+			buffer, ok := console.Out().(*bytes.Buffer)
+			Expect(ok).To(BeTrue())
+			Expect(buffer).ToNot(BeNil())
+			Expect(buffer.String()).To(Equal("export WRANGLE_TEST=value\necho\n"))
+		})
 	})
+	Describe("Install", func() {
+		It("can run with environment variables", func() {
+			manager := store.NewManager()
+			fileSystem := filesystem.NewMemMapFs()
+			factory := processes.NewOsFactory()
+			console := ui.NewMemoryConsole()
+			platform := "linux"
+			variables := collections.NewDictionary()
 
-	t.Run("CanRunInstallWithEnvironmentVars", func(t *testing.T) {
-		r := require.New(t)
-		manager := store.NewManager()
-		fileSystem := filesystem.NewMemMapFs()
-		factory := processes.NewOsFactory()
-		console := ui.NewMemoryConsole()
-		platform := "linux"
-		app, err := createApplication(
-			manager,
-			fileSystem,
-			factory,
-			console,
-			platform,
-			collections.NewDictionary())
-		r.Nil(err)
-		r.NotNil(app)
+			variables.Set(global.ConfigFileKey, "/config")
+			variables.Set(global.PackagePathKey, "/packages")
+			os.Setenv(global.ConfigFileKey, "/config")
+			os.Setenv(global.PackagePathKey, "/packages")
 
-		// setup the test server
-		message := "this is a message"
+			app, err := createApplication(
+				manager,
+				fileSystem,
+				factory,
+				console,
+				platform,
+				variables)
+			Expect(err).To(BeNil())
+			Expect(app).ToNot(BeNil())
 
-		// start the local http server
-		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			rw.Write([]byte(message))
-		}))
+			// setup the test server
+			message := "this is a message"
 
-		// reset the environment
-		os.Unsetenv(global.ConfigFileKey)
-		os.Unsetenv(global.PackagePathKey)
-		os.Setenv(global.ConfigFileKey, "/config")
-		os.Setenv(global.PackagePathKey, "/packages")
+			// start the local http server
+			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				rw.Write([]byte(message))
+			}))
 
-		// close connection when test is finished
-		defer server.Close()
+			defer server.Close()
 
-		// write the config and package directories
-		content := `
+			content := `
 packages:
 - name: test
   platforms:
@@ -150,23 +145,24 @@ packages:
       url: %s
       out: test.html
 `
-		content = fmt.Sprintf(content, server.URL)
+			content = fmt.Sprintf(content, server.URL)
 
-		err = afero.WriteFile(fileSystem, "/config", []byte(content), 0666)
-		r.Nil(err)
-		err = fileSystem.Mkdir("/packages", 0666)
-		r.Nil(err)
+			err = afero.WriteFile(fileSystem, "/config", []byte(content), 0666)
+			Expect(err).To(BeNil())
+			err = fileSystem.Mkdir("/packages", 0666)
+			Expect(err).To(BeNil())
 
-		// run the app
-		err = app.Run([]string{
-			"wrangle",
-			"install",
-			"test",
+			// run the app
+			err = app.Run([]string{
+				"wrangle",
+				"install",
+				"test",
+			})
+			Expect(err).To(BeNil())
+
+			ok, err := afero.Exists(fileSystem, "/packages/test.html")
+			Expect(err).To(BeNil())
+			Expect(ok).To(BeTrue())
 		})
-		r.Nil(err)
-
-		ok, err := afero.Exists(fileSystem, "/packages/test.html")
-		r.Nil(err)
-		r.True(ok)
 	})
-}
+})
