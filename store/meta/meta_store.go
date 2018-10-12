@@ -2,7 +2,8 @@ package meta
 
 import (
 	"fmt"
-	"path/filepath"
+
+	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/patrickhuber/wrangle/store"
 )

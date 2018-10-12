@@ -46,17 +46,17 @@ var _ = Describe("Main", func() {
 ---
 stores:
 - name: store1
-    type: file
-    params:
+  type: file
+  params:
     path: /store1
 - name: store2
-    type: file 
-    params:
+  type: file 
+  params:
     path: /store2
 environments:
 - name: lab
-    processes:
-    - name: echo
+  processes:
+  - name: echo
     path: echo
     stores: 
     - store1
@@ -91,7 +91,8 @@ environments:
 				"-c", "/config",
 				"print",
 				"-n", "echo",
-				"-e", "lab"}
+				"-e", "lab",
+				"-f", "posix"}
 			err = app.Run(args)
 			Expect(err).To(BeNil())
 
