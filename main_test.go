@@ -32,7 +32,7 @@ var _ = Describe("Main", func() {
 
 	})
 	Describe("Print", func() {
-		It("can config cascade configurations", func() {
+		It("can cascade configurations", func() {
 			// create dependencies
 			platform := "linux"
 			fileSystem := filesystem.NewMemMapFs()
