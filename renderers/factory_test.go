@@ -10,14 +10,12 @@ import (
 var _ = Describe("Factory", func() {
 	var (
 		dictionary collections.Dictionary
-		platform   string
 		factory    renderers.Factory
 	)
 
 	Describe("Create", func() {
 
 		BeforeEach(func() {
-			platform = "darwin"
 			dictionary = collections.NewDictionary()
 			factory = renderers.NewFactory(dictionary)
 		})
