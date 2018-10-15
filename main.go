@@ -243,7 +243,10 @@ func createPrintEnvCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			processName := context.String("name")
+			processName := context.Args().First()
+			if strings.TrimSpace(processName) == "" {
+				return errors.New("process name argument is required")
+			}
 			environmentName := context.String("environment")
 			format := context.String("format")
 			cfg, err := createConfiguration(context, fileSystem)
