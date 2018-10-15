@@ -171,14 +171,11 @@ func createPrintCommand(
 		rendererFactory)
 
 	return &cli.Command{
-		Name:    "print",
-		Aliases: []string{"p"},
-		Usage:   "prints the process as it would be executed",
+		Name:      "print",
+		Aliases:   []string{"p"},
+		Usage:     "prints the process as it would be executed",
+		ArgsUsage: "<process name> [arguments]",
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "name, n",
-				Usage: "process named `NAME`",
-			},
 			cli.StringFlag{
 				Name:  "environment, e",
 				Usage: "Use environment named `ENVIRONMENT`",
@@ -189,7 +186,11 @@ func createPrintCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			processName := context.String("name")
+			processName := context.Args().First()
+			if strings.TrimSpace(processName) == "" {
+				return errors.New("process name argument is required")
+			}
+
 			environmentName := context.String("environment")
 			format := context.String("format")
 

@@ -57,11 +57,11 @@ func (cmd *print) Execute(params *PrintParams) error {
 	environmentName := params.EnvironmentName
 
 	if processName == "" {
-		return errors.New("process name is required for the run command")
+		return errors.New("process name is required for the print command")
 	}
 
 	if environmentName == "" {
-		return errors.New("environment name is required for the run command")
+		return errors.New("environment name is required for the print command")
 	}
 
 	cfg := params.Configuration

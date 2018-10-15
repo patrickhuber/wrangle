@@ -90,9 +90,9 @@ environments:
 				"wrangle",
 				"-c", "/config",
 				"print",
-				"-n", "echo",
 				"-e", "lab",
-				"-f", "posix"}
+				"-f", "posix",
+				"echo"}
 			err = app.Run(args)
 			Expect(err).To(BeNil())
 
