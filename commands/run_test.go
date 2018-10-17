@@ -28,13 +28,11 @@ func TestRunCommand(t *testing.T) {
 
 		// write out the config file
 		configFileData := `
-environments:
-- name: lab
-  processes:
-  - name: go
-    path: go
-    args:
-    - version
+processes:
+- name: go
+  path: go
+  args:
+  - version
 `
 		fileSystem := afero.NewMemMapFs()
 		err := afero.WriteFile(fileSystem, "/config", []byte(configFileData), 0644)
@@ -54,7 +52,7 @@ environments:
 
 		// run the run command
 		err = runCommand.Execute(
-			NewProcessParams(cfg, "lab", "go"))
+			NewProcessParams(cfg, "go"))
 		r.Nil(err)
 	})
 
@@ -62,13 +60,11 @@ environments:
 		r := require.New(t)
 
 		configFileData := `
-environments:
-- name: lab
-  processes:
-  - name: go
-    path: go
-    args: 
-    - version 
+processes:
+- name: go
+  path: go
+  args: 
+  - version 
 `
 		fileSystem := afero.NewMemMapFs()
 		err := afero.WriteFile(fileSystem, "/config", []byte(configFileData), 0644)
@@ -88,7 +84,7 @@ environments:
 
 		// run the run command
 		err = runCommand.Execute(
-			NewProcessParams(cfg, "lab", "go"))
+			NewProcessParams(cfg, "go"))
 		r.Nil(err)
 
 		// check something was written to stdout

@@ -20,7 +20,7 @@
 
 # binaries
 main
-wrangle
+/wrangle
 bin/*
 
 # dependencies

@@ -18,14 +18,12 @@ stores:
   config: config
   params:
     key: value
-environments:
-- name: lab
-  processes:
-    - name: go
-      args:
-      - test
-      env:
-        KEY: value
+processes:
+- name: go
+  args:
+  - test
+  env:
+    KEY: value
 packages:
 - name: bosh
   version: 6.7
@@ -58,10 +56,9 @@ packages:
 	r.Equal("value", config.Stores[0].Params["key"])
 
 	// environments
-	r.Equal(1, len(config.Environments))
-	r.Equal(1, len(config.Environments[0].Processes))
-	r.Equal(1, len(config.Environments[0].Processes[0].Args))
-	r.Equal(1, len(config.Environments[0].Processes[0].Vars))
+	r.Equal(1, len(config.Processes))
+	r.Equal(1, len(config.Processes[0].Args))
+	r.Equal(1, len(config.Processes[0].Vars))
 
 	// packages
 	r.Equal(1, len(config.Packages))

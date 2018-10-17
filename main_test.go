@@ -127,16 +127,14 @@ stores:
   type: file 
   params:
     path: /store2
-environments:
-- name: lab
-  processes:
-  - name: echo
-    path: echo
-    stores: 
-    - store1
-    - store2
-    env:
-      WRANGLE_TEST: ((key))`
+processes:
+- name: echo
+  path: echo
+  stores: 
+  - store1
+  - store2
+  env:
+    WRANGLE_TEST: ((key))`
 
 	// create files
 	err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
@@ -164,7 +162,6 @@ environments:
 		"wrangle",
 		"-c", "/config",
 		command,
-		"-e", "lab",
 		"-f", "posix",
 		"echo"}
 	err = app.Run(args)

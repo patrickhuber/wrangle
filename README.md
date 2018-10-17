@@ -43,7 +43,6 @@ The config file has the following structure:
 
 ```
 stores:
-environments:
 packages:
 ```
 
@@ -153,23 +152,19 @@ The configurations are evaluated in the order they are specified. Variables can 
 Here is an example process that run fly login:
 
 ```yml
-environments:
-
-- name: lab
-  processes:
-  
-  - name: fly
-    stores: 
-    - bosh-lab-credhub
-    path: fly
-    args:
-    - -t
-    - main
-    - login
-    - -u
-    - ((/bosh-lab/concourse/atc_basic_auth.username))
-    - -p 
-    - ((/bosh-lab/concourse/atc_basic_auth.password))
+processes:
+- name: fly
+  stores: 
+  - bosh-lab-credhub
+  path: fly
+  args:
+  - -t
+  - main
+  - login
+  - -u
+  - ((/bosh-lab/concourse/atc_basic_auth.username))
+  - -p 
+  - ((/bosh-lab/concourse/atc_basic_auth.password))
 ```
 
 It assumes the cli is the environment PATH, if you placed your WRANGLE_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 

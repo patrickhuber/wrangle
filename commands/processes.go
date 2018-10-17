@@ -13,7 +13,7 @@ type listProcesses struct {
 }
 
 type ListProcesses interface {
-	Execute(cfg *config.Config, environmentName string) error
+	Execute(cfg *config.Config) error
 }
 
 func NewListProcesses(console ui.Console) ListProcesses {
@@ -21,21 +21,14 @@ func NewListProcesses(console ui.Console) ListProcesses {
 		console: console}
 }
 
-func (cmd *listProcesses) Execute(cfg *config.Config, environmentName string) error {
+func (cmd *listProcesses) Execute(cfg *config.Config) error {
 
 	w := tabwriter.NewWriter(cmd.console.Out(), 0, 0, 1, ' ', 0)
 	fmt.Fprintln(w, "name")
 	fmt.Fprintln(w, "----")
-	for _, environment := range cfg.Environments {
-		if environment.Name != environmentName {
-			continue
-		}
-		for _, process := range environment.Processes {
-			fmt.Fprintf(w, "%s", process.Name)
-			fmt.Fprintln(w)
-		}
-
-		return w.Flush()
+	for _, process := range cfg.Processes {
+		fmt.Fprintf(w, "%s", process.Name)
+		fmt.Fprintln(w)
 	}
-	return fmt.Errorf("unable to find environment name '%s'", environmentName)
+	return w.Flush()
 }

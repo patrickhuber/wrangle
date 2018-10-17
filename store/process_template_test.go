@@ -57,15 +57,13 @@ func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
 stores:
 - name: one
   type: fake
-environments:
-- name: lab
-  processes:
-  - name: go
-    stores:
-    - one
-    path: go
-    args:
-    - ((version))`
+processes:
+- name: go
+  stores:
+  - one
+  path: go
+  args:
+  - ((version))`
 	cfg, err := config.SerializeString(data)
 	r.Nil(err)
 
@@ -86,9 +84,8 @@ environments:
 	template, err := store.NewProcessTemplate(cfg, manager)
 	r.Nil(err)
 
-	environmentName := "lab"
 	processName := "go"
-	evaluated, err := template.Evaluate(environmentName, processName)
+	evaluated, err := template.Evaluate(processName)
 	r.Nil(err)
 	r.NotNil(evaluated)
 
@@ -111,14 +108,12 @@ stores:
   type: file
   params:
     path: /test2
-environments:
-- name: lab
-  processes:
-  - name: echo
-    stores:
-    - one
-    args:
-    - ((/key))
+processes:
+- name: echo
+  stores:
+  - one
+  args:
+  - ((/key))
 `
 		configuration, err := config.SerializeString(content)
 		r.Nil(err)
@@ -132,7 +127,7 @@ environments:
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
-		environment, err := template.Evaluate("lab", "echo")
+		environment, err := template.Evaluate("echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
@@ -146,16 +141,14 @@ stores:
   type: file
   params:
     path: /test
-environments:
-- name: lab
-  processes:
-  - name: echo
-    stores:
-    - one
-    args:
-    - ((/key))
-    env:
-      prop: ((/prop))
+processes:
+- name: echo
+  stores:
+  - one
+  args:
+  - ((/key))
+  env:
+    prop: ((/prop))
 `
 		configuration, err := config.SerializeString(content)
 		r.Nil(err)
@@ -168,7 +161,7 @@ environments:
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
-		environment, err := template.Evaluate("lab", "echo")
+		environment, err := template.Evaluate("echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("1", environment.Args[0])
@@ -192,16 +185,14 @@ stores:
   type: file
   params:
     path: /test3
-environments:
-- name: lab
-  processes:
-  - name: echo
-    stores:
-    - one
-    - two
-    - three
-    args:
-    - ((/key1))
+processes:
+- name: echo
+  stores:
+  - one
+  - two
+  - three
+  args:
+  - ((/key1))
 `
 		configuration, err := config.SerializeString(content)
 		r.Nil(err)
@@ -216,7 +207,7 @@ environments:
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
-		environment, err := template.Evaluate("lab", "echo")
+		environment, err := template.Evaluate("echo")
 		r.Nil(err)
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
@@ -244,14 +235,12 @@ stores:
   - one
   params:
     path: /test3
-environments:
-- name: lab
-  processes:
-  - name: echo
-    stores:
-    - one
-    args:
-    - ((/key1))
+processes:
+- name: echo
+  stores:
+  - one
+  args:
+  - ((/key1))
 `
 		configuration, err := config.SerializeString(content)
 		r.Nil(err)
@@ -282,16 +271,14 @@ stores:
   - one
   params:
     path: ((key))
-environments:
-- name: lab
-  processes:
-  - name: a
-    stores:
-    - two
-    env:
-      A: ((a))
-      B: ((b))
-      C: ((c))`
+processes:
+- name: a
+  stores:
+  - two
+  env:
+    A: ((a))
+    B: ((b))
+    C: ((c))`
 
 		configuration, err := config.SerializeString(content)
 		r.Nil(err)
@@ -305,7 +292,7 @@ environments:
 
 		template, err := store.NewProcessTemplate(configuration, manager)
 		r.Nil(err)
-		p, err := template.Evaluate("lab", "a")
+		p, err := template.Evaluate("a")
 		r.Nil(err)
 
 		r.Equal("a", p.Vars["A"])

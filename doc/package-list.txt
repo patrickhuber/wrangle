@@ -1,9 +1,0 @@
-name    type	get
----     ---	    ---
-bbl	    binary	https://github.com/cloudfoundry/bosh-bootloader/releases/download/v6.7.15/bbl-v6.7.15_linux_x86-64
-bosh	binary	https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64
-cf	    tgz	    https://packages.cloudfoundry.org/stable?release=linux64-binary&version=6.37.0&source=github-rel
-fly	    binary	https://github.com/concourse/concourse/releases/download/v3.14.1/fly_linux_amd64
-credhub	tgz	    https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/1.7.6/credhub-linux-1.7.6.tgz
-bbr	    tar	    https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar
-uaac	gem	    cf-uaac -v 4.1.0

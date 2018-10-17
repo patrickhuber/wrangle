@@ -38,12 +38,12 @@ func TestLoader(t *testing.T) {
 		cfg, err := loader.Load(configFilePath)
 		r.Nil(err)
 		r.NotNil(cfg)
-		r.Equal(0, len(cfg.Environments))
+		r.Equal(0, len(cfg.Processes))
 		r.Equal(0, len(cfg.Stores))
 		r.True(afero.Exists(fileSystem, configFilePath))
 		content, err := afero.ReadFile(fileSystem, configFilePath)
 		r.Nil(err)
-		r.Equal([]byte("stores:\nenvironments:\npackages:\n"), content)
+		r.Equal([]byte("stores:\npackages:\n"), content)
 	})
 
 	t.Run("WillFailIfExtraDataPresent", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestLoader(t *testing.T) {
 stores:
   - name: test
     path: /test
-environments:`
+`
 		content = strings.Replace(content, "\t", "  ", -1)
 		fileSystem := afero.NewMemMapFs()
 
@@ -74,16 +74,14 @@ stores:
   stores: [ config ]
   params:
     key: value
-environments:
-- name: name
-  processes:
-  - name: lab
-    stores: [ name ]
-    path: go
-    args:
-    - version
-    env:
-      TEST: value
+processes:
+- name: lab
+  stores: [ name ]
+  path: go
+  args:
+  - version
+  env:
+    TEST: value
 packages:
 - name: bbr
   version: 11.2.3  
@@ -112,5 +110,5 @@ packages:
 	cfg, err := loader.Load(configFilePath)
 	r.Nil(err)
 	r.Equal(1, len(cfg.Stores))
-	r.Equal(1, len(cfg.Environments))
+	r.Equal(1, len(cfg.Processes))
 }

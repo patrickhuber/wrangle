@@ -29,310 +29,40 @@ stores:
     ca_cert: ((credhub-ca-cert.certificate))
     skip_tls_validation: false
 
-environments:
-
-- name: lab
-  processes:
-  
-  - name: fly
-    stores: 
-    - bosh-lab-credhub
-    path: fly
-    args:
-    - -t
-    - main
-    - login
-    - -u
-    - ((/bosh-lab/concourse/atc_basic_auth.username))
-    - -p 
-    - ((/bosh-lab/concourse/atc_basic_auth.password))
-
-  - name: bosh-credhub
-    stores: 
-    - bosh-lab-yaml
-    path: credhub
-    args:
-    - login
-    env:
-      CREDHUB_CLIENT: ((credhub-client))
-      CREDHUB_SECRET: ((credhub-secret))
-      CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
-      CREDHUB_SERVER: https://192.168.0.6:8844
-
-  - name: concourse-credhub
-    stores: 
-    - bosh-lab-credhub
-    path: credhub
-    args:
-    - login
-    env:
-      CREDHUB_CLIENT: ((credhub-client))
-      CREDHUB_SECRET: ((credhub-secret))
-      CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
-      CREDHUB_SERVER: https://192.168.0.10:8844
-
-packages:
-- name: cf-mgmt
-  version: 0.0.91
-  platforms:
-  - name: linux
-    alias: cfmgmt
-    download:
-      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-linux
-      out: cf-mgmt-((version))-linux
-  - name: windows
-    alias: cfmgmt.exe
-    download:
-      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt.exe
-      out: cf-mgmt-((version))-windows.exe
-  - name: darwin
-    alias: cfmgmt
-    download:
-      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-osx
-      out: cf-mgmt-((version))-darwin
-
-- name: cf-mgmt-config
-  version: 0.0.91
-  platforms:
-  - name: linux
-    alias: cfmgmtconfig
-    download:
-      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-config-linux
-      out: cf-mgmt-config-((version))-linux
-  - name: windows
-    alias: cfmgmtconfig.exe
-    download:
-      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt.exe
-      out: cf-mgmt-config-((version))-windows.exe
-  - name: darwin
-    alias: cfmgmtconfig
-    download:
-      url: https://github.com/pivotalservices/cf-mgmt/releases/download/v((version))/cf-mgmt-config-osx
-      out: cf-mgmt-config-((version))-darwin
-
+processes:
 - name: fly
-  version: 3.14.1
-  platforms:
-  - name: linux
-    alias: fly
-    download:
-      url: https://github.com/concourse/concourse/releases/download/v((version))/fly_linux_amd64
-      out: fly_((version))_linux_amd64
-  - name: windows
-    alias: fly.exe
-    download:
-      url: https://github.com/concourse/concourse/releases/download/v((version))/fly_windows_amd64.exe
-      out: fly_((version))_windows_amd64.exe
-  - name: darwin
-    alias: fly
-    download:
-      url: https://github.com/concourse/concourse/releases/download/v((version))/fly_darwin_amd64
-      out: fly_((version))_darwin_amd64
+  stores: 
+  - bosh-lab-credhub
+  path: fly
+  args:
+  - -t
+  - main
+  - login
+  - -u
+  - ((/bosh-lab/concourse/atc_basic_auth.username))
+  - -p 
+  - ((/bosh-lab/concourse/atc_basic_auth.password))
 
-- name: bbl
-  version: 6.7.15  
-  platforms:
-  - name: linux
-    alias: bbl
-    download:
-      url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_linux_x86-64      
-      out: bbl-v((version))_linux_x86-64
-  - name: windows
-    alias: bbl.exe
-    download:
-      url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_windows.exe
-      out: bbl-v((version))_windows.exe
-  - name: darwin
-    alias: bbl
-    download:
-      url: https://github.com/cloudfoundry/bosh-bootloader/releases/download/v((version))/bbl-v((version))_osx
-      out: bbl-v((version))_osx
+- name: bosh-credhub
+  stores: 
+  - bosh-lab-yaml
+  path: credhub
+  args:
+  - login
+  env:
+    CREDHUB_CLIENT: ((credhub-client))
+    CREDHUB_SECRET: ((credhub-secret))
+    CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
+    CREDHUB_SERVER: https://192.168.0.6:8844
 
-- name: bosh
-  version: 3.0.1  
-  platforms:
-  - name: linux
-    alias: bosh
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
-      out: bosh-cli-((version))-linux-amd64
-  - name: windows
-    alias: bosh.exe
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
-      out: bosh-cli-((version))-windows-amd64.exe
-  - name: darwin
-    alias: bosh
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
-      out: bosh-cli-((version))-darwin-amd64
-
-- name: credhub
-  version: 1.7.6  
-  platforms:    
-  - name: linux
-    alias: credhub
-    download: 
-      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz      
-      out: credhub-linux-((version)).tgz
-    extract:
-      filter: credhub
-      out: credhub-linux-((version))
-  - name: darwin
-    alias: credhub
-    download: 
-      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz      
-      out: credhub-darwin-((version)).tgz
-    extract:
-      filter: credhub
-      out: credhub-darwin-((version))
-  - name: windows
-    alias: credhub.exe
-    download: 
-      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
-      out: credhub-windows-((version)).tgz
-    extract:
-      filter: credhub
-      out: credhub-windows-((version)).exe
-
-- name: cf
-  version: 6.37.0  
-  platforms:
-  - name: linux
-    alias: cf
-    download:
-      url: https://packages.cloudfoundry.org/stable?release=linux64-binary&version=((version))&source=github-rel
-      out: cf-cli_((version))_linux_x86-64.tgz
-    extract:
-      filter: cf
-      out: cf_((version))_linux
-  - name: darwin
-    alias: cf
-    download:
-      url: https://packages.cloudfoundry.org/stable?release=macosx64-binary&version=((version))&source=github-rel
-      out: cf-cli_6.37.0_osx.tgz
-    extract:
-      filter: cf
-      out: cf_((version))_darwin
-  - name: windows
-    alias: cf.exe
-    download:
-      url: https://packages.cloudfoundry.org/stable?release=windows64-exe&version=((version))&source=github-rel      
-      out: cf-cli_((version))_winx64.zip
-    extract:
-      filter: cf.exe
-      out: cf_((version))_winx64.exe
-
-- name: bbr
-  version: 1.2.4  
-  platforms:
-  - name: linux
-    alias: bbr
-    download:
-      url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
-      out: bbr-((version)).tar
-    extract:
-      filter: bbr$
-      out: bbr-((version))-linux
-  - name: darwin
-    alias: bbr
-    download:
-      url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.2.4/bbr-1.2.4.tar      
-      out: bbr-((version)).tar
-    extract:
-      filter: bbr-mac
-      out: bbr-((version))-darwin
-
-- name: om
-  version: 0.37.0  
-  platforms:
-  - name: linux
-    alias: om
-    download:
-      url: https://github.com/pivotal-cf/om/releases/download/((version))/om-linux
-      out: om-((version))-linux
-  - name: darwin
-    alias: om
-    download:
-      url: https://github.com/pivotal-cf/om/releases/download/((version))/om-darwin
-      out: om-((version))-darwin
-  - name: windows
-    alias: om.exe
-    download:
-      url: https://github.com/pivotal-cf/om/releases/download/((version))/om-windows.exe
-      out: om-((version))-windows.exe
-
-- name: yaml_patch
-  version: 0.0.11  
-  platforms:
-  - name: linux
-    alias: yaml_patch
-    download:
-      url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_linux
-      out: yaml_patch_((version))_linux
-  - name: darwin
-    alias: yaml_patch
-    download:
-      url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch_darwin
-      out: yaml_patch_((version))_darwin
-  - name: windows
-    alias: yaml_patch.exe
-    download:
-      url: https://github.com/pivotal-cf/yaml-patch/releases/download/v((version))/yaml_patch.exe
-      out: yaml_patch_((version))_windows.exe
-
-- name: vault
-  version: 0.10.3  
-  platforms:    
-  - name: linux
-    alias: vault
-    download:
-      url: https://releases.hashicorp.com/vault/((version))/vault_((version))_linux_amd64.zip
-      out: vault_((version))_linux_amd64.zip
-    extract:
-      filter: vault
-      out: vault_((version))_linux_amd64
-  - name: windows
-    alias: vault.exe
-    download:
-      url: https://releases.hashicorp.com/vault/((version))/vault_((version))_windows_amd64.zip
-      out: vault_((version))_windows_amd64.zip
-    extract:
-      filter: vault.exe
-      out: vault_((version))_windows_amd64.exe
-  - name: darwin
-    alias: vault
-    download:
-      url: https://releases.hashicorp.com/vault/((version))/vault_((version))_darwin_amd64.zip
-      out: vault_((version))_darwin_amd64.zip
-    extract:
-      filter: vault
-      out: vault_((version))_darwin_amd64
-
-- name: wrangle
-  version: 0.8.0
-  platforms:
-  - name: linux
-    alias: wrangle
-    download:
-      url: https://github.com/patrickhuber/wrangle/releases/download/((version))/wrangle-linux-amd64.tgz
-      out: wrangle-((version))-linux-amd64.tgz
-    extract:
-      filter: wrangle-linux-amd64
-      out: wrangle-((version))-linux-amd64
-  - name: windows
-    alias: wrangle.exe
-    download:
-      url: https://github.com/patrickhuber/wrangle/releases/download/((version))/wrangle-windows-amd64.tgz
-      out: wrangle-((version))-windows-amd64.tgz
-    extract:
-      filter: wrangle-windows-amd64.exe
-      out: wrangle-((version))-windows-amd64.exe
-  - name: darwin
-    alias: wrangle
-    download:
-      url: https://github.com/patrickhuber/wrangle/releases/download/((version))/wrangle-darwin-amd64.tgz
-      out: wrangle-((version))-darwin-amd64.tgz
-    extract:
-      filter: wrangle-darwin-amd64
-      out: wrangle-((version))-darwin-amd64
+- name: concourse-credhub
+  stores: 
+  - bosh-lab-credhub
+  path: credhub
+  args:
+  - login
+  env:
+    CREDHUB_CLIENT: ((credhub-client))
+    CREDHUB_SECRET: ((credhub-secret))
+    CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
+    CREDHUB_SERVER: https://192.168.0.10:8844

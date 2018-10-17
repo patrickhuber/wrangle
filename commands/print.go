@@ -26,11 +26,10 @@ type PrintParamsInclude struct {
 
 // PrintParams defines parameters for the print command
 type PrintParams struct {
-	Configuration   *config.Config
-	EnvironmentName string
-	ProcessName     string
-	Format          string
-	Include         PrintParamsInclude
+	Configuration *config.Config
+	ProcessName   string
+	Format        string
+	Include       PrintParamsInclude
 }
 
 // Print represents an environment command
@@ -54,14 +53,9 @@ func NewPrint(
 func (cmd *print) Execute(params *PrintParams) error {
 
 	processName := params.ProcessName
-	environmentName := params.EnvironmentName
 
 	if processName == "" {
 		return errors.New("process name is required for the print command")
-	}
-
-	if environmentName == "" {
-		return errors.New("environment name is required for the print command")
 	}
 
 	cfg := params.Configuration
@@ -74,7 +68,7 @@ func (cmd *print) Execute(params *PrintParams) error {
 		return err
 	}
 
-	process, err := processTemplate.Evaluate(environmentName, processName)
+	process, err := processTemplate.Evaluate(processName)
 	if err != nil {
 		return err
 	}

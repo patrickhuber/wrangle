@@ -1,6 +1,7 @@
 package processes
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -64,15 +65,13 @@ func (command *process) Dispatch() error {
 		environmentVariables = map[string]string{}
 	}
 
+	flatEnvironmentVariables := os.Environ()
 	for key := range environmentVariables {
-		err := os.Setenv(key, environmentVariables[key])
-		if err != nil {
-			return err
-		}
+		flatEnvironmentVariables = append(flatEnvironmentVariables, fmt.Sprintf("%s=%s", key, environmentVariables[key]))
 	}
 
 	cmd := exec.Command(process, arguments...)
-
+	cmd.Env = flatEnvironmentVariables
 	cmd.Stderr = command.stdErr
 	cmd.Stdout = command.stdOut
 	cmd.Stdin = command.stdIn

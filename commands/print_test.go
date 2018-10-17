@@ -27,14 +27,12 @@ var _ = Describe("Execute", func() {
 			configFileContent := `
 ---
 stores:
-environments:
-- name: lab
-  processes:
-  - name: echo
-    path: echo
-    env:
-      WRANGLE_TEST: value`
-			RunPrintTest(configFileContent, "", "lab", "echo", includeProcessInfo, expectedOutput)
+processes:
+- name: echo
+  path: echo
+  env:
+    WRANGLE_TEST: value`
+			RunPrintTest(configFileContent, "", "echo", includeProcessInfo, expectedOutput)
 		})
 		Context("WhenNotIncludeProcessAndArgs", func() {
 			It("prints only environment", func() {
@@ -68,14 +66,12 @@ stores:
   type: file
   params: 
     path: /store1
-environments:
-- name: lab
-  processes:
-  - name: echo
-    path: echo
-    stores: [ store1 ]
-    env:
-      WRANGLE_TEST: ((/key))`
+processes:
+- name: echo
+  path: echo
+  stores: [ store1 ]
+  env:
+    WRANGLE_TEST: ((/key))`
 			afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
 			afero.WriteFile(fileSystem, "/store1", []byte("key: value"), 0644)
 
@@ -94,10 +90,9 @@ environments:
 			// create and run command
 			cmd := NewPrint(manager, fileSystem, console, rendererFactory)
 			params := &PrintParams{
-				Configuration:   cfg,
-				EnvironmentName: "lab",
-				ProcessName:     "echo",
-				Format:          "",
+				Configuration: cfg,
+				ProcessName:   "echo",
+				Format:        "",
 				Include: PrintParamsInclude{
 					ProcessAndArgs: includeProcessInfo,
 				}}
@@ -131,15 +126,13 @@ environments:
 		)
 		AfterEach(func() {
 			content := `
-environments:
-- name: lab
-  processes:
-  - name: go
-    path: go
-    args: 
-    - version
+processes:
+- name: go
+  path: go
+  args: 
+  - version
 `
-			RunPrintTest(content, "", "lab", "go", includeProcessInfo, expectedOutput)
+			RunPrintTest(content, "", "go", includeProcessInfo, expectedOutput)
 		})
 		Context("WhenPrintOnlyEnvironment", func() {
 			It("prints nothing", func() {
@@ -161,15 +154,13 @@ environments:
 		)
 		AfterEach(func() {
 			content := `
-environments:
-- name: lab
-  processes:
-  - name: go
-    path: go
-    args: 
-    - version
+processes:
+- name: go
+  path: go
+  args: 
+  - version
 `
-			RunPrintTest(content, format, "lab", "go", false, expectedOutput)
+			RunPrintTest(content, format, "go", false, expectedOutput)
 		})
 		Context("WhenFormatPosix", func() {
 
@@ -206,7 +197,6 @@ environments:
 func RunPrintTest(
 	content string,
 	format string,
-	environmentName string,
 	processName string,
 	includeProcessInfo bool,
 	expectedOutput string) {
@@ -228,10 +218,9 @@ func RunPrintTest(
 	// create and run command
 	cmd := NewPrint(manager, fileSystem, console, rendererFactory)
 	params := &PrintParams{
-		Configuration:   cfg,
-		EnvironmentName: environmentName,
-		ProcessName:     processName,
-		Format:          format,
+		Configuration: cfg,
+		ProcessName:   processName,
+		Format:        format,
 		Include: PrintParamsInclude{
 			ProcessAndArgs: includeProcessInfo,
 		},

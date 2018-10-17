@@ -2,23 +2,18 @@ package config
 
 // Config represents a grouping of environments, stores and packages
 type Config struct {
-	Stores       []Store       `yaml:"stores"`
-	Environments []Environment `yaml:"environments"`
-	Packages     []Package     `yaml:"packages"`
+	Stores    []Store   `yaml:"stores"`
+	Packages  []Package `yaml:"packages"`
+	Processes []Process `yaml:"processes"`
 }
 
 // Store represents a configuration store
 type Store struct {
-	Name      string            `yaml:"name"`
-	StoreType string            `yaml:"type"`
-	Stores    []string          `yaml:"stores"`
-	Params    map[string]string `yaml:"params"`
-}
+	Name      string   `yaml:"name"`
+	StoreType string   `yaml:"type"`
+	Stores    []string `yaml:"stores"`
 
-// Environment represents a grouping of processes
-type Environment struct {
-	Name      string    `yaml:"name"`
-	Processes []Process `yaml:"processes"`
+	Params map[string]string `yaml:"params"`
 }
 
 // Process represents a process under the given environment

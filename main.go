@@ -104,7 +104,6 @@ func createApplication(
 		*createRunCommand(manager, fileSystem, processFactory, console),
 		*createPrintCommand(manager, fileSystem, console, rendererFactory),
 		*createPrintEnvCommand(manager, fileSystem, console, rendererFactory),
-		*createEnvironmentsCommand(fileSystem, console),
 		*createPackagesCommand(fileSystem, console),
 		*createInstallCommand(fileSystem, platform),
 		*createEnvCommand(console, envDictionary),
@@ -130,13 +129,6 @@ func createRunCommand(
 		Aliases:   []string{"r"},
 		Usage:     "run a command",
 		ArgsUsage: "<process name> [arguments]",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:   "environment, e",
-				Usage:  "Use environment named `ENVIRONMENT`",
-				EnvVar: "WRANGLE_ENVIRONMENT",
-			},
-		},
 		Action: func(context *cli.Context) error {
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
@@ -148,11 +140,9 @@ func createRunCommand(
 				return errors.New("process name argument is required")
 			}
 
-			environmentName := context.String("environment")
-
 			additionalArguments := context.Args().Tail()
 
-			params := commands.NewProcessParams(cfg, environmentName, processName, additionalArguments...)
+			params := commands.NewProcessParams(cfg, processName, additionalArguments...)
 			return runCommand.Execute(params)
 		},
 	}
@@ -177,10 +167,6 @@ func createPrintCommand(
 		ArgsUsage: "<process name> [arguments]",
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name:  "environment, e",
-				Usage: "Use environment named `ENVIRONMENT`",
-			},
-			cli.StringFlag{
 				Name:  "format, f",
 				Usage: "Print for with the given format (bash|powershell)",
 			},
@@ -191,7 +177,6 @@ func createPrintCommand(
 				return errors.New("process name argument is required")
 			}
 
-			environmentName := context.String("environment")
 			format := context.String("format")
 
 			cfg, err := createConfiguration(context, fileSystem)
@@ -199,10 +184,9 @@ func createPrintCommand(
 				return err
 			}
 			params := &commands.PrintParams{
-				Configuration:   cfg,
-				EnvironmentName: environmentName,
-				ProcessName:     processName,
-				Format:          format,
+				Configuration: cfg,
+				ProcessName:   processName,
+				Format:        format,
 				Include: commands.PrintParamsInclude{
 					ProcessAndArgs: true,
 				},
@@ -234,10 +218,6 @@ func createPrintEnvCommand(
 				Usage: "process named `NAME`",
 			},
 			cli.StringFlag{
-				Name:  "environment, e",
-				Usage: "Use environment named `ENVIRONMENT`",
-			},
-			cli.StringFlag{
 				Name:  "format, f",
 				Usage: "Print for with the given format (bash|powershell)",
 			},
@@ -247,17 +227,15 @@ func createPrintEnvCommand(
 			if strings.TrimSpace(processName) == "" {
 				return errors.New("process name argument is required")
 			}
-			environmentName := context.String("environment")
 			format := context.String("format")
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
 			params := &commands.PrintParams{
-				Configuration:   cfg,
-				EnvironmentName: environmentName,
-				ProcessName:     processName,
-				Format:          format}
+				Configuration: cfg,
+				ProcessName:   processName,
+				Format:        format}
 			return printCommand.Execute(params)
 		},
 	}
@@ -325,28 +303,6 @@ func createEnvCommand(console ui.Console, dictionary collections.Dictionary) *cl
 	}
 }
 
-func createEnvironmentsCommand(
-	fileSystem afero.Fs,
-	console ui.Console) *cli.Command {
-
-	environmentsCommand := commands.NewEnvironments(
-		fileSystem,
-		console)
-
-	return &cli.Command{
-		Name:    "environments",
-		Aliases: []string{"e"},
-		Usage:   "prints the list of environments in the config file",
-		Action: func(context *cli.Context) error {
-			cfg, err := createConfiguration(context, fileSystem)
-			if err != nil {
-				return err
-			}
-			return environmentsCommand.Execute(cfg)
-		},
-	}
-}
-
 func createListProcessesCommand(
 	fileSystem afero.Fs,
 	console ui.Console) *cli.Command {
@@ -357,22 +313,12 @@ func createListProcessesCommand(
 	return &cli.Command{
 		Name:  "processes",
 		Usage: "prints the list of processes for the given environment in the config file",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "environment, e",
-				Usage: "the environment name",
-			},
-		},
 		Action: func(context *cli.Context) error {
-			if !context.IsSet("environment") {
-				return fmt.Errorf("environment flag is required")
-			}
-			environmentName := context.String("environment")
 			cfg, err := createConfiguration(context, fileSystem)
 			if err != nil {
 				return err
 			}
-			return listProcessesCommand.Execute(cfg, environmentName)
+			return listProcessesCommand.Execute(cfg)
 		},
 	}
 }

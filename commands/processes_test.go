@@ -17,24 +17,20 @@ func TestProcessesCommand(t *testing.T) {
 
 		cmd := NewListProcesses(console)
 		content := `
-environments:
-- name: lab  
-  processes:
-  - name: go 
-  - name: echo
-- name: prod  
-  processes:
-  - name: wrangle
-  - name: dangle
+processes:
+- name: go 
+- name: echo
+- name: wrangle
+- name: dangle
 `
 		cfg, err := config.SerializeString(content)
 		r.Nil(err)
-		err = cmd.Execute(cfg, "lab")
+		err = cmd.Execute(cfg)
 		r.Nil(err)
 
 		b, ok := console.Out().(*bytes.Buffer)
 		r.True(ok)
 		r.NotNil(b)
-		r.Equal("name\n----\ngo\necho\n", b.String())
+		r.Equal("name\n----\ngo\necho\nwrangle\ndangle\n", b.String())
 	})
 }

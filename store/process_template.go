@@ -17,7 +17,7 @@ type processTemplate struct {
 
 // ProcessTemplate defines a template for processes
 type ProcessTemplate interface {
-	Evaluate(environmentName string, processName string) (*config.Process, error)
+	Evaluate(processName string) (*config.Process, error)
 }
 
 // NewProcessTemplate  creates a new process template with the given config and manager
@@ -34,17 +34,13 @@ func NewProcessTemplate(cfg *config.Config, manager Manager) (ProcessTemplate, e
 	}, nil
 }
 
-func (t *processTemplate) Evaluate(environmentName string, processName string) (*config.Process, error) {
-	for _, environment := range t.cfg.Environments {
-		if environment.Name == environmentName {
-			for _, process := range environment.Processes {
-				if process.Name == processName {
-					return t.evaluate(&process)
-				}
-			}
+func (t *processTemplate) Evaluate(processName string) (*config.Process, error) {
+	for _, process := range t.cfg.Processes {
+		if process.Name == processName {
+			return t.evaluate(&process)
 		}
 	}
-	return nil, fmt.Errorf("unable to find process '%s' in environment '%s'", processName, environmentName)
+	return nil, fmt.Errorf("unable to find process '%s'", processName)
 }
 
 func (t *processTemplate) evaluate(process *config.Process) (*config.Process, error) {

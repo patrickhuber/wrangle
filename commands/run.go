@@ -39,14 +39,9 @@ func NewRun(
 func (cmd *run) Execute(params ProcessParams) error {
 
 	processName := params.ProcessName()
-	environmentName := params.EnvironmentName()
 
 	if processName == "" {
 		return errors.New("process name is required for the run command")
-	}
-
-	if environmentName == "" {
-		return errors.New("environment name is required for the run command")
 	}
 
 	cfg := params.Config()
@@ -58,7 +53,7 @@ func (cmd *run) Execute(params ProcessParams) error {
 	if err != nil {
 		return err
 	}
-	process, err := processTemplate.Evaluate(environmentName, processName)
+	process, err := processTemplate.Evaluate(processName)
 	if err != nil {
 		return err
 	}
