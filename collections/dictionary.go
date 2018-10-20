@@ -6,6 +6,12 @@ type dictionary struct {
 	data map[string]string
 }
 
+// ReadOnlyDictionary defines a dictionary with out set semantics
+type ReadOnlyDictionary interface {
+	Get(key string) (string, error)
+	Lookup(key string) (string, bool)
+}
+
 // Dictionary defines a dictionary interface
 type Dictionary interface {
 	Get(key string) (string, error)

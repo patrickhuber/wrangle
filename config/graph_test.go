@@ -1,18 +1,18 @@
-package config
+package config_test
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/config"
 )
 
-func TestConfigurationGraphCanLoadLinear(t *testing.T) {
-	r := require.New(t)
-	data := `
+var _ = Describe("graph", func() {
+	It("can load linear graph", func() {
+		data := `
 stores:
 - name: head
   type: file
-  stores:
+  stores: 
   params:
     path: /test/head.yml
 - name: middle
@@ -28,36 +28,35 @@ stores:
   params:
     path: /test/tail.yml
 `
-	cfg, err := SerializeString(data)
-	r.Nil(err)
-	graph, err := NewConfigurationGraph(cfg)
-	r.Nil(err)
-	r.NotNil(graph)
+		cfg, err := config.SerializeString(data)
+		Expect(err).To(BeNil())
 
-	head := graph.Node("head")
-	r.NotNil(head)
+		graph, err := config.NewConfigurationGraph(cfg)
+		Expect(err).To(BeNil())
+		Expect(graph).ToNot(BeNil())
 
-	middle := graph.Node("middle")
-	r.NotNil(middle)
+		head := graph.Node("head")
+		Expect(head).ToNot(BeNil())
 
-	tail := graph.Node("tail")
-	r.NotNil(tail)
+		middle := graph.Node("middle")
+		Expect(middle).ToNot(BeNil())
 
-	r.Equal(1, len(head.Children()))
-	r.Equal(0, len(head.Parents()))
-	r.Equal(1, len(middle.Children()))
-	r.Equal(1, len(middle.Parents()))
-	r.Equal(0, len(tail.Children()))
-	r.Equal(1, len(tail.Parents()))
+		tail := graph.Node("tail")
+		Expect(tail).ToNot(BeNil())
 
-	r.NotNil(graph.Store("tail"))
-	r.NotNil(graph.Store("head"))
-	r.NotNil(graph.Store("middle"))
-}
+		Expect(len(head.Children())).To(Equal(1))
+		Expect(len(head.Parents())).To(Equal(0))
+		Expect(len(middle.Children())).To(Equal(1))
+		Expect(len(middle.Parents())).To(Equal(1))
+		Expect(len(tail.Children())).To(Equal(0))
+		Expect(len(tail.Parents())).To(Equal(1))
 
-func TestConfigurationGraphCanLoadTree(t *testing.T) {
-	r := require.New(t)
-	data := `
+		Expect(graph.Store("tail")).ToNot(BeNil())
+		Expect(graph.Store("head")).ToNot(BeNil())
+		Expect(graph.Store("middle")).ToNot(BeNil())
+	})
+	It("can load tree", func() {
+		data := `
 stores:
 - name: root
   type: file
@@ -78,36 +77,37 @@ stores:
     path: /test/right-child.yml
 `
 
-	cfg, err := SerializeString(data)
-	r.Nil(err)
-	graph, err := NewConfigurationGraph(cfg)
-	r.Nil(err)
-	r.NotNil(graph)
+		cfg, err := config.SerializeString(data)
+		Expect(err).To(BeNil())
 
-	root := graph.Node("root")
-	r.NotNil(root)
+		graph, err := config.NewConfigurationGraph(cfg)
+		Expect(err).To(BeNil())
+		Expect(graph).ToNot(BeNil())
 
-	leftChild := graph.Node("left-child")
-	r.NotNil(leftChild)
+		root := graph.Node("root")
+		Expect(root).ToNot(BeNil())
 
-	rightChild := graph.Node("right-child")
-	r.NotNil(rightChild)
+		leftChild := graph.Node("left-child")
+		Expect(leftChild).ToNot(BeNil())
 
-	r.Equal(2, len(root.Children()))
-	r.Equal(0, len(root.Parents()))
-	r.Equal(0, len(leftChild.Children()))
-	r.Equal(1, len(leftChild.Parents()))
-	r.Equal(0, len(rightChild.Children()))
-	r.Equal(1, len(rightChild.Parents()))
+		rightChild := graph.Node("right-child")
+		Expect(rightChild).ToNot(BeNil())
 
-	r.NotNil(graph.Store("root"))
-	r.NotNil(graph.Store("left-child"))
-	r.NotNil(graph.Store("right-child"))
-}
+		Expect(len(root.Children())).To(Equal(2))
+		Expect(len(root.Parents())).To(Equal(0))
+		Expect(len(leftChild.Children())).To(Equal(0))
+		Expect(len(leftChild.Parents())).To(Equal(1))
+		Expect(len(rightChild.Children())).To(Equal(0))
+		Expect(len(rightChild.Parents())).To(Equal(1))
 
-func TestConfigurationGraphCanLoadGraph(t *testing.T) {
-	r := require.New(t)
-	data := `
+		Expect(graph.Store("root")).ToNot(BeNil())
+		Expect(graph.Store("left-child")).ToNot(BeNil())
+		Expect(graph.Store("right-child")).ToNot(BeNil())
+	})
+
+	It("can load graph", func() {
+
+		data := `
 stores:
 - name: root
   type: file
@@ -128,37 +128,37 @@ stores:
   params:
     path: /test/right-child.yml
 `
-	cfg, err := SerializeString(data)
-	r.Nil(err)
+		cfg, err := config.SerializeString(data)
+		Expect(err).To(BeNil())
 
-	graph, err := NewConfigurationGraph(cfg)
-	r.Nil(err)
-	r.NotNil(graph)
+		graph, err := config.NewConfigurationGraph(cfg)
+		Expect(err).To(BeNil())
+		Expect(graph).ToNot(BeNil())
 
-	root := graph.Node("root")
-	r.NotNil(root)
+		root := graph.Node("root")
+		Expect(root).ToNot(BeNil())
 
-	leftChild := graph.Node("left-child")
-	r.NotNil(leftChild)
+		leftChild := graph.Node("left-child")
+		Expect(leftChild).ToNot(BeNil())
 
-	rightChild := graph.Node("right-child")
-	r.NotNil(rightChild)
+		rightChild := graph.Node("right-child")
+		Expect(rightChild).ToNot(BeNil())
 
-	r.Equal(2, len(root.Children()))
-	r.Equal(0, len(root.Parents()))
-	r.Equal(1, len(leftChild.Children()))
-	r.Equal(1, len(leftChild.Parents()))
-	r.Equal(0, len(rightChild.Children()))
-	r.Equal(2, len(rightChild.Parents()))
+		Expect(len(root.Children())).To(Equal(2))
+		Expect(len(root.Parents())).To(Equal(0))
+		Expect(len(leftChild.Children())).To(Equal(1))
+		Expect(len(leftChild.Parents())).To(Equal(1))
+		Expect(len(rightChild.Children())).To(Equal(0))
+		Expect(len(rightChild.Parents())).To(Equal(2))
 
-	r.NotNil(graph.Store("root"))
-	r.NotNil(graph.Store("left-child"))
-	r.NotNil(graph.Store("right-child"))
-}
+		Expect(graph.Store("root")).ToNot(BeNil())
+		Expect(graph.Store("left-child")).ToNot(BeNil())
+		Expect(graph.Store("right-child")).ToNot(BeNil())
 
-func TestConfigurationGraphFailsToCreateCycles(t *testing.T) {
-	r := require.New(t)
-	data := `
+	})
+
+	It("fails to create cycle", func() {
+		data := `
 stores:
 - name: one
   type: file
@@ -179,9 +179,10 @@ stores:
   params:
     path: /test/three.yml
 `
-	cfg, err := SerializeString(data)
-	r.Nil(err)
+		cfg, err := config.SerializeString(data)
+		Expect(err).To(BeNil())
 
-	_, err = NewConfigurationGraph(cfg)
-	r.NotNil(err)
-}
+		_, err = config.NewConfigurationGraph(cfg)
+		Expect(err).ToNot(BeNil())
+	})
+})

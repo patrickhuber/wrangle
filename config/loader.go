@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
 	"os/user"
 
@@ -30,10 +29,21 @@ func (loader *loader) FileSystem() afero.Fs {
 }
 
 func (loader *loader) Load(configPath string) (*Config, error) {
-	err := loader.ensureExists(configPath)
+	// load the config file
+	ok, err := afero.Exists(loader.fileSystem, configPath)
+
+	// if failure finding file, return the error
 	if err != nil {
 		return nil, err
 	}
+
+	// if not found, return error
+	if !ok {
+		return nil, fmt.Errorf(
+			fmt.Sprintf("file %s does not exist", configPath))
+	}
+
+	// red the file contents and return a serialized Config struct
 	data, err := afero.ReadFile(loader.fileSystem, configPath)
 	if err != nil {
 		return nil, err
@@ -50,42 +60,4 @@ func GetDefaultConfigPath() (string, error) {
 	configDir := filepath.Join(usr.HomeDir, ".wrangle", "config.yml")
 	configDir = filepath.ToSlash(configDir)
 	return configDir, nil
-}
-
-func (loader *loader) ensureExists(configFile string) error {
-	fileSystem := loader.FileSystem()
-	ok, err := afero.Exists(fileSystem, configFile)
-	if err != nil {
-		return err
-	}
-	if ok {
-		return nil
-	}
-
-	configDirectory := filepath.Dir(configFile)
-	err = loader.ensureDirectoryExists(configDirectory)
-	if err != nil {
-		return err
-	}
-
-	data := &bytes.Buffer{}
-	fmt.Fprintln(data, "stores:")
-	fmt.Fprintln(data, "packages:")
-
-	return afero.WriteFile(fileSystem, configFile, data.Bytes(), 0644)
-}
-
-func (loader *loader) ensureDirectoryExists(directory string) error {
-	fileSystem := loader.FileSystem()
-	ok, err := afero.DirExists(fileSystem, directory)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		err = fileSystem.MkdirAll(directory, 0644)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

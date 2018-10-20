@@ -101,6 +101,7 @@ func createApplication(
 	}
 
 	cliApp.Commands = []cli.Command{
+		*createInitCommand(fileSystem),
 		*createRunCommand(manager, fileSystem, processFactory, console),
 		*createPrintCommand(manager, fileSystem, console, rendererFactory),
 		*createPrintEnvCommand(manager, fileSystem, console, rendererFactory),
@@ -111,6 +112,20 @@ func createApplication(
 		*createListProcessesCommand(fileSystem, console),
 	}
 	return cliApp, nil
+}
+
+func createInitCommand(
+	fileSystem afero.Fs,
+) *cli.Command {
+
+	initCommand := commands.NewInitCommand(fileSystem)
+	return &cli.Command{
+		Name:  "init",
+		Usage: "initialize the wrangle configuration",
+		Action: func(context *cli.Context) error {
+			return initCommand.Execute(context.GlobalString("config"))
+		},
+	}
 }
 
 func createRunCommand(

@@ -2,16 +2,17 @@ package config
 
 import (
 	"strings"
-	"testing"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
-func TestCanParseConfig(t *testing.T) {
-	r := require.New(t)
+var _ = Describe("Config", func() {
+	It("can parse config", func() {
 
-	var data = `
+		var data = `
 stores:
 - name: name
   type: type
@@ -44,23 +45,25 @@ packages:
       url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
       out: bosh-cli-((version))-darwin-amd64
 `
-	// vscode likes to be a bad monkey so clean up in case it gets over tabby
-	data = strings.Replace(data, "\t", "  ", -1)
-	config := Config{}
-	err := yaml.Unmarshal([]byte(data), &config)
-	r.Nil(err)
+		// vscode likes to be a bad monkey so clean up in case it gets over tabby
+		data = strings.Replace(data, "\t", "  ", -1)
+		config := Config{}
+		err := yaml.Unmarshal([]byte(data), &config)
+		Expect(err).To(BeNil())
 
-	// config sources)
-	r.Equal(1, len(config.Stores))
-	r.Equal(1, len(config.Stores[0].Params))
-	r.Equal("value", config.Stores[0].Params["key"])
+		// config sources)
+		Expect(len(config.Stores)).To(Equal(1))
+		Expect(len(config.Stores[0].Params)).To(Equal(1))
+		Expect(config.Stores[0].Params["key"]).To(Equal("value"))
 
-	// environments
-	r.Equal(1, len(config.Processes))
-	r.Equal(1, len(config.Processes[0].Args))
-	r.Equal(1, len(config.Processes[0].Vars))
+		// environments
+		Expect(len(config.Processes)).To(Equal(1))
+		Expect(len(config.Processes[0].Args)).To(Equal(1))
+		Expect(len(config.Processes[0].Vars)).To(Equal(1))
 
-	// packages
-	r.Equal(1, len(config.Packages))
-	r.Equal(3, len(config.Packages[0].Platforms))
-}
+		// packages
+		Expect(len(config.Packages)).To(Equal(1))
+		Expect(len(config.Packages[0].Platforms)).To(Equal(3))
+
+	})
+})

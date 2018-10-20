@@ -1,71 +1,59 @@
-package config
+package config_test
 
 import (
 	"os/user"
 	"strings"
-	"testing"
 
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/spf13/afero"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestLoader(t *testing.T) {
-
-	t.Run("CanLoadDefaultConfigPath", func(t *testing.T) {
-		require := require.New(t)
-
+var _ = Describe("Loader", func() {
+	It("can load default config path", func() {
 		usr, err := user.Current()
-		require.Nil(err)
+		Expect(err).To(BeNil())
 
 		configFilePath := filepath.Join(usr.HomeDir, ".wrangle", "config.yml")
 		configFilePath = filepath.ToSlash(configFilePath)
-		AssertFilePathIsCorrect(t, configFilePath)
+
+		AssertFilePathIsCorrect(configFilePath)
 	})
 
-	t.Run("CanLoadSpecificConfigPath", func(t *testing.T) {
+	It("can load specific config path", func() {
 		configFilePath := "/test/config.yml"
-		AssertFilePathIsCorrect(t, configFilePath)
+		AssertFilePathIsCorrect(configFilePath)
 	})
 
-	t.Run("CreatesConfigFileIfNotExists", func(t *testing.T) {
-		r := require.New(t)
+	It("returns error if config file does not exist", func() {
 		configFilePath := "/test/config.yml"
 		fileSystem := afero.NewMemMapFs()
-		loader := NewLoader(fileSystem)
-		cfg, err := loader.Load(configFilePath)
-		r.Nil(err)
-		r.NotNil(cfg)
-		r.Equal(0, len(cfg.Processes))
-		r.Equal(0, len(cfg.Stores))
-		r.True(afero.Exists(fileSystem, configFilePath))
-		content, err := afero.ReadFile(fileSystem, configFilePath)
-		r.Nil(err)
-		r.Equal([]byte("stores:\npackages:\n"), content)
+		loader := config.NewLoader(fileSystem)
+		_, err := loader.Load(configFilePath)
+		Expect(err).ToNot(BeNil())
 	})
 
-	t.Run("WillFailIfExtraDataPresent", func(t *testing.T) {
-		r := require.New(t)
+	It("fails if extra elements are present", func() {
 		path := "/file"
 		var content = `
 stores:
-  - name: test
-    path: /test
+customers:
 `
-		content = strings.Replace(content, "\t", "  ", -1)
 		fileSystem := afero.NewMemMapFs()
+		err := afero.WriteFile(fileSystem, path, []byte(content), 0600)
+		Expect(err).To(BeNil())
 
-		afero.WriteFile(fileSystem, path, []byte(content), 0644)
-		loader := NewLoader(fileSystem)
-		_, err := loader.Load(path)
-		r.NotNil(err)
+		loader := config.NewLoader(fileSystem)
+		_, err = loader.Load(path)
+		Expect(err).ToNot(BeNil())
 	})
-}
+})
 
-func AssertFilePathIsCorrect(t *testing.T, configFilePath string) {
-	r := require.New(t)
+func AssertFilePathIsCorrect(configFilePath string) {
 
 	var content = `
 stores:
@@ -100,15 +88,15 @@ packages:
       url: https://www.google.com
       out: /test/out
 `
-	r.False(strings.ContainsAny(content, "\t"), "tabs in content, must be spaces only for indention")
+	Expect(strings.ContainsAny(content, "\t")).To(BeFalse(), "tabs in content, must be spaces only for indention")
 	fileSystem := afero.NewMemMapFs()
 
 	afero.WriteFile(fileSystem, configFilePath, []byte(content), 0644)
 
-	loader := NewLoader(fileSystem)
+	loader := config.NewLoader(fileSystem)
 
 	cfg, err := loader.Load(configFilePath)
-	r.Nil(err)
-	r.Equal(1, len(cfg.Stores))
-	r.Equal(1, len(cfg.Processes))
+	Expect(err).To(BeNil())
+	Expect(len(cfg.Stores)).To(Equal(1))
+	Expect(len(cfg.Processes)).To(Equal(1))
 }

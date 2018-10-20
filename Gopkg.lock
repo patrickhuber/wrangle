@@ -126,8 +126,8 @@
     ".",
     "mem"
   ]
-  revision = "787d034dfe70e44075ccc060d346146ef53270ad"
-  version = "v1.1.1"
+  revision = "d40851caa0d747393da1ffb28f7f9d8b4eeffebd"
+  version = "v1.1.2"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -234,6 +234,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e3e3a1ed93d57a09d57f18638c1457f88ee45fb0df61d4f3e630b1c8a45b6582"
+  inputs-digest = "2ba1e3e5bb2628e83750950461fab499e1081ad4ad816fb2230ab5e04f8e7c56"
   solver-name = "gps-cdcl"
   solver-version = 1
