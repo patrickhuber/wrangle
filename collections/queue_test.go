@@ -1,42 +1,48 @@
 package collections
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestQueue(t *testing.T) {
-	t.Run("CanEnqueueOneItem", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("Queue", func() {
+	It("can enqueue one item", func() {
 		q := NewQueue()
 		q.Enqueue(1)
-		r.Equal(1, q.Count())
+		Expect(q.Count()).To(Equal(1))
 	})
-	t.Run("CanDequeueEmpty", func(t *testing.T) {
-		r := require.New(t)
+	It("can dequeue empty", func() {
 		q := NewQueue()
 		item := q.Dequeue()
-		r.Nil(item)
+		Expect(item).To(BeNil())
 	})
-	t.Run("ItemsAreInFirstInFirstOutOrder", func(t *testing.T) {
-		r := require.New(t)
+	It("dequeues items first in first out", func() {
 		q := NewQueue()
 		q.Enqueue(1)
 		q.Enqueue(2)
 		q.Enqueue(3)
-		r.Equal(3, q.Count())
-		r.Equal(1, q.Dequeue())
-		r.Equal(2, q.Dequeue())
-		r.Equal(3, q.Dequeue())
+		Expect(q.Count()).To(Equal(3))
+		Expect(q.Dequeue()).To(Equal(1))
+		Expect(q.Dequeue()).To(Equal(2))
+		Expect(q.Dequeue()).To(Equal(3))
 	})
-	t.Run("EmptyReturnsCorrectValue", func(t *testing.T) {
-		r := require.New(t)
-		q := NewQueue()
-		r.True(q.Empty())
-		q.Enqueue(1)
-		r.False(q.Empty())
-		q.Dequeue()
-		r.True(q.Empty())
+	Describe("Empty", func() {
+		When("has items", func() {
+			It("returns false", func() {
+				q := NewQueue()
+				Expect(q.Empty()).To(BeTrue())
+				q.Enqueue(1)
+				Expect(q.Empty()).To(BeFalse())
+				q.Dequeue()
+				Expect(q.Empty()).To(BeTrue())
+			})
+		})
+		When("has no items", func() {
+			It("returns true", func() {
+				q := NewQueue()
+				Expect(q.Empty()).To(BeTrue())
+			})
+		})
 	})
-}
+
+})
