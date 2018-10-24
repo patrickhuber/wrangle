@@ -8,7 +8,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/patrickhuber/wrangle/tasks"
+
 	"github.com/patrickhuber/wrangle/collections"
+	"github.com/patrickhuber/wrangle/packages"
 
 	"github.com/spf13/afero"
 
@@ -36,8 +39,12 @@ type application struct {
 }
 
 func main() {
+	// create platform, filesystem and console
 	platform := runtime.GOOS
 	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+	console := ui.NewOSConsole()
+
+	// create config store m anager
 	configStoreManager, err := createConfigStoreManager(fileSystem, platform)
 	if err != nil {
 		log.Fatal(err)
@@ -45,9 +52,24 @@ func main() {
 	}
 	validateConfigStoreManager(configStoreManager)
 
+	// create process factory
 	processFactory := processes.NewOsFactory()
-	console := ui.NewOSConsole()
+
+	// create env dictionary
 	envDictionary := env.NewDictionary()
+
+	// create config loader
+	loader := config.NewLoader(fileSystem)
+
+	// create task providers
+	taskProviders := tasks.NewProviderRegistry()
+	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
+	taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
+	taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
+	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
+
+	// create package manager
+	packagesManager := packages.NewManager(fileSystem, taskProviders)
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template
@@ -57,7 +79,9 @@ func main() {
 		processFactory,
 		console,
 		platform,
-		envDictionary)
+		envDictionary,
+		loader,
+		packagesManager)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -76,7 +100,9 @@ func createApplication(
 	processFactory processes.Factory,
 	console ui.Console,
 	platform string,
-	envDictionary collections.Dictionary) (*cli.App, error) {
+	envDictionary collections.Dictionary,
+	loader config.Loader,
+	packagesManager packages.Manager) (*cli.App, error) {
 
 	rendererFactory := renderers.NewFactory(env.NewDictionary())
 
@@ -102,14 +128,14 @@ func createApplication(
 
 	cliApp.Commands = []cli.Command{
 		*createInitCommand(fileSystem),
-		*createRunCommand(manager, fileSystem, processFactory, console),
-		*createPrintCommand(manager, fileSystem, console, rendererFactory),
-		*createPrintEnvCommand(manager, fileSystem, console, rendererFactory),
-		*createPackagesCommand(fileSystem, console),
-		*createInstallCommand(fileSystem, platform),
+		*createRunCommand(manager, fileSystem, processFactory, console, loader),
+		*createPrintCommand(manager, fileSystem, console, rendererFactory, loader),
+		*createPrintEnvCommand(manager, fileSystem, console, rendererFactory, loader),
+		*createPackagesCommand(fileSystem, console, loader),
+		*createInstallCommand(fileSystem, console, platform, packagesManager, loader),
 		*createEnvCommand(console, envDictionary),
-		*createStoresCommand(fileSystem, console),
-		*createListProcessesCommand(fileSystem, console),
+		*createStoresCommand(fileSystem, console, loader),
+		*createListProcessesCommand(fileSystem, console, loader),
 	}
 	return cliApp, nil
 }
@@ -132,7 +158,8 @@ func createRunCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	processFactory processes.Factory,
-	console ui.Console) *cli.Command {
+	console ui.Console,
+	loader config.Loader) *cli.Command {
 	runCommand := commands.NewRun(
 		manager,
 		fileSystem,
@@ -145,7 +172,7 @@ func createRunCommand(
 		Usage:     "run a command",
 		ArgsUsage: "<process name> [arguments]",
 		Action: func(context *cli.Context) error {
-			cfg, err := createConfiguration(context, fileSystem)
+			cfg, err := loadConfiguration(context, loader)
 			if err != nil {
 				return err
 			}
@@ -167,7 +194,8 @@ func createPrintCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	console ui.Console,
-	rendererFactory renderers.Factory) *cli.Command {
+	rendererFactory renderers.Factory,
+	loader config.Loader) *cli.Command {
 
 	printCommand := commands.NewPrint(
 		manager,
@@ -194,7 +222,7 @@ func createPrintCommand(
 
 			format := context.String("format")
 
-			cfg, err := createConfiguration(context, fileSystem)
+			cfg, err := loadConfiguration(context, loader)
 			if err != nil {
 				return err
 			}
@@ -216,7 +244,8 @@ func createPrintEnvCommand(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	console ui.Console,
-	rendererFactory renderers.Factory) *cli.Command {
+	rendererFactory renderers.Factory,
+	loader config.Loader) *cli.Command {
 
 	printCommand := commands.NewPrint(
 		manager,
@@ -243,7 +272,7 @@ func createPrintEnvCommand(
 				return errors.New("process name argument is required")
 			}
 			format := context.String("format")
-			cfg, err := createConfiguration(context, fileSystem)
+			cfg, err := loadConfiguration(context, loader)
 			if err != nil {
 				return err
 			}
@@ -258,14 +287,23 @@ func createPrintEnvCommand(
 
 func createPackagesCommand(
 	fileSystem afero.Fs,
-	console ui.Console) *cli.Command {
-	packagesCommand := commands.NewPackages(console)
+	console ui.Console,
+	loader config.Loader) *cli.Command {
 	return &cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},
 		Usage:   "prints the list of packages and versions in the config file",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:   "path, p",
+				Usage:  "the package install path",
+				EnvVar: global.PackagePathKey,
+			},
+		},
 		Action: func(context *cli.Context) error {
-			cfg, err := createConfiguration(context, fileSystem)
+			packagesPath := context.String("path")
+			packagesCommand := commands.NewPackages(fileSystem, console, packagesPath)
+			cfg, err := loadConfiguration(context, loader)
 			if err != nil {
 				return err
 			}
@@ -276,7 +314,10 @@ func createPackagesCommand(
 
 func createInstallCommand(
 	fileSystem filesystem.FsWrapper,
-	platform string) *cli.Command {
+	console ui.Console,
+	platform string,
+	manager packages.Manager,
+	loader config.Loader) *cli.Command {
 	return &cli.Command{
 		Name:      "install",
 		Aliases:   []string{"i"},
@@ -288,22 +329,24 @@ func createInstallCommand(
 				Usage:  "the package install path",
 				EnvVar: global.PackagePathKey,
 			},
+			cli.StringFlag{
+				Name:  "version, v",
+				Usage: "the package version",
+			},
 		},
 		Action: func(context *cli.Context) error {
-			cfg, err := createConfiguration(context, fileSystem)
+			packagesPath := context.String("path")
+			installPackageCommand, err := commands.NewInstall(platform, packagesPath, fileSystem, manager, loader)
+			if err != nil {
+				return err
+			}
+
 			packageName := context.Args().First()
 			if strings.TrimSpace(packageName) == "" {
 				return errors.New("missing required argument package name")
 			}
-			packageInstallPath := context.String("path")
-			if err != nil {
-				return err
-			}
-			installPackageCommand, err := commands.NewInstall(platform, packageInstallPath, fileSystem, ui.NewOSConsole())
-			if err != nil {
-				return err
-			}
-			return installPackageCommand.Execute(cfg, packageName)
+			packageVersion := context.String("version")
+			return installPackageCommand.Execute(packageName, packageVersion)
 		},
 	}
 }
@@ -320,7 +363,8 @@ func createEnvCommand(console ui.Console, dictionary collections.Dictionary) *cl
 
 func createListProcessesCommand(
 	fileSystem afero.Fs,
-	console ui.Console) *cli.Command {
+	console ui.Console,
+	loader config.Loader) *cli.Command {
 
 	listProcessesCommand := commands.NewListProcesses(
 		console)
@@ -329,7 +373,7 @@ func createListProcessesCommand(
 		Name:  "processes",
 		Usage: "prints the list of processes for the given environment in the config file",
 		Action: func(context *cli.Context) error {
-			cfg, err := createConfiguration(context, fileSystem)
+			cfg, err := loadConfiguration(context, loader)
 			if err != nil {
 				return err
 			}
@@ -340,7 +384,8 @@ func createListProcessesCommand(
 
 func createStoresCommand(
 	fileSystem afero.Fs,
-	console ui.Console) *cli.Command {
+	console ui.Console,
+	loader config.Loader) *cli.Command {
 
 	listStoresCommand := commands.NewStores(
 		console)
@@ -350,7 +395,7 @@ func createStoresCommand(
 		Aliases: []string{"s"},
 		Usage:   "prints the list of stores in the config file",
 		Action: func(context *cli.Context) error {
-			cfg, err := createConfiguration(context, fileSystem)
+			cfg, err := loadConfiguration(context, loader)
 			if err != nil {
 				return err
 			}
@@ -359,17 +404,9 @@ func createStoresCommand(
 	}
 }
 
-func createConfiguration(context *cli.Context, fileSystem afero.Fs) (*config.Config, error) {
+func loadConfiguration(context *cli.Context, loader config.Loader) (*config.Config, error) {
 	configFile := context.GlobalString("config")
-	var err error
-	if configFile == "" {
-		configFile, err = config.GetDefaultConfigPath()
-		if err != nil {
-			return nil, err
-		}
-	}
-	configLoader := config.NewLoader(fileSystem)
-	return configLoader.Load(configFile)
+	return loader.LoadConfig(configFile)
 }
 
 func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manager, error) {

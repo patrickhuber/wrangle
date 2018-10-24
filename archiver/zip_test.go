@@ -17,14 +17,9 @@ var _ = Describe("Zip", func() {
 			err := afero.WriteFile(fs, "/test", []byte("test"), 0666)
 			Expect(err).To(BeNil())
 
-			// create the zip file from the test file
-			outputFile, err := fs.Create("/test.zip")
-			Expect(err).To(BeNil())
-			defer outputFile.Close()
-
 			// create the archiver and write out the archive
-			arch := archiver.NewZipArchiver(fs)
-			err = arch.Archive(outputFile, []string{"/test"})
+			arch := archiver.NewZip(fs)
+			err = arch.Archive("/test.zip", []string{"/test"})
 			Expect(err).To(BeNil())
 
 			// verify the file exists
@@ -36,13 +31,8 @@ var _ = Describe("Zip", func() {
 			err = fs.Remove("/test")
 			Expect(err).To(BeNil())
 
-			// open the archive
-			inputFile, err := fs.Open("/test.zip")
-			Expect(err).To(BeNil())
-			defer inputFile.Close()
-
 			// extract the archive
-			err = arch.Extract(inputFile, ".*", "/")
+			err = arch.Extract("/test.zip", "/", []string{".*"})
 			Expect(err).To(BeNil())
 
 			// verify the file exists

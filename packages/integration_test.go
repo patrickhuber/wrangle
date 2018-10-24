@@ -55,16 +55,8 @@ var _ = Describe("ManagerIntegration", func() {
 						packageDir,
 						extractOut))
 
-				err := manager.Download(p)
+				err := manager.Install(p)
 				Expect(err).To(BeNil())
-
-				err = manager.Extract(p)
-				Expect(err).To(BeNil())
-
-				err = manager.Link(p)
-				Expect(err).To(BeNil())
-
-				Expect(true).To(BeTrue())
 			})
 		})
 	})

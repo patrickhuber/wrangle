@@ -1,39 +1,40 @@
 package packages
 
 import (
-	"path/filepath"
-	"testing"
-
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/tasks"
 )
 
-func TestPackage(t *testing.T) {
-	t.Run("CanReplaceVersionInDownload", func(t *testing.T) {
-		r := require.New(t)
-		p := New("a", "1.2", "a",
-			NewDownload("https://((version))", "a_((version))_b", "a_((version)).exe"),
-			nil)
-		r.Equal("https://1.2", p.Download().URL())
-		r.Equal("a_1.2.exe", p.Download().OutFile())
-		r.Equal("a_1.2_b", p.Download().OutFolder())
-	})
+var _ = Describe("Package", func() {
+	Describe("New", func() {
+		It("can replace version in download", func() {
+			p := New("a", "1.2",
+				tasks.NewDownloadTask("https://((version))", "a_((version))_b", "a_((version)).exe"))
+			Expect(len(p.Tasks())).To(Equal(1))
 
-	t.Run("CanReplaceVersionInExtract", func(t *testing.T) {
-		r := require.New(t)
-		p := New("a", "1.2", "a",
-			NewDownload("", "/test", "test"),
-			NewExtract("*.*", "/test/((version))", "ab_((version))"))
-		r.Equal("*.*", p.Extract().Filter())
-		r.Equal("ab_1.2", p.Extract().OutFile())
-		r.Equal("/test/1.2", p.Extract().OutFolder())
-	})
+			downloadTask := p.Tasks()[0]
 
-	t.Run("PathIsCombinedFolderAndFile", func(t *testing.T) {
-		r := require.New(t)
-		p := New("a", "1.2", "a",
-			NewDownload("https://www.google.com", "/test", "one"),
-			NewExtract("*.*", "/test", "two"))
-		r.Equal("/test/one", filepath.ToSlash(p.Download().OutPath()))
-		r.Equal("/test/two", filepath.ToSlash(p.Extract().OutPath()))
+			url, ok := downloadTask.Params().Lookup("url")
+			Expect(ok).To(BeTrue())
+			Expect(url).To(Equal("https://1.2"))
+
+			out, ok := downloadTask.Params().Lookup("out")
+			Expect(ok).To(BeTrue())
+			Expect(out).To(Equal("a_1.2.exe"))
+		})
+
+		It("can replace version in extract", func() {
+			p := New("a", "1.2",
+				tasks.NewExtractTask("", "/test/((version))", "ab_((version))"))
+			Expect(len(p.Tasks())).To(Equal(1))
+
+			extractTask := p.Tasks()[0]
+
+			archive, ok := extractTask.Params().Lookup("archive")
+			Expect(ok).To(BeTrue())
+			Expect(archive).To(Equal("/test/1.2"))
+		})
+
 	})
-}
+})

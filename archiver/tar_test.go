@@ -14,7 +14,7 @@ var _ = Describe("Tar", func() {
 	var (
 		a       archiver.Archiver
 		fs      afero.Fs
-		tarPath = "/tmp/temp.tar"
+		archive = "/tmp/temp.tar"
 	)
 	BeforeEach(func() {
 		fs = afero.NewMemMapFs()
@@ -26,18 +26,14 @@ var _ = Describe("Tar", func() {
 		})
 		Expect(err).To(BeNil())
 
-		output, err := fs.Create(tarPath)
-		Expect(err).To(BeNil())
-		defer output.Close()
-
 		a = archiver.NewTarArchiver(fs)
-		err = a.Archive(output, []string{"/tmp/test", "/tmp/test1", "/tmp/test2"})
+		err = a.Archive(archive, []string{"/tmp/test", "/tmp/test1", "/tmp/test2"})
 		Expect(err).To(BeNil())
 	})
 
 	Describe("RoundTrip", func() {
 		It("Can write and read back a tar file", func() {
-			testExtractTar(fs, a, tarPath, ".*", "/out/test")
+			testExtractTar(fs, a, archive, "/out/test", []string{".*"})
 			assertIsFile(fs, "/out/test")
 		})
 	})
@@ -46,7 +42,7 @@ var _ = Describe("Tar", func() {
 		Context("WhenFilterIsSet", func() {
 			It("extracts only matching files", func() {
 
-				testExtractTar(fs, a, tarPath, "^test$", "/out/test")
+				testExtractTar(fs, a, archive, "/out/test", []string{"^test$"})
 				assertExists(fs, "/out/test")
 				assertIsFile(fs, "/out/test")
 				assertNotExists(fs, "/out/test1")
@@ -77,11 +73,11 @@ func assertIsFile(fs afero.Fs, filePath string) {
 	Expect(ok).To(BeFalse(), fmt.Sprintf("'%s' should be a file", filePath))
 }
 
-func testExtractTar(fs afero.Fs, a archiver.Archiver, filePath string, filter string, out string) {
+func testExtractTar(fs afero.Fs, a archiver.Archiver, filePath string, out string, files []string) {
 	source, err := fs.Open(filePath)
 	Expect(err).To(BeNil())
 	defer source.Close()
 
-	err = a.Extract(source, filter, out)
+	err = a.Extract(filePath, out, files)
 	Expect(err).To(BeNil())
 }

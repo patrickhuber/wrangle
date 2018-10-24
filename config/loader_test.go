@@ -70,23 +70,9 @@ processes:
   - version
   env:
     TEST: value
-packages:
+imports:
 - name: bbr
-  version: 11.2.3  
-  platforms:
-  - name: linux
-    alias: bbr
-    download:
-      url: https://www.google.com
-      out: /test/out1
-    extract:
-      filter: "*.*"
-      out: /test/out3
-  - name: windows
-    alias: bbr.exe
-    download:      
-      url: https://www.google.com
-      out: /test/out
+  version: 11.2.3
 `
 	Expect(strings.ContainsAny(content, "\t")).To(BeFalse(), "tabs in content, must be spaces only for indention")
 	fileSystem := afero.NewMemMapFs()

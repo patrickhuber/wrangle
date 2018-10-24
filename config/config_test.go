@@ -1,10 +1,11 @@
-package config
+package config_test
 
 import (
 	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/config"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -25,29 +26,13 @@ processes:
   - test
   env:
     KEY: value
-packages:
+imports:
 - name: bosh
-  version: 6.7
-  platforms:
-  - name: linux
-    alias: bosh
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
-      out: bosh-cli-((version))-linux-amd64		
-  - name: windows
-    alias: bosh.exe
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
-      out: bosh-cli-((version))-windows-amd64.exe		
-  - name: darwin
-    alias: bosh
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
-      out: bosh-cli-((version))-darwin-amd64
+  version: 6.7  
 `
 		// vscode likes to be a bad monkey so clean up in case it gets over tabby
 		data = strings.Replace(data, "\t", "  ", -1)
-		config := Config{}
+		config := config.Config{}
 		err := yaml.Unmarshal([]byte(data), &config)
 		Expect(err).To(BeNil())
 
@@ -62,8 +47,29 @@ packages:
 		Expect(len(config.Processes[0].Vars)).To(Equal(1))
 
 		// packages
-		Expect(len(config.Packages)).To(Equal(1))
-		Expect(len(config.Packages[0].Platforms)).To(Equal(3))
+		Expect(len(config.Imports)).To(Equal(1))
 
+	})
+
+	It("can parse package", func() {
+		var data = `
+package:
+  name: test
+  version: 1.0
+  tasks:
+  - name: download
+    type: download
+    params: 
+      key: value
+      other: value
+  - name: extract
+    type: extract
+    params: 
+      key: value
+      other: value
+`
+		pkg := config.Package{}
+		err := yaml.Unmarshal([]byte(data), &pkg)
+		Expect(err).To(BeNil())
 	})
 })

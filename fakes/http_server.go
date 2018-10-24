@@ -39,11 +39,11 @@ func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 		// create the archiver for the file extension if not found assume binary
 		var a archiver.Archiver
 		if strings.HasSuffix(path, ".tgz") || strings.HasSuffix(path, ".tar.gz") {
-			a = archiver.NewTargzArchiver(fs)
+			a = archiver.NewTargz(fs)
 		} else if strings.HasSuffix(path, ".tar") {
-			a = archiver.NewTarArchiver(fs)
+			a = archiver.NewTar(fs)
 		} else if strings.HasSuffix(path, ".zip") {
-			a = archiver.NewZipArchiver(fs)
+			a = archiver.NewZip(fs)
 		} else {
 			ok, err := afero.Exists(fs, path)
 			if err != nil {
@@ -59,16 +59,9 @@ func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 		}
 
 		_, fileName := filepath.Split(path)
-		file, err := fs.Create(fileName)
-		if err != nil {
-			rw.WriteHeader(400)
-			rw.Write([]byte(fmt.Sprintf("error creating file %s: %s", fileName, err.Error())))
-			return
-		}
-		defer file.Close()
 
 		if a != nil {
-			err = a.Archive(file, filePaths)
+			err := a.Archive(fileName, filePaths)
 			if err != nil {
 				rw.WriteHeader(400)
 				rw.Write([]byte(fmt.Sprintf("error creating archive: %s", err.Error())))

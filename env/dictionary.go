@@ -34,3 +34,7 @@ func (d *dictionary) Lookup(key string) (string, bool) {
 func (d *dictionary) Unset(key string) error {
 	return os.Unsetenv(key)
 }
+
+func (d *dictionary) Keys() []string {
+	return os.Environ()
+}

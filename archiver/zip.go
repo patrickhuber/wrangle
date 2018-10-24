@@ -15,23 +15,30 @@ type zipArchive struct {
 	fileSystem afero.Fs
 }
 
-// NewZipArchiver creates a new zip archiver
-func NewZipArchiver(fs afero.Fs) Archiver {
+// NewZip creates a new zip archiver
+func NewZip(fs afero.Fs) Archiver {
 	return &zipArchive{
 		fileSystem: fs,
 	}
 }
 
-func (archive *zipArchive) Archive(output io.Writer, filePaths []string) error {
+func (archiver *zipArchive) Archive(archive string, files []string) error {
 
 	// create the base directory
-	baseDirectory := commonDirectory(filePaths...)
+	baseDirectory := commonDirectory(files...)
+
+	// create writer
+	archiveFile, err := archiver.fileSystem.Create(archive)
+	if err != nil {
+		return err
+	}
+	defer archiveFile.Close()
 
 	// create the zip writer
-	zipWriter := zip.NewWriter(output)
+	zipWriter := zip.NewWriter(archiveFile)
 	defer zipWriter.Close()
 
-	for _, file := range filePaths {
+	for _, file := range files {
 
 		relativePath, err := filepath.Rel(baseDirectory, file)
 		if err != nil {
@@ -44,7 +51,7 @@ func (archive *zipArchive) Archive(output io.Writer, filePaths []string) error {
 			return err
 		}
 
-		fileReader, err := archive.fileSystem.Open(file)
+		fileReader, err := archiver.fileSystem.Open(file)
 		if err != nil {
 			return err
 		}
@@ -58,11 +65,16 @@ func (archive *zipArchive) Archive(output io.Writer, filePaths []string) error {
 	return nil
 }
 
-func (archive *zipArchive) Extract(input io.Reader, filter string, destination string) error {
-	return archive.ExtractReader(input, filter, destination)
+func (archiver *zipArchive) Extract(archive string, destination string, files []string) error {
+	file, err := archiver.fileSystem.Open(archive)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return archiver.ExtractReader(file, destination, files)
 }
 
-func (archive *zipArchive) ExtractReader(input io.Reader, filter string, destination string) error {
+func (archiver *zipArchive) ExtractReader(input io.Reader, destination string, files []string) error {
 
 	// read the file into a buffer (perhaps use a temp file if this is too much memory)
 	buf := bytes.Buffer{}
@@ -86,7 +98,7 @@ func (archive *zipArchive) ExtractReader(input io.Reader, filter string, destina
 		targetFile = filepath.ToSlash(targetFile)
 
 		// open destination
-		destination, err := archive.fileSystem.Create(targetFile)
+		destination, err := archiver.fileSystem.Create(targetFile)
 		if err != nil {
 			return err
 		}

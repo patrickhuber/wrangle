@@ -3,7 +3,6 @@ package archiver
 import (
 	"compress/gzip"
 	"fmt"
-	"io"
 
 	"github.com/spf13/afero"
 )
@@ -13,28 +12,39 @@ type tgzArchiver struct {
 	fileSystem afero.Fs
 }
 
-// NewTargzArchiver returns a new targz archiver
-func NewTargzArchiver(fileSystem afero.Fs) Archiver {
+// NewTargz returns a new targz archiver
+func NewTargz(fileSystem afero.Fs) Archiver {
 	return &tgzArchiver{fileSystem: fileSystem}
 }
 
-func (archive *tgzArchiver) Archive(output io.Writer, filePaths []string) error {
-	return writeTarGz(archive.fileSystem, filePaths, output)
+func (tgz *tgzArchiver) Archive(archive string, filePaths []string) error {
+	return tgz.writeTarGz(archive, filePaths)
 }
 
-func writeTarGz(fileSystem afero.Fs, filePaths []string, output io.Writer) error {
-	gzw := gzip.NewWriter(output)
+func (tgz *tgzArchiver) writeTarGz(archive string, filePaths []string) error {
+	file, err := tgz.fileSystem.Create(archive)
+	if err != nil {
+		return err
+	}
+
+	gzw := gzip.NewWriter(file)
 	defer gzw.Close()
 
-	return writeTar(fileSystem, filePaths, gzw)
+	return NewTarArchiver(tgz.fileSystem).ArchiveWriter(gzw, filePaths)
 }
 
-func (archive *tgzArchiver) Extract(input io.Reader, filter string, destination string) error {
-	gzr, err := gzip.NewReader(input)
+func (tgz *tgzArchiver) Extract(archive string, destination string, files []string) error {
+
+	file, err := tgz.fileSystem.Open(archive)
+	if err != nil {
+		return err
+	}
+
+	gzr, err := gzip.NewReader(file)
 	if err != nil {
 		return fmt.Errorf("error decompressing: %v", err)
 	}
 	defer gzr.Close()
 
-	return NewTarArchiver(archive.fileSystem).Extract(gzr, filter, destination)
+	return NewTarArchiver(tgz.fileSystem).ExtractReader(gzr, destination, files)
 }

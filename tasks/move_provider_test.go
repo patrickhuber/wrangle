@@ -2,27 +2,30 @@ package tasks_test
 
 import (
 	. "github.com/patrickhuber/wrangle/tasks"
+	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("MoveTaskRunner", func() {
+var _ = Describe("MoveProvider", func() {
 	var (
-		taskRunner TaskRunner
+		provider   Provider
 		fileSystem afero.Fs
+		console    ui.Console
 	)
 	BeforeEach(func() {
 		fileSystem = afero.NewMemMapFs()
-		taskRunner = NewMoveTaskRunner(fileSystem)
+		console = ui.NewMemoryConsole()
+		provider = NewMoveProvider(fileSystem, console)
 	})
 	Describe("Execute", func() {
 		It("can move file", func() {
 			afero.WriteFile(fileSystem, "/test/file", []byte("test"), 0666)
 			task := NewTask("", "", map[string]string{"source": "/test/file", "destination": "/test/renamed"})
 
-			err := taskRunner.Execute(task)
+			err := provider.Execute(task)
 			Expect(err).To(BeNil())
 
 			exists, err := afero.Exists(fileSystem, "/test/renamed")
@@ -37,7 +40,7 @@ var _ = Describe("MoveTaskRunner", func() {
 			afero.WriteFile(fileSystem, "/test/file", []byte("test"), 0666)
 			task := NewTask("", "", map[string]string{"source": "/test", "destination": "/test1"})
 
-			err := taskRunner.Execute(task)
+			err := provider.Execute(task)
 			Expect(err).To(BeNil())
 
 			exists, err := afero.Exists(fileSystem, "/test1")

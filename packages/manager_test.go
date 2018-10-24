@@ -1,4 +1,4 @@
-package packages
+package packages_test
 
 import (
 	"net/http"
@@ -10,6 +10,9 @@ import (
 
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/tasks"
+	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 )
 
@@ -39,14 +42,15 @@ var _ = Describe("Manager", func() {
 
 				defer server.Close()
 
-				pkg := New(
-					"", "", "",
-					NewDownload(server.URL, "/test", "file"),
-					nil)
+				pkg := packages.New(
+					"", "",
+					tasks.NewDownloadTask(server.URL, "/test", "file"))
 
-				manager := NewManager(fileSystem)
+				registry := tasks.NewProviderRegistry()
+				registry.Register(tasks.NewDownloadProvider(fileSystem, ui.NewMemoryConsole()))
+				manager := packages.NewManager(fileSystem, registry)
 
-				err := manager.Download(pkg)
+				err := manager.Install(pkg)
 				Expect(err).ToNot(BeNil())
 
 				ok, err := afero.Exists(fileSystem, "/test/file")
@@ -55,6 +59,9 @@ var _ = Describe("Manager", func() {
 			})
 			It("returns an error", func() {
 				fileSystem := filesystem.NewMemMapFs()
+				registry := tasks.NewProviderRegistry()
+				registry.Register(tasks.NewDownloadProvider(fileSystem, ui.NewMemoryConsole()))
+				manager := packages.NewManager(fileSystem, registry)
 
 				// start the local http server
 				server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -64,14 +71,11 @@ var _ = Describe("Manager", func() {
 
 				defer server.Close()
 
-				pkg := New(
-					"", "", "",
-					NewDownload(server.URL, "", ""),
-					nil)
+				pkg := packages.New(
+					"", "",
+					tasks.NewDownloadTask(server.URL, "", ""))
 
-				manager := NewManager(fileSystem)
-
-				err := manager.Download(pkg)
+				err := manager.Install(pkg)
 				Expect(err).ToNot(BeNil())
 			})
 		})
@@ -111,17 +115,16 @@ var _ = Describe("Manager", func() {
 			}
 			url += "data"
 
-			pkg := New("", "", "symlink",
-				NewDownload(url, "/out", "data"),
-				nil)
+			pkg := packages.New("", "",
+				tasks.NewDownloadTask(url, "/out", "data"))
 
 			fs := filesystem.NewMemMapFs()
-			manager := NewManager(fs)
+			console := ui.NewMemoryConsole()
+			registry := tasks.NewProviderRegistry()
+			registry.Register(tasks.NewDownloadProvider(fs, console))
+			manager := packages.NewManager(fs, registry)
 
-			err := manager.Download(pkg)
-			Expect(err).To(BeNil())
-
-			err = manager.Link(pkg)
+			err := manager.Install(pkg)
 			Expect(err).To(BeNil())
 		})
 		Context("WhenSymlinkExists", func() {
@@ -146,16 +149,15 @@ var _ = Describe("Manager", func() {
 				}
 				url += "data"
 
-				pkg := New("", "", "symlink",
-					NewDownload(url, "/out", "data"),
-					nil)
+				pkg := packages.New("", "",
+					tasks.NewDownloadTask(url, "/out", "data"))
 
-				manager := NewManager(fs)
+				console := ui.NewMemoryConsole()
+				registry := tasks.NewProviderRegistry()
+				registry.Register(tasks.NewDownloadProvider(fs, console))
+				manager := packages.NewManager(fs, registry)
 
-				err = manager.Download(pkg)
-				Expect(err).To(BeNil())
-
-				err = manager.Link(pkg)
+				err = manager.Install(pkg)
 				Expect(err).To(BeNil())
 			})
 		})
@@ -172,33 +174,27 @@ func testDownloadExtractAndLink(files []fakes.TestFile, downloadOut, extractFilt
 	}
 	url += downloadOut
 
-	download := NewDownload(url, "/out", downloadOut)
-	var extract Extract
+	t := make([]tasks.Task, 0)
+	download := tasks.NewDownloadTask("download", url, downloadOut)
+	t = append(t, download)
 	if extractFilter != "" && extractOut != "" {
-		extract = NewExtract(extractFilter, "/out", extractOut)
+		extract := tasks.NewExtractTask("extract", downloadOut, extractOut)
+		t = append(t, extract)
+	}
+	if alias != "" {
+		link := tasks.NewLinkTask("link", downloadOut, alias)
+		t = append(t, link)
 	}
 
-	p := New("", "", alias, download, extract)
+	p := packages.New("", "", t...)
 
-	fs := filesystem.NewMemMapFsWrapper(afero.NewMemMapFs())
-	manager := NewManager(fs)
+	fs := filesystem.NewMemMapFs()
+	console := ui.NewMemoryConsole()
+	registry := tasks.NewProviderRegistry()
+	registry.Register(tasks.NewDownloadProvider(fs, console))
+	manager := packages.NewManager(fs, registry)
 
-	err := manager.Download(p)
-	Expect(err).To(BeNil())
-
-	if extract != nil {
-		err = manager.Extract(p)
-		Expect(err).To(BeNil())
-
-		ok, err := afero.Exists(fs, extract.OutPath())
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
-	}
-
-	if alias == "" {
-		return
-	}
-	err = manager.Link(p)
+	err := manager.Install(p)
 	Expect(err).To(BeNil())
 }
 
@@ -212,16 +208,20 @@ func testDownloadFile(fileName string) {
 	}
 	url += fileName
 
-	download := NewDownload(url, "/out", fileName)
-	p := New("", "", "", download, nil)
+	download := tasks.NewDownloadTask("download", url, "/out")
+	p := packages.New("", "", download)
 
 	fs := filesystem.NewMemMapFs()
 
-	manager := NewManager(fs)
-	err := manager.Download(p)
+	console := ui.NewMemoryConsole()
+	registry := tasks.NewProviderRegistry()
+	registry.Register(tasks.NewDownloadProvider(fs, console))
+	manager := packages.NewManager(fs, registry)
+
+	err := manager.Install(p)
 	Expect(err).To(BeNil())
 
-	ok, err := afero.Exists(fs, download.OutPath())
+	ok, err := afero.Exists(fs, "/out")
 	Expect(err).To(BeNil())
 	Expect(ok).To(BeTrue())
 }
@@ -230,27 +230,27 @@ func testExtractFile(fileName string) {
 	server := fakes.NewHTTPServer()
 	defer server.Close()
 
-	extract := NewExtract(".*", "/out", "test.txt")
+	extract := tasks.NewExtractTask("extract", "/out", "test.txt")
 	url := server.URL
 	if !strings.HasSuffix(url, "/") {
 		url += "/"
 	}
 	url += fileName
-	p := New("", "", "",
-		NewDownload(url, "/in", fileName),
+	p := packages.New("", "",
+		tasks.NewDownloadTask(url, "/in", fileName),
 		extract)
 
 	fs := filesystem.NewMemMapFs()
 
-	manager := NewManager(fs)
+	console := ui.NewMemoryConsole()
+	registry := tasks.NewProviderRegistry()
+	registry.Register(tasks.NewDownloadProvider(fs, console))
+	manager := packages.NewManager(fs, registry)
 
-	err := manager.Download(p)
+	err := manager.Install(p)
 	Expect(err).To(BeNil())
 
-	err = manager.Extract(p)
-	Expect(err).To(BeNil())
-
-	ok, err := afero.Exists(fs, extract.OutPath())
+	ok, err := afero.Exists(fs, "/out/test.txt")
 	Expect(err).To(BeNil())
 	Expect(ok).To(BeTrue())
 }

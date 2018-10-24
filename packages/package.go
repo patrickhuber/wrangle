@@ -2,40 +2,41 @@ package packages
 
 import (
 	"strings"
+
+	"github.com/patrickhuber/wrangle/tasks"
 )
 
 // Package represents an interface for a binary package of software
 type Package interface {
-	Download() Download
-	Extract() Extract
 	Version() string
-	Alias() string
+	Name() string
+	Tasks() []tasks.Task
 }
 
 type pkg struct {
-	download Download
-	extract  Extract
-	version  string
-	alias    string
-	name     string
+	version string
+	alias   string
+	name    string
+	tasks   []tasks.Task
 }
 
 // New creates a new package ready for download
-func New(name string, version string, alias string, download Download, extract Extract) Package {
-	return &pkg{
-		download: interpolateDownload(version, download),
-		extract:  interpolateExtract(version, extract),
-		version:  version,
-		alias:    alias,
-		name:     name}
+func New(name string, version string, packageTasks ...tasks.Task) Package {
+	p := &pkg{
+		version: version,
+		name:    name,
+	}
+	interpolatedTasks := make([]tasks.Task, 0)
+	for _, task := range packageTasks {
+		interpolatedTask := p.interpolateTask(task)
+		interpolatedTasks = append(interpolatedTasks, interpolatedTask)
+	}
+	p.tasks = interpolatedTasks
+	return p
 }
 
-func (p *pkg) Download() Download {
-	return p.download
-}
-
-func (p *pkg) Extract() Extract {
-	return p.extract
+func (p *pkg) Name() string {
+	return p.name
 }
 
 func (p *pkg) Version() string {
@@ -46,26 +47,29 @@ func (p *pkg) Alias() string {
 	return p.alias
 }
 
-func interpolateDownload(version string, download Download) Download {
-	if download == nil {
-		return nil
-	}
-	url := replaceVersion(download.URL(), version)
-	outFile := replaceVersion(download.OutFile(), version)
-	outFolder := replaceVersion(download.OutFolder(), version)
-	return NewDownload(url, outFolder, outFile)
+func (p *pkg) Tasks() []tasks.Task {
+	return p.tasks
 }
 
-func interpolateExtract(version string, extract Extract) Extract {
-	if extract == nil {
+func (p *pkg) interpolateTask(task tasks.Task) tasks.Task {
+	if task == nil {
 		return nil
 	}
-	filter := replaceVersion(extract.Filter(), version)
-	outFile := replaceVersion(extract.OutFile(), version)
-	outFolder := replaceVersion(extract.OutFolder(), version)
-	return NewExtract(filter, outFolder, outFile)
+	dictionary := task.Params()
+	params := make(map[string]string)
+	for _, key := range dictionary.Keys() {
+		value, _ := dictionary.Get(key)
+		value = replaceVersion(value, p.version)
+		value = replaceName(value, p.name)
+		params[key] = value
+	}
+	return tasks.NewTask(task.Name(), task.Type(), params)
 }
 
 func replaceVersion(input string, version string) string {
 	return strings.Replace(input, "((version))", version, -1)
+}
+
+func replaceName(input string, name string) string {
+	return strings.Replace(input, "((name))", name, -1)
 }

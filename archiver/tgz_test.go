@@ -17,19 +17,11 @@ var _ = Describe("Tgz", func() {
 			err := afero.WriteFile(fileSystem, "/tmp/test", []byte("this is a test"), 0666)
 			Expect(err).To(BeNil())
 
-			output, err := fileSystem.Create("/tmp/temp.tgz")
-			Expect(err).To(BeNil())
-			defer output.Close()
-
-			a := archiver.NewTargzArchiver(fileSystem)
-			err = a.Archive(output, []string{"/tmp/test"})
+			a := archiver.NewTargz(fileSystem)
+			err = a.Archive("/tmp/temp.tgz", []string{"/tmp/test"})
 			Expect(err).To(BeNil())
 
-			source, err := fileSystem.Open("/tmp/temp.tgz")
-			Expect(err).To(BeNil())
-			defer source.Close()
-
-			err = a.Extract(source, ".*", "/tmp")
+			err = a.Extract("/tmp/temp.tgz", "/tmp", []string{".*"})
 			Expect(err).To(BeNil())
 		})
 	})

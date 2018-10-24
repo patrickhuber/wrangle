@@ -10,14 +10,14 @@ type dictionary struct {
 type ReadOnlyDictionary interface {
 	Get(key string) (string, error)
 	Lookup(key string) (string, bool)
+	Keys() []string
 }
 
 // Dictionary defines a dictionary interface
 type Dictionary interface {
-	Get(key string) (string, error)
+	ReadOnlyDictionary
 	Set(key, value string) error
 	Unset(key string) error
-	Lookup(key string) (string, bool)
 }
 
 // NewDictionary creates a new dictionary
@@ -51,4 +51,12 @@ func (d *dictionary) Unset(key string) error {
 func (d *dictionary) Lookup(key string) (string, bool) {
 	value, ok := d.data[key]
 	return value, ok
+}
+
+func (d *dictionary) Keys() []string {
+	keys := make([]string, 0)
+	for key := range d.data {
+		keys = append(keys, key)
+	}
+	return keys
 }

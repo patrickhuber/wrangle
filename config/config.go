@@ -2,9 +2,9 @@ package config
 
 // Config represents a grouping of environments, stores and packages
 type Config struct {
-	Stores    []Store   `yaml:"stores"`
-	Packages  []Package `yaml:"packages"`
-	Processes []Process `yaml:"processes"`
+	Stores    []Store            `yaml:"stores"`
+	Processes []Process          `yaml:"processes"`
+	Imports   []PackageReference `yaml:"imports"`
 }
 
 // Store represents a configuration store
@@ -25,6 +25,12 @@ type Process struct {
 	Vars   map[string]string `yaml:"env"`
 }
 
+// PackageReference represents a reference to a package
+type PackageReference struct {
+	Name    string `yaml:"name"`
+	Version string `yaml:"version"`
+}
+
 // Package represents a versioned artifiact
 type Package struct {
 	Name      string     `yaml:"name"`
@@ -34,20 +40,13 @@ type Package struct {
 
 // Platform represents a package platform install instructions
 type Platform struct {
-	Name     string    `yaml:"name"`
-	Download *Download `yaml:"download"`
-	Alias    string    `yaml:"alias"`
-	Extract  *Extract  `yaml:"extract"`
+	Name  string `yaml:"name"`
+	Tasks []Task `yaml:"tasks"`
 }
 
-// Download represents a package download
-type Download struct {
-	Out string `yaml:"out"`
-	URL string `yaml:"url"`
-}
-
-// Extract represents package extract information
-type Extract struct {
-	Out    string `yaml:"out"`
-	Filter string `yaml:"filter"`
+// Task represents a generic task to perform on the platform
+type Task struct {
+	Name   string                 `yaml:"name"`
+	Type   string                 `yaml:"type"`
+	Params map[string]interface{} `yaml:"params"`
 }
