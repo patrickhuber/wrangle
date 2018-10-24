@@ -41,7 +41,6 @@ func (cmd *packagesCommand) Execute(configuration *config.Config) error {
 			continue
 		}
 		packageVersions, err := afero.ReadDir(cmd.fileSystem, packageFolder.Name())
-
 		if err != nil {
 			return err
 		}

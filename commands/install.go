@@ -89,6 +89,7 @@ func (cmd *install) findConfigPackage(packageName, packageVersion string) (*conf
 			break
 		}
 	}
+
 	configPackage, err := cmd.loader.LoadPackage(packageManifestPath)
 	if err != nil {
 		return nil, err
