@@ -84,7 +84,7 @@ processes:
 
 			// load the config
 			loader := config.NewLoader(fileSystem)
-			cfg, err := loader.Load("/config")
+			cfg, err := loader.LoadConfig("/config")
 			Expect(err).To(BeNil())
 
 			// create and run command
@@ -212,7 +212,7 @@ func RunPrintTest(
 
 	// load the config
 	loader := config.NewLoader(fileSystem)
-	cfg, err := loader.Load("/config")
+	cfg, err := loader.LoadConfig("/config")
 	Expect(err).To(BeNil())
 
 	// create and run command

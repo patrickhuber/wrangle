@@ -34,7 +34,7 @@ func (loader *loader) LoadConfig(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return SerializeConfig(data)
+	return DeserializeConfig(data)
 }
 
 func (loader *loader) LoadPackage(packagePath string) (*Package, error) {
@@ -42,7 +42,7 @@ func (loader *loader) LoadPackage(packagePath string) (*Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	return SerializePackage(data)
+	return DeserializePackage(data)
 }
 
 func (loader *loader) loadFileData(path string) ([]byte, error) {

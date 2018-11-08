@@ -1,41 +1,50 @@
-package commands
+package commands_test
 
 import (
 	"fmt"
 	"net/http/httptest"
-	"strings"
+	"path"
 
+	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filepath"
+	"github.com/patrickhuber/wrangle/ui"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/tasks"
 
 	"github.com/spf13/afero"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/patrickhuber/wrangle/ui"
+	"github.com/patrickhuber/wrangle/packages"
 )
 
 var _ = Describe("Install", func() {
+	var (
+		platform     string
+		packagesPath string
+		fileSystem   filesystem.FsWrapper
+		manager      packages.Manager
+		loader       config.Loader
+	)
 	Describe("NewInstall", func() {
-		It("returns value", func() {
-			platform := "windows"
-			outFolder := ""
-			fileSystem := filesystem.NewOsFsWrapper(afero.NewMemMapFs())
-			_, err := NewInstall(platform, outFolder, fileSystem, ui.NewMemoryConsole())
-			Expect(err).ToNot(BeNil())
+		It("returns install command", func() {
+			command, err := commands.NewInstall(platform, packagesPath, fileSystem, manager, loader)
+			Expect(err).To(BeNil())
+			Expect(command).ToNot(BeNil())
 		})
-
 	})
 	Describe("Execute", func() {
+		const packagesRootPosix = "/opt/wrangle/pacakges"
+		const packagesRootWindows = "c:" + packagesRootPosix
 		var (
-			platform   string
-			outFolder  string
-			fileName   string
-			extractOut string
-			server     *httptest.Server
+			platform         string
+			downloadFileName string
+			archive          string
+			destination      string
+			server           *httptest.Server
 		)
 		BeforeSuite(func() {
 			server = fakes.NewHTTPServerWithArchive(
@@ -49,175 +58,122 @@ var _ = Describe("Install", func() {
 		})
 		AfterEach(func() {
 			url := server.URL
-			if !strings.HasSuffix(url, "/") {
-				url += "/"
+			packageVersion := "1.0.0"
+			packageName := "test"
+			packagesRoot := packagesRootPosix
+			if platform == "windows" {
+				packagesRoot = packagesRootWindows
 			}
-			url += fileName
-			err := runInstallCommand(platform, outFolder, url, fileName, extractOut)
+
+			// create command dependencies
+			console := ui.NewMemoryConsole()
+			fs := filesystem.NewMemMapFs()
+			loader := config.NewLoader(fs)
+
+			taskProviders := tasks.NewProviderRegistry()
+			taskProviders.Register(tasks.NewExtractProvider(fs, console))
+			taskProviders.Register(tasks.NewDownloadProvider(fs, console))
+			taskProviders.Register(tasks.NewMoveProvider(fs, console))
+			taskProviders.Register(tasks.NewLinkProvider(fs, console))
+
+			manager := packages.NewManager(fs, taskProviders)
+
+			out := filepath.Join("/", downloadFileName)
+			url = path.Join(url, downloadFileName)
+
+			// create the package manifest
+			packageManifest, err := createPackageManifest(packageName, packageVersion, platform, url, out, archive, destination)
+			Expect(err).To(BeNil())
+
+			packagePath := filepath.Join(packagesRoot, packageName, packageVersion)
+			packageManifestPath := filepath.Join(packagePath, fmt.Sprintf("%s.%s.yml", packageName, packageVersion))
+			err = afero.WriteFile(fs, packageManifestPath, []byte(packageManifest), 0600)
+			Expect(err).To(BeNil())
+
+			// create the command and execute it
+			command, err := commands.NewInstall(platform, packagesRoot, fs, manager, loader)
+			Expect(err).To(BeNil())
+
+			err = command.Execute(packageName, packageVersion)
 			Expect(err).To(BeNil())
 		})
-		Context("WhenWindows", func() {
+		When("Windows", func() {
 			BeforeEach(func() {
 				platform = "windows"
-				outFolder = "c:\\out"
-				extractOut = "test.exe"
 			})
-			Context("WhenTar", func() {
+			When("Tar", func() {
 				It("installs", func() {
-					fileName = "test.tar"
+					downloadFileName = "test.tar"
 				})
 			})
-			Context("WhenTgz", func() {
+			When("Tgz", func() {
 				It("installs", func() {
-					fileName = "test.tgz"
+					downloadFileName = "test.tgz"
 				})
 			})
-			Context("WhenZip", func() {
+			When("Zip", func() {
 				It("installs", func() {
-					fileName = "test.zip"
+					downloadFileName = "test.zip"
 				})
 			})
-			Context("WhenBinary", func() {
+			When("Binary", func() {
 				It("installs", func() {
-					fileName = "test.exe"
-					extractOut = ""
+					downloadFileName = "test.exe"
 				})
 			})
 		})
-		Context("WhenDarwin", func() {
+		When("Linux", func() {
 			BeforeEach(func() {
-				platform = "darwin"
-				outFolder = "/out"
-				extractOut = "test"
-			})
-			Context("WhenTar", func() {
-				It("installs", func() {
-					fileName = "test.tar"
-				})
-			})
-			Context("WhenTgz", func() {
-				It("installs", func() {
-					fileName = "test.tgz"
-				})
-			})
-			Context("WhenZip", func() {
-				It("installs", func() {
-					fileName = "test.zip"
-				})
-			})
-			Context("WhenBinary", func() {
-				It("installs", func() {
-					extractOut = ""
-					fileName = "test"
-				})
+				platform = "linux"
 			})
 		})
-		Context("WhenLinux", func() {
+		When("Darwin", func() {
 			BeforeEach(func() {
 				platform = "darwin"
-				outFolder = "/out"
-				extractOut = "test"
-			})
-			Context("WhenTar", func() {
-				It("installs", func() {
-					fileName = "test.tar"
-				})
-			})
-			Context("WhenTgz", func() {
-				It("installs", func() {
-					fileName = "test.tgz"
-				})
-			})
-			Context("WhenZip", func() {
-				It("installs", func() {
-					fileName = "test.zip"
-				})
-			})
-			Context("WhenBinary", func() {
-				It("installs", func() {
-					fileName = "test"
-					extractOut = ""
-				})
 			})
 		})
 	})
 })
 
-func runInstallCommand(platform, outFolder, downloadURL, downloadOut, extractOut string) error {
-	version := "1.0.0"
-	name := "test"
-	alias := "alias"
-	extractFilter := extractOut
-
-	content := getContent(name, version, platform, alias, downloadURL, downloadOut, extractFilter, extractOut)
-	fs := filesystem.NewMemMapFs()
-	command, err := NewInstall(platform, outFolder, fs, ui.NewMemoryConsole())
-	if err != nil {
-		return err
+func createPackageManifest(
+	name string,
+	version string,
+	platform string,
+	url string,
+	outFile string,
+	archive string,
+	destination string) (string, error) {
+	taskList := []config.Task{
+		config.Task{
+			Name: "download",
+			Type: "download",
+			Params: map[string]interface{}{
+				"url": url,
+				"out": outFile,
+			},
+		},
 	}
-
-	cfg, err := config.SerializeString(content)
-	if err != nil {
-		return err
-	}
-
-	err = command.Execute(cfg, name)
-	if err != nil {
-		return err
-	}
-
-	// verify the downloaded file exists
-	expectedFilePath := filepath.Join(outFolder, downloadOut)
-	expectedFilePath = filepath.ToSlash(expectedFilePath)
-	ok, err := afero.Exists(fs, expectedFilePath)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return fmt.Errorf("unable to find file '%s'", expectedFilePath)
-	}
-
-	if extractFilter != "" && extractOut != "" {
-		// verify the extracted file exists
-		expectedFilePath = filepath.Join(outFolder, extractOut)
-		expectedFilePath = filepath.ToSlash(expectedFilePath)
-		ok, err := afero.Exists(fs, expectedFilePath)
-		if err != nil {
-			return err
+	if archive != "" && destination != "" {
+		extractTask := config.Task{
+			Name: "extract",
+			Type: "extract",
+			Params: map[string]interface{}{
+				"archive":     archive,
+				"destination": destination,
+			},
 		}
-		if !ok {
-			return fmt.Errorf("unable to find file '%s'", expectedFilePath)
-		}
+		taskList = append(taskList, extractTask)
 	}
-	return nil
-}
+	packageConfig := &config.Package{
+		Name:    name,
+		Version: version,
+		Platforms: []config.Platform{
+			config.Platform{
+				Name:  platform,
+				Tasks: taskList,
+			},
+		},
+	}
 
-func getContent(name, version, platform, alias, downloadURL, downloadOut, extractFilter, extractOut string) string {
-	content := `
-packages:
-- name: ((name))
-  version: ((version))
-  platforms:
-  - name: ((platform))
-    alias: ((alias))
-    download:
-      url: ((download_url))
-      out: ((download_out))
-`
-	if extractFilter != "" && extractOut != "" {
-		content += `
-    extract:
-      filter: ((extract_filter))
-      out: ((extract_out))
-`
-		content = strings.Replace(content, "((extract_filter))", extractFilter, -1)
-		content = strings.Replace(content, "((extract_out))", extractOut, -1)
-	}
-	content = strings.Replace(content, "((name))", name, -1)
-	content = strings.Replace(content, "((version))", version, -1)
-	content = strings.Replace(content, "((platform))", platform, -1)
-	content = strings.Replace(content, "((alias))", alias, -1)
-	content = strings.Replace(content, "((download_url))", downloadURL, -1)
-	content = strings.Replace(content, "((download_out))", downloadOut, -1)
-	return content
+	return config.SerializePackage(packageConfig)
 }

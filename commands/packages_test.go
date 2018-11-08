@@ -1,43 +1,27 @@
-package commands
+package commands_test
 
 import (
-	"bytes"
-	"testing"
-
-	"github.com/patrickhuber/wrangle/config"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/stretchr/testify/require"
+	"github.com/spf13/afero"
 )
 
-func TestPackagesCommand(t *testing.T) {
-	t.Run("CanExecutePackagesCommand", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("Packages", func() {
+	Describe("Execute", func() {
+		It("lists packages from package path", func() {
+			console := ui.NewMemoryConsole()
+			packagePath := "/opt/wrangle/packages"
 
-		// create console
-		console := ui.NewMemoryConsole()
+			fileSystem := afero.NewMemMapFs()
+			afero.WriteFile(fileSystem, "/opt/wrangle/packages/test/0.1.1/test.0.1.1.yml", []byte("this is a package"), 0600)
 
-		// create the command
-		pkgs := NewPackages(console)
+			command := commands.NewPackages(fileSystem, console, packagePath)
+			Expect(command).ToNot(BeNil())
+			Expect(command.Execute()).To(BeNil())
 
-		// create the configuration
-		content := `
-packages:
-- name: one
-  version: 0.1.1
-- name: two
-  version: 2.3.1
-`
-		configuration, err := config.SerializeString(content)
-		r.Nil(err)
-
-		// execute the command
-		err = pkgs.Execute(configuration)
-		r.Nil(err)
-
-		// verify output
-		b, ok := console.Out().(*bytes.Buffer)
-		r.True(ok)
-		r.NotNil(b)
-		r.Equal("name version\n---- -------\none  0.1.1\ntwo  2.3.1\n", b.String())
+			Expect(console.OutAsString()).To(Equal("name\tversion\n"))
+		})
 	})
-}
+})

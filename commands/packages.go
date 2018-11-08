@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
 )
 
@@ -18,7 +17,7 @@ type packagesCommand struct {
 
 // PackagesCommand lists all packages in the configuration
 type PackagesCommand interface {
-	Execute(configuration *config.Config) error
+	Execute() error
 }
 
 // NewPackages returns a new packages command object
@@ -28,7 +27,7 @@ func NewPackages(fileSystem afero.Fs, console ui.Console, packagePath string) Pa
 		packagePath: packagePath}
 }
 
-func (cmd *packagesCommand) Execute(configuration *config.Config) error {
+func (cmd *packagesCommand) Execute() error {
 	w := tabwriter.NewWriter(cmd.console.Out(), 0, 0, 1, ' ', 0)
 	fmt.Fprintln(w, "name\tversion")
 	fmt.Fprintln(w, "----\t-------")

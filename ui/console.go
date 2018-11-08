@@ -13,6 +13,13 @@ type Console interface {
 	In() io.Reader
 }
 
+// MemoryConsole adds additional functions for getting output
+type MemoryConsole interface {
+	Console
+	OutAsString() string
+	ErrorAsString() string
+}
+
 type console struct {
 	out io.Writer
 	err io.Writer
@@ -29,7 +36,7 @@ func NewOSConsole() Console {
 }
 
 // NewMemoryConsole creates a new memory console with bytes.Buffer for each member
-func NewMemoryConsole() Console {
+func NewMemoryConsole() MemoryConsole {
 	return &console{
 		out: &bytes.Buffer{},
 		err: &bytes.Buffer{},
@@ -47,4 +54,12 @@ func (console *console) Error() io.Writer {
 
 func (console *console) In() io.Reader {
 	return console.in
+}
+
+func (console *console) OutAsString() string {
+	return console.out.(*bytes.Buffer).String()
+}
+
+func (console *console) ErrorAsString() string {
+	return console.err.(*bytes.Buffer).String()
 }

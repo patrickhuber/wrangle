@@ -47,7 +47,7 @@ processes:
 
 		// load the config
 		loader := config.NewLoader(fileSystem)
-		cfg, err := loader.Load("/config")
+		cfg, err := loader.LoadConfig("/config")
 		r.Nil(err)
 
 		// run the run command
@@ -79,7 +79,7 @@ processes:
 
 		// load the config
 		loader := config.NewLoader(fileSystem)
-		cfg, err := loader.Load("/config")
+		cfg, err := loader.LoadConfig("/config")
 		r.Nil(err)
 
 		// run the run command

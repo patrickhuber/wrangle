@@ -64,7 +64,7 @@ processes:
   path: go
   args:
   - ((version))`
-	cfg, err := config.SerializeString(data)
+	cfg, err := config.DeserializeConfigString(data)
 	r.Nil(err)
 
 	provider := &fakeProvider{
@@ -115,7 +115,7 @@ processes:
   args:
   - ((/key))
 `
-		configuration, err := config.SerializeString(content)
+		configuration, err := config.DeserializeConfigString(content)
 		r.Nil(err)
 
 		fileSystem := afero.NewMemMapFs()
@@ -150,7 +150,7 @@ processes:
   env:
     prop: ((/prop))
 `
-		configuration, err := config.SerializeString(content)
+		configuration, err := config.DeserializeConfigString(content)
 		r.Nil(err)
 
 		fileSystem := afero.NewMemMapFs()
@@ -194,7 +194,7 @@ processes:
   args:
   - ((/key1))
 `
-		configuration, err := config.SerializeString(content)
+		configuration, err := config.DeserializeConfigString(content)
 		r.Nil(err)
 
 		fileSystem := afero.NewMemMapFs()
@@ -242,7 +242,7 @@ processes:
   args:
   - ((/key1))
 `
-		configuration, err := config.SerializeString(content)
+		configuration, err := config.DeserializeConfigString(content)
 		r.Nil(err)
 
 		fileSystem := afero.NewMemMapFs()
@@ -280,7 +280,7 @@ processes:
     B: ((b))
     C: ((c))`
 
-		configuration, err := config.SerializeString(content)
+		configuration, err := config.DeserializeConfigString(content)
 		r.Nil(err)
 
 		fileSystem := afero.NewMemMapFs()

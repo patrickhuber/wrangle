@@ -7,9 +7,13 @@ import (
 	"net/http/httptest"
 	"os"
 
+	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/tasks"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/collections"
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
@@ -49,6 +53,15 @@ var _ = Describe("Main", func() {
 			console := ui.NewMemoryConsole()
 			platform := "linux"
 			variables := collections.NewDictionary()
+			loader := config.NewLoader(fileSystem)
+
+			taskProviders := tasks.NewProviderRegistry()
+			taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
+			taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
+			taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
+			taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
+
+			packagesManager := packages.NewManager(fileSystem, taskProviders)
 
 			variables.Set(global.ConfigFileKey, "/config")
 			variables.Set(global.PackagePathKey, "/packages")
@@ -61,7 +74,9 @@ var _ = Describe("Main", func() {
 				factory,
 				console,
 				platform,
-				variables)
+				variables,
+				loader,
+				packagesManager)
 			Expect(err).To(BeNil())
 			Expect(app).ToNot(BeNil())
 
@@ -115,6 +130,16 @@ func runPrintTest(command string, expected string) {
 	processFactory := processes.NewOsFactory() // change to fake process factory?
 	console := ui.NewMemoryConsole()
 
+	loader := config.NewLoader(fileSystem)
+
+	taskProviders := tasks.NewProviderRegistry()
+	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
+	taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
+	taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
+	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
+
+	packagesManager := packages.NewManager(fileSystem, taskProviders)
+
 	// create config file
 	configFileContent := `
 ---
@@ -153,7 +178,9 @@ processes:
 		processFactory,
 		console,
 		platform,
-		collections.NewDictionary())
+		collections.NewDictionary(),
+		loader,
+		packagesManager)
 	Expect(err).To(BeNil())
 	Expect(app).ToNot(BeNil())
 

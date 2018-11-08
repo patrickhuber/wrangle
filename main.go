@@ -303,11 +303,7 @@ func createPackagesCommand(
 		Action: func(context *cli.Context) error {
 			packagesPath := context.String("path")
 			packagesCommand := commands.NewPackages(fileSystem, console, packagesPath)
-			cfg, err := loadConfiguration(context, loader)
-			if err != nil {
-				return err
-			}
-			return packagesCommand.Execute(cfg)
+			return packagesCommand.Execute()
 		},
 	}
 }

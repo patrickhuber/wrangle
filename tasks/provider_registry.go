@@ -18,6 +18,7 @@ func NewProviderRegistry() ProviderRegistry {
 		providers: make(map[string]Provider),
 	}
 }
+
 func (registry *providerRegistry) Register(provider Provider) {
 	registry.providers[provider.TaskType()] = provider
 }

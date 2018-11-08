@@ -23,7 +23,7 @@ processes:
 - name: wrangle
 - name: dangle
 `
-		cfg, err := config.SerializeString(content)
+		cfg, err := config.DeserializeConfigString(content)
 		r.Nil(err)
 		err = cmd.Execute(cfg)
 		r.Nil(err)
