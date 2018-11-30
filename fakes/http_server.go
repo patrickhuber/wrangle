@@ -59,7 +59,7 @@ func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 		}
 
 		_, fileName := filepath.Split(path)
-
+		loadPath := path
 		if a != nil {
 			err := a.Archive(fileName, filePaths)
 			if err != nil {
@@ -67,9 +67,10 @@ func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 				rw.Write([]byte(fmt.Sprintf("error creating archive: %s", err.Error())))
 				return
 			}
+			loadPath = fileName
 		}
 
-		buf, err := afero.ReadFile(fs, fileName)
+		buf, err := afero.ReadFile(fs, loadPath)
 		if err != nil {
 			rw.WriteHeader(400)
 			rw.Write([]byte(fmt.Sprintf("error reading file %s: %s", fileName, err.Error())))

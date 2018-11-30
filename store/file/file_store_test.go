@@ -8,30 +8,40 @@ import (
 
 	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/require"
+	
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestCanRoundTripFile(t *testing.T) {
-	fileSystem := afero.NewMemMapFs()
-	fileContent := "this\nis\ntext"
-	require := require.New(t)
+var _ = Describe("FileStore", func(){
+	It("can round trip file", func(){
+		fileSystem := afero.NewMemMapFs()
+		fileContent := "this\nis\ntext"
+		
+		err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
+		Expect(err).To(BeNil())
+	
+		data, err := afero.ReadFile(fileSystem, "/test")
+		Expect(err).To(BeNil())
+		Expect(string(data)).To(Equal(fileContent))
+	})
 
-	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
-	require.Nil(err)
+	Context("Encrypted", func(){
+	
+		var(
+			fileSystem afero.Fs
+			fileContent string
+			fileStore store.Store
+			encryptedFileStore store.Store
+		)
+	
+		BeforeEach(func(){
+			r := require.New(t)
 
-	data, err := afero.ReadFile(fileSystem, "/test")
-	require.Nil(err)
-	require.Equal(fileContent, string(data))
-}
+			const fileStoreName string = "fileStore"
+			fileSystem = afero.NewMemMapFs()
 
-func TestFileStore(t *testing.T) {
-
-	r := require.New(t)
-
-	const fileStoreName string = "fileStore"
-	fileSystem := afero.NewMemMapFs()
-
-	fileContent := `value: aaaaaaaaaaaaaaaa
+			fileContent = `value: aaaaaaaaaaaaaaaa
 password: bbbbbbbbbbbbbbbb
 certificate:
   ca: |
@@ -54,147 +64,158 @@ ssh:
   private_key: private-key
   public_key_fingerprint: public-key-fingerprint`
 
-	platform := "linux"
-	err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
-	r.Nil(err)
+			platform := "linux"
+			err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
+			Expect(err).To(BeNil())
 
-	file := "/test"
-	fileStore, err := NewFileStore(fileStoreName, file, fileSystem, nil)
-	r.Nil(err)
-	r.NotNil(fileStore)
+			file := "/test"
+			fileStore, err = NewFileStore(fileStoreName, file, fileSystem, nil)
+			Expect(err).To(BeNil())
+			r.NotNil(fileStore)
 
-	factory, err := crypto.NewPgpFactory(fileSystem, platform)
-	r.Nil(err)
+			factory, err := crypto.NewPgpFactory(fileSystem, platform)
+			Expect(err).To(BeNil())
 
-	err = createEncryptionKey(fileSystem, factory.Context())
-	r.Nil(err)
+			err = createEncryptionKey(fileSystem, factory.Context())
+			Expect(err).To(BeNil())
 
-	encryptor, err := factory.CreateEncryptor()
-	r.Nil(err)
+			encryptor, err := factory.CreateEncryptor()
+			Expect(err).To(BeNil())
 
-	err = crypto.EncryptFile(fileSystem, encryptor, file, file+".gpg")
-	r.Nil(err)
+			err = crypto.EncryptFile(fileSystem, encryptor, file, file+".gpg")
+			Expect(err).To(BeNil())
 
-	decryptor, err := factory.CreateDecryptor()
-	r.Nil(err)
+			decryptor, err := factory.CreateDecryptor()
+			Expect(err).To(BeNil())
 
-	encryptedFileStore, err := NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decryptor)
-	r.Nil(err)
+			encryptedFileStore, err = NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decryptor)
+			Expect(err).To(BeNil())
+		})
+		
+		Describe("Name", func(){
+			It("returns name", func(){
+				name := fileStore.Name()
+				Expect(name).To(Equal(fileStoreName))
+			})			
+		})
 
-	t.Run("CanGetName", func(t *testing.T) {
-		require := require.New(t)
-		name := fileStore.Name()
-		require.Equal(name, fileStoreName)
+		Describe("Type", func(){
+			It("returns type", func(){
+				t := fileStore.Type()
+				Expect(t).To(Equal("file"))
+			})
+		})
+
+		Describe("GetByName", func(){
+			Context("ByPath", func(){
+
+				Context("value", func(){
+					It("returns value", func(){
+						data, err := fileStore.GetByName("/value")
+						Expect(err).To(BeNil())
+						Expect(data).ToNot(BeNil())
+						Expect(data.Value()).To(Equal("aaaaaaaaaaaaaaaa"))
+					})
+				})
+				
+				Context("password", func(){
+					It("returns password", func(){					
+						data, err := fileStore.GetByName("/password")
+						Expect(err).To(BeNil())
+						Expect(data).ToNot(BeNil())
+						Expect(data.Value()).To(Equal("bbbbbbbbbbbbbbbb"))
+					})
+				})
+
+				Context("certificate", func(){
+					It("returns certificate", func(){
+						data, err := fileStore.GetByName("/certificate")
+						Expect(err).To(BeNil())
+						Expect(data).ToNot(BeNil())
+				
+						stringMap, ok := data.Value().(map[string]interface{})
+						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
+				
+						privateKey, ok := stringMap["private_key"]
+						require.True(ok)
+						Expect(privateKey).To(Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n")
+				
+						certificate, ok := stringMap["certificate"]					
+						Expect(ok).To(BeTrue())
+						Expect(certificate).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"))
+				
+						ca, ok := stringMap["ca"]
+						Expect(ok).To(BeTrue())
+						Expect(ca).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n")
+					})
+				})
+
+				Context("rsa", func(){
+					It("returns rsa", func(){						
+						data, err := fileStore.GetByName("/rsa")
+						Expect(err).To(BeNil())
+						Expect(data).ToNot(BeNil())
+
+						stringMap, ok := data.Value().(map[string]interface{})
+						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
+
+						privateKey, ok := stringMap["private_key"]
+						Expect(ok).To(BeTrue())
+						Expect(privateKey).To(Equal("private-key"))
+
+						publicKey, ok := stringMap["public_key"]
+						Expect(ok).To(BeTrue())
+						Expect(publicKey).To(Equal("public-key"))
+					})
+				})
+
+				Context("SSH", func(){
+					It("resturns ssh", func(){
+						data, err := fileStore.GetByName("/ssh")
+						Expect(err).To(BeNil())
+						Expect(data).ToNot(BeNil())
+				
+						stringMap, ok := data.Value().(map[string]interface{})						
+						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
+				
+						privateKey, ok := stringMap["private_key"]
+						Expect(ok).To(BeTrue())
+						Expect(privateKey).To(Equal("private-key"))
+
+						publicKey, ok := stringMap["public_key"]
+						Expect(ok).To(BeTrue())
+						Expect(publicKey).To(Equal("public-key"))
+				
+						publicKeyFingerprint, ok := stringMap["public_key_fingerprint"]
+						Expect(ok).To(BeTrue())
+						Expect(publicKeyFingerprint).To(Equal("public-key-fingerprint"))
+					})
+				})
+			})
+			Context("ByPathAndKey", func(){
+				Context("certificate", func(){
+					It("returns value", func(){
+						data, err := fileStore.GetByName("/certificate.certificate")
+						Expect(err).To(BeNil())
+						Expect
+						require.NotNil(data)
+				
+						certificate, ok := data.Value().(string)
+						require.True(ok)
+						require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", certificate)
+					})	
+				})
+								
+			})
+		})	
+		It("can roundtrip encrypted file", func(){
+			require := require.New(t)
+			data, err := encryptedFileStore.GetByName("/value")
+			Expect(err).To(BeNil())
+			Expect(data).To(Equal("aaaaaaaaaaaaaaaa"))
+		})	
 	})
-
-	t.Run("CanGetType", func(t *testing.T) {
-		require := require.New(t)
-		require.Equal("file", fileStore.Type())
-	})
-
-	t.Run("CanGetValueByName", func(t *testing.T) {
-		require := require.New(t)
-
-		data, err := fileStore.GetByName("/value")
-		require.Nil(err)
-		require.NotNil(data)
-		require.Equal("aaaaaaaaaaaaaaaa", data.Value())
-	})
-
-	t.Run("CanGetPasswordByName", func(t *testing.T) {
-		require := require.New(t)
-
-		data, err := fileStore.GetByName("/password")
-		require.Nil(err)
-		require.NotNil(data)
-
-		require.Equal("bbbbbbbbbbbbbbbb", data.Value())
-	})
-
-	t.Run("CanGetCertificateByName", func(t *testing.T) {
-		require := require.New(t)
-
-		data, err := fileStore.GetByName("/certificate")
-		require.Nil(err)
-		require.NotNil(data)
-
-		stringMap, ok := data.Value().(map[string]interface{})
-		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
-
-		privateKey, ok := stringMap["private_key"]
-		require.True(ok)
-		require.Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n", privateKey)
-
-		certificate, ok := stringMap["certificate"]
-		require.True(ok)
-		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", certificate)
-
-		ca, ok := stringMap["ca"]
-		require.True(ok)
-		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", ca)
-	})
-
-	t.Run("CanGetCertificateByNameAndKey", func(t *testing.T) {
-		require := require.New(t)
-
-		data, err := fileStore.GetByName("/certificate.certificate")
-		require.Nil(err)
-		require.NotNil(data)
-
-		certificate, ok := data.Value().(string)
-		require.True(ok)
-		require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", certificate)
-	})
-
-	t.Run("CanGetRSAByName", func(t *testing.T) {
-		require := require.New(t)
-
-		data, err := fileStore.GetByName("/rsa")
-		require.Nil(err)
-		require.NotNil(data)
-
-		stringMap, ok := data.Value().(map[string]interface{})
-		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
-
-		privateKey, ok := stringMap["private_key"]
-		require.True(ok)
-		require.Equal("private-key", privateKey)
-
-		publicKey, ok := stringMap["public_key"]
-		require.True(ok)
-		require.Equal("public-key", publicKey)
-	})
-
-	t.Run("CanGetSSHByName", func(t *testing.T) {
-		require := require.New(t)
-
-		data, err := fileStore.GetByName("/ssh")
-		require.Nil(err)
-		require.NotNil(data)
-
-		stringMap, ok := data.Value().(map[string]interface{})
-		require.Truef(ok, "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
-
-		privateKey, ok := stringMap["private_key"]
-		require.True(ok)
-		require.Equal("private-key", privateKey)
-
-		publicKey, ok := stringMap["public_key"]
-		require.True(ok)
-		require.Equal("public-key", publicKey)
-
-		publicKeyFingerprint, ok := stringMap["public_key_fingerprint"]
-		require.True(ok)
-		require.Equal("public-key-fingerprint", publicKeyFingerprint)
-	})
-
-	t.Run("CanReadGpgEncryptedFile", func(t *testing.T) {
-		require := require.New(t)
-		data, err := encryptedFileStore.GetByName("/value")
-		require.Nil(err)
-		require.Equal("aaaaaaaaaaaaaaaa", data.Value())
-	})
-}
+})
 
 func createEncryptionKey(fs afero.Fs, context crypto.PgpContext) error {
 

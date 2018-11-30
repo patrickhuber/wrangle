@@ -4,41 +4,43 @@ package credhub
 
 import (
 	"os"
-	"testing"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestCanConnectToCredhubUsingEnv(t *testing.T) {
-	r := require.New(t)
-	server := getAndCheckEnvironmentVariable(r, "CREDHUB_SERVER")
-	clientSecret := getAndCheckEnvironmentVariable(r, "CREDHUB_SECRET")
-	clientID := getAndCheckEnvironmentVariable(r, "CREDHUB_CLIENT")
-	ca := getAndCheckEnvironmentVariable(r, "CREDHUB_CA_CERT")
+var _ = Describe("credhub", func() {
+	It("can connect to credhub using env", func() {
 
-	// TODO: pull creds from environment
-	storeConfig := &CredHubStoreConfig{
-		Server:       server,
-		ClientSecret: clientSecret,
-		ClientID:     clientID,
-		CaCert:       ca,
-	}
-	store, err := NewCredHubStore(storeConfig)
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-	echo, err := store.Put("/test", "test")
-	r.Nil(err)
-	r.Equal("test", echo)
-	value, err := store.GetByName("/test")
-	r.Nil(err)
-	r.Equal(echo, value.Value())
-}
+		server, ok := os.LookupEnv("CREDHUB_SERVER")
+		Expect(ok).To(BeTrue())
 
-func getAndCheckEnvironmentVariable(r *require.Assertions, key string) string {
+		clientSecret, ok := os.LookupEnv("CREDHUB_SECRET")
+		Expect(ok).To(BeTrue())
 
-	value, ok := os.LookupEnv(key)
-	r.Truef(ok, "missing environment variable '%s'", key)
-	return value
-}
+		clientID, ok := os.LookupEnv("CREDHUB_CLIENT")
+		Expect(ok).To(BeTrue())
+
+		ca, ok := os.LookupEnv("CREDHUB_CA_CERT")
+		Expect(ok).To(BeTrue())
+
+		// TODO: pull creds from environment
+		storeConfig := &CredHubStoreConfig{
+			Server:       server,
+			ClientSecret: clientSecret,
+			ClientID:     clientID,
+			CaCert:       ca,
+		}
+
+		store, err := NewCredHubStore(storeConfig)
+		Expect(err).To(BeNil())
+
+		echo, err := store.Put("/test", "test")
+		Expect(err).To(BeNil())
+		Expect(echo).To(Equal("test"))
+
+		value, err := store.GetByName("/test")
+		Expect(err).To(BeNil())
+		Expect(value.Value()).To(Equal(echo))
+	})
+})

@@ -1,14 +1,11 @@
 package credhub
 
 import (
-	"testing"
-
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/stretchr/testify/require"
 )
 
-func TestCredHubStoreConfig(t *testing.T) {
-	t.Run("CanCreateCredHubStoreConfig", func(t *testing.T) {
+var _ = Describe("CredHubStoreConfig", func() {
+	It("can create credhub store config", func() {
 		certificate := "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
 
 		name := "name"
@@ -35,14 +32,14 @@ func TestCredHubStoreConfig(t *testing.T) {
 		}
 
 		storeConfig, err := NewCredHubStoreConfig(configSource)
-		require := require.New(t)
-		require.Nil(err)
-		require.Equal(certificate, storeConfig.CaCert)
-		require.Equal(username, storeConfig.Username)
-		require.Equal(password, storeConfig.Password)
-		require.Equal(clientID, storeConfig.ClientID)
-		require.Equal(clientSecret, storeConfig.ClientSecret)
-		require.Equal(server, storeConfig.Server)
-		require.Equal(false, storeConfig.SkipTLSValidation)
+
+		Expect(err).To(BeNil())
+		Expect(storeConfig.CaCert).To(Equal(certificate))
+		Expect(storeConfig.Username).To(Equal(username))
+		Expect(storeConfig.Password).To(Equal(password))
+		Expect(storeConfig.ClientID).To(Equal(clientID))
+		Expect(storeConfig.ClientSecret).To(Equal(clientSecret))
+		Expect(storeConfig.Server).To(Equal(server))
+		Expect(storeConfig.SkipTLSValidation).To(BeTrue())
 	})
-}
+})

@@ -1,10 +1,10 @@
 package store
 
 import (
-	"testing"
-
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 type dummyConfigStoreProvider struct {
@@ -42,18 +42,15 @@ func (store *dummyConfigStore) Put(key string, value string) (string, error) {
 	return "", nil
 }
 
-func TestManager(t *testing.T) {
-
-	t.Run("CanRegisterProvider", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("", func() {
+	It("can register provider", func() {
 		manager := NewManager()
 		manager.Register(&dummyConfigStoreProvider{name: "test"})
 		_, ok := manager.Get("test")
-		r.True(ok)
+		Expect(ok).To(BeTrue())
 	})
 
-	t.Run("CanCreateConfigStore", func(t *testing.T) {
-		r := require.New(t)
+	It("can create config store", func() {
 		manager := NewManager()
 		manager.Register(&dummyConfigStoreProvider{name: "dummy"})
 		store, err := manager.Create(&config.Store{
@@ -61,14 +58,16 @@ func TestManager(t *testing.T) {
 			Stores:    []string{"test"},
 			StoreType: "dummy",
 		})
-		r.Nil(err)
-		r.NotNil(store)
+		Expect(err).To(BeNil())
+		Expect(store).ToNot(BeNil())
 	})
 
-	t.Run("MissingConfigStoreProviderThrowsError", func(t *testing.T) {
-		r := require.New(t)
-		manager := NewManager()
-		_, err := manager.Create(&config.Store{Name: "test"})
-		r.NotNil(err)
+	Context("missing config store provider", func() {
+
+		It("throws error", func() {
+			manager := NewManager()
+			_, err := manager.Create(&config.Store{Name: "test"})
+			Expect(err).ToNot(BeNil())
+		})
 	})
-}
+})

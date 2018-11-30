@@ -4,7 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
+
+var _ = Describe("", func() {
+	It("", func() {})
+})
 
 func TestTemplate(t *testing.T) {
 

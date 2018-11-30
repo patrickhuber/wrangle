@@ -47,30 +47,29 @@ var _ = Describe("Main", func() {
 	})
 	Describe("Install", func() {
 		It("can run with environment variables", func() {
+			// rewrite this test to use new package management features
 			manager := store.NewManager()
-			fileSystem := filesystem.NewMemMapFs()
+			fs := filesystem.NewMemMapFs()
 			factory := processes.NewOsFactory()
 			console := ui.NewMemoryConsole()
 			platform := "linux"
 			variables := collections.NewDictionary()
-			loader := config.NewLoader(fileSystem)
+			loader := config.NewLoader(fs)
 
 			taskProviders := tasks.NewProviderRegistry()
-			taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
-			taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
-			taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
-			taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
+			taskProviders.Register(tasks.NewDownloadProvider(fs, console))
+			taskProviders.Register(tasks.NewExtractProvider(fs, console))
+			taskProviders.Register(tasks.NewLinkProvider(fs, console))
+			taskProviders.Register(tasks.NewMoveProvider(fs, console))
 
-			packagesManager := packages.NewManager(fileSystem, taskProviders)
-
-			variables.Set(global.ConfigFileKey, "/config")
+			packagesManager := packages.NewManager(fs, taskProviders)
+			
 			variables.Set(global.PackagePathKey, "/packages")
-			os.Setenv(global.ConfigFileKey, "/config")
 			os.Setenv(global.PackagePathKey, "/packages")
 
 			app, err := createApplication(
 				manager,
-				fileSystem,
+				fs,
 				factory,
 				console,
 				platform,
@@ -91,19 +90,24 @@ var _ = Describe("Main", func() {
 			defer server.Close()
 
 			content := `
-packages:
-- name: test
+package:
+  name: test
+  version: 1.0.0
   platforms:
   - name: linux
-    download:
-      url: %s
-      out: test.html
+    tasks:
+	- name: download
+      type: download
+      params: 
+        url: %s
+        out: ((package_install_directory))/test.html
 `
 			content = fmt.Sprintf(content, server.URL)
 
-			err = afero.WriteFile(fileSystem, "/config", []byte(content), 0666)
+			err = fs.Mkdir("/packages/test/1.0.0", 0666)
 			Expect(err).To(BeNil())
-			err = fileSystem.Mkdir("/packages", 0666)
+			
+			err = afero.WriteFile(fs, "/packages/test/1.0.0/test.1.0.0.0.yml", []byte(content), 0666)
 			Expect(err).To(BeNil())
 
 			// run the app
@@ -114,12 +118,26 @@ packages:
 			})
 			Expect(err).To(BeNil())
 
-			ok, err := afero.Exists(fileSystem, "/packages/test.html")
-			Expect(err).To(BeNil())
+			printDirectory(fs, "/")
+			printDirectory(fs, "/packages")
+			printDirectory(fs, "/packages/test")
+			printDirectory(fs, "/packages/test/1.0.0")
+			
+			ok, err := afero.Exists(fs, "/packages/test/1.0.0/test.html")
+			Expect(err).To(BeNil())			
 			Expect(ok).To(BeTrue())
 		})
 	})
 })
+
+func printDirectory(fileSystem filesystem.FsWrapper, path string){
+	fmt.Println(path)
+	files, err := afero.ReadDir(fileSystem, path)
+	Expect(err).To(BeNil())
+	for _, f := range files{
+		fmt.Println(f.Name())
+	}
+}
 
 func runPrintTest(command string, expected string) {
 	// create dependencies

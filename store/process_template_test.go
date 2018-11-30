@@ -8,6 +8,10 @@ import (
 	"github.com/patrickhuber/wrangle/store/file"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
+	
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	
 )
 
 type fakeStore struct {
@@ -50,6 +54,10 @@ func (p *fakeProvider) Name() string {
 func (p *fakeProvider) Create(source *config.Store) (store.Store, error) {
 	return p.createDelegate(source)
 }
+
+var _ = Describe("", func(){
+	
+})
 
 func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
 	r := require.New(t)

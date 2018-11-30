@@ -1,15 +1,14 @@
 package file
 
 import (
-	"testing"
-
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestFileStoreConfig(t *testing.T) {
-	t.Run("CanMapNameAndPath", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("FileStoreConfig", func() {
+	It("can map name and path", func() {
 		configSource := &config.Store{
 			Name: "name",
 			Params: map[string]string{
@@ -17,9 +16,9 @@ func TestFileStoreConfig(t *testing.T) {
 			},
 		}
 		cfg, err := NewFileStoreConfig(configSource)
-		r.Nil(err)
-		r.NotNil(cfg)
-		r.Equal("name", cfg.Name)
-		r.Equal("/test", cfg.Path)
+		Expect(err).To(BeNil())
+		Expect(cfg).ToNot(BeNil())
+		Expect(cfg.Name).To(Equal("name"))
+		Expect(cfg.Path).To(Equal("/test"))
 	})
-}
+})

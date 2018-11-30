@@ -30,4 +30,18 @@ var _ = Describe("LinkProvider", func() {
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 	})
+	Describe("NewLinkTask", func() {
+		It("should map parameters", func() {
+			task := tasks.NewLinkTask("name", "source", "destination")
+			Expect(task.Name()).To(Equal("name"))
+
+			s, ok := task.Params().Lookup("source")
+			Expect(ok).To(BeTrue())
+			Expect(s).To(Equal("source"))
+
+			d, ok := task.Params().Lookup("destination")
+			Expect(ok).To(BeTrue())
+			Expect(d).To(Equal("destination"))
+		})
+	})
 })

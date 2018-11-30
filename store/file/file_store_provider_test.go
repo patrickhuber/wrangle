@@ -8,32 +8,33 @@ import (
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
-	"github.com/stretchr/testify/require"
+	
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestFileStoreProvider(t *testing.T) {
-	t.Run("CanGetByName", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("", func(){
+	It("can get by name", func(){
+
 		fs := afero.NewMemMapFs()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		err = createKeys(fs, factory.Context())
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		provider := NewFileStoreProvider(afero.NewMemMapFs(), factory)
 		name := provider.Name()
-		r.Equal("file", name)
+		Expect(name).To(Equal("file"))
 	})
 
-	t.Run("CanCreate", func(t *testing.T) {
-		r := require.New(t)
+	It("can create", func(){
 		fs := afero.NewMemMapFs()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		err = createKeys(fs, factory.Context())
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		provider := NewFileStoreProvider(fs, factory)
 		configSource := &config.Store{
@@ -44,10 +45,10 @@ func TestFileStoreProvider(t *testing.T) {
 			},
 		}
 		store, err := provider.Create(configSource)
-		r.Nil(err)
-		r.NotNil(store)
+		Expect(err).To(BeNil())
+		Expect(store).ToNot(BeNil())
 	})
-}
+})
 
 func createKeys(fs afero.Fs, context crypto.PgpContext) error {
 	entity, err := openpgp.NewEntity("hi", "hi", "hi@hi.hi", nil)

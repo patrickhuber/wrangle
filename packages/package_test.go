@@ -10,7 +10,7 @@ var _ = Describe("Package", func() {
 	Describe("New", func() {
 		It("can replace version in download", func() {
 			p := New("a", "1.2",
-				tasks.NewDownloadTask("https://((version))", "a_((version))_b", "a_((version)).exe"))
+				tasks.NewDownloadTask("download", "https://((version))", "a_((version)).exe"))
 			Expect(len(p.Tasks())).To(Equal(1))
 
 			downloadTask := p.Tasks()[0]

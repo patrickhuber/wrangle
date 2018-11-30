@@ -1,81 +1,65 @@
-package memory
+package memory_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/patrickhuber/wrangle/store"
-	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestMemoryStore(t *testing.T) {
-	memoryStoreName := "test"
-	memoryStore := NewMemoryStore(memoryStoreName)
-
-	t.Run("CanGetName", func(t *testing.T) {
-		require := require.New(t)
-		require.Equal(memoryStoreName, memoryStore.Name())
+var _ = Describe("MemoryStore", func() {
+	var(
+		memoryStoreName string,
+	    memoryStore memory.MemoryStore)
+	BeforeEach(func(){
+		memoryStoreName = "test"
+		memoryStore = NewMemoryStore(memoryStoreName)
 	})
-
-	t.Run("CanGetType", func(t *testing.T) {
-		require := require.New(t)
-		require.Equal("memory", memoryStore.Type())
+	Describe("Name", func(){
+		It("returns name", func(){
+			Expect(memoryStore.Name()).To(Equal(memoryStoreName))
+		})		
 	})
-
-	t.Run("CanPutValue", func(t *testing.T) {
-		key := "key"
-		value := "value"
-		_, _ = put(memoryStore, t, key, value)
+	Describe("Type", func(){
+		It("returns type", func(){
+			Expect(memoryStore.Type()).To(Equal("memory"))
+		})
 	})
-
-	t.Run("CanGetByName", func(t *testing.T) {
-		require := require.New(t)
-		key := "key"
-		value := "value"
-		_, err := put(memoryStore, t, key, value)
-		require.Nil(err)
-
-		data, err := memoryStore.GetByName(key)
-		require.Nil(err)
-		require.Equal(value, data.Value())
+	Describe("Put", func(){
+		It("can put value", func(){
+			key := "key"
+			value:= "value"
+			_, err := store.Put(key, value)
+			Expect(err).To(BeNil())
+		})
 	})
-
-	t.Run("CanDeleteByKey", func(t *testing.T) {
-		require := require.New(t)
-
-		key := "key"
-		value := "value"
-
-		_, err := put(memoryStore, t, key, value)
-		require.Nil(err)
-
-		count, err := memoryStore.Delete(key)
-		require.Nil(err)
-		require.Equal(1, count)
+	Describe("GetByName", func(){
+		It("returns value", func(){
+			key := "key"
+			value:= "value"
+			_, err := store.Put(key, value)
+			Expect(err).To(BeNil())
+			
+			data, err := memoryStore.GetByName(key)
+			
+			Expect(err).To(BeNil())
+			Expect(data.Value()).To(Equal(value))
+		})
 	})
-}
+	Describe("Delete", func(){
+		It("deletes value", func(){				
+			key := "key"
+			value := "value"
 
-func put(store store.Store, t *testing.T, key string, value string) (store.Data, error) {
-	r := require.New(t)
+			_, err := store.Put(key, value)
+			Expect(err).To(BeNil())
 
-	_, err := store.Put(key, value)
-	r.Nil(err)
-
-	data, err := store.GetByName(key)
-	value, ok := data.Value().(string)
-	r.True(ok)
-	err = assertPutDidNotFail(err, value, value)
-	r.Nil(err)
-
-	return data, nil
-}
-
-func assertPutDidNotFail(err error, expected string, actual string) error {
-	if err != nil {
-		return err
-	}
-	if expected != actual {
-		return fmt.Errorf("expected %s found %s", expected, actual)
-	}
-	return nil
-}
+			count, err := memoryStore.Delete(key)
+			Expect(err).To(BeNil())
+			Expect(count).To(Equal(1))
+		})
+	})
+})

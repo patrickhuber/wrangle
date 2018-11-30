@@ -1,20 +1,20 @@
 package memory
 
 import (
-	"testing"
-
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestMemoryStoreProvider(t *testing.T) {
-	t.Run("CanCreateMemoryStore", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("MemoryStoreProvider", func() {
+	It("can create memory store", func() {
 		provider := NewMemoryStoreProvider()
 		name := provider.Name()
-		r.Equal("memory", name)
+		Expect(name).To(Equal("memory"))
+
 		store, err := provider.Create(&config.Store{})
-		r.Nil(err)
-		r.NotNil(store)
+		Expect(err).To(BeNil())
+		Expect(store).ToNot(BeNil())
 	})
-}
+})

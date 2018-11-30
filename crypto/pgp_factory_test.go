@@ -2,77 +2,73 @@ package crypto
 
 import (
 	"github.com/patrickhuber/wrangle/filepath"
-	"testing"
-
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/require"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestFactory(t *testing.T) {
-	t.Run("CanDetectGpgV2FilesWindows", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("PgpFactory", func() {
+	It("can detect gpg v2 files windows", func() {
 
 		platform := "windows"
 		fs := afero.NewMemMapFs()
 		err := createV2Files(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		factory, err := NewPgpFactory(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		_, err = factory.CreateEncryptor()
-		r.NotNil(err)
-		r.Contains(err.Error(), "gpg v2 keyring is not supported")
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Contain("gpg v2 keyring is not supported"))
 	})
 
-	t.Run("CanDetectGpgV2FilesOther", func(t *testing.T) {
-		r := require.New(t)
+	It("can detect gpg v2 files other", func() {
 
 		platform := "linux"
 		fs := afero.NewMemMapFs()
 		err := createV2Files(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		factory, err := NewPgpFactory(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		_, err = factory.CreateEncryptor()
-		r.NotNil(err)
-		r.Contains(err.Error(), "gpg v2 keyring is not supported")
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Contain("gpg v2 keyring is not supported"))
 	})
 
-	t.Run("CanCreateEncryptor", func(t *testing.T) {
-		r := require.New(t)
+	It("can create encryptor", func() {
 
 		platform := "linux"
 		fs := afero.NewMemMapFs()
 		err := createV1Files(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		factory, err := NewPgpFactory(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		encryptor, err := factory.CreateEncryptor()
-		r.Nil(err)
-		r.NotNil(encryptor)
+		Expect(err).To(BeNil())
+		Expect(encryptor).ToNot(BeNil())
 	})
 
-	t.Run("CanCreateDecryptor", func(t *testing.T) {
-		r := require.New(t)
+	It("can create decryptor", func() {
 
 		platform := "linux"
 		fs := afero.NewMemMapFs()
 		err := createV1Files(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		factory, err := NewPgpFactory(fs, platform)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		decryptor, err := factory.CreateDecryptor()
-		r.Nil(err)
-		r.NotNil(decryptor)
+		Expect(err).To(BeNil())
+		Expect(decryptor).ToNot(BeNil())
 	})
-}
+})
 
 func createV2Files(fs afero.Fs, platform string) error {
 	context, err := NewPlatformPgpContext(platform)

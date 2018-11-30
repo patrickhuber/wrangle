@@ -1,26 +1,18 @@
 package commands
 
 import (
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/services"
+	"github.com/urfave/cli"
 )
 
-type initCommand struct {
-	fileSystem afero.Fs
-}
-
-// Init defines the init command
-type Init interface {
-	Execute(configFilePath string) error
-}
-
-// NewInitCommand cretes a new init command
-func NewInitCommand(fileSystem afero.Fs) Init {
-	return &initCommand{
-		fileSystem: fileSystem,
+func CreateInitCommand(
+	initService services.InitService,
+) *cli.Command {
+	return &cli.Command{
+		Name:  "init",
+		Usage: "initialize the wrangle configuration",
+		Action: func(context *cli.Context) error {
+			return initService.Init(context.GlobalString("config"))
+		},
 	}
-}
-
-func (i *initCommand) Execute(configFilePath string) error {
-	data := "stores: \nprocesses: \n"
-	return afero.WriteFile(i.fileSystem, configFilePath, []byte(data), 0640)
 }

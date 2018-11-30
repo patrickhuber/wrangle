@@ -2,23 +2,22 @@ package env
 
 import (
 	"os"
-	"testing"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/stretchr/testify/require"
 )
 
-func TestEnvStoreProvider(t *testing.T) {
-
-	t.Run("CanCreateEnvStoreProvider", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("", func() {
+	It("can crate env store provider", func() {
 		provider := NewEnvStoreProvider()
 		name := provider.Name()
-		r.Equal("env", name)
-	})
 
-	t.Run("CanCreateEnvStore", func(t *testing.T) {
-		r := require.New(t)
+		Expect(name).To(Equal("env"))
+	})
+	It("can create env store", func() {
+
 		provider := NewEnvStoreProvider()
 
 		prop1 := "test1"
@@ -39,11 +38,11 @@ func TestEnvStoreProvider(t *testing.T) {
 
 		// create the store
 		s, err := provider.Create(source)
-		r.Nil(err)
-		r.NotNil(s)
+		Expect(err).To(BeNil())
+		Expect(s).ToNot(BeNil())
 
 		// make sure the name is set
-		r.Equal(source.Name, s.Name())
+		Expect(s.Name()).To(Equal(source.Name))
 
 		// set the env vars
 		os.Setenv(env1, val1)
@@ -51,11 +50,11 @@ func TestEnvStoreProvider(t *testing.T) {
 
 		// verify
 		d1, err := s.GetByName(prop1)
-		r.Nil(err)
-		r.Equal(val1, d1.Value())
+		Expect(err).To(BeNil())
+		Expect(d1.Value()).To(Equal(val1))
 
 		d2, err := s.GetByName(prop2)
-		r.Nil(err)
-		r.Equal(val2, d2.Value())
+		Expect(err).To(BeNil())
+		Expect(d2.Value()).To(Equal(val2))
 	})
-}
+})

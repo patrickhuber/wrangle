@@ -1,60 +1,72 @@
 package renderers_test
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/renderers"
-	"github.com/stretchr/testify/require"
 )
 
-func TestPowershell(t *testing.T) {
-	t.Run("CanRenderSingleLineVariable", func(t *testing.T) {
+var _ = Describe("powershell", func() {
+	It("can render single line variable", func() {
 		key := "KEY"
 		value := "VALUE"
 		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironmentVariable(key, value)
-		r := require.New(t)
-		r.Equal("$env:KEY=\"VALUE\"", result)
+
+		Expect(result).To(Equal("$env:KEY=\"VALUE\""))
 	})
-	t.Run("CanRenderMultiLineVariable", func(t *testing.T) {
+
+	It("can render multiline variable", func() {
 		key := "KEY"
 		value := "1\r\n2\r\n3\r\n4\r\n"
 		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironmentVariable(key, value)
-		r := require.New(t)
-		r.Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'", result)
+
+		Expect(result).To(Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'"))
 	})
-	t.Run("AppendsNewLineIfMultiLineAndDoesNotEndInNewLine", func(t *testing.T) {
-		key := "KEY"
-		value := "1\r\n2\r\n3\r\n4"
-		renderer := renderers.NewPowershell()
-		result := renderer.RenderEnvironmentVariable(key, value)
-		r := require.New(t)
-		r.Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'", result)
+
+	Context("WhenMultiLine", func() {
+		Context("WhenDoesNotEndInNewline", func() {
+			It("appends new line", func() {
+
+				key := "KEY"
+				value := "1\r\n2\r\n3\r\n4"
+				renderer := renderers.NewPowershell()
+				result := renderer.RenderEnvironmentVariable(key, value)
+
+				Expect(result).To(Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'"))
+			})
+		})
 	})
-	t.Run("CanRenderMultipleEnvironmentVariables", func(t *testing.T) {
+
+	It("can render multiple environment variables", func() {
 		renderer := renderers.NewPowershell()
 		result := renderer.RenderEnvironment(
 			map[string]string{
 				"KEY":   "VALUE",
 				"OTHER": "OTHER",
 			})
-		r := require.New(t)
-		r.Equal("$env:KEY=\"VALUE\"\r\n$env:OTHER=\"OTHER\"\r\n", result)
+
+		Expect(result).To(Equal("$env:KEY=\"VALUE\"\r\n$env:OTHER=\"OTHER\"\r\n"))
 	})
-	t.Run("CanRenderProcess", func(t *testing.T) {
+
+	It("can render process", func() {
 		renderer := renderers.NewPowershell()
 		actual := renderer.RenderProcess(
 			"go",
 			[]string{"version"},
 			map[string]string{"TEST1": "VALUE1", "TEST2": "VALUE2"})
 		expected := "$env:TEST1=\"VALUE1\"\r\n$env:TEST2=\"VALUE2\"\r\ngo version\r\n"
-		r := require.New(t)
-		r.Equal(expected, actual)
+
+		Expect(expected).To(Equal(actual))
 	})
-	t.Run("FormatIsPowershell", func(t *testing.T) {
-		renderer := renderers.NewPowershell()
-		r := require.New(t)
-		r.Equal(renderer.Format(), renderers.PowershellFormat)
+
+	Describe("Format", func() {
+		It("is powershell", func() {
+
+			renderer := renderers.NewPowershell()
+
+			Expect(renderers.PowershellFormat).To(Equal(renderer.Format()))
+		})
 	})
-}
+})

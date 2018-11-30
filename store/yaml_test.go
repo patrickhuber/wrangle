@@ -6,6 +6,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
+	
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 type T struct {
@@ -15,6 +18,10 @@ type T struct {
 		D        []int `yaml:",flow"`
 	}
 }
+
+var _ = Describe("", func() {
+	It("", func() {})
+})
 
 func TestCanParseYaml(test *testing.T) {
 	require := require.New(test)

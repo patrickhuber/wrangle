@@ -33,7 +33,7 @@ var _ = Describe("Loader", func() {
 		configFilePath := "/test/config.yml"
 		fileSystem := afero.NewMemMapFs()
 		loader := config.NewLoader(fileSystem)
-		_, err := loader.Load(configFilePath)
+		_, err := loader.LoadConfig(configFilePath)
 		Expect(err).ToNot(BeNil())
 	})
 
@@ -48,7 +48,7 @@ customers:
 		Expect(err).To(BeNil())
 
 		loader := config.NewLoader(fileSystem)
-		_, err = loader.Load(path)
+		_, err = loader.LoadConfig(path)
 		Expect(err).ToNot(BeNil())
 	})
 })
@@ -81,7 +81,7 @@ imports:
 
 	loader := config.NewLoader(fileSystem)
 
-	cfg, err := loader.Load(configFilePath)
+	cfg, err := loader.LoadConfig(configFilePath)
 	Expect(err).To(BeNil())
 	Expect(len(cfg.Stores)).To(Equal(1))
 	Expect(len(cfg.Processes)).To(Equal(1))

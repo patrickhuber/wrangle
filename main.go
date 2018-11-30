@@ -1,12 +1,10 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"runtime"
-	"strings"
 
 	"github.com/patrickhuber/wrangle/tasks"
 
@@ -25,6 +23,7 @@ import (
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
+	"github.com/patrickhuber/wrangle/services"
 
 	credhub "github.com/patrickhuber/wrangle/store/credhub"
 	store_env "github.com/patrickhuber/wrangle/store/env"
@@ -126,284 +125,35 @@ func createApplication(
 		},
 	}
 
+	initService := services.NewInitService(fileSystem)	
+	runService := services.NewRunService(manager, fileSystem, processFactory, console, loader)	
+	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
+	packagesService := services.NewPackagesService(fileSystem, console)
+	installService, err := services.NewInstallService(platform, fileSystem, packagesManager, loader)
+	envService := services.NewEnvService(console, envDictionary)
+	storesService := services.NewStoresService(console, loader)
+	processesService := services.NewProcessesService( console, loader)
+
+	if err != nil{
+		return nil, err
+	}
+
 	cliApp.Commands = []cli.Command{
-		*createInitCommand(fileSystem),
-		*createRunCommand(manager, fileSystem, processFactory, console, loader),
-		*createPrintCommand(manager, fileSystem, console, rendererFactory, loader),
-		*createPrintEnvCommand(manager, fileSystem, console, rendererFactory, loader),
-		*createPackagesCommand(fileSystem, console, loader),
-		*createInstallCommand(fileSystem, console, platform, packagesManager, loader),
-		*createEnvCommand(console, envDictionary),
-		*createStoresCommand(fileSystem, console, loader),
-		*createListProcessesCommand(fileSystem, console, loader),
+		*commands.CreateInitCommand(initService),
+		*commands.CreateRunCommand(runService),
+		*commands.CreatePrintCommand(printService),
+		*commands.CreatePrintEnvCommand(printService),
+		*commands.CreatePackagesCommand(packagesService),
+		*commands.CreateInstallCommand(installService),
+		*commands.CreateEnvCommand(envService),
+		*commands.CreateStoresCommand(storesService),
+		*commands.CreateListProcessesCommand(processesService),
 	}
 	return cliApp, nil
 }
 
-func createInitCommand(
-	fileSystem afero.Fs,
-) *cli.Command {
 
-	initCommand := commands.NewInitCommand(fileSystem)
-	return &cli.Command{
-		Name:  "init",
-		Usage: "initialize the wrangle configuration",
-		Action: func(context *cli.Context) error {
-			return initCommand.Execute(context.GlobalString("config"))
-		},
-	}
-}
 
-func createRunCommand(
-	manager store.Manager,
-	fileSystem afero.Fs,
-	processFactory processes.Factory,
-	console ui.Console,
-	loader config.Loader) *cli.Command {
-	runCommand := commands.NewRun(
-		manager,
-		fileSystem,
-		processFactory,
-		console)
-
-	return &cli.Command{
-		Name:      "run",
-		Aliases:   []string{"r"},
-		Usage:     "run a command",
-		ArgsUsage: "<process name> [arguments]",
-		Action: func(context *cli.Context) error {
-			cfg, err := loadConfiguration(context, loader)
-			if err != nil {
-				return err
-			}
-
-			processName := context.Args().First()
-			if strings.TrimSpace(processName) == "" {
-				return errors.New("process name argument is required")
-			}
-
-			additionalArguments := context.Args().Tail()
-
-			params := commands.NewProcessParams(cfg, processName, additionalArguments...)
-			return runCommand.Execute(params)
-		},
-	}
-}
-
-func createPrintCommand(
-	manager store.Manager,
-	fileSystem afero.Fs,
-	console ui.Console,
-	rendererFactory renderers.Factory,
-	loader config.Loader) *cli.Command {
-
-	printCommand := commands.NewPrint(
-		manager,
-		fileSystem,
-		console,
-		rendererFactory)
-
-	return &cli.Command{
-		Name:      "print",
-		Aliases:   []string{"p"},
-		Usage:     "prints the process as it would be executed",
-		ArgsUsage: "<process name> [arguments]",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "format, f",
-				Usage: "Print for with the given format (bash|powershell)",
-			},
-		},
-		Action: func(context *cli.Context) error {
-			processName := context.Args().First()
-			if strings.TrimSpace(processName) == "" {
-				return errors.New("process name argument is required")
-			}
-
-			format := context.String("format")
-
-			cfg, err := loadConfiguration(context, loader)
-			if err != nil {
-				return err
-			}
-			params := &commands.PrintParams{
-				Configuration: cfg,
-				ProcessName:   processName,
-				Format:        format,
-				Include: commands.PrintParamsInclude{
-					ProcessAndArgs: true,
-				},
-			}
-
-			return printCommand.Execute(params)
-		},
-	}
-}
-
-func createPrintEnvCommand(
-	manager store.Manager,
-	fileSystem afero.Fs,
-	console ui.Console,
-	rendererFactory renderers.Factory,
-	loader config.Loader) *cli.Command {
-
-	printCommand := commands.NewPrint(
-		manager,
-		fileSystem,
-		console,
-		rendererFactory)
-
-	return &cli.Command{
-		Name:  "print-env",
-		Usage: "print command environemnt variables",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "name, n",
-				Usage: "process named `NAME`",
-			},
-			cli.StringFlag{
-				Name:  "format, f",
-				Usage: "Print for with the given format (bash|powershell)",
-			},
-		},
-		Action: func(context *cli.Context) error {
-			processName := context.Args().First()
-			if strings.TrimSpace(processName) == "" {
-				return errors.New("process name argument is required")
-			}
-			format := context.String("format")
-			cfg, err := loadConfiguration(context, loader)
-			if err != nil {
-				return err
-			}
-			params := &commands.PrintParams{
-				Configuration: cfg,
-				ProcessName:   processName,
-				Format:        format}
-			return printCommand.Execute(params)
-		},
-	}
-}
-
-func createPackagesCommand(
-	fileSystem afero.Fs,
-	console ui.Console,
-	loader config.Loader) *cli.Command {
-	return &cli.Command{
-		Name:    "packages",
-		Aliases: []string{"k"},
-		Usage:   "prints the list of packages and versions in the config file",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:   "path, p",
-				Usage:  "the package install path",
-				EnvVar: global.PackagePathKey,
-			},
-		},
-		Action: func(context *cli.Context) error {
-			packagesPath := context.String("path")
-			packagesCommand := commands.NewPackages(fileSystem, console, packagesPath)
-			return packagesCommand.Execute()
-		},
-	}
-}
-
-func createInstallCommand(
-	fileSystem filesystem.FsWrapper,
-	console ui.Console,
-	platform string,
-	manager packages.Manager,
-	loader config.Loader) *cli.Command {
-	return &cli.Command{
-		Name:      "install",
-		Aliases:   []string{"i"},
-		Usage:     "installs the package with the given `NAME` for the current platform",
-		ArgsUsage: "<package name>",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:   "path, p",
-				Usage:  "the package install path",
-				EnvVar: global.PackagePathKey,
-			},
-			cli.StringFlag{
-				Name:  "version, v",
-				Usage: "the package version",
-			},
-		},
-		Action: func(context *cli.Context) error {
-			packagesPath := context.String("path")
-			installPackageCommand, err := commands.NewInstall(platform, packagesPath, fileSystem, manager, loader)
-			if err != nil {
-				return err
-			}
-
-			packageName := context.Args().First()
-			if strings.TrimSpace(packageName) == "" {
-				return errors.New("missing required argument package name")
-			}
-			packageVersion := context.String("version")
-			return installPackageCommand.Execute(packageName, packageVersion)
-		},
-	}
-}
-
-func createEnvCommand(console ui.Console, dictionary collections.Dictionary) *cli.Command {
-	return &cli.Command{
-		Name:  "env",
-		Usage: "prints values of all associated environment variables",
-		Action: func(context *cli.Context) error {
-			return commands.NewEnv(console, dictionary).Execute()
-		},
-	}
-}
-
-func createListProcessesCommand(
-	fileSystem afero.Fs,
-	console ui.Console,
-	loader config.Loader) *cli.Command {
-
-	listProcessesCommand := commands.NewListProcesses(
-		console)
-
-	return &cli.Command{
-		Name:  "processes",
-		Usage: "prints the list of processes for the given environment in the config file",
-		Action: func(context *cli.Context) error {
-			cfg, err := loadConfiguration(context, loader)
-			if err != nil {
-				return err
-			}
-			return listProcessesCommand.Execute(cfg)
-		},
-	}
-}
-
-func createStoresCommand(
-	fileSystem afero.Fs,
-	console ui.Console,
-	loader config.Loader) *cli.Command {
-
-	listStoresCommand := commands.NewStores(
-		console)
-
-	return &cli.Command{
-		Name:    "stores",
-		Aliases: []string{"s"},
-		Usage:   "prints the list of stores in the config file",
-		Action: func(context *cli.Context) error {
-			cfg, err := loadConfiguration(context, loader)
-			if err != nil {
-				return err
-			}
-			return listStoresCommand.Execute(cfg)
-		},
-	}
-}
-
-func loadConfiguration(context *cli.Context, loader config.Loader) (*config.Config, error) {
-	configFile := context.GlobalString("config")
-	return loader.LoadConfig(configFile)
-}
 
 func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manager, error) {
 	manager := store.NewManager()

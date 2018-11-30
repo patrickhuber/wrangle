@@ -25,7 +25,7 @@ func NewLinkProvider(fileSystem filesystem.FsWrapper, console ui.Console) Provid
 // NewLinkTask returns an instance of a link task
 func NewLinkTask(name string, source string, destination string) Task {
 	return NewTask(name, linkTaskType, map[string]string{
-		"srouce":      source,
+		"source":      source,
 		"destination": destination,
 	})
 }

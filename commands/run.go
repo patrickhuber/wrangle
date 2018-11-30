@@ -1,73 +1,34 @@
 package commands
 
-import (
+import (	
+	"github.com/patrickhuber/wrangle/services"
+	"strings"
 	"github.com/pkg/errors"
-
-	"github.com/patrickhuber/wrangle/processes"
-	"github.com/patrickhuber/wrangle/store"
-	"github.com/patrickhuber/wrangle/ui"
-
-	"github.com/patrickhuber/wrangle/config"
-	"github.com/spf13/afero"
+	"github.com/urfave/cli"
 )
 
-// Run represents a run subcommand for the application
-type Run interface {
-	Execute(params ProcessParams) error
-}
+// CreateRunCommand creates a run command from the cli context
+func CreateRunCommand(
+	runService services.RunService) *cli.Command {		
 
-type run struct {
-	manager        store.Manager
-	fileSystem     afero.Fs
-	processFactory processes.Factory
-	console        ui.Console
-}
+	return &cli.Command{
+		Name:      "run",
+		Aliases:   []string{"r"},
+		Usage:     "run a command",
+		ArgsUsage: "<process name> [arguments]",
+		Action: func(context *cli.Context) error {
+			configFile := context.GlobalString("config")
 
-// NewRun - creates a new run command
-func NewRun(
-	manager store.Manager,
-	fileSystem afero.Fs,
-	processFactory processes.Factory,
-	console ui.Console) Run {
-	return &run{
-		manager:        manager,
-		fileSystem:     fileSystem,
-		processFactory: processFactory,
-		console:        console}
-}
+			processName := context.Args().First()
+			if strings.TrimSpace(processName) == "" {
+				return errors.New("process name argument is required")
+			}
 
-func (cmd *run) Execute(params ProcessParams) error {
+			additionalArguments := context.Args().Tail()
 
-	processName := params.ProcessName()
+			params := services.NewProcessParams(processName, additionalArguments...)			
 
-	if processName == "" {
-		return errors.New("process name is required for the run command")
+			return runService.Run(configFile, params)
+		},
 	}
-
-	cfg := params.Config()
-	if cfg == nil {
-		return errors.New("unable to load configuration")
-	}
-
-	processTemplate, err := store.NewProcessTemplate(cfg, cmd.manager)
-	if err != nil {
-		return err
-	}
-	process, err := processTemplate.Evaluate(processName)
-	if err != nil {
-		return err
-	}
-
-	return cmd.execute(process)
-}
-
-func (cmd *run) execute(processConfig *config.Process) error {
-	process := cmd.processFactory.Create(
-		processConfig.Path,
-		processConfig.Args,
-		processConfig.Vars,
-		cmd.console.Out(),
-		cmd.console.Error(),
-		cmd.console.In())
-	return process.Dispatch()
 }

@@ -1,24 +1,25 @@
 package templates
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestSimpleResolver(t *testing.T) {
-	t.Run("CanCreateSimpleResolver", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("SimpleResolver", func() {
+	It("can create", func() {
+
 		resolver, err := newSimpleResolver("key", "value", "key1", "value1")
-		r.Nil(err)
-		r.NotNil(resolver)
+		Expect(err).To(BeNil())
+		Expect(resolver).ToNot(BeNil())
+
 		value, err := resolver.Get("key")
-		r.Nil(err)
-		r.NotNil(value)
-		r.Equal("value", value)
+		Expect(err).To(BeNil())
+		Expect(value).ToNot(BeNil())
+		Expect(value).To(Equal("value"))
+
 		value, err = resolver.Get("key1")
-		r.Nil(err)
-		r.NotNil(value)
-		r.Equal("value1", value)
+		Expect(err).To(BeNil())
+		Expect(value).ToNot(BeNil())
+		Expect(value).To(Equal("value1"))
 	})
-}
+})

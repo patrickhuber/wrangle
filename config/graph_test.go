@@ -28,7 +28,7 @@ stores:
   params:
     path: /test/tail.yml
 `
-		cfg, err := config.SerializeString(data)
+		cfg, err := config.DeserializeConfigString(data)
 		Expect(err).To(BeNil())
 
 		graph, err := config.NewConfigurationGraph(cfg)
@@ -77,7 +77,7 @@ stores:
     path: /test/right-child.yml
 `
 
-		cfg, err := config.SerializeString(data)
+		cfg, err := config.DeserializeConfigString(data)
 		Expect(err).To(BeNil())
 
 		graph, err := config.NewConfigurationGraph(cfg)
@@ -128,7 +128,7 @@ stores:
   params:
     path: /test/right-child.yml
 `
-		cfg, err := config.SerializeString(data)
+		cfg, err := config.DeserializeConfigString(data)
 		Expect(err).To(BeNil())
 
 		graph, err := config.NewConfigurationGraph(cfg)
@@ -179,7 +179,7 @@ stores:
   params:
     path: /test/three.yml
 `
-		cfg, err := config.SerializeString(data)
+		cfg, err := config.DeserializeConfigString(data)
 		Expect(err).To(BeNil())
 
 		_, err = config.NewConfigurationGraph(cfg)

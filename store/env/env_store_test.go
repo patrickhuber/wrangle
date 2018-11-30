@@ -2,72 +2,73 @@ package env
 
 import (
 	"os"
-	"testing"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestEnvStore(t *testing.T) {
-
-	t.Run("CanReadEnvironmentVariable", func(t *testing.T) {
-		r := require.New(t)
+var _ = Describe("", func() {
+	It("can read environment variable", func() {
 		err := os.Setenv("TEST123", "abc123")
-		r.Nil(err)
+		Expect(err).To(BeNil())
+
 		lookup := map[string]string{
 			"somevalue": "TEST123",
 		}
 
 		store := NewEnvStore("", lookup)
-		r.NotNil(store)
+		Expect(store).ToNot(BeNil())
 
 		data, err := store.GetByName("somevalue")
-		r.Nil(err)
-		r.NotNil(data)
-		r.Equal("abc123", data.Value())
+		Expect(err).To(BeNil())
+		Expect(data).ToNot(BeNil())
+		Expect(data.Value()).To(Equal("abc123"))
 	})
 
-	t.Run("CanReadEnvironmentVariableWithPrefixedName", func(t *testing.T) {
-		r := require.New(t)
+	It("can read environment variable with prefixed name", func() {
 		err := os.Setenv("TEST123", "abc123")
+		Expect(err).To(BeNil())
 
-		r.Nil(err)
 		lookup := map[string]string{
 			"somevalue": "TEST123",
 		}
 
 		store := NewEnvStore("", lookup)
-		r.NotNil(store)
+		Expect(store).ToNot(BeNil())
 
 		data, err := store.GetByName("/somevalue")
-		r.Nil(err)
-		r.NotNil(data)
-		r.Equal("abc123", data.Value())
+		Expect(err).To(BeNil())
+		Expect(data).ToNot(BeNil())
+		Expect(data.Value()).To(Equal("abc123"))
 	})
 
-	t.Run("ErrorsIfEnvironmentVariableNotSet", func(t *testing.T) {
-		r := require.New(t)
-		lookup := map[string]string{
-			"somevalue": "TEST123",
-		}
-		store := NewEnvStore("", lookup)
-		r.NotNil(store)
+	Context("WhenEnvironmentVariableNotSet", func() {
+		It("errors", func() {
+			lookup := map[string]string{
+				"somevalue": "TEST123",
+			}
+			store := NewEnvStore("", lookup)
+			Expect(store).ToNot(BeNil())
 
-		os.Unsetenv("TEST123")
-		_, err := store.GetByName("somevalue")
-		r.NotNil(err)
+			os.Unsetenv("TEST123")
+			_, err := store.GetByName("somevalue")
+			Expect(err).ToNot(BeNil())
+		})
 	})
 
-	t.Run("CanGetStoreName", func(t *testing.T) {
-		r := require.New(t)
-		store := NewEnvStore("env", nil)
-		r.NotNil(store)
-		r.Equal("env", store.Name())
+	Describe("Name", func() {
+		It("returns name", func() {
+			store := NewEnvStore("env", nil)
+			Expect(store).ToNot(BeNil())
+			Expect(store.Name()).To(Equal("env"))
+		})
 	})
 
-	t.Run("CanGetStoreType", func(t *testing.T) {
-		r := require.New(t)
-		store := NewEnvStore("", nil)
-		r.NotNil(store)
-		r.Equal("env", store.Type())
+	Describe("Type", func() {
+		it("returns type", func() {
+			store := NewEnvStore("", nil)
+			Expect(store).ToNot(BeNil())
+			Expect(store.Type()).To(Equal("env"))
+		})
 	})
-}
+})

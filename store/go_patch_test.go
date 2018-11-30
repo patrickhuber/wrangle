@@ -1,34 +1,27 @@
 package store_test
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-
 	patch "github.com/cppforlife/go-patch/patch"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestGoPatch(t *testing.T) {
-	t.Run("CanFindKeyValue", func(t *testing.T) {
-		require := require.New(t)
+var _ = Describe("", func() {
+	It("can find key value", func() {
 		pointer, err := patch.NewPointerFromString("/key1")
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		Expect(err).To(BeNil())
 		doc := map[interface{}]interface{}{
 			"key1": "abc",
 			"key2": "xyz",
 		}
 		response, err := patch.FindOp{Path: pointer}.Apply(doc)
-		require.Nil(err)
-		require.Equal("abc", response)
+		Expect(err).To(BeNil())
+		Expect(response).To(Equal("abc"))
 	})
-
-	t.Run("CanCreatePointer", func(t *testing.T) {
-		require := require.New(t)
+	It("can create pointer", func() {
 		ptr, err := patch.NewPointerFromString("/some/path")
-		require.Nil(err)
-		require.Equal(3, len(ptr.Tokens()))
+		Expect(err).To(BeNil())
+		Expect(len(ptr.Tokens())).To(Equal(3))
 	})
-}
+})

@@ -1,8 +1,9 @@
-package commands_test
+package services_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"bytes"
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
@@ -21,7 +22,23 @@ var _ = Describe("Packages", func() {
 			Expect(command).ToNot(BeNil())
 			Expect(command.Execute()).To(BeNil())
 
-			Expect(console.OutAsString()).To(Equal("name\tversion\n"))
+			output := console.OutAsString()
+
+			var lines = make([]bytes.Buffer,3,3)
+			linecount := 0
+
+			for i:=0;i<len(output);i++{
+				if output[i] == '\n'{
+					linecount ++
+				}else if output[i] == '\r'{
+
+				}else{
+					lines[linecount].WriteByte(output[i])
+				}
+			}
+			Expect(lines[0].String()).To(Equal("name version"))
+			Expect(lines[1].String()).To(Equal("---- -------"))
+			Expect(lines[2].String()).To(Equal("test 0.1.1"))
 		})
 	})
 })

@@ -34,7 +34,7 @@ func (f *pgpFactory) CreateDecryptor() (Decryptor, error) {
 	if err != nil {
 		v2Err := f.assertIsNotGpgV2()
 		if v2Err != nil {
-			return nil, errors.Wrapf(v2Err, "%V", err)
+			return nil, errors.Wrapf(v2Err, "%s", err)
 		}
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (f *pgpFactory) CreateEncryptor() (Encryptor, error) {
 	if err != nil {
 		v2Err := f.assertIsNotGpgV2()
 		if v2Err != nil {
-			return nil, errors.Wrapf(v2Err, "%V", err)
+			return nil, errors.Wrapf(v2Err, "%s", err)
 		}
 		return nil, err
 	}
