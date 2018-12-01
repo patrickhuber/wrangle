@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"github.com/patrickhuber/wrangle/services"
 	"bytes"
 
 	. "github.com/onsi/ginkgo"
@@ -82,21 +83,18 @@ processes:
 			// create console
 			console := ui.NewMemoryConsole()
 
-			// load the config
 			loader := config.NewLoader(fileSystem)
-			cfg, err := loader.LoadConfig("/config")
-			Expect(err).To(BeNil())
 
 			// create and run command
-			cmd := NewPrint(manager, fileSystem, console, rendererFactory)
-			params := &PrintParams{
-				Configuration: cfg,
+			service := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
+			params := &services.PrintParams{
+				ConfigFile: "/config",
 				ProcessName:   "echo",
 				Format:        "",
-				Include: PrintParamsInclude{
+				Include: services.PrintParamsInclude{
 					ProcessAndArgs: includeProcessInfo,
 				}}
-			err = cmd.Execute(params)
+			err := service.Print(params)
 			Expect(err).To(BeNil())
 
 			// verify output
@@ -212,20 +210,18 @@ func RunPrintTest(
 
 	// load the config
 	loader := config.NewLoader(fileSystem)
-	cfg, err := loader.LoadConfig("/config")
-	Expect(err).To(BeNil())
-
+	
 	// create and run command
-	cmd := NewPrint(manager, fileSystem, console, rendererFactory)
-	params := &PrintParams{
-		Configuration: cfg,
+	service := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
+	params := &services.PrintParams{
+		ConfigFile: "/config",
 		ProcessName:   processName,
 		Format:        format,
-		Include: PrintParamsInclude{
+		Include: services.PrintParamsInclude{
 			ProcessAndArgs: includeProcessInfo,
 		},
 	}
-	err = cmd.Execute(params)
+	err := service.Print(params)
 	Expect(err).To(BeNil())
 
 	// verify output

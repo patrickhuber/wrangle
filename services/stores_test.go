@@ -1,9 +1,9 @@
 package services_test
 
 import (
+	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/filesystem"
-	"bytes"
-	"testing"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
@@ -28,10 +28,10 @@ stores:
 - name: two
   type: credhub
 `
-		cfg, err := config.DeserializeConfigString(content)
+		err := afero.WriteFile(fs, "/config", []byte(content), 0600)
 		Expect(err).To(BeNil())
 
-		err = service.List(cfg)		
+		err = service.List("/config")		
 		Expect(err).To(BeNil())
 
 		Expect(console.OutAsString()).To(Equal("name type\n---- ----\none  file\ntwo  credhub\n"))

@@ -12,7 +12,7 @@ var _ = Describe("Init", func() {
 	It("creates config file", func() {
 		fileSystem := afero.NewMemMapFs()
 		service := services.NewInitService(fileSystem)
-		Expect(service.Execute("/test")).To(BeNil())
+		Expect(service.Init("/test")).To(BeNil())
 
 		ok, err := afero.Exists(fileSystem, "/test")
 		Expect(err).To(BeNil())

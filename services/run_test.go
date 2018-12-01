@@ -1,7 +1,7 @@
 package services_test
 
 import (
-	"bytes"
+	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/store"
@@ -13,8 +13,14 @@ import (
 )
 
 var _ = Describe("Execute", func() {
-	It("can run go version process", func() {
-		
+	var (
+		fs afero.Fs 
+		runService services.RunService
+		console ui.MemoryConsole
+	)
+	BeforeEach(func(){
+		fs = afero.NewMemMapFs()
+
 		// write out the config file
 		configFileData := `
 processes:
@@ -23,66 +29,36 @@ processes:
   args:
   - version
 `
-		fileSystem := afero.NewMemMapFs()
-		err := afero.WriteFile(fileSystem, "/config", []byte(configFileData), 0644)
+		err := afero.WriteFile(fs, "/config", []byte(configFileData), 0644)		
 		Expect(err).To(BeNil())
 
 		// create the console
-		console := ui.NewMemoryConsole()
-
+		console = ui.NewMemoryConsole()
+		
+		// load the config
+		loader := config.NewLoader(fs)
+		
 		// create run command
 		configStoreManager := store.NewManager()
-		runCommand := NewRun(configStoreManager, fileSystem, processes.NewOsFactory(), console)
-
-		// load the config
-		loader := config.NewLoader(fileSystem)
-		cfg, err := loader.LoadConfig("/config")
-
-		Expect(err).To(BeNil())
-
+		runService = services.NewRunService(configStoreManager, fs, processes.NewOsFactory(), console, loader)
 		
-		// run the run command
-		err = runCommand.Execute(NewProcessParams(cfg, "go"))
+		Expect(err).To(BeNil())
+		
+	})
+	It("can run go version process", func() {	
 
+		// run the run command
+		err := runService.Run("/config", services.NewProcessParams("go"))
 		Expect(err).To(BeNil())
 	})
 
-	It("can redirect to std out", func(){
-		configFileData := `
-		processes:
-		- name: go
-		  path: go
-		  args: 
-		  - version 
-		`
-		fileSystem := afero.NewMemMapFs()
-		err := afero.WriteFile(fileSystem, "/config", []byte(configFileData), 0644)
-		
-		Expect(err).To(BeNil())
-
-		// create the console
-		console := ui.NewMemoryConsole()
-
-		// create run command
-		configStoreManager := store.NewManager()
-		runCommand := services.NewRunService(configStoreManager, fileSystem, processes.NewOsFactory(), console)
-
-		// load the config
-		loader := config.NewLoader(fileSystem)
-		cfg, err := loader.LoadConfig("/config")
-
-				
-		Expect(err).To(BeNil())
-		
+	It("can redirect to std out", func(){		
 		// run the run command
-		err = runCommand.Execute(
-			NewProcessParams(cfg, "go"))
-
-			
+		err := runService.Run("/config", services.NewProcessParams("go"))
 		Expect(err).To(BeNil())		
 		
 		// check something was written to stdout
-		buffer := console.Out().(*bytes.Buffer)
+		buffer := console.OutAsString()
 		Expect(buffer).ToNot(BeEmpty())
 	})
 })

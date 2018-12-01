@@ -43,10 +43,9 @@ var _ = Describe("InstallService", func() {
 	Describe("NewInstall", func() {
 		It("returns install command", func() {
 			platform := "platform"
-			packagesPath := "/path/to/packages"
-			command, err := services.NewInstall(platform, packagesPath, fs, manager, loader)
+			service, err := services.NewInstallService(platform, fs, manager, loader)
 			Expect(err).To(BeNil())
-			Expect(command).ToNot(BeNil())
+			Expect(service).ToNot(BeNil())
 		})
 	})
 	Describe("Execute", func() {
@@ -94,10 +93,10 @@ var _ = Describe("InstallService", func() {
 			Expect(err).To(BeNil())
 
 			// create the command and execute it
-			service, err := services.NewInstall(platform, packagesRoot, fs, manager, loader)
+			service, err := services.NewInstallService(platform, fs, manager, loader)
 			Expect(err).To(BeNil())
 
-			err = service.Install(packageName, packageVersion)
+			err = service.Install(packagesRoot, packageName, packageVersion)
 			Expect(err).To(BeNil())
 		})
 		When("Windows", func() {

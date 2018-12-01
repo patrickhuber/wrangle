@@ -1,13 +1,15 @@
 package services_test
 
 import (
+	
 	"bytes"
 	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	
+	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/ui"
 )
@@ -16,12 +18,12 @@ var _ = Describe("Env", func() {
 	var (
 		console    ui.Console
 		dictionary collections.Dictionary
-		cmd        commands.Env
+		cmd        services.EnvService
 	)
 	BeforeEach(func() {
 		console = ui.NewMemoryConsole()
 		dictionary = collections.NewDictionary()
-		cmd = commands.NewEnv(console, dictionary)
+		cmd = services.NewEnvService(console, dictionary)
 	})
 	Describe("NewEnv", func() {
 		It("creates new env", func() {

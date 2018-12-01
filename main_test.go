@@ -29,12 +29,7 @@ var _ = Describe("Main", func() {
 		os.Unsetenv(global.ConfigFileKey)
 		os.Unsetenv(global.PackagePathKey)
 	})
-	Describe("Run", func() {
-
-	})
-	Describe("Environment", func() {
-
-	})
+	
 	Describe("Print Env", func() {
 		It("can cascade configuration", func() {
 			runPrintTest("print-env", "export WRANGLE_TEST=value\n")
@@ -45,89 +40,7 @@ var _ = Describe("Main", func() {
 			runPrintTest("print", "export WRANGLE_TEST=value\necho\n")
 		})
 	})
-	Describe("Install", func() {
-		It("can run with environment variables", func() {
-			// rewrite this test to use new package management features
-			manager := store.NewManager()
-			fs := filesystem.NewMemMapFs()
-			factory := processes.NewOsFactory()
-			console := ui.NewMemoryConsole()
-			platform := "linux"
-			variables := collections.NewDictionary()
-			loader := config.NewLoader(fs)
-
-			taskProviders := tasks.NewProviderRegistry()
-			taskProviders.Register(tasks.NewDownloadProvider(fs, console))
-			taskProviders.Register(tasks.NewExtractProvider(fs, console))
-			taskProviders.Register(tasks.NewLinkProvider(fs, console))
-			taskProviders.Register(tasks.NewMoveProvider(fs, console))
-
-			packagesManager := packages.NewManager(fs, taskProviders)
-			
-			variables.Set(global.PackagePathKey, "/packages")
-			os.Setenv(global.PackagePathKey, "/packages")
-
-			app, err := createApplication(
-				manager,
-				fs,
-				factory,
-				console,
-				platform,
-				variables,
-				loader,
-				packagesManager)
-			Expect(err).To(BeNil())
-			Expect(app).ToNot(BeNil())
-
-			// setup the test server
-			message := "this is a message"
-
-			// start the local http server
-			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				rw.Write([]byte(message))
-			}))
-
-			defer server.Close()
-
-			content := `
-package:
-  name: test
-  version: 1.0.0
-  platforms:
-  - name: linux
-    tasks:
-	- name: download
-      type: download
-      params: 
-        url: %s
-        out: ((package_install_directory))/test.html
-`
-			content = fmt.Sprintf(content, server.URL)
-
-			err = fs.Mkdir("/packages/test/1.0.0", 0666)
-			Expect(err).To(BeNil())
-			
-			err = afero.WriteFile(fs, "/packages/test/1.0.0/test.1.0.0.0.yml", []byte(content), 0666)
-			Expect(err).To(BeNil())
-
-			// run the app
-			err = app.Run([]string{
-				"wrangle",
-				"install",
-				"test",
-			})
-			Expect(err).To(BeNil())
-
-			printDirectory(fs, "/")
-			printDirectory(fs, "/packages")
-			printDirectory(fs, "/packages/test")
-			printDirectory(fs, "/packages/test/1.0.0")
-			
-			ok, err := afero.Exists(fs, "/packages/test/1.0.0/test.html")
-			Expect(err).To(BeNil())			
-			Expect(ok).To(BeTrue())
-		})
-	})
+	
 })
 
 func printDirectory(fileSystem filesystem.FsWrapper, path string){

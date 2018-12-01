@@ -55,13 +55,9 @@ func (p *fakeProvider) Create(source *config.Store) (store.Store, error) {
 	return p.createDelegate(source)
 }
 
-var _ = Describe("", func(){
-	
-})
-
-func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
-	r := require.New(t)
-	data := `
+var _ = Describe("ProcessTemplate", func(){
+	It("can evaluate single store", func(){
+		data := `
 stores:
 - name: one
   type: fake
@@ -72,32 +68,38 @@ processes:
   path: go
   args:
   - ((version))`
-	cfg, err := config.DeserializeConfigString(data)
-	r.Nil(err)
-
-	provider := &fakeProvider{
-		name: "fake",
-		createDelegate: func(source *config.Store) (store.Store, error) {
-			return &fakeStore{
-				getByNameDelegate: func(name string) (store.Data, error) {
-					return store.NewData("version", "version", "version"), nil
+			cfg, err := config.DeserializeConfigString(data)
+			Expect(err).To(BeNil())
+		
+			provider := &fakeProvider{
+				name: "fake",
+				createDelegate: func(source *config.Store) (store.Store, error) {
+					return &fakeStore{
+						getByNameDelegate: func(name string) (store.Data, error) {
+							return store.NewData("version", "version", "version"), nil
+						},
+					}, nil
 				},
-			}, nil
-		},
-	}
+			}
+		
+			manager := store.NewManager()
+			manager.Register(provider)
+		
+			template, err := store.NewProcessTemplate(cfg, manager)
+			Expect(err).To(BeNil())
+		
+			processName := "go"
+			evaluated, err := template.Evaluate(processName)
+			Expect(err).To(BeNil())
+			r.NotNil(evaluated)
+		
+			r.Equal("version", evaluated.Args[0])
+	})
+})
 
-	manager := store.NewManager()
-	manager.Register(provider)
-
-	template, err := store.NewProcessTemplate(cfg, manager)
-	r.Nil(err)
-
-	processName := "go"
-	evaluated, err := template.Evaluate(processName)
-	r.Nil(err)
-	r.NotNil(evaluated)
-
-	r.Equal("version", evaluated.Args[0])
+func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
+	r := require.New(t)
+	
 }
 
 func TestProcessTemplate(t *testing.T) {
@@ -124,7 +126,7 @@ processes:
   - ((/key))
 `
 		configuration, err := config.DeserializeConfigString(content)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		fileSystem := afero.NewMemMapFs()
 		afero.WriteFile(fileSystem, "/test1", []byte("key: value"), 0644)
@@ -134,9 +136,9 @@ processes:
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
 	})
@@ -159,7 +161,7 @@ processes:
     prop: ((/prop))
 `
 		configuration, err := config.DeserializeConfigString(content)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		fileSystem := afero.NewMemMapFs()
 		afero.WriteFile(fileSystem, "/test", []byte("key: 1\nprop: 2"), 0644)
@@ -168,9 +170,9 @@ processes:
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		r.Equal(1, len(environment.Args))
 		r.Equal("1", environment.Args[0])
 		r.Equal(1, len(environment.Vars))
@@ -203,7 +205,7 @@ processes:
   - ((/key1))
 `
 		configuration, err := config.DeserializeConfigString(content)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		fileSystem := afero.NewMemMapFs()
 		afero.WriteFile(fileSystem, "/test1", []byte("key1: ((/key2))"), 0644)
@@ -214,9 +216,9 @@ processes:
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		r.Equal(1, len(environment.Args))
 		r.Equal("value", environment.Args[0])
 	})
@@ -251,7 +253,7 @@ processes:
   - ((/key1))
 `
 		configuration, err := config.DeserializeConfigString(content)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		fileSystem := afero.NewMemMapFs()
 		afero.WriteFile(fileSystem, "/test1", []byte("key1: ((/key2))"), 0644)
@@ -289,7 +291,7 @@ processes:
     C: ((c))`
 
 		configuration, err := config.DeserializeConfigString(content)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		fileSystem := afero.NewMemMapFs()
 		afero.WriteFile(fileSystem, "/one", []byte("key: /two"), 0666)
@@ -299,9 +301,9 @@ processes:
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		template, err := store.NewProcessTemplate(configuration, manager)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		p, err := template.Evaluate("a")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 
 		r.Equal("a", p.Vars["A"])
 		r.Equal("b", p.Vars["B"])

@@ -1,6 +1,8 @@
 package commands_test
 
 import (
+	"github.com/urfave/cli"
+	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/spf13/afero"
 
@@ -11,9 +13,11 @@ import (
 var _ = Describe("Init", func() {
 	It("creates config file", func() {
 		fileSystem := afero.NewMemMapFs()
-		initCommand := commands.NewInitCommand(fileSystem)
-		Expect(initCommand.Execute("/test")).To(BeNil())
+		initService := services.NewInitService(fileSystem)
+		initCommand := commands.CreateInitCommand(initService)
 
+		context := &cli.Context{}
+		initCommand.Action.(func (context *cli.Context)error)(context)
 		ok, err := afero.Exists(fileSystem, "/test")
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())

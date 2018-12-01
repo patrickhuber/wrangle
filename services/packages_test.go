@@ -1,10 +1,10 @@
 package services_test
 
 import (
+	"github.com/patrickhuber/wrangle/services"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"bytes"
-	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 )
@@ -18,9 +18,9 @@ var _ = Describe("Packages", func() {
 			fileSystem := afero.NewMemMapFs()
 			afero.WriteFile(fileSystem, "/opt/wrangle/packages/test/0.1.1/test.0.1.1.yml", []byte("this is a package"), 0600)
 
-			command := commands.NewPackages(fileSystem, console, packagePath)
-			Expect(command).ToNot(BeNil())
-			Expect(command.Execute()).To(BeNil())
+			service := services.NewPackagesService(fileSystem, console)
+			Expect(service).ToNot(BeNil())			
+			Expect(service.List(packagePath)).To(BeNil())
 
 			output := console.OutAsString()
 

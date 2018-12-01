@@ -6,6 +6,7 @@ require (
 	github.com/cloudfoundry/socks5-proxy v0.0.0-20180321211136-3c6b4eec9c2d
 	github.com/cppforlife/go-patch v0.0.0-20171006213518-250da0e0e68c
 	github.com/davecgh/go-spew v1.1.0
+	github.com/golang/protobuf v1.2.0 // indirect
 	github.com/google/uuid v0.0.0-20161128191214-064e2069ce9c
 	github.com/hashicorp/go-version v0.0.0-20180322230233-23480c066577
 	github.com/hpcloud/tail v0.0.0-20180514194441-a1dbeea552b7
