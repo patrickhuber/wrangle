@@ -1,11 +1,11 @@
 unit:
-	ginkgo -p -r -race -randomizeAllSpecs -randomizeSuites -skipPackage vendor .
+	ginkgo -p -r -race -randomizeAllSpecs -randomizeSuites .
 
 build:
-	go build -o bin/wrangle main.go
+	go build -o bin/wrangle
 
 restore:
-	dep ensure
+	go mod tidy
 	
 integration:
 	go test ./... -tags=integration
