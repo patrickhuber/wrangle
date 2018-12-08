@@ -33,6 +33,11 @@ type PackageReference struct {
 
 // Package represents a versioned artifiact
 type Package struct {
+	Details PackageDetails `yaml:"package"`
+}
+
+// PackageDetails contains the details for the package
+type PackageDetails struct {
 	Name      string     `yaml:"name"`
 	Version   string     `yaml:"version"`
 	Platforms []Platform `yaml:"platforms"`

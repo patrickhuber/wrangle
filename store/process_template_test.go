@@ -1,17 +1,13 @@
 package store_test
 
 import (
-	"testing"
-
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/file"
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/require"
 	
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	
+	. "github.com/onsi/gomega"	
 )
 
 type fakeStore struct {
@@ -91,21 +87,12 @@ processes:
 			processName := "go"
 			evaluated, err := template.Evaluate(processName)
 			Expect(err).To(BeNil())
-			r.NotNil(evaluated)
-		
-			r.Equal("version", evaluated.Args[0])
+
+			Expect(evaluated).ToNot(BeNil())			
+			Expect(evaluated.Args[0]).To(Equal("version"))
 	})
-})
 
-func TestCanEvaluateSingleStoreProcesTemplate(t *testing.T) {
-	r := require.New(t)
-	
-}
-
-func TestProcessTemplate(t *testing.T) {
-
-	t.Run("TemplateCanResolveStoreParams", func(t *testing.T) {
-		r := require.New(t)
+	It("can resolve store parameters", func(){
 		content := `
 stores:
 - name: one
@@ -139,13 +126,12 @@ processes:
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
-		r.Equal(1, len(environment.Args))
-		r.Equal("value", environment.Args[0])
+		Expect(len(environment.Args)).To(Equal(1))
+		Expect(environment.Args[0]).To(Equal("value"))
 	})
 
-	t.Run("TemplateCanResolveProcessArgsAndVars", func(t *testing.T) {
-		r := require.New(t)
-		content := `
+	It("can resolve process args and vars", func(){
+content := `
 stores:
 - name: one
   type: file
@@ -173,14 +159,13 @@ processes:
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
-		r.Equal(1, len(environment.Args))
-		r.Equal("1", environment.Args[0])
-		r.Equal(1, len(environment.Vars))
-		r.Equal("2", environment.Vars["prop"])
+		Expect(len(environment.Args)).To(Equal(1))
+		Expect(environment.Args[0]).To(Equal("1"))
+		Expect(len(environment.Vars)).To(Equal(1))
+		Expect(environment.Vars["prop"]).To(Equal("2"))
 	})
 
-	t.Run("TemplateCanCascadeConfigStores", func(t *testing.T) {
-		r := require.New(t)
+	It("can cascade config stores", func(){
 		content := `
 stores:
 - name: one
@@ -219,12 +204,11 @@ processes:
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
-		r.Equal(1, len(environment.Args))
-		r.Equal("value", environment.Args[0])
+		Expect(len(environment.Args)).To(Equal(1))
+		Expect(environment.Args[0]).To(Equal("value"))		
 	})
 
-	t.Run("TemplateCanDetectLoops", func(t *testing.T) {
-		r := require.New(t)
+	It("can detect loops", func(){
 		content := `
 stores:
 - name: one
@@ -264,11 +248,10 @@ processes:
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
 		_, err = store.NewProcessTemplate(configuration, manager)
-		r.NotNil(err)
+		Expect(err).ToNot(BeNil())
 	})
 
-	t.Run("TemplateCanLoadVariablesFromOtherStore", func(t *testing.T) {
-		r := require.New(t)
+	It("can load variables from other store", func(){
 		content := `
 stores:
 - name: one
@@ -305,8 +288,8 @@ processes:
 		p, err := template.Evaluate("a")
 		Expect(err).To(BeNil())
 
-		r.Equal("a", p.Vars["A"])
-		r.Equal("b", p.Vars["B"])
-		r.Equal("c", p.Vars["C"])
+		Expect(p.Vars["A"]).To(Equal("a"))
+		Expect(p.Vars["B"]).To(Equal("b"))
+		Expect(p.Vars["C"]).To(Equal("c"))
 	})
-}
+})

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"reflect"
 
-	credhubcli "github.com/cloudfoundry-incubator/credhub-cli/credhub"
-	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
+	credhubcli "code.cloudfoundry.org/credhub-cli/credhub"
+	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -170,8 +170,8 @@ var _ = Describe("credhub store", func() {
 		Expect(err).To(BeNil())
 
 		certificate, ok := data.Value().(string)
-		require.Truef(ok, "unable to find certificate")
-		require.Equal(certificate, "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
+		Expect(ok).To(BeTrue(), "unable to find certificate")
+		Expect(certificate).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
 	})
 
 	It("can get rsa by name", func() {
@@ -243,7 +243,7 @@ var _ = Describe("credhub store", func() {
 		Expect(privateKey).To(Equal("private-key"))
 
 		publicKeyFingerPrint, ok := stringMap["public_key_fingerprint"]
-		Expect(ok).To(BeTrue("unable to find public_key_fingerprint")
+		Expect(ok).To(BeTrue(), "unable to find public_key_fingerprint")
 		Expect(publicKeyFingerPrint).To(Equal("public-key-fingerprint"))
 	})
 })

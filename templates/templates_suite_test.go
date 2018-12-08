@@ -1,4 +1,4 @@
-package renderers_test
+package templates_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestRenderers(t *testing.T) {
+func TestTemplates(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "renderers")
+	RunSpecs(t, "Templates Suite")
 }

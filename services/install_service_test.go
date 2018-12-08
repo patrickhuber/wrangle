@@ -167,12 +167,14 @@ func createPackageManifest(
 		taskList = append(taskList, extractTask)
 	}
 	packageConfig := &config.Package{
-		Name:    name,
-		Version: version,
-		Platforms: []config.Platform{
-			config.Platform{
-				Name:  platform,
-				Tasks: taskList,
+		Details: config.PackageDetails{
+			Name:    name,
+			Version: version,
+			Platforms: []config.Platform{
+				config.Platform{
+					Name:  platform,
+					Tasks: taskList,
+				},
 			},
 		},
 	}

@@ -3,10 +3,11 @@ package crypto
 import (
 	"bytes"
 	"fmt"
+
 	"golang.org/x/crypto/openpgp"
 
-	"github.com/onsi/gomega"
-	"github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("PgpCryptor", func() {
@@ -40,6 +41,6 @@ var _ = Describe("PgpCryptor", func() {
 		err = decryptor.Decrypt(encrypted, final)
 		Expect(err).To(BeNil())
 
-		Expect(final.String).To(Equal("this is plaintext"))
+		Expect(final.String()).To(Equal("this is plaintext"))
 	})
 })

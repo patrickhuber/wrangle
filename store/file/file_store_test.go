@@ -1,9 +1,8 @@
 package file
 
 import (
+	"github.com/patrickhuber/wrangle/store"
 	"reflect"
-	"testing"
-
 	"golang.org/x/crypto/openpgp"
 
 	"github.com/patrickhuber/wrangle/crypto"
@@ -33,12 +32,12 @@ var _ = Describe("FileStore", func(){
 			fileContent string
 			fileStore store.Store
 			encryptedFileStore store.Store
+			
+			fileStoreName  = "fileStore"
 		)
 	
 		BeforeEach(func(){
-			r := require.New(t)
 
-			const fileStoreName string = "fileStore"
 			fileSystem = afero.NewMemMapFs()
 
 			fileContent = `value: aaaaaaaaaaaaaaaa
@@ -71,7 +70,7 @@ ssh:
 			file := "/test"
 			fileStore, err = NewFileStore(fileStoreName, file, fileSystem, nil)
 			Expect(err).To(BeNil())
-			r.NotNil(fileStore)
+			Expect(fileStore).ToNot(BeNil())
 
 			factory, err := crypto.NewPgpFactory(fileSystem, platform)
 			Expect(err).To(BeNil())
@@ -137,8 +136,8 @@ ssh:
 						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
 				
 						privateKey, ok := stringMap["private_key"]
-						require.True(ok)
-						Expect(privateKey).To(Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n")
+						Expect(ok).To(BeTrue())
+						Expect(privateKey).To(Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"))
 				
 						certificate, ok := stringMap["certificate"]					
 						Expect(ok).To(BeTrue())
@@ -146,7 +145,7 @@ ssh:
 				
 						ca, ok := stringMap["ca"]
 						Expect(ok).To(BeTrue())
-						Expect(ca).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n")
+						Expect(ca).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"))
 					})
 				})
 
@@ -197,22 +196,20 @@ ssh:
 					It("returns value", func(){
 						data, err := fileStore.GetByName("/certificate.certificate")
 						Expect(err).To(BeNil())
-						Expect
-						require.NotNil(data)
+						Expect(data).ToNot(BeNil())
 				
 						certificate, ok := data.Value().(string)
-						require.True(ok)
-						require.Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n", certificate)
+						Expect(ok).To(BeTrue())
+						Expect(certificate).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"))
 					})	
 				})
 								
 			})
 		})	
-		It("can roundtrip encrypted file", func(){
-			require := require.New(t)
+		It("can roundtrip encrypted file", func(){			
 			data, err := encryptedFileStore.GetByName("/value")
 			Expect(err).To(BeNil())
-			Expect(data).To(Equal("aaaaaaaaaaaaaaaa"))
+			Expect(data.Value()).To(Equal("aaaaaaaaaaaaaaaa"))
 		})	
 	})
 })

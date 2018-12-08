@@ -21,7 +21,7 @@ var _ = Describe("PgpFactory", func() {
 
 		_, err = factory.CreateEncryptor()
 		Expect(err).ToNot(BeNil())
-		Expect(err.Error()).To(Contain("gpg v2 keyring is not supported"))
+		Expect(err.Error()).To(ContainSubstring("gpg v2 keyring is not supported"))
 	})
 
 	It("can detect gpg v2 files other", func() {
@@ -36,7 +36,7 @@ var _ = Describe("PgpFactory", func() {
 
 		_, err = factory.CreateEncryptor()
 		Expect(err).ToNot(BeNil())
-		Expect(err.Error()).To(Contain("gpg v2 keyring is not supported"))
+		Expect(err.Error()).To(ContainSubstring("gpg v2 keyring is not supported"))
 	})
 
 	It("can create encryptor", func() {

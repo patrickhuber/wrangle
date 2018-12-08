@@ -65,7 +65,7 @@ var _ = Describe("", func() {
 	})
 
 	Describe("Type", func() {
-		it("returns type", func() {
+		It("returns type", func() {
 			store := NewEnvStore("", nil)
 			Expect(store).ToNot(BeNil())
 			Expect(store.Type()).To(Equal("env"))

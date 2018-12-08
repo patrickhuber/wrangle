@@ -7,8 +7,8 @@ import (
 
 	"github.com/patrickhuber/wrangle/store"
 
-	credhubcli "github.com/cloudfoundry-incubator/credhub-cli/credhub"
-	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
+	credhubcli "code.cloudfoundry.org/credhub-cli/credhub"
+	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 )
 
 type credHubStore struct {
@@ -110,7 +110,7 @@ func (s *credHubStore) Type() string {
 
 func (s *credHubStore) Put(name string, value string) (string, error) {
 	ch := s.credHub
-	_, err := ch.SetCredential(name, "value", value, credhubcli.Overwrite)
+	_, err := ch.SetCredential(name, "value", value)
 	if err != nil {
 		return "", err
 	}

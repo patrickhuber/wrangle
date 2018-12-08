@@ -16,6 +16,9 @@ import (
 	"github.com/urfave/cli"
 )
 
+// set with -ldflags 
+var version = ""
+
 func createApplication(
 	manager store.Manager,
 	fileSystem filesystem.FsWrapper,
@@ -37,7 +40,7 @@ func createApplication(
 	cliApp.Usage = "a cli management tool"
 	cliApp.Writer = console.Out()
 	cliApp.ErrWriter = console.Error()
-	cliApp.Version = "0.9.0"
+	cliApp.Version = version
 
 	cliApp.Flags = []cli.Flag{
 		cli.StringFlag{

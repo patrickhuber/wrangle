@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"os"
 
 	"github.com/patrickhuber/wrangle/packages"

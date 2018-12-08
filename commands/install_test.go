@@ -57,32 +57,65 @@ var _ = Describe("Install", func() {
 
 		content := `
 package:
-name: test
-version: 1.0.0
-platforms:
-- name: linux
-tasks:
-- name: download
-  type: download
-  params: 
-	url: %s
-	out: ((package_install_directory))/test.html
+  name: test
+  version: 1.0.0
+  platforms:
+  - name: linux
+    tasks:
+    - name: download
+      type: download
+      params: 
+        url: %s
+        out: ((package_install_directory))/test.html
 `
 		content = fmt.Sprintf(content, server.URL)
 
 		err = fs.Mkdir("/packages/test/1.0.0", 0666)
 		Expect(err).To(BeNil())
 		
-		err = afero.WriteFile(fs, "/packages/test/1.0.0/test.1.0.0.0.yml", []byte(content), 0666)
+		err = afero.WriteFile(fs, "/packages/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
+		Expect(err).To(BeNil())
+		
+		app := cli.NewApp()
+		app.Flags = []cli.Flag{
+			cli.StringFlag{
+				Name:   "config, c",
+				Usage:  "Load configuration from `FILE`",
+				EnvVar: global.ConfigFileKey,
+				Value:  "/config",
+			},
+		}
+		app.Commands = []cli.Command{
+			*commands.CreateInstallCommand(installService),
+		}
+
+		err = app.Run([]string{
+			"wrangle",
+			"install",
+			"test",
+			"-v", "1.0.0",
+		})
 		Expect(err).To(BeNil())
 
-		installCommand := commands.CreateInstallCommand(installService)
-		context := &cli.Context{}
-		err = installCommand.Action.(func(context *cli.Context) error)(context)		
-		Expect(err).To(BeNil())
+		err = listFiles(fs, "/")
+		Expect(err).To(BeNil())		
 
 		ok, err := afero.Exists(fs, "/packages/test/1.0.0/test.html")
 		Expect(err).To(BeNil())			
 		Expect(ok).To(BeTrue())
 	})
+
+	
 })
+
+func listFiles(fs afero.Fs, directory string) error{
+	files, err := afero.ReadDir(fs, directory)
+	if err != nil{
+		return err
+	}
+	for _, file := range files{
+		os.Stdout.WriteString(
+			fmt.Sprintf("%s/%s", directory, file.Name()))
+	}
+	return nil
+}

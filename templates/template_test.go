@@ -1,160 +1,156 @@
 package templates
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("", func() {
-	It("", func() {})
-})
-
-func TestTemplate(t *testing.T) {
-
-	t.Run("CanEvaluateString", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate string", func() {
 		template := NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
-		r.Equal("value", document)
+		Expect(err).To(BeNil())
+		Expect(document).To(Equal("value"))
 	})
 
-	t.Run("CanEvaluateInt", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate int", func() {
 		template := NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", 1)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
-		r.Equal(1, document)
+		Expect(err).To(BeNil())
+		Expect(document).To(Equal(1))
 	})
 
-	t.Run("CanEvaluateTwoKeysInString", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate two keys in string", func() {
 		template := NewTemplate("((key)):((other))")
 		resolver, err := newSimpleResolver("/key", "value", "/other", "thing")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
-		r.Equal("value:thing", document)
+		Expect(err).To(BeNil())
+		Expect(document).To(Equal("value:thing"))
 	})
 
-	t.Run("CanEvaluateMapStringOfString", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate map string of string", func() {
 		m := map[string]string{"key": "((key))"}
 		template := NewTemplate(m)
 		resolver, err := newSimpleResolver("/key", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		actual, ok := document.(map[string]interface{})
-		r.True(ok)
-		r.Equal(1, len(actual))
-		r.Equal("value", actual["key"])
+		Expect(ok).To(BeTrue())
+		Expect(len(actual)).To(Equal(1))
+		Expect(actual["key"]).To(Equal("value"))
 	})
 
-	t.Run("CanEvaluateMapStringOfInterface", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate map string of interface", func() {
 		m := map[string]interface{}{"key": "((key))"}
 		template := NewTemplate(m)
 		resolver, err := newSimpleResolver("/key", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		actual, ok := document.(map[string]interface{})
-		r.True(ok)
-		r.Equal(1, len(actual))
-		r.Equal("value", actual["key"])
+		Expect(ok).To(BeTrue())
+		Expect(len(actual)).To(Equal(1))
+		Expect(actual["key"]).To(Equal("value"))
 	})
 
-	t.Run("CanEvaluateNestedMap", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate map interface of interface", func() {
+		m := map[interface{}]interface{}{"key": "((key))"}
+		template := NewTemplate(m)
+		resolver, err := newSimpleResolver("/key", "value")
+		Expect(err).To(BeNil())
+		document, err := template.Evaluate(resolver)
+		Expect(err).To(BeNil())
+		actual, ok := document.(map[interface{}]interface{})
+		Expect(ok).To(BeTrue())
+		Expect(len(actual)).To(Equal(1))
+		Expect(actual["key"]).To(Equal("value"))
+	})
+
+	It("can evaluate nested map", func() {
+
 		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
 		template := NewTemplate(m)
 		resolver, err := newSimpleResolver("/nested", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		actual, ok := document.(map[string]interface{})
-		r.True(ok)
-		r.Equal(1, len(actual))
+		Expect(ok).To(BeTrue())
+		Expect(len(actual)).To(Equal(1))
 		nested := actual["key"]
 		nestedMap, ok := nested.(map[string]interface{})
-		r.True(ok)
-		r.Equal("value", nestedMap["nested"])
+		Expect(ok).To(BeTrue())
+		Expect(nestedMap["nested"]).To(Equal("value"))
 	})
 
-	t.Run("CanEvaluateStringArray", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate string array", func() {
+
 		a := []string{"one", "((key))", "three"}
 		template := NewTemplate(a)
 		resolver, err := newSimpleResolver("/key", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		actual, ok := document.([]interface{})
-		r.True(ok)
-		r.Equal(3, len(actual))
-		r.Equal("value", actual[1])
+		Expect(ok).To(BeTrue())
+		Expect(len(actual)).To(Equal(3))
+		Expect(actual[1]).To(Equal("value"))
 	})
 
-	t.Run("CanEvaluateInterfaceArray", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate interface array", func() {
+
 		a := []interface{}{"one", "((key))", "three"}
 		template := NewTemplate(a)
 		resolver, err := newSimpleResolver("/key", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		actual, ok := document.([]interface{})
-		r.True(ok)
-		r.Equal(3, len(actual))
-		r.Equal("value", actual[1])
+		Expect(ok).To(BeTrue())
+		Expect(len(actual)).To(Equal(3))
+		Expect(actual[1]).To(Equal("value"))
 	})
 
-	t.Run("CanPatchInSliceForString", func(t *testing.T) {
-		r := require.New(t)
+	It("can patch in slice for string", func() {
 		template := NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", []string{"one", "two"})
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		s, ok := document.([]string)
-		r.True(ok)
-		r.Equal(2, len(s))
-		r.Equal("one", s[0])
-		r.Equal("two", s[1])
+		Expect(ok).To(BeTrue())
+		Expect(len(s)).To(Equal(2))
+		Expect(s[0]).To(Equal("one"))
+		Expect(s[1]).To(Equal("two"))
 	})
 
-	t.Run("CanPatchInMapForString", func(t *testing.T) {
-		r := require.New(t)
+	It("can patch in map for string", func() {
 		template := NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", map[string]string{"one": "test", "two": "other"})
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		s, ok := document.(map[string]string)
-		r.True(ok)
-		r.Equal(2, len(s))
-		r.Equal("test", s["one"])
-		r.Equal("other", s["two"])
+		Expect(ok).To(BeTrue())
+		Expect(len(s)).To(Equal(2))
+		Expect(s["one"]).To(Equal("test"))
+		Expect(s["two"]).To(Equal("other"))
 	})
 
-	t.Run("CanEvaluateResolverPipeline", func(t *testing.T) {
-		r := require.New(t)
+	It("can evaluate resolver pipeline", func() {
 		template := NewTemplate("((key1))")
 		resolver1, err := newSimpleResolver("/key1", "((key2))")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		resolver2, err := newSimpleResolver("/key2", "value")
-		r.Nil(err)
+		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver1, resolver2)
-		r.Nil(err)
-		r.Equal("value", document)
+		Expect(err).To(BeNil())
+		Expect(document).To(Equal("value"))
 	})
-}
+})

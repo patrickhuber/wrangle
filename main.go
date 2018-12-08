@@ -8,8 +8,6 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/urfave/cli"
-
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/config"
@@ -24,12 +22,6 @@ import (
 	store_env "github.com/patrickhuber/wrangle/store/env"
 	file "github.com/patrickhuber/wrangle/store/file"
 )
-
-type application struct {
-	cliApplication *cli.App
-	configuration  *config.Config
-}
-
 func main() {
 	// create platform, filesystem and console
 	platform := runtime.GOOS

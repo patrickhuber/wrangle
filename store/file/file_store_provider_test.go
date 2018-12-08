@@ -1,8 +1,6 @@
 package file
 
 import (
-	"testing"
-
 	"github.com/spf13/afero"
 	"golang.org/x/crypto/openpgp"
 

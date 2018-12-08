@@ -29,13 +29,13 @@ func CreateInstallCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			packagesPath := context.String("path")
+			pacakgeRoot := context.String("path")
 			packageName := context.Args().First()
 			if strings.TrimSpace(packageName) == "" {
 				return errors.New("missing required argument package name")
 			}
 			packageVersion := context.String("version")
-			return installService.Install(packagesPath, packageName, packageVersion)
+			return installService.Install(pacakgeRoot, packageName, packageVersion)
 		},
 	}
 }

@@ -104,6 +104,7 @@ var _ = Describe("Dictionary", func() {
 		})
 		Context("WhenVariableNotSet", func() {
 			It("should return false", func() {
+				_ = dictionary.Unset(key)
 				_, ok := dictionary.Lookup(key)
 				Expect(ok).To(BeFalse())
 			})

@@ -1,4 +1,4 @@
-package collections_test
+package env_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestRenderers(t *testing.T) {
+func TestEnv(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "collections")
+	RunSpecs(t, "Env Suite")
 }
