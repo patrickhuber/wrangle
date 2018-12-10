@@ -6,7 +6,6 @@ $version = get-content $datFilePath
 $bin = Join-Path $PSScriptRoot "../bin"
 
 $ldflags = "-X main.version=$version"
-$ldflags
 
 # build MacOS
 $ENV:GOOS="darwin"
