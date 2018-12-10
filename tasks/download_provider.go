@@ -26,14 +26,6 @@ func NewDownloadProvider(fileSystem afero.Fs, console ui.Console) Provider {
 	}
 }
 
-// NewDownloadTask returns a new instance of a download task
-func NewDownloadTask(name string, url string, out string) Task {
-	return NewTask(name, downloadTaskType, map[string]string{
-		"url": url,
-		"out": out,
-	})
-}
-
 func (provider *downloadProvider) TaskType() string {
 	return downloadTaskType
 }

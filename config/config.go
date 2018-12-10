@@ -12,6 +12,7 @@ type Store struct {
 	Name      string   `yaml:"name"`
 	StoreType string   `yaml:"type"`
 	Stores    []string `yaml:"stores"`
+	Feeds     []Feed   `yaml:"feeds"`
 
 	Params map[string]string `yaml:"params"`
 }
@@ -33,25 +34,22 @@ type PackageReference struct {
 
 // Package represents a versioned artifiact
 type Package struct {
-	Details PackageDetails `yaml:"package"`
+	Name    string   `yaml:"name"`
+	Version string   `yaml:"version"`
+	Targets []Target `yaml:"targets"`
 }
 
-// PackageDetails contains the details for the package
-type PackageDetails struct {
-	Name      string     `yaml:"name"`
-	Version   string     `yaml:"version"`
-	Platforms []Platform `yaml:"platforms"`
+// Target repesents an install target
+type Target struct {
+	Platform     string `yaml:"platform"`
+	Architecture string `yaml:"architecture"`
+	Name         string `yaml:"name"`
+
+	Tasks []interface{} `yaml:"tasks"`
 }
 
-// Platform represents a package platform install instructions
-type Platform struct {
-	Name  string `yaml:"name"`
-	Tasks []Task `yaml:"tasks"`
-}
-
-// Task represents a generic task to perform on the platform
-type Task struct {
-	Name   string                 `yaml:"name"`
-	Type   string                 `yaml:"type"`
-	Params map[string]interface{} `yaml:"params"`
+// Feed denotes a package feed
+type Feed struct {
+	Name string `yaml:"name"`
+	URI  string `yaml:"uri"`
 }

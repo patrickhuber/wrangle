@@ -4,7 +4,6 @@ import "github.com/patrickhuber/wrangle/collections"
 
 // Task defines a unit of operation for a pacakge
 type Task interface {
-	Name() string
 	Type() string
 	Params() collections.ReadOnlyDictionary
 }

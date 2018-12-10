@@ -53,23 +53,18 @@ imports:
 
 	It("can parse package", func() {
 		var data = `
-package:
-  name: test
-  version: 1.0
+name: test
+version: 1.0.0
+targets:
+- platform: windows
+  architecture: amd64
   tasks:
-  - name: download
-    type: download
-    params: 
-      key: value
-      other: value
-  - name: extract
-    type: extract
-    params: 
-      key: value
-      other: value
+  - download:
+      uri: https://test.myfile.com
+      out: myfile
 `
 		pkg := config.Package{}
-		err := yaml.Unmarshal([]byte(data), &pkg)
+		err := yaml.UnmarshalStrict([]byte(data), &pkg)
 		Expect(err).To(BeNil())
 	})
 })

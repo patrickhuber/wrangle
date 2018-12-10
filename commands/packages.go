@@ -12,12 +12,12 @@ func CreatePackagesCommand(
 	return &cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},
-		Usage:   "prints the list of packages and versions in the config file",
+		Usage:   "prints the list of packages and versions in the feed directory",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:   "path, p",
 				Usage:  "the package install path",
-				EnvVar: global.PackagePathKey,
+				EnvVar: global.CachePathKey,
 			},
 		},
 		Action: func(context *cli.Context) error {

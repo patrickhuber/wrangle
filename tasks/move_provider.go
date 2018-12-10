@@ -23,14 +23,6 @@ func NewMoveProvider(fileSystem afero.Fs, console ui.Console) Provider {
 	}
 }
 
-// NewMoveTask returns an instance of a move task
-func NewMoveTask(name string, source string, destination string) Task {
-	return NewTask(name, moveTaskType, map[string]string{
-		"source":      source,
-		"destination": destination,
-	})
-}
-
 func (provider *moveProvider) TaskType() string {
 	return moveTaskType
 }

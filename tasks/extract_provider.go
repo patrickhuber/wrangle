@@ -26,14 +26,6 @@ func NewExtractProvider(fileSystem afero.Fs, console ui.Console) Provider {
 	}
 }
 
-// NewExtractTask returns a new instance of a extract task
-func NewExtractTask(name string, archive string, destination string) Task {
-	return NewTask(name, extractTaskType, map[string]string{
-		"archive":     archive,
-		"destination": destination,
-	})
-}
-
 func (provider *extractProvider) TaskType() string {
 	return extractTaskType
 }

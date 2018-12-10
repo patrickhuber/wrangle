@@ -37,26 +37,26 @@ var _ = Describe("Env", func() {
 		)
 		Context("WhenAllEnvVarsSet", func() {
 			BeforeEach(func() {
-				dictionary.Set(global.PackagePathKey, packagesPath)
+				dictionary.Set(global.CachePathKey, packagesPath)
 				dictionary.Set(global.ConfigFileKey, configFilePath)
 			})
 			It("should render both env vars", func() {
 				err := cmd.Execute()
 				Expect(err).To(BeNil())
 				buffer := console.Out().(*bytes.Buffer)
-				expected := fmt.Sprintf("%s=%s\n%s=%s\n", global.PackagePathKey, packagesPath, global.ConfigFileKey, configFilePath)
+				expected := fmt.Sprintf("%s=\n%s=%s\n%s=%s\n", global.BinPathKey, global.CachePathKey, packagesPath, global.ConfigFileKey, configFilePath)
 				Expect(buffer.String()).To(Equal(expected))
 			})
 		})
 		Context("WhenOnlyPackagePathSet", func() {
 			BeforeEach(func() {
-				dictionary.Set(global.PackagePathKey, packagesPath)
+				dictionary.Set(global.CachePathKey, packagesPath)
 			})
 			It("should render package path and not config file", func() {
 				err := cmd.Execute()
 				Expect(err).To(BeNil())
 				buffer := console.Out().(*bytes.Buffer)
-				expected := fmt.Sprintf("%s=%s\n%s=\n", global.PackagePathKey, packagesPath, global.ConfigFileKey)
+				expected := fmt.Sprintf("%s=\n%s=%s\n%s=\n", global.BinPathKey, global.CachePathKey, packagesPath, global.ConfigFileKey)
 				Expect(buffer.String()).To(Equal(expected))
 			})
 		})
@@ -68,7 +68,7 @@ var _ = Describe("Env", func() {
 				err := cmd.Execute()
 				Expect(err).To(BeNil())
 				buffer := console.Out().(*bytes.Buffer)
-				expected := fmt.Sprintf("%s=\n%s=%s\n", global.PackagePathKey, global.ConfigFileKey, configFilePath)
+				expected := fmt.Sprintf("%s=\n%s=\n%s=%s\n", global.BinPathKey, global.CachePathKey, global.ConfigFileKey, configFilePath)
 				Expect(buffer.String()).To(Equal(expected))
 			})
 		})
@@ -77,7 +77,7 @@ var _ = Describe("Env", func() {
 				err := cmd.Execute()
 				Expect(err).To(BeNil())
 				buffer := console.Out().(*bytes.Buffer)
-				expected := fmt.Sprintf("%s=\n%s=\n", global.PackagePathKey, global.ConfigFileKey)
+				expected := fmt.Sprintf("%s=\n%s=\n%s=\n", global.BinPathKey, global.CachePathKey, global.ConfigFileKey)
 				Expect(buffer.String()).To(Equal(expected))
 			})
 		})
