@@ -23,7 +23,7 @@ var _ = Describe("MoveProvider", func() {
 	Describe("Execute", func() {
 		It("can move file", func() {
 			afero.WriteFile(fileSystem, "/test/file", []byte("test"), 0666)
-			task := NewTask("", "", map[string]string{"source": "/test/file", "destination": "/test/renamed"})
+			task := NewMoveTask("/test/file", "/test/renamed")
 
 			err := provider.Execute(task)
 			Expect(err).To(BeNil())
@@ -38,7 +38,7 @@ var _ = Describe("MoveProvider", func() {
 		})
 		It("can move directory", func() {
 			afero.WriteFile(fileSystem, "/test/file", []byte("test"), 0666)
-			task := NewTask("", "", map[string]string{"source": "/test", "destination": "/test1"})
+			task := NewMoveTask("/test", "/test1")
 
 			err := provider.Execute(task)
 			Expect(err).To(BeNil())

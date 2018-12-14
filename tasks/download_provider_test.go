@@ -15,10 +15,9 @@ var _ = Describe("DownloadProvider", func() {
 		server := fakes.NewHTTPServerWithArchive([]fakes.TestFile{{Path: "/data", Data: "this is data"}})
 		defer server.Close()
 
-		task := tasks.NewTask("", "",
-			map[string]string{
-				"url": server.URL,
-				"out": "/some/path"})
+		task := tasks.NewDownloadTask(
+			server.URL,
+			"/some/path")
 		Expect(task).ToNot(BeNil())
 
 		fileSystem := afero.NewMemMapFs()

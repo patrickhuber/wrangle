@@ -18,10 +18,7 @@ var _ = Describe("LinkProvider", func() {
 		console := ui.NewMemoryConsole()
 		provider := tasks.NewLinkProvider(fs, console)
 
-		task := tasks.NewTask("", "", map[string]string{
-			"source":      "/source",
-			"destination": "/destination",
-		})
+		task := tasks.NewDownloadTask("/source", "/destination")
 
 		err := provider.Execute(task)
 		Expect(err).To(BeNil())
@@ -32,8 +29,7 @@ var _ = Describe("LinkProvider", func() {
 	})
 	Describe("NewLinkTask", func() {
 		It("should map parameters", func() {
-			task := tasks.NewLinkTask("name", "source", "destination")
-			Expect(task.Name()).To(Equal("name"))
+			task := tasks.NewLinkTask("source", "destination")
 
 			s, ok := task.Params().Lookup("source")
 			Expect(ok).To(BeTrue())

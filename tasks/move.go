@@ -27,7 +27,7 @@ func (t *MoveTask) Params() collections.ReadOnlyDictionary {
 }
 
 // NewMoveTask returns an instance of a move task
-func NewMoveTask(name string, source string, destination string) Task {
+func NewMoveTask(source string, destination string) Task {
 	return &MoveTask{
 		Details: MoveTaskDetails{
 			Destination: destination,

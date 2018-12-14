@@ -27,7 +27,7 @@ func (t *DownloadTask) Params() collections.ReadOnlyDictionary {
 }
 
 // NewDownloadTask returns a new instance of a download task
-func NewDownloadTask(name string, url string, out string) Task {
+func NewDownloadTask(url string, out string) Task {
 	return &DownloadTask{
 		Details: DownloadTaskDetails{
 			URI: url,

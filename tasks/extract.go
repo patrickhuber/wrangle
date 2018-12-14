@@ -27,7 +27,7 @@ func (t *ExtractTask) Params() collections.ReadOnlyDictionary {
 }
 
 // NewExtractTask returns a new instance of a extract task
-func NewExtractTask(name string, archive string, destination string) Task {
+func NewExtractTask(archive string, destination string) Task {
 	return &ExtractTask{
 		Details: ExtractTaskDetails{
 			Archive:     archive,

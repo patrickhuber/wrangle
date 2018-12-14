@@ -23,13 +23,6 @@ func NewLinkProvider(fileSystem filesystem.FsWrapper, console ui.Console) Provid
 }
 
 // NewLinkTask returns an instance of a link task
-func NewLinkTask(name string, source string, destination string) Task {
-	return NewTask(name, linkTaskType, map[string]string{
-		"source":      source,
-		"destination": destination,
-	})
-}
-
 func (provider *linkProvider) TaskType() string {
 	return linkTaskType
 }

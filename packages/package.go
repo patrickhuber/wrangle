@@ -63,7 +63,7 @@ func (p *pkg) interpolateTask(task tasks.Task) tasks.Task {
 		value = replaceName(value, p.name)
 		params[key] = value
 	}
-	return tasks.NewTask(task.Name(), task.Type(), params)
+	return tasks.NewTask(task.Type(), params)
 }
 
 func replaceVersion(input string, version string) string {

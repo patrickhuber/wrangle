@@ -9,13 +9,8 @@ type Task interface {
 }
 
 type task struct {
-	name     string
 	taskType string
 	params   collections.Dictionary
-}
-
-func (t *task) Name() string {
-	return t.name
 }
 
 func (t *task) Type() string {
@@ -27,13 +22,12 @@ func (t *task) Params() collections.ReadOnlyDictionary {
 }
 
 // NewTask creates a new task from the given parameters
-func NewTask(name string, taskType string, params map[string]string) Task {
+func NewTask(taskType string, params map[string]string) Task {
 	dictionary := collections.NewDictionary()
 	for k, v := range params {
 		dictionary.Set(k, v)
 	}
 	return &task{
-		name:     name,
 		taskType: taskType,
 		params:   dictionary,
 	}

@@ -1,16 +1,17 @@
 package services
 
 import (
-	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/templates"
-	"github.com/patrickhuber/wrangle/filepath"
-	"strings"
-	"github.com/spf13/afero"
-	"github.com/patrickhuber/wrangle/tasks"
 	"fmt"
+	"strings"
+
+	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/tasks"
+	"github.com/patrickhuber/wrangle/templates"
+	"github.com/spf13/afero"
 )
 
 // InstallService is a service responsible for installing packages
@@ -18,11 +19,11 @@ type InstallService interface {
 	Install(packagesPath string, packageName string, packageVersion string) error
 }
 
-type installService struct {	
-	platform     string
-	fileSystem   filesystem.FsWrapper
-	manager      packages.Manager
-	loader       config.Loader
+type installService struct {
+	platform   string
+	fileSystem filesystem.FsWrapper
+	manager    packages.Manager
+	loader     config.Loader
 }
 
 // NewInstallService creates a new install service
@@ -33,10 +34,10 @@ func NewInstallService(
 	loader config.Loader) (InstallService, error) {
 
 	return &installService{
-		platform:     platform,
-		fileSystem:   fileSystem,
-		manager:      manager,
-		loader:       loader},	nil
+		platform:   platform,
+		fileSystem: fileSystem,
+		manager:    manager,
+		loader:     loader}, nil
 }
 
 func (service *installService) Install(packageRoot string, packageName string, packageVersion string) error {
@@ -57,15 +58,14 @@ func (service *installService) Install(packageRoot string, packageName string, p
 	return service.manager.Install(pkg)
 }
 
-
 func (service *installService) findConfigPackage(packageRoot, packageName, packageVersion string) (*config.Package, error) {
-	
+
 	// packageRoot
 	//   ex: /packages
 	// packagePath
 	//   ex: /packages/test
 	// packageVersionPath
-	//   ex: /packages/test/1.0.0/	
+	//   ex: /packages/test/1.0.0/
 	// packageVersionManifestPath
 	//   ex: /packages/test/1.0.0/test.1.0.0.yml
 	packagePath, err := service.findPackagePath(packageRoot, packageName)
@@ -73,13 +73,13 @@ func (service *installService) findConfigPackage(packageRoot, packageName, packa
 		return nil, err
 	}
 
-	packageVersion , err = service.findPackageVersion(packagePath, packageVersion)
-	if err != nil{
+	packageVersion, err = service.findPackageVersion(packagePath, packageVersion)
+	if err != nil {
 		return nil, err
 	}
 
 	packageVersionPath := fmt.Sprintf("%s/%s", packagePath, packageVersion)
-	packageVersionManifestPath := fmt.Sprintf("%s/%s.%s.yml", packageVersionPath, packageName, packageVersion)	
+	packageVersionManifestPath := fmt.Sprintf("%s/%s.%s.yml", packageVersionPath, packageName, packageVersion)
 
 	packageData, err := service.loader.LoadPackageAsInterface(packageVersionManifestPath)
 	if err != nil {
@@ -104,27 +104,26 @@ func (service *installService) findConfigPackage(packageRoot, packageName, packa
 	return config.DeserializePackageString(packageDataString)
 }
 
-func (service *installService) findPackagePath(packageRoot, packageName string) (string, error){
+func (service *installService) findPackagePath(packageRoot, packageName string) (string, error) {
 	if strings.TrimSpace(packageName) == "" {
 		return "", fmt.Errorf("package name is required")
 	}
 
 	packagePath := filepath.Join(packageRoot, packageName)
-	return packagePath,nil
+	return packagePath, nil
 }
 
-func (service *installService) findPackageVersion(packagePath, packageVersion string) (string, error){
+func (service *installService) findPackageVersion(packagePath, packageVersion string) (string, error) {
 	useLatestVersion := len(strings.TrimSpace(packageVersion)) == 0
-		
+
 	if !useLatestVersion {
 		return packageVersion, nil
 	}
-		
-	return  service.findLatestPackageVersion(packagePath)	
+
+	return service.findLatestPackageVersion(packagePath)
 }
 
-
-func (service *installService) findLatestPackageVersion(packagePath string) (string, error){
+func (service *installService) findLatestPackageVersion(packagePath string) (string, error) {
 	files, err := afero.ReadDir(service.fileSystem, packagePath)
 	if err != nil {
 		return "", err
@@ -145,23 +144,20 @@ func (service *installService) createPackageFromConfig(
 
 	taskList := make([]tasks.Task, 0)
 
-	for _, configPlatform := range configPackage.Details.Platforms {
-		if configPlatform.Name != platformName {
+	for _, target := range configPackage.Targets {
+		if target.Platform != platformName {
 			continue
 		}
-		for _, configTask := range configPlatform.Tasks {
+		/* for _, configTask := range target.Tasks {
 			params := map[string]string{}
-			for key, value := range configTask.Params {
-				params[key] = value.(string)
-			}
-			task := tasks.NewTask(configTask.Name, configTask.Type, params)
+			var task tasks.Task = nil
 			taskList = append(taskList, task)
-		}
+		} */
 	}
 	// create the package with the download and extract params set
 	pkg := packages.New(
-		configPackage.Details.Name,
-		configPackage.Details.Version,
+		configPackage.Name,
+		configPackage.Version,
 		taskList...)
 
 	return pkg, nil

@@ -10,7 +10,7 @@ var _ = Describe("Package", func() {
 	Describe("New", func() {
 		It("can replace version in download", func() {
 			p := New("a", "1.2",
-				tasks.NewDownloadTask("download", "https://((version))", "a_((version)).exe"))
+				tasks.NewDownloadTask("https://((version))", "a_((version)).exe"))
 			Expect(len(p.Tasks())).To(Equal(1))
 
 			downloadTask := p.Tasks()[0]
@@ -26,7 +26,7 @@ var _ = Describe("Package", func() {
 
 		It("can replace version in extract", func() {
 			p := New("a", "1.2",
-				tasks.NewExtractTask("", "/test/((version))", "ab_((version))"))
+				tasks.NewExtractTask("/test/((version))", "ab_((version))"))
 			Expect(len(p.Tasks())).To(Equal(1))
 
 			extractTask := p.Tasks()[0]

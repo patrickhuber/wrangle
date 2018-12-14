@@ -14,7 +14,7 @@ var _ = Describe("ExtractProvider", func() {
 	Describe("Execute", func() {
 		It("should extract single file", func() {
 
-			task := tasks.NewTask("", "", map[string]string{"archive": "/test/test.tgz", "destination": "/destination"})
+			task := tasks.NewExtractTask("/test/test.tgz", "/destination")
 			Expect(task).ToNot(BeNil())
 
 			fileSystem := afero.NewMemMapFs()
