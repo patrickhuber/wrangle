@@ -6,6 +6,7 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const moveTaskType = "move"
@@ -42,4 +43,13 @@ func (provider *moveProvider) Execute(t Task) error {
 	fmt.Fprintln(provider.console.Out())
 
 	return provider.fileSystem.Rename(source, destination)
+}
+
+func (provider *moveProvider) Unmarshal(data string) (Task, error) {
+	var task = &MoveTask{}
+	err := yaml.Unmarshal([]byte(data), task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }

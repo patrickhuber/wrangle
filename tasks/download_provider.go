@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/patrickhuber/wrangle/ui"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -70,4 +71,13 @@ func (provider *downloadProvider) Execute(task Task) error {
 	_, err = io.Copy(file, resp.Body)
 
 	return err
+}
+
+func (provider *downloadProvider) Unmarshal(data string) (Task, error) {
+	var task = &DownloadTask{}
+	err := yaml.Unmarshal([]byte(data), task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }

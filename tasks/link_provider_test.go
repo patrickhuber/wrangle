@@ -18,7 +18,7 @@ var _ = Describe("LinkProvider", func() {
 		console := ui.NewMemoryConsole()
 		provider := tasks.NewLinkProvider(fs, console)
 
-		task := tasks.NewDownloadTask("/source", "/destination")
+		task := tasks.NewLinkTask("/source", "/destination")
 
 		err := provider.Execute(task)
 		Expect(err).To(BeNil())

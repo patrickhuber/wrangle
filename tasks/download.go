@@ -11,7 +11,7 @@ type DownloadTask struct {
 
 // DownloadTaskDetails represent the pamarameters for a download task
 type DownloadTaskDetails struct {
-	URI string `yaml:"uri"`
+	URL string `yaml:"url"`
 	Out string `yaml:"out"`
 }
 
@@ -22,7 +22,7 @@ func (t *DownloadTask) Type() string {
 func (t *DownloadTask) Params() collections.ReadOnlyDictionary {
 	dictionary := collections.NewDictionary()
 	dictionary.Set("out", t.Details.Out)
-	dictionary.Set("uri", t.Details.URI)
+	dictionary.Set("url", t.Details.URL)
 	return dictionary
 }
 
@@ -30,7 +30,7 @@ func (t *DownloadTask) Params() collections.ReadOnlyDictionary {
 func NewDownloadTask(url string, out string) Task {
 	return &DownloadTask{
 		Details: DownloadTaskDetails{
-			URI: url,
+			URL: url,
 			Out: out,
 		},
 	}

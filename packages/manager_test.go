@@ -49,7 +49,7 @@ var _ = Describe("Manager", func() {
 				}
 				url += fileName
 
-				download := tasks.NewDownloadTask("download", url, fmt.Sprintf("/out/%v", fileName))
+				download := tasks.NewDownloadTask(url, fmt.Sprintf("/out/%v", fileName))
 				p := packages.New("", "", download)
 
 				err := manager.Install(p)
@@ -88,7 +88,7 @@ var _ = Describe("Manager", func() {
 			It("does not write a file", func() {
 				pkg := packages.New(
 					"", "",
-					tasks.NewDownloadTask("download", server.URL, "/test/file"))
+					tasks.NewDownloadTask(server.URL, "/test/file"))
 
 				err := manager.Install(pkg)
 				Expect(err).ToNot(BeNil())
@@ -100,7 +100,7 @@ var _ = Describe("Manager", func() {
 			It("returns an error", func() {
 				pkg := packages.New(
 					"", "",
-					tasks.NewDownloadTask("download", server.URL, ""))
+					tasks.NewDownloadTask(server.URL, ""))
 
 				err := manager.Install(pkg)
 				Expect(err).ToNot(BeNil())
@@ -124,8 +124,8 @@ var _ = Describe("Manager", func() {
 				url += fileName
 
 				archive := fmt.Sprintf("/download/%v", fileName)
-				download := tasks.NewDownloadTask("download", url, archive)
-				extract := tasks.NewExtractTask("extract", archive, "/extract")
+				download := tasks.NewDownloadTask( url, archive)
+				extract := tasks.NewExtractTask( archive, "/extract")
 				p := packages.New("", "", download, extract)
 
 				err := manager.Install(p)
@@ -177,8 +177,8 @@ var _ = Describe("Manager", func() {
 			url += "data"
 
 			pkg := packages.New("", "",
-				tasks.NewDownloadTask("download", url, "/out/data"),
-				tasks.NewLinkTask("link", "/out/data", "/out/symlink"))
+				tasks.NewDownloadTask(url, "/out/data"),
+				tasks.NewLinkTask( "/out/data", "/out/symlink"))
 
 			err := manager.Install(pkg)
 			Expect(err).To(BeNil())

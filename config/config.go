@@ -32,24 +32,8 @@ type PackageReference struct {
 	Version string `yaml:"version"`
 }
 
-// Package represents a versioned artifiact
-type Package struct {
-	Name    string   `yaml:"name"`
-	Version string   `yaml:"version"`
-	Targets []Target `yaml:"targets"`
-}
-
-// Target repesents an install target
-type Target struct {
-	Platform     string `yaml:"platform"`
-	Architecture string `yaml:"architecture"`
-	Name         string `yaml:"name"`
-
-	Tasks []interface{} `yaml:"tasks"`
-}
-
 // Feed denotes a package feed
 type Feed struct {
 	Name string `yaml:"name"`
-	URI  string `yaml:"uri"`
+	URL  string `yaml:"url"`
 }

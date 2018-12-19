@@ -11,15 +11,21 @@ import (
 )
 
 var _ = Describe("ExtractProvider", func() {
+	var(
+		fileSystem afero.Fs
+		console ui.Console
+		provider tasks.Provider
+	)
+	BeforeEach(func(){
+		fileSystem = afero.NewMemMapFs()
+		console = ui.NewMemoryConsole()
+		provider = tasks.NewExtractProvider(fileSystem, console)
+	})
 	Describe("Execute", func() {
 		It("should extract single file", func() {
 
 			task := tasks.NewExtractTask("/test/test.tgz", "/destination")
 			Expect(task).ToNot(BeNil())
-
-			fileSystem := afero.NewMemMapFs()
-			console := ui.NewMemoryConsole()
-			provider := tasks.NewExtractProvider(fileSystem, console)
 
 			tgz := archiver.NewTargz(fileSystem)
 			err := afero.WriteFile(fileSystem, "/test/test1", []byte("this is a test"), 0600)
@@ -30,6 +36,17 @@ var _ = Describe("ExtractProvider", func() {
 
 			err = provider.Execute(task)
 			Expect(err).To(BeNil())
+		})
+	})
+	Describe("Unmarshal", func(){
+		It("should parse task", func(){
+			task, err := provider.Unmarshal("extract:\n  archive: /archive\n  destination: /destination\n")
+			Expect(err).To(BeNil())
+			Expect(task).ToNot(BeNil())
+			extractTask, ok := task.(*tasks.ExtractTask)
+			Expect(ok).To(BeTrue())
+			Expect(extractTask.Details.Archive).To(Equal("/archive"))
+			Expect(extractTask.Details.Destination).To(Equal("/destination"))
 		})
 	})
 })

@@ -60,7 +60,7 @@ targets:
   architecture: amd64
   tasks:
   - download:
-      uri: https://test.myfile.com
+      url: https://test.myfile.com
       out: myfile
 `
 		pkg := config.Package{}

@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"github.com/patrickhuber/wrangle/tasks"
 	. "github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
@@ -56,6 +57,17 @@ var _ = Describe("MoveProvider", func() {
 				Expect(err).To(BeNil())
 				Expect(exists).To(BeTrue())
 			*/
+		})
+	})
+	Describe("Unmarshal", func() {
+		It("should parse task", func() {
+			task, err := provider.Unmarshal("move:\n  source: /source\n  destination: /destination\n")
+			Expect(err).To(BeNil())
+			Expect(task).ToNot(BeNil())
+			moveTask, ok := task.(*tasks.MoveTask)
+			Expect(ok).To(BeTrue())
+			Expect(moveTask.Details.Source).To(Equal("/source"))
+			Expect(moveTask.Details.Destination).To(Equal("/destination"))
 		})
 	})
 })

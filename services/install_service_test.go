@@ -145,39 +145,25 @@ func createPackageManifest(
 	outFile string,
 	archive string,
 	destination string) (string, error) {
-	taskList := []config.Task{
-		config.Task{
-			Name: "download",
-			Type: "download",
-			Params: map[string]interface{}{
-				"url": url,
-				"out": outFile,
-			},
-		},
-	}
-	if archive != "" && destination != "" {
-		extractTask := config.Task{
-			Name: "extract",
-			Type: "extract",
-			Params: map[string]interface{}{
-				"archive":     archive,
-				"destination": destination,
-			},
+	
+		taskList:= []interface{}{
+			tasks.NewDownloadTask(url, outFile),
 		}
-		taskList = append(taskList, extractTask)
-	}
-	packageConfig := &config.Package{
-		Details: config.PackageDetails{
-			Name:    name,
+		if len(archive) > 0 {
+			extract := tasks.NewExtractTask(archive, destination)
+			taskList = append(taskList, extract)
+		}
+		pkg := &config.Package{
+			Name: name,
 			Version: version,
-			Platforms: []config.Platform{
-				config.Platform{
-					Name:  platform,
+			Targets: []config.Target{
+				config.Target{
+					Platform: platform,
+					Architecture: "amd64",
 					Tasks: taskList,
 				},
 			},
-		},
-	}
+		}
+		return config.SerializePackage(pkg)
 
-	return config.SerializePackage(packageConfig)
 }

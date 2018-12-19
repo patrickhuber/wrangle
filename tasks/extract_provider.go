@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"gopkg.in/yaml.v2"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -65,4 +66,13 @@ func (provider *extractProvider) Execute(task Task) error {
 	fmt.Fprintln(provider.console.Out())
 
 	return a.Extract(archive, destination, []string{".*"})
+}
+
+func (provider *extractProvider) Unmarshal(data string) (Task, error) {
+	var task = &ExtractTask{}
+	err := yaml.Unmarshal([]byte(data), task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }

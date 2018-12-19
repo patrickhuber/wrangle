@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/ui"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const linkTaskType = "link"
@@ -40,4 +41,13 @@ func (provider *linkProvider) Execute(task Task) error {
 	}
 
 	return provider.fileSystem.Symlink(source, destination)
+}
+
+func (provider *linkProvider) Unmarshal(data string) (Task, error) {
+	var task = &LinkTask{}
+	err := yaml.Unmarshal([]byte(data), task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }
