@@ -6,7 +6,7 @@ import (
 
 // ExtractTask represents an extract task
 type ExtractTask struct {
-	Details ExtractTaskDetails `yaml:"extract"`
+	Details ExtractTaskDetails `yaml:"extract" mapstructure:"extract"`
 }
 
 // ExtractTaskDetails represent extract parameters

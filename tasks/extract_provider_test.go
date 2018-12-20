@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"gopkg.in/yaml.v2"
 	"github.com/patrickhuber/wrangle/archiver"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
@@ -38,11 +39,17 @@ var _ = Describe("ExtractProvider", func() {
 			Expect(err).To(BeNil())
 		})
 	})
-	Describe("Unmarshal", func(){
+	Describe("Decode", func(){
 		It("should parse task", func(){
-			task, err := provider.Unmarshal("extract:\n  archive: /archive\n  destination: /destination\n")
+
+			m:= make(map[string]interface{})
+			err := yaml.Unmarshal([]byte("extract:\n  archive: /archive\n  destination: /destination\n"), m)
+			Expect(err).To(BeNil())
+
+			task, err := provider.Decode(m)			
 			Expect(err).To(BeNil())
 			Expect(task).ToNot(BeNil())
+			
 			extractTask, ok := task.(*tasks.ExtractTask)
 			Expect(ok).To(BeTrue())
 			Expect(extractTask.Details.Archive).To(Equal("/archive"))

@@ -6,7 +6,7 @@ import (
 
 // LinkTask represents a symlink
 type LinkTask struct {
-	Details LinkTaskDetails `yaml:"link"`
+	Details LinkTaskDetails `yaml:"link" mapstructure:"link"`
 }
 
 // LinkTaskDetails contain the details for the link task

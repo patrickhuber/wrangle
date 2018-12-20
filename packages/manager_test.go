@@ -189,4 +189,48 @@ var _ = Describe("Manager", func() {
 			})
 		})
 	})
+
+	Describe("Load", func(){
+		BeforeEach(func(){
+			filePathTemplate := "/packages/test/((version))/test.((version)).yml"
+			contentTemplate := "name: test\nversion: ((version))\ntargets:\n- platform: windows\n  tasks: []"
+			versions := []string{"1.0.0", "1.0.1", "1.1.0", "2.0.0"}
+			for _, version := range versions{
+				path := strings.Replace(filePathTemplate, "((version))", version, -1)
+				content := strings.Replace(contentTemplate, "((version))", version, -1)
+				afero.WriteFile(fs, path, []byte(content), 0666)
+			}			
+		})
+		Context("WhenVersionSpecified", func(){
+			It("loads specified version", func(){
+				pkg, err := manager.Load("/packages", "test", "1.0.0")
+				Expect(err).To(BeNil())
+				Expect(pkg).ToNot(BeNil())
+				Expect(pkg.Name()).To(Equal("test"))
+				Expect(pkg.Version()).To(Equal("1.0.0"))
+				Expect(len(pkg.Tasks())).To(Equal(0))
+			})
+		})
+		Context("WhenVersionNotSpecified", func(){
+			It("loads latest version by semver", func(){
+				pkg, err := manager.Load("/packages", "test", "")
+				Expect(err).To(BeNil())
+				Expect(pkg).ToNot(BeNil())
+				Expect(pkg.Name()).To(Equal("test"))
+				Expect(pkg.Version()).To(Equal("2.0.0"))
+				Expect(len(pkg.Tasks())).To(Equal(0))
+			})
+			/* When("latest file present", func(){
+				It("loads specified version in file", func(){
+					afero.WriteFile(fs, "/packages/test/latest", []byte("1.1.0"), 0666)
+					pkg, err := manager.Load("/packages", "test", "")
+					Expect(err).To(BeNil())
+					Expect(pkg).ToNot(BeNil())
+					Expect(pkg.Name()).To(Equal("test"))
+					Expect(pkg.Version()).To(Equal("1.1.0"))
+					Expect(len(pkg.Tasks())).To(Equal(0))
+				})
+			}) */
+		})		
+	})
 })

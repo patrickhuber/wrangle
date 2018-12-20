@@ -6,7 +6,7 @@ import (
 
 // DownloadTask represents a download task
 type DownloadTask struct {
-	Details DownloadTaskDetails `yaml:"download"`
+	Details DownloadTaskDetails `yaml:"download" mapstructure:"download"`
 }
 
 // DownloadTaskDetails represent the pamarameters for a download task

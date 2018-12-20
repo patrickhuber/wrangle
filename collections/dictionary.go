@@ -27,6 +27,15 @@ func NewDictionary() Dictionary {
 	}
 }
 
+// NewDictionaryFromMap creates a new dictionary copying from map
+func NewDictionaryFromMap(values map[string]string) Dictionary {
+	dictionary := NewDictionary()
+	for k, v := range values {
+		dictionary.Set(k, v)
+	}
+	return dictionary
+}
+
 func (d *dictionary) Get(key string) (string, error) {
 	if value, ok := d.data[key]; ok {
 		return value, nil

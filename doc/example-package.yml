@@ -5,4 +5,12 @@ targets:
   architecture: amd64
   tasks:
   - download:
+      url: https://somesite.net/d/test
+      out: test-windows-1.0.0.tgz
+  - extract:
+      archive: test-windows-1.0.0.tgz
+      destination: .
+  - move: 
+      source: test.exe
+      destination: test-windows-1.0.0.exe
       

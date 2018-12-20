@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"gopkg.in/yaml.v2"
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
@@ -39,11 +40,17 @@ var _ = Describe("DownloadProvider", func() {
 			Expect(ok).To(BeTrue())
 		})
 	})
-	Describe("Unmarshal", func(){
+	Describe("Decode", func(){
 		It("should parse task", func(){
-			task, err := provider.Unmarshal("download:\n  url: https://www.google.com\n  out: /some/file\n")
+
+			m:= make(map[string]interface{})
+			err := yaml.Unmarshal([]byte("download:\n  url: https://www.google.com\n  out: /some/file\n"), m)
+			Expect(err).To(BeNil())
+
+			task, err := provider.Decode(m)			
 			Expect(err).To(BeNil())
 			Expect(task).ToNot(BeNil())
+			
 			downloadTask, ok := task.(*tasks.DownloadTask)
 			Expect(ok).To(BeTrue())
 			Expect(downloadTask.Details.Out).To(Equal("/some/file"))

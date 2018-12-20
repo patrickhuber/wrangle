@@ -3,10 +3,10 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const moveTaskType = "move"
@@ -45,11 +45,11 @@ func (provider *moveProvider) Execute(t Task) error {
 	return provider.fileSystem.Rename(source, destination)
 }
 
-func (provider *moveProvider) Unmarshal(data string) (Task, error) {
-	var task = &MoveTask{}
-	err := yaml.Unmarshal([]byte(data), task)
+func (provider *moveProvider) Decode(task interface{}) (Task, error) {
+	var tsk = &MoveTask{}
+	err := mapstructure.Decode(task, tsk)
 	if err != nil {
 		return nil, err
 	}
-	return task, nil
+	return tsk, nil
 }

@@ -6,7 +6,7 @@ import (
 
 // MoveTask represents a move task
 type MoveTask struct {
-	Details MoveTaskDetails `yaml:"move"`
+	Details MoveTaskDetails `yaml:"move" mapstructure:"move"`
 }
 
 // MoveTaskDetails represent a move task parameters

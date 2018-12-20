@@ -1,12 +1,12 @@
 package tasks
 
 import (
+	"github.com/mitchellh/mapstructure"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/patrickhuber/wrangle/ui"
-	yaml "gopkg.in/yaml.v2"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -73,11 +73,11 @@ func (provider *downloadProvider) Execute(task Task) error {
 	return err
 }
 
-func (provider *downloadProvider) Unmarshal(data string) (Task, error) {
-	var task = &DownloadTask{}
-	err := yaml.Unmarshal([]byte(data), task)
+func (provider *downloadProvider) Decode(task interface{}) (Task, error) {
+	var tsk = &DownloadTask{}
+	err := mapstructure.Decode(task, tsk)
 	if err != nil {
 		return nil, err
 	}
-	return task, nil
+	return tsk, nil
 }

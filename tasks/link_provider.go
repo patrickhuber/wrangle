@@ -3,9 +3,10 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/mitchellh/mapstructure"
+
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/ui"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const linkTaskType = "link"
@@ -43,11 +44,11 @@ func (provider *linkProvider) Execute(task Task) error {
 	return provider.fileSystem.Symlink(source, destination)
 }
 
-func (provider *linkProvider) Unmarshal(data string) (Task, error) {
-	var task = &LinkTask{}
-	err := yaml.Unmarshal([]byte(data), task)
+func (provider *linkProvider) Decode(task interface{}) (Task, error) {
+	var tsk = &LinkTask{}
+	err := mapstructure.Decode(task, tsk)
 	if err != nil {
 		return nil, err
 	}
-	return task, nil
+	return tsk, nil
 }

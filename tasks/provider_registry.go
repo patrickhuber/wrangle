@@ -2,8 +2,6 @@ package tasks
 
 import (
 	"fmt"
-
-	yaml "gopkg.in/yaml.v2"
 )
 
 type providerRegistry struct {
@@ -14,6 +12,7 @@ type providerRegistry struct {
 type ProviderRegistry interface {
 	Get(taskType string) (Provider, error)
 	Register(runner Provider)
+	Decode(task interface{}) (Task, error)
 }
 
 // NewProviderRegistry creates a new provider registry instance
@@ -35,19 +34,21 @@ func (registry *providerRegistry) Get(taskType string) (Provider, error) {
 	return provider, nil
 }
 
-func (registry *providerRegistry) Parse(data string) (Task, error) {
-	m := make(map[interface{}]interface{})
-	err := yaml.Unmarshal([]byte(data), m)
-	if err != nil {
-		return nil, err
+func (registry *providerRegistry) Decode(task interface{}) (Task, error) {
+	m, ok := task.(map[interface{}]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to cast task to string map of interface")
 	}
-	for key := range m {
-		stringKey := key.(string)
-		provider, err := registry.Get(stringKey)
+	for providerTaskType, provider := range registry.providers {
+		_, ok := m[providerTaskType]
+		if !ok {
+			continue
+		}
+		task, err := provider.Decode(task)
 		if err != nil {
 			return nil, err
 		}
-		return provider.Unmarshal(data)
+		return task, nil
 	}
-	return nil, fmt.Errorf("unable to parse task")
+	return nil, fmt.Errorf("no provider is registered for task type")
 }

@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"gopkg.in/yaml.v2"
 	"github.com/patrickhuber/wrangle/tasks"
 	. "github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
@@ -59,9 +60,12 @@ var _ = Describe("MoveProvider", func() {
 			*/
 		})
 	})
-	Describe("Unmarshal", func() {
+	Describe("Decode", func() {
 		It("should parse task", func() {
-			task, err := provider.Unmarshal("move:\n  source: /source\n  destination: /destination\n")
+			m:= make(map[string]interface{})
+			err := yaml.Unmarshal([]byte("move:\n  source: /source\n  destination: /destination\n"), m)
+			Expect(err).To(BeNil())
+			task, err := provider.Decode(m)
 			Expect(err).To(BeNil())
 			Expect(task).ToNot(BeNil())
 			moveTask, ok := task.(*tasks.MoveTask)

@@ -1,7 +1,7 @@
 package tasks
 
 import (
-	"gopkg.in/yaml.v2"
+	"github.com/mitchellh/mapstructure"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -68,11 +68,11 @@ func (provider *extractProvider) Execute(task Task) error {
 	return a.Extract(archive, destination, []string{".*"})
 }
 
-func (provider *extractProvider) Unmarshal(data string) (Task, error) {
-	var task = &ExtractTask{}
-	err := yaml.Unmarshal([]byte(data), task)
+func (provider *extractProvider) Decode(task interface{}) (Task, error) {
+	var tsk = &ExtractTask{}
+	err := mapstructure.Decode(task, tsk)
 	if err != nil {
 		return nil, err
 	}
-	return task, nil
+	return tsk, nil
 }

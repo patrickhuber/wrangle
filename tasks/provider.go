@@ -4,5 +4,5 @@ package tasks
 type Provider interface {
 	TaskType() string
 	Execute(task Task) error
-	Unmarshal(string) (Task, error)
+	Decode(task interface{}) (Task, error)
 }
