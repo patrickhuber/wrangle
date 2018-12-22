@@ -20,7 +20,7 @@ var _ = Describe("LinkProvider", func() {
 
 		task := tasks.NewLinkTask("/source", "/destination")
 
-		err := provider.Execute(task)
+		err := provider.Execute(task, nil)
 		Expect(err).To(BeNil())
 
 		ok, err := afero.Exists(fs, "/destination")

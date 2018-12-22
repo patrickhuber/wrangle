@@ -6,13 +6,12 @@ import (
 
 	"github.com/patrickhuber/wrangle/collections"
 
-	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/ui"
 )
 
 type envService struct {
-	console    ui.Console
-	dictionary collections.Dictionary
+	console     ui.Console
+	dataService EnvDataService
 }
 
 // EnvService defines an env command
@@ -23,8 +22,9 @@ type EnvService interface {
 
 // NewEnvService creates a new env command
 func NewEnvService(console ui.Console, dictionary collections.Dictionary) EnvService {
+	dataService := NewEnvDataService(dictionary)
 	return &envService{console: console,
-		dictionary: dictionary}
+		dataService: dataService}
 }
 
 func (e *envService) Execute() error {
@@ -34,17 +34,7 @@ func (e *envService) Execute() error {
 }
 
 func (e *envService) List() map[string]string {
-	keys := []string{
-		global.BinPathKey,
-		global.CachePathKey,
-		global.ConfigFileKey,
-	}
-	variables := map[string]string{}
-	for _, k := range keys {
-		value, _ := e.dictionary.Get(k)
-		variables[k] = value
-	}
-	return variables
+	return e.dataService.List()
 }
 
 func (e *envService) print(variables map[string]string) {

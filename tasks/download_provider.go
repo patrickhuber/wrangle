@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/mitchellh/mapstructure"
 	"fmt"
 	"io"
@@ -31,7 +32,7 @@ func (provider *downloadProvider) TaskType() string {
 	return downloadTaskType
 }
 
-func (provider *downloadProvider) Execute(task Task) error {
+func (provider *downloadProvider) Execute(task Task, context TaskContext) error {
 
 	url, ok := task.Params().Lookup("url")
 	if !ok {
@@ -42,6 +43,8 @@ func (provider *downloadProvider) Execute(task Task) error {
 	if !ok {
 		return errors.New("out parameter is required for download task")
 	}
+
+	out = filepath.Join(context.PackageVersionPath(), out)
 
 	// get the file data
 	resp, err := http.Get(url)

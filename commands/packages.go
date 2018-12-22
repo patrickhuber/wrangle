@@ -17,7 +17,7 @@ func CreatePackagesCommand(
 			cli.StringFlag{
 				Name:   "path, p",
 				Usage:  "the package install path",
-				EnvVar: global.CachePathKey,
+				EnvVar: global.PackagePathKey,
 			},
 		},
 		Action: func(context *cli.Context) error {

@@ -50,7 +50,7 @@ var _ = Describe("Manager", func() {
 				url += fileName
 
 				download := tasks.NewDownloadTask(url, fmt.Sprintf("/out/%v", fileName))
-				p := packages.New("", "", download)
+				p := packages.New("", "", nil, download)
 
 				err := manager.Install(p)
 				Expect(err).To(BeNil())
@@ -87,7 +87,7 @@ var _ = Describe("Manager", func() {
 			})
 			It("does not write a file", func() {
 				pkg := packages.New(
-					"", "",
+					"", "", nil,
 					tasks.NewDownloadTask(server.URL, "/test/file"))
 
 				err := manager.Install(pkg)
@@ -99,7 +99,7 @@ var _ = Describe("Manager", func() {
 			})
 			It("returns an error", func() {
 				pkg := packages.New(
-					"", "",
+					"", "", nil,
 					tasks.NewDownloadTask(server.URL, ""))
 
 				err := manager.Install(pkg)
@@ -126,7 +126,7 @@ var _ = Describe("Manager", func() {
 				archive := fmt.Sprintf("/download/%v", fileName)
 				download := tasks.NewDownloadTask( url, archive)
 				extract := tasks.NewExtractTask( archive, "/extract")
-				p := packages.New("", "", download, extract)
+				p := packages.New("", "", nil, download, extract)
 
 				err := manager.Install(p)
 				Expect(err).To(BeNil())
@@ -177,6 +177,7 @@ var _ = Describe("Manager", func() {
 			url += "data"
 
 			pkg := packages.New("", "",
+				nil,
 				tasks.NewDownloadTask(url, "/out/data"),
 				tasks.NewLinkTask( "/out/data", "/out/symlink"))
 
@@ -192,12 +193,20 @@ var _ = Describe("Manager", func() {
 
 	Describe("Load", func(){
 		BeforeEach(func(){
-			filePathTemplate := "/packages/test/((version))/test.((version)).yml"
-			contentTemplate := "name: test\nversion: ((version))\ntargets:\n- platform: windows\n  tasks: []"
+			filePathTemplate := "/packages/test/{{version}}/test.{{version}}.yml"
+			contentTemplate := `name: test
+version: {{version}}
+targets:
+- platform: windows
+  tasks:
+  - download:
+      url: https://www.google.com
+      out: index.((version)).html
+`
 			versions := []string{"1.0.0", "1.0.1", "1.1.0", "2.0.0"}
 			for _, version := range versions{
-				path := strings.Replace(filePathTemplate, "((version))", version, -1)
-				content := strings.Replace(contentTemplate, "((version))", version, -1)
+				path := strings.Replace(filePathTemplate, "{{version}}", version, -1)
+				content := strings.Replace(contentTemplate, "{{version}}", version, -1)
 				afero.WriteFile(fs, path, []byte(content), 0666)
 			}			
 		})
@@ -208,7 +217,7 @@ var _ = Describe("Manager", func() {
 				Expect(pkg).ToNot(BeNil())
 				Expect(pkg.Name()).To(Equal("test"))
 				Expect(pkg.Version()).To(Equal("1.0.0"))
-				Expect(len(pkg.Tasks())).To(Equal(0))
+				Expect(len(pkg.Tasks())).To(Equal(1))
 			})
 		})
 		Context("WhenVersionNotSpecified", func(){
@@ -218,7 +227,7 @@ var _ = Describe("Manager", func() {
 				Expect(pkg).ToNot(BeNil())
 				Expect(pkg.Name()).To(Equal("test"))
 				Expect(pkg.Version()).To(Equal("2.0.0"))
-				Expect(len(pkg.Tasks())).To(Equal(0))
+				Expect(len(pkg.Tasks())).To(Equal(1))
 			})
 			/* When("latest file present", func(){
 				It("loads specified version in file", func(){
@@ -231,6 +240,16 @@ var _ = Describe("Manager", func() {
 					Expect(len(pkg.Tasks())).To(Equal(0))
 				})
 			}) */
+		})
+		It("should interpolate version", func(){
+			pkg, err := manager.Load("/packages", "test", "1.1.0")
+			Expect(err).To(BeNil())
+			Expect(pkg).ToNot(BeNil())
+			Expect(len(pkg.Tasks())).To(Equal(1))
+			task := pkg.Tasks()[0]
+			out, ok:= task.Params().Lookup("out")
+			Expect(ok).To(BeTrue())
+			Expect(out).To(Equal("index.1.1.0.html"))
 		})		
 	})
 })

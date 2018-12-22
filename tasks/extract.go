@@ -11,8 +11,7 @@ type ExtractTask struct {
 
 // ExtractTaskDetails represent extract parameters
 type ExtractTaskDetails struct {
-	Archive     string `yaml:"archive"`
-	Destination string `yaml:"destination"`
+	Archive string `yaml:"archive"`
 }
 
 func (t *ExtractTask) Type() string {
@@ -22,16 +21,14 @@ func (t *ExtractTask) Type() string {
 func (t *ExtractTask) Params() collections.ReadOnlyDictionary {
 	dictionary := collections.NewDictionary()
 	dictionary.Set("archive", t.Details.Archive)
-	dictionary.Set("destination", t.Details.Destination)
 	return dictionary
 }
 
 // NewExtractTask returns a new instance of a extract task
-func NewExtractTask(archive string, destination string) Task {
+func NewExtractTask(archive string) Task {
 	return &ExtractTask{
 		Details: ExtractTaskDetails{
-			Archive:     archive,
-			Destination: destination,
+			Archive: archive,
 		},
 	}
 }

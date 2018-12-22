@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"github.com/patrickhuber/wrangle/filepath"
 	"gopkg.in/yaml.v2"
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/tasks"
@@ -29,13 +30,15 @@ var _ = Describe("DownloadProvider", func() {
 	
 			task := tasks.NewDownloadTask(
 				server.URL,
-				"/some/path")
+				"file")
 			Expect(task).ToNot(BeNil())
 	
-			err := provider.Execute(task)
+			taskContext:= newTaskContext("/opt/wrangle", "test", "1.0.0")
+			err := provider.Execute(task, taskContext)
 			Expect(err).To(BeNil())
 	
-			ok, err := afero.Exists(fileSystem, "/some/path")
+			expected := filepath.Join(taskContext.PackageVersionPath(), "file")
+			ok, err := afero.Exists(fileSystem, expected)
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})

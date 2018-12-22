@@ -19,31 +19,25 @@ Add move the binary to a folder under your PATH environment variable.
 
 ### Environment Variables
 
-For ease of use you can set the WRANGLE_CONFIG_FILE and WRANGLE_PACKAGE_PATH environment variables. 
+For ease of use you can set the WRANGLE_CONFIG and WRANGLE_PACKAGES environment variables. 
 
-* WRANGLE_CONFIG_FILE - specifies where the configuration will reside, similar to bosh bootloader's BBL_STATE_DIR, this is set to your working directory. You can also specify this file with the -c flag. 
-* WRANGLE_PACKAGE_PATH - specifies where packages will be extracted and linked. Make sure this is in your PATH environment variable as each CLI is stored here and a symlink is created for the most recentlly installed. You can also specify this path with the -p flag. 
-
+* WRANGLE_CONFIG - specifies where the configuration will reside, similar to bosh bootloader's BBL_STATE_DIR, this is set to your working directory. You can also specify this file with the -c flag. 
+* WRANGLE_PACKAGES - specifies where packages will be extracted and linked. Make sure this is in your PATH environment variable as each CLI is stored here and a symlink is created for the most recentlly installed. You can also specify this path with the -p flag. 
+* WRANGLE_ROOT - the root directory where wrangle stores artifacts
+* WRANGLE_BIN - the location where wrangle stores symlinks (or shims)
 
 ### The Configuration File
 
 An example configuration file is located here [config file](doc/example-config.yml)
 
-The default location for the configuration file is in your user directory under:
-
-> mac & linux
-
-`~/.wrangle/config.yml`
-
-> windows
-
-`%userprofile%\.wrangle\config.yml`
+The default location for the config file is the current working directory
 
 The config file has the following structure:
 
 ```
 stores:
-packages:
+processes:
+imports:
 ```
 
 #### Stores
@@ -140,6 +134,13 @@ stores:
 ```
 
 With the configuration example above, `some_variable` is now available as a variable in consumers of this store.
+
+#### META
+
+The meta store provides contextual information about the current config file. This can be useful when you need to know the directory of the config file or config file containing directory for loading other files.
+
+```
+```
 
 #### Environments
 

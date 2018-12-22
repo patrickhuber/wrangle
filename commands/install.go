@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"errors"
-	"strings"
-
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/urfave/cli"
@@ -24,18 +21,28 @@ func CreateInstallCommand(
 				EnvVar: global.PackagePathKey,
 			},
 			cli.StringFlag{
+				Name:   "bin, b",
+				Usage:  "the packages bin directory",
+				EnvVar: global.BinPathKey,
+			},
+			cli.StringFlag{
+				Name:   "root, r",
+				Usage:  "the wrangle root directory",
+				EnvVar: global.RootPathKey,
+			},
+			cli.StringFlag{
 				Name:  "version, v",
 				Usage: "the package version",
 			},
 		},
 		Action: func(context *cli.Context) error {
-			pacakgeRoot := context.String("path")
+			packagesRoot := context.String("path")
+			root := context.String("root")
+			bin := context.String("bin")
 			packageName := context.Args().First()
-			if strings.TrimSpace(packageName) == "" {
-				return errors.New("missing required argument package name")
-			}
 			packageVersion := context.String("version")
-			return installService.Install(pacakgeRoot, packageName, packageVersion)
+
+			return installService.Install(root, bin, packagesRoot, packageName, packageVersion)
 		},
 	}
 }

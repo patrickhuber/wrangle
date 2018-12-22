@@ -56,17 +56,14 @@ var _ = Describe("Install", func() {
 		defer server.Close()
 
 		content := `
-package:
-  name: test
-  version: 1.0.0
-  platforms:
-  - name: linux
-    tasks:
-    - name: download
-      type: download
-      params: 
-        url: %s
-        out: ((package_install_directory))/test.html
+name: test
+version: 1.0.0
+targets:
+- platform: linux
+  tasks:
+  - download:      
+      url: %s
+      out: test.html
 `
 		content = fmt.Sprintf(content, server.URL)
 

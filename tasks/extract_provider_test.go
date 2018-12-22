@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"github.com/patrickhuber/wrangle/filepath"
 	"gopkg.in/yaml.v2"
 	"github.com/patrickhuber/wrangle/archiver"
 	"github.com/patrickhuber/wrangle/tasks"
@@ -23,19 +24,22 @@ var _ = Describe("ExtractProvider", func() {
 		provider = tasks.NewExtractProvider(fileSystem, console)
 	})
 	Describe("Execute", func() {
-		It("should extract single file", func() {
+		It("should extract single file", func() {			
+			taskContext:= newTaskContext("/opt/wrangle", "test", "1.0.0")
+			
+			filePath := filepath.Join(taskContext.PackageVersionPath(), "test1")
+			err := afero.WriteFile(fileSystem, filePath, []byte("this is a test"), 0600)
+			Expect(err).To(BeNil())			
 
-			task := tasks.NewExtractTask("/test/test.tgz", "/destination")
-			Expect(task).ToNot(BeNil())
-
+			archivePath := filepath.Join(taskContext.PackageVersionPath(), "test.tgz")		
 			tgz := archiver.NewTargz(fileSystem)
-			err := afero.WriteFile(fileSystem, "/test/test1", []byte("this is a test"), 0600)
+			err = tgz.Archive(archivePath, []string{filePath})
 			Expect(err).To(BeNil())
-
-			err = tgz.Archive("/test/test.tgz", []string{"/test/test1"})
-			Expect(err).To(BeNil())
-
-			err = provider.Execute(task)
+			
+			task := tasks.NewExtractTask("test.tgz")
+			Expect(task).ToNot(BeNil())
+			
+			err = provider.Execute(task, taskContext)
 			Expect(err).To(BeNil())
 		})
 	})
@@ -43,7 +47,7 @@ var _ = Describe("ExtractProvider", func() {
 		It("should parse task", func(){
 
 			m:= make(map[string]interface{})
-			err := yaml.Unmarshal([]byte("extract:\n  archive: /archive\n  destination: /destination\n"), m)
+			err := yaml.Unmarshal([]byte("extract:\n  archive: /archive\n"), m)
 			Expect(err).To(BeNil())
 
 			task, err := provider.Decode(m)			
@@ -52,8 +56,7 @@ var _ = Describe("ExtractProvider", func() {
 			
 			extractTask, ok := task.(*tasks.ExtractTask)
 			Expect(ok).To(BeTrue())
-			Expect(extractTask.Details.Archive).To(Equal("/archive"))
-			Expect(extractTask.Details.Destination).To(Equal("/destination"))
+			Expect(extractTask.Details.Archive).To(Equal("/archive"))			
 		})
 	})
 })

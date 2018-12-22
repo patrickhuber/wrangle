@@ -49,8 +49,8 @@ var _ = Describe("InstallService", func() {
 		})
 	})
 	Describe("Execute", func() {
-		const packagesRootPosix = "/opt/wrangle/pacakges"
-		const packagesRootWindows = "c:" + packagesRootPosix
+		const wrangleRootPosix = "/opt/wrangle"
+		const wrangleRootWindows = "c:/wrangle"
 		var (
 			platform         string
 			downloadFileName string
@@ -72,10 +72,12 @@ var _ = Describe("InstallService", func() {
 			url := server.URL
 			packageVersion := "1.0.0"
 			packageName := "test"
-			packagesRoot := packagesRootPosix
+			wrangleRoot := wrangleRootPosix			
 			if platform == "windows" {
-				packagesRoot = packagesRootWindows
+				wrangleRoot = wrangleRootWindows
 			}
+			packagesRoot := wrangleRoot + "/packages"
+			packagesBin := wrangleRoot + "/bin"
 
 			out := filepath.Join("/", downloadFileName)
 			if !strings.HasSuffix(url, "/") {
@@ -96,7 +98,7 @@ var _ = Describe("InstallService", func() {
 			service, err := services.NewInstallService(platform, fs, manager, loader)
 			Expect(err).To(BeNil())
 
-			err = service.Install(packagesRoot, packageName, packageVersion)
+			err = service.Install(wrangleRoot, packagesBin, packagesRoot, packageName, packageVersion)
 			Expect(err).To(BeNil())
 		})
 		When("Windows", func() {

@@ -22,7 +22,7 @@ type manager struct {
 // Manager defines a manager interface
 type Manager interface {
 	Install(p Package) error
-	Load(packageRoot, packageName, packageVersion string) (Package, error)
+	Load(root, bin, packagesRoot, packageName, packageVersion string) (Package, error)
 }
 
 // NewManager creates a new package manager
@@ -38,7 +38,7 @@ func (manager *manager) Install(p Package) error {
 		if err != nil {
 			return err
 		}
-		err = provider.Execute(task)
+		err = provider.Execute(task, p.Context())
 		if err != nil {
 			return err
 		}
@@ -46,9 +46,9 @@ func (manager *manager) Install(p Package) error {
 	return nil
 }
 
-func (manager *manager) Load(packageRoot string, packageName string, packageVersion string) (Package, error) {
+func (manager *manager) Load(root, bin, packagesRoot, packageName, packageVersion string) (Package, error) {
 
-	// packageRoot
+	// packagesRoot
 	//   ex: /packages
 	// packagePath
 	//   ex: /packages/test
@@ -56,7 +56,7 @@ func (manager *manager) Load(packageRoot string, packageName string, packageVers
 	//   ex: /packages/test/1.0.0/
 	// packageVersionManifestPath
 	//   ex: /packages/test/1.0.0/test.1.0.0.yml
-	packagePath, err := manager.getPackagePath(packageRoot, packageName)
+	packagePath, err := manager.getPackagePath(packagesRoot, packageName)
 	if err != nil {
 		return nil, err
 	}
@@ -78,22 +78,26 @@ func (manager *manager) Load(packageRoot string, packageName string, packageVers
 	// validate?
 
 	// interpolate package
-	pkg, err = manager.interpolatePackageManifest(pkg, map[string]string{})
+	pkg, err = manager.interpolatePackageManifest(pkg, map[string]string{
+		"/version" : packageVersion,
+	})
 	if err != nil {
 		return nil, err
 	}
 
+	packageContext := NewContext(root, bin, packagesRoot, packagePath, packageVersionPath, packageVersionManifestPath)
+
 	// turn package manifest into packages.Package
 	// return package
-	return manager.convertManifestToPackage(pkg)
+	return manager.convertManifestToPackage(pkg, packageContext)
 }
 
-func (manager *manager) getPackagePath(packageRoot, packageName string) (string, error) {
+func (manager *manager) getPackagePath(packagesRoot, packageName string) (string, error) {
 	if strings.TrimSpace(packageName) == "" {
 		return "", fmt.Errorf("package name is required")
 	}
 
-	packagePath := filepath.Join(packageRoot, packageName)
+	packagePath := filepath.Join(packagesRoot, packageName)
 	return packagePath, nil
 }
 
@@ -158,7 +162,7 @@ func (manager *manager) interpolatePackageManifest(pkg interface{}, values map[s
 	return template.Evaluate(resolver)	
 }
 
-func (manager *manager) convertManifestToPackage(manifest interface{}) (Package, error) {
+func (manager *manager) convertManifestToPackage(manifest interface{}, packageContext PackageContext) (Package, error) {
 	pkg := &config.Package{}
 
 	// convert to config structure
@@ -180,5 +184,5 @@ func (manager *manager) convertManifestToPackage(manifest interface{}) (Package,
 	}
 
 	// convert package metadata
-	return New(pkg.Name, pkg.Version, taskList...), nil	
+	return New(pkg.Name, pkg.Version, packageContext, taskList...), nil	
 }

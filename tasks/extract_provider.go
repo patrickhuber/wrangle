@@ -31,16 +31,14 @@ func (provider *extractProvider) TaskType() string {
 	return extractTaskType
 }
 
-func (provider *extractProvider) Execute(task Task) error {
+func (provider *extractProvider) Execute(task Task, context TaskContext) error {
 	archive, ok := task.Params().Lookup("archive")
 	if !ok {
 		return errors.New("archive parameter is required for extract tasks")
 	}
+	archive = filepath.Join(context.PackageVersionPath(), archive)
 
-	destination, ok := task.Params().Lookup("destination")
-	if !ok {
-		return errors.New("destination parameter is required for extract tasks")
-	}
+	destination := context.PackageVersionPath()
 
 	extension := filepath.Ext(archive)
 	if strings.HasSuffix(archive, ".tar.gz") {

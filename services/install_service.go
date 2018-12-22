@@ -1,6 +1,9 @@
 package services
 
 import (	
+	"github.com/patrickhuber/wrangle/filepath"
+	"strings"
+	"fmt"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/packages"
@@ -8,7 +11,7 @@ import (
 
 // InstallService is a service responsible for installing packages
 type InstallService interface {
-	Install(packagesPath string, packageName string, packageVersion string) error
+	Install(root, bin, packagesRoot , packageName , packageVersion string) error
 }
 
 type installService struct {
@@ -32,8 +35,30 @@ func NewInstallService(
 		loader:     loader}, nil
 }
 
-func (service *installService) Install(packageRoot string, packageName string, packageVersion string) error {
-	pkg, err := service.manager.Load(packageRoot, packageName, packageVersion)
+func (service *installService) Install(root, bin, packagesRoot, packageName, packageVersion string) error {	
+
+	packageNameIsMissing := strings.TrimSpace(packageName) == ""
+	if packageNameIsMissing {
+		return fmt.Errorf("missing required argument package name")
+	}
+
+	rootIsMissing := strings.TrimSpace(root) == ""
+	binIsMissing := strings.TrimSpace(bin) == ""
+	packagesRootIsMissing := strings.TrimSpace(packagesRoot) == ""
+
+	if rootIsMissing && binIsMissing {
+		return fmt.Errorf("bin must be specified if root is not specified")
+	}else if binIsMissing{
+		bin = filepath.Join(root, "bin")
+	}
+
+	if rootIsMissing && packagesRootIsMissing {
+		return fmt.Errorf("packages root must be specified if root is not specified")
+	}else if packagesRootIsMissing{
+		packagesRoot = filepath.Join(root, "packages")
+	}
+
+	pkg, err := service.manager.Load(root, bin, packagesRoot, packageName, packageVersion)
 	if err != nil{
 		return err
 	}

@@ -11,8 +11,8 @@ type LinkTask struct {
 
 // LinkTaskDetails contain the details for the link task
 type LinkTaskDetails struct {
-	Source      string `yaml:"source"`
-	Destination string `yaml:"destination"`
+	Source string `yaml:"source"`
+	Alias  string `yaml:"alias"`
 }
 
 func (task *LinkTask) Type() string {
@@ -22,15 +22,15 @@ func (task *LinkTask) Type() string {
 func (task *LinkTask) Params() collections.ReadOnlyDictionary {
 	dictionary := collections.NewDictionary()
 	dictionary.Set("source", task.Details.Source)
-	dictionary.Set("destination", task.Details.Destination)
+	dictionary.Set("alias", task.Details.Alias)
 	return dictionary
 }
 
-func NewLinkTask(source string, destination string) Task {
+func NewLinkTask(source string, alias string) Task {
 	return &LinkTask{
 		Details: LinkTaskDetails{
-			Source:      source,
-			Destination: destination,
+			Source: source,
+			Alias:  alias,
 		},
 	}
 }
