@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
@@ -20,10 +21,12 @@ var _ = Describe("LinkProvider", func() {
 
 		task := tasks.NewLinkTask("/source", "/destination")
 
-		err := provider.Execute(task, nil)
+		tc := newTaskContext("/wrangle", "test", "1.0.0")
+		err := provider.Execute(task, tc)
 		Expect(err).To(BeNil())
 
-		ok, err := afero.Exists(fs, "/destination")
+		expected := filepath.Join(tc.Bin(), "destination")
+		ok, err := afero.Exists(fs, expected)
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 	})

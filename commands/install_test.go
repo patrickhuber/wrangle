@@ -1,33 +1,33 @@
 package commands_test
 
 import (
-	"net/http"
-	"os"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
-	
-	"github.com/urfave/cli"
+	"os"
+
 	"github.com/spf13/afero"
+	"github.com/urfave/cli"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	
-	"github.com/patrickhuber/wrangle/services"
-	"github.com/patrickhuber/wrangle/commands"
-	"github.com/patrickhuber/wrangle/global"
+
 	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/tasks"
-	"github.com/patrickhuber/wrangle/ui"
+	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/tasks"
+	"github.com/patrickhuber/wrangle/ui"
 )
 
 var _ = Describe("Install", func() {
 	It("can run with environment variables", func() {
 		// rewrite this test to use new package management features
 		fs := filesystem.NewMemMapFs()
-		console := ui.NewMemoryConsole()		
+		console := ui.NewMemoryConsole()
 		variables := collections.NewDictionary()
 		loader := config.NewLoader(fs)
 
@@ -69,10 +69,10 @@ targets:
 
 		err = fs.Mkdir("/packages/test/1.0.0", 0666)
 		Expect(err).To(BeNil())
-		
+
 		err = afero.WriteFile(fs, "/packages/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
 		Expect(err).To(BeNil())
-		
+
 		app := cli.NewApp()
 		app.Flags = []cli.Flag{
 			cli.StringFlag{
@@ -91,26 +91,26 @@ targets:
 			"install",
 			"test",
 			"-v", "1.0.0",
+			"-r", "/wrangle",
 		})
 		Expect(err).To(BeNil())
 
 		err = listFiles(fs, "/")
-		Expect(err).To(BeNil())		
+		Expect(err).To(BeNil())
 
 		ok, err := afero.Exists(fs, "/packages/test/1.0.0/test.html")
-		Expect(err).To(BeNil())			
+		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 	})
 
-	
 })
 
-func listFiles(fs afero.Fs, directory string) error{
+func listFiles(fs afero.Fs, directory string) error {
 	files, err := afero.ReadDir(fs, directory)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	for _, file := range files{
+	for _, file := range files {
 		os.Stdout.WriteString(
 			fmt.Sprintf("%s/%s", directory, file.Name()))
 	}

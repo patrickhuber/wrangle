@@ -124,8 +124,8 @@ var _ = Describe("Manager", func() {
 				url += fileName
 
 				archive := fmt.Sprintf("/download/%v", fileName)
-				download := tasks.NewDownloadTask( url, archive)
-				extract := tasks.NewExtractTask( archive, "/extract")
+				download := tasks.NewDownloadTask(url, archive)
+				extract := tasks.NewExtractTask(archive)
 				p := packages.New("", "", nil, download, extract)
 
 				err := manager.Install(p)
@@ -179,7 +179,7 @@ var _ = Describe("Manager", func() {
 			pkg := packages.New("", "",
 				nil,
 				tasks.NewDownloadTask(url, "/out/data"),
-				tasks.NewLinkTask( "/out/data", "/out/symlink"))
+				tasks.NewLinkTask("/out/data", "/out/symlink"))
 
 			err := manager.Install(pkg)
 			Expect(err).To(BeNil())
@@ -191,9 +191,9 @@ var _ = Describe("Manager", func() {
 		})
 	})
 
-	Describe("Load", func(){
-		BeforeEach(func(){
-			filePathTemplate := "/packages/test/{{version}}/test.{{version}}.yml"
+	Describe("Load", func() {
+		BeforeEach(func() {
+			filePathTemplate := "/wrangle/packages/test/{{version}}/test.{{version}}.yml"
 			contentTemplate := `name: test
 version: {{version}}
 targets:
@@ -204,15 +204,15 @@ targets:
       out: index.((version)).html
 `
 			versions := []string{"1.0.0", "1.0.1", "1.1.0", "2.0.0"}
-			for _, version := range versions{
+			for _, version := range versions {
 				path := strings.Replace(filePathTemplate, "{{version}}", version, -1)
 				content := strings.Replace(contentTemplate, "{{version}}", version, -1)
 				afero.WriteFile(fs, path, []byte(content), 0666)
-			}			
+			}
 		})
-		Context("WhenVersionSpecified", func(){
-			It("loads specified version", func(){
-				pkg, err := manager.Load("/packages", "test", "1.0.0")
+		Context("WhenVersionSpecified", func() {
+			It("loads specified version", func() {
+				pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "1.0.0")
 				Expect(err).To(BeNil())
 				Expect(pkg).ToNot(BeNil())
 				Expect(pkg.Name()).To(Equal("test"))
@@ -220,9 +220,9 @@ targets:
 				Expect(len(pkg.Tasks())).To(Equal(1))
 			})
 		})
-		Context("WhenVersionNotSpecified", func(){
-			It("loads latest version by semver", func(){
-				pkg, err := manager.Load("/packages", "test", "")
+		Context("WhenVersionNotSpecified", func() {
+			It("loads latest version by semver", func() {
+				pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "")
 				Expect(err).To(BeNil())
 				Expect(pkg).ToNot(BeNil())
 				Expect(pkg.Name()).To(Equal("test"))
@@ -241,15 +241,15 @@ targets:
 				})
 			}) */
 		})
-		It("should interpolate version", func(){
-			pkg, err := manager.Load("/packages", "test", "1.1.0")
+		It("should interpolate version", func() {
+			pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "1.1.0")
 			Expect(err).To(BeNil())
 			Expect(pkg).ToNot(BeNil())
 			Expect(len(pkg.Tasks())).To(Equal(1))
 			task := pkg.Tasks()[0]
-			out, ok:= task.Params().Lookup("out")
+			out, ok := task.Params().Lookup("out")
 			Expect(ok).To(BeTrue())
 			Expect(out).To(Equal("index.1.1.0.html"))
-		})		
+		})
 	})
 })

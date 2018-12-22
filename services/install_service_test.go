@@ -1,23 +1,24 @@
 package services_test
 
 import (
-	"github.com/patrickhuber/wrangle/services"
 	"fmt"
 	"net/http/httptest"
 	"strings"
 
+	"github.com/patrickhuber/wrangle/services"
+
+	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filepath"
-	"github.com/patrickhuber/wrangle/tasks"
-	"github.com/patrickhuber/wrangle/ui"
-	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/tasks"
+	"github.com/patrickhuber/wrangle/ui"
 
 	"github.com/spf13/afero"
 
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"	
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("InstallService", func() {
@@ -72,7 +73,7 @@ var _ = Describe("InstallService", func() {
 			url := server.URL
 			packageVersion := "1.0.0"
 			packageName := "test"
-			wrangleRoot := wrangleRootPosix			
+			wrangleRoot := wrangleRootPosix
 			if platform == "windows" {
 				wrangleRoot = wrangleRootWindows
 			}
@@ -147,25 +148,25 @@ func createPackageManifest(
 	outFile string,
 	archive string,
 	destination string) (string, error) {
-	
-		taskList:= []interface{}{
-			tasks.NewDownloadTask(url, outFile),
-		}
-		if len(archive) > 0 {
-			extract := tasks.NewExtractTask(archive, destination)
-			taskList = append(taskList, extract)
-		}
-		pkg := &config.Package{
-			Name: name,
-			Version: version,
-			Targets: []config.Target{
-				config.Target{
-					Platform: platform,
-					Architecture: "amd64",
-					Tasks: taskList,
-				},
+
+	taskList := []interface{}{
+		tasks.NewDownloadTask(url, outFile),
+	}
+	if len(archive) > 0 {
+		extract := tasks.NewExtractTask(archive)
+		taskList = append(taskList, extract)
+	}
+	pkg := &config.Package{
+		Name:    name,
+		Version: version,
+		Targets: []config.Target{
+			config.Target{
+				Platform:     platform,
+				Architecture: "amd64",
+				Tasks:        taskList,
 			},
-		}
-		return config.SerializePackage(pkg)
+		},
+	}
+	return config.SerializePackage(pkg)
 
 }

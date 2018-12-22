@@ -1,16 +1,15 @@
 package services_test
 
 import (
-	
 	"bytes"
 	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	
-	"github.com/patrickhuber/wrangle/services"
+
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/global"
+	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/ui"
 )
 
@@ -77,7 +76,7 @@ var _ = Describe("Env", func() {
 				err := cmd.Execute()
 				Expect(err).To(BeNil())
 				buffer := console.Out().(*bytes.Buffer)
-				expected := fmt.Sprintf("%s=\n%s=\n%s=\n", global.BinPathKey, global.PackagePathKey, global.ConfigFileKey)
+				expected := fmt.Sprintf("%s=\n%s=\n%s=\n%s=\n", global.BinPathKey, global.ConfigFileKey, global.PackagePathKey, global.RootPathKey)
 				Expect(buffer.String()).To(Equal(expected))
 			})
 		})

@@ -12,6 +12,6 @@ var _ = Describe("Extract", func() {
 		extractTask := tasks.NewExtractTask("/some/file")
 		data, err := yaml.Marshal(extractTask)
 		Expect(err).To(BeNil())
-		Expect(string(data)).To(Equal("extract:\n  archive: /some/file\n  destination: /some/path\n"))
+		Expect(string(data)).To(Equal("extract:\n  archive: /some/file\n"))
 	})
 })

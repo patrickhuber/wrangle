@@ -12,6 +12,6 @@ var _ = Describe("Link", func() {
 		linkTask := tasks.NewLinkTask("/source", "/destination")
 		data, err := yaml.Marshal(linkTask)
 		Expect(err).To(BeNil())
-		Expect(string(data)).To(Equal("link:\n  source: /source\n  destination: /destination\n"))
+		Expect(string(data)).To(Equal("link:\n  source: /source\n  alias: /destination\n"))
 	})
 })
