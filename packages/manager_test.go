@@ -1,6 +1,7 @@
 package packages_test
 
 import (
+	"github.com/patrickhuber/wrangle/filepath"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -21,6 +22,7 @@ var _ = Describe("Manager", func() {
 	var (
 		manager packages.Manager
 		fs      filesystem.FsWrapper
+		context packages.PackageContext
 	)
 	BeforeEach(func() {
 		fs = filesystem.NewMemMapFs()
@@ -32,6 +34,8 @@ var _ = Describe("Manager", func() {
 		registry.Register(tasks.NewLinkProvider(fs, console))
 
 		manager = packages.NewManager(fs, registry)
+		
+		context = packages.NewDefaultContext("/wrangle", "test", "1.0.0")
 	})
 	Describe("Download", func() {
 		Context("WhenDownloadSucceeds", func() {
@@ -49,13 +53,14 @@ var _ = Describe("Manager", func() {
 				}
 				url += fileName
 
-				download := tasks.NewDownloadTask(url, fmt.Sprintf("/out/%v", fileName))
-				p := packages.New("", "", nil, download)
+				download := tasks.NewDownloadTask(url, fmt.Sprintf("%v", fileName))
+				p := packages.New("", "", context, download)
 
 				err := manager.Install(p)
 				Expect(err).To(BeNil())
 
-				ok, err := afero.Exists(fs, "/out")
+				expected := filepath.Join(context.PackageVersionPath(), fileName)
+				ok, err := afero.Exists(fs, expected)
 				Expect(err).To(BeNil())
 				Expect(ok).To(BeTrue())
 			})
@@ -81,13 +86,12 @@ var _ = Describe("Manager", func() {
 				server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 					rw.WriteHeader(404)
 					rw.Write([]byte("failure"))
-				}))
-
+				}))				
 				defer server.Close()
 			})
 			It("does not write a file", func() {
 				pkg := packages.New(
-					"", "", nil,
+					"", "", context,
 					tasks.NewDownloadTask(server.URL, "/test/file"))
 
 				err := manager.Install(pkg)
@@ -99,7 +103,7 @@ var _ = Describe("Manager", func() {
 			})
 			It("returns an error", func() {
 				pkg := packages.New(
-					"", "", nil,
+					"", "", context,
 					tasks.NewDownloadTask(server.URL, ""))
 
 				err := manager.Install(pkg)
@@ -123,15 +127,17 @@ var _ = Describe("Manager", func() {
 				}
 				url += fileName
 
-				archive := fmt.Sprintf("/download/%v", fileName)
+				archive := fileName
 				download := tasks.NewDownloadTask(url, archive)
 				extract := tasks.NewExtractTask(archive)
-				p := packages.New("", "", nil, download, extract)
+				p := packages.New("", "", context, download, extract)
 
 				err := manager.Install(p)
 				Expect(err).To(BeNil())
 
-				ok, err := afero.Exists(fs, "/extract")
+				expected := filepath.Join(context.PackageVersionPath(), "data")
+
+				ok, err := afero.Exists(fs, expected)
 				Expect(err).To(BeNil())
 				Expect(ok).To(BeTrue())
 			})
@@ -176,10 +182,10 @@ var _ = Describe("Manager", func() {
 			}
 			url += "data"
 
-			pkg := packages.New("", "",
-				nil,
-				tasks.NewDownloadTask(url, "/out/data"),
-				tasks.NewLinkTask("/out/data", "/out/symlink"))
+			pkg := packages.New("test", "1.0.0",
+				context,
+				tasks.NewDownloadTask(url, "data"),
+				tasks.NewLinkTask("data", "symlink"))
 
 			err := manager.Install(pkg)
 			Expect(err).To(BeNil())

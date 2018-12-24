@@ -39,8 +39,8 @@ func NewContext(root, bin, packagesRoot, packagePath, packageVersionPath, packag
 
 // NewDefaultContext context sets the context to the default paths
 func NewDefaultContext(root, packageName, packageVersion string) PackageContext {
-	bin := filepath.Join(root, "/bin")
-	packagesRoot := filepath.Join(root, "/packages")
+	bin := filepath.Join(root, "bin")
+	packagesRoot := filepath.Join(root, "packages")
 	packagePath := filepath.Join(packagesRoot, packageName)
 	packageVersionPath := filepath.Join(packagePath, packageVersion)
 	packageVersionManifestPath := filepath.Join(packageVersionPath, fmt.Sprintf("%s.%s.yml", packageName, packageVersion))
