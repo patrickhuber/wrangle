@@ -30,7 +30,10 @@ func (e *envDataService) List() map[string]string {
 	}
 	variables := map[string]string{}
 	for _, k := range keys {
-		value, _ := e.dictionary.Get(k)
+		value, ok := e.dictionary.Lookup(k)
+		if !ok {
+			value = ""
+		}
 		variables[k] = value
 	}
 	return variables
