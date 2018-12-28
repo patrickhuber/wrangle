@@ -95,24 +95,9 @@ targets:
 		})
 		Expect(err).To(BeNil())
 
-		err = listFiles(fs, "/")
-		Expect(err).To(BeNil())
-
 		ok, err := afero.Exists(fs, "/packages/test/1.0.0/test.html")
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 	})
 
 })
-
-func listFiles(fs afero.Fs, directory string) error {
-	files, err := afero.ReadDir(fs, directory)
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		os.Stdout.WriteString(
-			fmt.Sprintf("%s/%s", directory, file.Name()))
-	}
-	return nil
-}
