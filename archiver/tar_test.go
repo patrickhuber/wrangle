@@ -33,7 +33,7 @@ var _ = Describe("Tar", func() {
 
 	Describe("RoundTrip", func() {
 		It("Can write and read back a tar file", func() {
-			testExtractTar(fs, a, archive, "/out/test", []string{".*"})
+			testExtractTar(fs, a, archive, "/out", []string{".*"})
 			assertIsFile(fs, "/out/test")
 		})
 	})
@@ -42,7 +42,7 @@ var _ = Describe("Tar", func() {
 		Context("WhenFilterIsSet", func() {
 			It("extracts only matching files", func() {
 
-				testExtractTar(fs, a, archive, "/out/test", []string{"^test$"})
+				testExtractTar(fs, a, archive, "/out", []string{"^test$"})
 				assertExists(fs, "/out/test")
 				assertIsFile(fs, "/out/test")
 				assertNotExists(fs, "/out/test1")

@@ -103,15 +103,15 @@ func (wrapper *fsWrapper) OpenFile(name string, flag int, perm os.FileMode) (afe
 }
 
 func (wrapper *fsWrapper) Remove(name string) error {
-	return wrapper.Remove(name)
+	return wrapper.fileSystem.Remove(name)
 }
 
 func (wrapper *fsWrapper) RemoveAll(path string) error {
-	return wrapper.RemoveAll(path)
+	return wrapper.fileSystem.RemoveAll(path)
 }
 
 func (wrapper *fsWrapper) Rename(oldname, newname string) error {
-	return wrapper.Rename(oldname, newname)
+	return wrapper.fileSystem.Rename(oldname, newname)
 }
 
 func (wrapper *fsWrapper) Stat(name string) (os.FileInfo, error) {

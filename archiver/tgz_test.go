@@ -21,8 +21,15 @@ var _ = Describe("Tgz", func() {
 			err = a.Archive("/tmp/temp.tgz", []string{"/tmp/test"})
 			Expect(err).To(BeNil())
 
+			err = fileSystem.Remove("/tmp/test")
+			Expect(err).To(BeNil())
+
 			err = a.Extract("/tmp/temp.tgz", "/tmp", []string{".*"})
 			Expect(err).To(BeNil())
+
+			ok, err := afero.Exists(fileSystem, "/tmp/test")
+			Expect(err).To(BeNil())
+			Expect(ok).To(BeTrue(), "file /tmp/test not found")
 		})
 	})
 })

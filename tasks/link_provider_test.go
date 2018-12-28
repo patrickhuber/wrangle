@@ -13,15 +13,17 @@ import (
 
 var _ = Describe("LinkProvider", func() {
 	It("can create symlink", func() {
+
+		tc := newTaskContext("/wrangle", "test", "1.0.0")
+		sourceFile := filepath.Join(tc.PackageVersionPath(), "source")
 		fs := filesystem.NewMemMapFs()
-		afero.WriteFile(fs, "/source", []byte("this is data"), 0600)
+		afero.WriteFile(fs, sourceFile, []byte("this is data"), 0600)
 
 		console := ui.NewMemoryConsole()
 		provider := tasks.NewLinkProvider(fs, console)
 
-		task := tasks.NewLinkTask("/source", "/destination")
+		task := tasks.NewLinkTask("source", "destination")
 
-		tc := newTaskContext("/wrangle", "test", "1.0.0")
 		err := provider.Execute(task, tc)
 		Expect(err).To(BeNil())
 
@@ -32,15 +34,15 @@ var _ = Describe("LinkProvider", func() {
 	})
 	Describe("NewLinkTask", func() {
 		It("should map parameters", func() {
-			task := tasks.NewLinkTask("source", "destination")
+			task := tasks.NewLinkTask("source", "alias")
 
 			s, ok := task.Params().Lookup("source")
 			Expect(ok).To(BeTrue())
 			Expect(s).To(Equal("source"))
 
-			d, ok := task.Params().Lookup("destination")
+			d, ok := task.Params().Lookup("alias")
 			Expect(ok).To(BeTrue())
-			Expect(d).To(Equal("destination"))
+			Expect(d).To(Equal("alias"))
 		})
 	})
 })

@@ -150,7 +150,8 @@ func untarFile(fileSystem afero.Fs, tarReader *tar.Reader, header *tar.Header, d
 	case tar.TypeDir:
 		return fileSystem.Mkdir(destination, 0666)
 	case tar.TypeReg, tar.TypeRegA, tar.TypeChar, tar.TypeBlock, tar.TypeFifo:
-		return afero.WriteReader(fileSystem, destination, tarReader)
+		target := filepath.Join(destination, header.Name)
+		return afero.WriteReader(fileSystem, target, tarReader)
 	case tar.TypeSymlink:
 		return fmt.Errorf("TypeSymlink not implemented")
 	case tar.TypeLink:

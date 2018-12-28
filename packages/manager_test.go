@@ -1,11 +1,11 @@
 package packages_test
 
 import (
-	"github.com/patrickhuber/wrangle/filepath"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"github.com/patrickhuber/wrangle/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -34,7 +34,7 @@ var _ = Describe("Manager", func() {
 		registry.Register(tasks.NewLinkProvider(fs, console))
 
 		manager = packages.NewManager(fs, registry)
-		
+
 		context = packages.NewDefaultContext("/wrangle", "test", "1.0.0")
 	})
 	Describe("Download", func() {
@@ -53,7 +53,7 @@ var _ = Describe("Manager", func() {
 				}
 				url += fileName
 
-				download := tasks.NewDownloadTask(url, fmt.Sprintf("%v", fileName))
+				download := tasks.NewDownloadTask(url, fileName)
 				p := packages.New("", "", context, download)
 
 				err := manager.Install(p)
@@ -76,6 +76,9 @@ var _ = Describe("Manager", func() {
 			It("can download tar package", func() {
 				fileName = "test.tar"
 			})
+			It("can download tar.gz package", func() {
+				fileName = "test.tar.gz"
+			})
 		})
 		Context("WhenDownloadFails", func() {
 			var (
@@ -86,7 +89,7 @@ var _ = Describe("Manager", func() {
 				server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 					rw.WriteHeader(404)
 					rw.Write([]byte("failure"))
-				}))				
+				}))
 				defer server.Close()
 			})
 			It("does not write a file", func() {
