@@ -8,27 +8,28 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/patrickhuber/wrangle/tasks"
-	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/env"
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
 
 	credhub "github.com/patrickhuber/wrangle/store/credhub"
 	store_env "github.com/patrickhuber/wrangle/store/env"
 	file "github.com/patrickhuber/wrangle/store/file"
 )
+
 func main() {
 	// create platform, filesystem and console
 	platform := runtime.GOOS
 	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
 	console := ui.NewOSConsole()
 
-	// create config store m anager
+	// create config store manager
 	configStoreManager, err := createConfigStoreManager(fileSystem, platform)
 	if err != nil {
 		log.Fatal(err)
