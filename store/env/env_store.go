@@ -27,14 +27,14 @@ func (s *envStore) Type() string {
 	return "env"
 }
 
-func (s *envStore) GetByName(name string) (store.Data, error) {
+func (s *envStore) Get(key string) (store.Data, error) {
 	// cleanup the key just in case there is a forward slash
-	name = s.cleanKey(name)
+	key = s.cleanKey(key)
 
 	// lookup the variable
-	environmentVariableName, ok := s.lookup[name]
+	environmentVariableName, ok := s.lookup[key]
 	if !ok {
-		return nil, fmt.Errorf("name '%s' not found in definition store '%s'", name, s.Name())
+		return nil, fmt.Errorf("key '%s' not found in definition store '%s'", key, s.Name())
 	}
 
 	// look up the environment variable
@@ -43,15 +43,15 @@ func (s *envStore) GetByName(name string) (store.Data, error) {
 		return nil, fmt.Errorf("variable '%s' is not set in the environment variables", environmentVariableName)
 	}
 
-	return store.NewData(name, name, data), nil
+	return store.NewData(key, key, data), nil
 }
 
-func (s *envStore) Delete(name string) (int, error) {
+func (s *envStore) Delete(key string) (int, error) {
 	return 1, fmt.Errorf("Delete method not implemented")
 }
 
-func (s *envStore) Put(key string, value string) (string, error) {
-	return "", fmt.Errorf("Put method not implemented")
+func (s *envStore) Set(key string, value string) (string, error) {
+	return "", fmt.Errorf("Set method not implemented")
 }
 
 func (s *envStore) cleanKey(key string) string {

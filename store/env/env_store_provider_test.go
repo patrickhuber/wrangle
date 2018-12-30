@@ -49,11 +49,11 @@ var _ = Describe("", func() {
 		os.Setenv(env2, val2)
 
 		// verify
-		d1, err := s.GetByName(prop1)
+		d1, err := s.Get(prop1)
 		Expect(err).To(BeNil())
 		Expect(d1.Value()).To(Equal(val1))
 
-		d2, err := s.GetByName(prop2)
+		d2, err := s.Get(prop2)
 		Expect(err).To(BeNil())
 		Expect(d2.Value()).To(Equal(val2))
 	})

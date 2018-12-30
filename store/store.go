@@ -4,7 +4,6 @@ package store
 type Store interface {
 	Name() string
 	Type() string
-	Put(key string, value string) (string, error)
-	GetByName(name string) (Data, error)
-	Delete(key string) (int, error)
+	Reader
+	Writer
 }

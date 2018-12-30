@@ -55,26 +55,26 @@ func (s *credHubStore) Name() string {
 	return s.name
 }
 
-func (s *credHubStore) GetByName(name string) (store.Data, error) {
+func (s *credHubStore) Get(key string) (store.Data, error) {
 	ch := s.credHub
 	i := -1
-	for i = len(name) - 1; i >= 0; i-- {
-		if name[i] == '.' {
+	for i = len(key) - 1; i >= 0; i-- {
+		if key[i] == '.' {
 			break
 		}
-		if name[i] == '/' {
+		if key[i] == '/' {
 			i = -1
 			break
 		}
 	}
 	property := ""
 	if i > 0 {
-		property = name[i+1 : len(name)]
-		name = name[0:i]
+		property = key[i+1 : len(key)]
+		key = key[0:i]
 	}
-	cred, err := ch.GetLatestVersion(name)
+	cred, err := ch.GetLatestVersion(key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to lookup credential '%s'.", name)
+		return nil, errors.Wrapf(err, "unable to lookup credential '%s'.", key)
 	}
 
 	if property == "" {
@@ -86,11 +86,11 @@ func (s *credHubStore) GetByName(name string) (store.Data, error) {
 
 	m, ok := cred.Value.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("unable to find property '%s' in credential '%s'", property, name)
+		return nil, fmt.Errorf("unable to find property '%s' in credential '%s'", property, key)
 	}
 	propertyValue, ok := m[property]
 	if !ok {
-		return nil, fmt.Errorf("unable to find property '%s' in credential '%s'", property, name)
+		return nil, fmt.Errorf("unable to find property '%s' in credential '%s'", property, key)
 	}
 
 	return store.NewData(
@@ -108,9 +108,9 @@ func (s *credHubStore) Type() string {
 	return "credhub"
 }
 
-func (s *credHubStore) Put(name string, value string) (string, error) {
+func (s *credHubStore) Set(key string, value string) (string, error) {
 	ch := s.credHub
-	_, err := ch.SetCredential(name, "value", value)
+	_, err := ch.SetCredential(key, "value", value)
 	if err != nil {
 		return "", err
 	}

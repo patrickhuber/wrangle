@@ -5,9 +5,9 @@ import (
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/file"
 	"github.com/spf13/afero"
-	
+
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"	
+	. "github.com/onsi/gomega"
 )
 
 type fakeStore struct {
@@ -18,7 +18,7 @@ type fakeStore struct {
 	deleteDelegate    func(key string) (int, error)
 }
 
-func (s *fakeStore) GetByName(name string) (store.Data, error) {
+func (s *fakeStore) Get(name string) (store.Data, error) {
 	return s.getByNameDelegate(name)
 }
 
@@ -30,7 +30,7 @@ func (s *fakeStore) Type() string {
 	return s.typeDelegate()
 }
 
-func (s *fakeStore) Put(key string, value string) (string, error) {
+func (s *fakeStore) Set(key string, value string) (string, error) {
 	return s.putDelegate(key, value)
 }
 
@@ -51,8 +51,8 @@ func (p *fakeProvider) Create(source *config.Store) (store.Store, error) {
 	return p.createDelegate(source)
 }
 
-var _ = Describe("ProcessTemplate", func(){
-	It("can evaluate single store", func(){
+var _ = Describe("ProcessTemplate", func() {
+	It("can evaluate single store", func() {
 		data := `
 stores:
 - name: one
@@ -64,35 +64,35 @@ processes:
   path: go
   args:
   - ((version))`
-			cfg, err := config.DeserializeConfigString(data)
-			Expect(err).To(BeNil())
-		
-			provider := &fakeProvider{
-				name: "fake",
-				createDelegate: func(source *config.Store) (store.Store, error) {
-					return &fakeStore{
-						getByNameDelegate: func(name string) (store.Data, error) {
-							return store.NewData("version", "version", "version"), nil
-						},
-					}, nil
-				},
-			}
-		
-			manager := store.NewManager()
-			manager.Register(provider)
-		
-			template, err := store.NewProcessTemplate(cfg, manager)
-			Expect(err).To(BeNil())
-		
-			processName := "go"
-			evaluated, err := template.Evaluate(processName)
-			Expect(err).To(BeNil())
+		cfg, err := config.DeserializeConfigString(data)
+		Expect(err).To(BeNil())
 
-			Expect(evaluated).ToNot(BeNil())			
-			Expect(evaluated.Args[0]).To(Equal("version"))
+		provider := &fakeProvider{
+			name: "fake",
+			createDelegate: func(source *config.Store) (store.Store, error) {
+				return &fakeStore{
+					getByNameDelegate: func(name string) (store.Data, error) {
+						return store.NewData("version", "version", "version"), nil
+					},
+				}, nil
+			},
+		}
+
+		manager := store.NewManager()
+		manager.Register(provider)
+
+		template, err := store.NewProcessTemplate(cfg, manager)
+		Expect(err).To(BeNil())
+
+		processName := "go"
+		evaluated, err := template.Evaluate(processName)
+		Expect(err).To(BeNil())
+
+		Expect(evaluated).ToNot(BeNil())
+		Expect(evaluated.Args[0]).To(Equal("version"))
 	})
 
-	It("can resolve store parameters", func(){
+	It("can resolve store parameters", func() {
 		content := `
 stores:
 - name: one
@@ -130,8 +130,8 @@ processes:
 		Expect(environment.Args[0]).To(Equal("value"))
 	})
 
-	It("can resolve process args and vars", func(){
-content := `
+	It("can resolve process args and vars", func() {
+		content := `
 stores:
 - name: one
   type: file
@@ -165,7 +165,7 @@ processes:
 		Expect(environment.Vars["prop"]).To(Equal("2"))
 	})
 
-	It("can cascade config stores", func(){
+	It("can cascade config stores", func() {
 		content := `
 stores:
 - name: one
@@ -205,10 +205,10 @@ processes:
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
 		Expect(len(environment.Args)).To(Equal(1))
-		Expect(environment.Args[0]).To(Equal("value"))		
+		Expect(environment.Args[0]).To(Equal("value"))
 	})
 
-	It("can detect loops", func(){
+	It("can detect loops", func() {
 		content := `
 stores:
 - name: one
@@ -251,7 +251,7 @@ processes:
 		Expect(err).ToNot(BeNil())
 	})
 
-	It("can load variables from other store", func(){
+	It("can load variables from other store", func() {
 		content := `
 stores:
 - name: one

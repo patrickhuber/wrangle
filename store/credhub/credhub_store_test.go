@@ -91,7 +91,7 @@ var _ = Describe("credhub store", func() {
 		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		Expect(err).To(BeNil())
 
-		data, err := store.GetByName("/example-value")
+		data, err := store.Get("/example-value")
 		Expect(err).To(BeNil())
 		Expect(data.Value()).To(Equal("some-value"))
 	})
@@ -110,7 +110,7 @@ var _ = Describe("credhub store", func() {
 		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		Expect(err).To(BeNil())
 
-		data, err := store.GetByName("/example-value")
+		data, err := store.Get("/example-value")
 		Expect(err).To(BeNil())
 		Expect(data.Value()).To(Equal("some-value"))
 	})
@@ -131,7 +131,7 @@ var _ = Describe("credhub store", func() {
 		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		Expect(err).To(BeNil())
 
-		data, err := store.GetByName("/example-certificate")
+		data, err := store.Get("/example-certificate")
 		Expect(err).To(BeNil())
 
 		valueMap, ok := data.Value().(map[string]interface{})
@@ -166,7 +166,7 @@ var _ = Describe("credhub store", func() {
 		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		Expect(err).To(BeNil())
 
-		data, err := store.GetByName("/example-certificate.certificate")
+		data, err := store.Get("/example-certificate.certificate")
 		Expect(err).To(BeNil())
 
 		certificate, ok := data.Value().(string)
@@ -193,7 +193,7 @@ var _ = Describe("credhub store", func() {
 		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		Expect(err).To(BeNil())
 
-		data, err := store.GetByName("/example-rsa")
+		data, err := store.Get("/example-rsa")
 		Expect(err).To(BeNil())
 
 		stringMap, ok := data.Value().(map[string]interface{})
@@ -228,7 +228,7 @@ var _ = Describe("credhub store", func() {
 		store, err := NewDummyCredHubStore("", "https://example.com", responseString)
 		Expect(err).To(BeNil())
 
-		data, err := store.GetByName("/example-ssh")
+		data, err := store.Get("/example-ssh")
 		Expect(err).To(BeNil())
 
 		stringMap, ok := data.Value().(map[string]interface{})

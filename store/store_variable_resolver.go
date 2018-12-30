@@ -12,7 +12,7 @@ func NewStoreVariableResolver(store Store) templates.VariableResolver {
 }
 
 func (resolver *storeVariableResolver) Get(name string) (interface{}, error) {
-	data, err := resolver.store.GetByName(name)
+	data, err := resolver.store.Get(name)
 	if err != nil {
 		return nil, err
 	}

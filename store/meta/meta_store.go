@@ -35,20 +35,22 @@ func (s *metaStore) Name() string { return s.name }
 
 func (s *metaStore) Type() string { return "meta" }
 
-func (s *metaStore) Put(key string, value string) (string, error) {
-	return "", fmt.Errorf("meta.Put is not implemented")
+func (s *metaStore) Set(key string, value string) (string, error) {
+	return "", fmt.Errorf("meta.Set is not implemented")
 }
 
-func (s *metaStore) GetByName(name string) (store.Data, error) {
+func (s *metaStore) Get(key string) (store.Data, error) {
 	var value string
-	switch name {
+	switch key {
 	case ConfigFilePathKey:
 		value = s.configFilePath
 	case ConfigFileFolderKey:
 		value = s.configFileFolder
 	default:
-		return nil, fmt.Errorf("unable to find key '%s' in meta store", name)
+		return nil, fmt.Errorf("unable to find key '%s' in meta store", key)
 	}
-	return store.NewData(name, name, value), nil
+	return store.NewData(key, key, value), nil
 }
-func (s *metaStore) Delete(key string) (int, error) { return 0, nil }
+func (s *metaStore) Delete(key string) (int, error) {
+	return 0, fmt.Errorf("meta Delete is not implemented")
+}

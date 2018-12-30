@@ -37,7 +37,7 @@ func (store *memoryStore) Type() string {
 }
 
 // Put - Puts the config value under the value in the memory store
-func (memoryStore *memoryStore) Put(key string, value string) (string, error) {
+func (memoryStore *memoryStore) Set(key string, value string) (string, error) {
 	data := store.NewData(
 		uuid.New().String(),
 		key,
@@ -49,7 +49,7 @@ func (memoryStore *memoryStore) Put(key string, value string) (string, error) {
 }
 
 // GetByName - Gets the config value by name
-func (memoryStore *memoryStore) GetByName(key string) (store.Data, error) {
+func (memoryStore *memoryStore) Get(key string) (store.Data, error) {
 	id, ok := memoryStore.keyToID[key]
 	if !ok {
 		return nil, fmt.Errorf("Unable to find key %s", key)
@@ -68,7 +68,7 @@ func (memoryStore *memoryStore) GetByID(id string) (store.Data, error) {
 
 // Delete - Deletes the value from the config store
 func (memoryStore *memoryStore) Delete(key string) (int, error) {
-	data, err := memoryStore.GetByName(key)
+	data, err := memoryStore.Get(key)
 	if err != nil {
 		return 0, err
 	}

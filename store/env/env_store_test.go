@@ -19,7 +19,7 @@ var _ = Describe("", func() {
 		store := NewEnvStore("", lookup)
 		Expect(store).ToNot(BeNil())
 
-		data, err := store.GetByName("somevalue")
+		data, err := store.Get("somevalue")
 		Expect(err).To(BeNil())
 		Expect(data).ToNot(BeNil())
 		Expect(data.Value()).To(Equal("abc123"))
@@ -36,7 +36,7 @@ var _ = Describe("", func() {
 		store := NewEnvStore("", lookup)
 		Expect(store).ToNot(BeNil())
 
-		data, err := store.GetByName("/somevalue")
+		data, err := store.Get("/somevalue")
 		Expect(err).To(BeNil())
 		Expect(data).ToNot(BeNil())
 		Expect(data.Value()).To(Equal("abc123"))
@@ -51,7 +51,7 @@ var _ = Describe("", func() {
 			Expect(store).ToNot(BeNil())
 
 			os.Unsetenv("TEST123")
-			_, err := store.GetByName("somevalue")
+			_, err := store.Get("somevalue")
 			Expect(err).ToNot(BeNil())
 		})
 	})

@@ -35,11 +35,11 @@ var _ = Describe("credhub", func() {
 		store, err := NewCredHubStore(storeConfig)
 		Expect(err).To(BeNil())
 
-		echo, err := store.Put("/test", "test")
+		echo, err := store.Set("/test", "test")
 		Expect(err).To(BeNil())
 		Expect(echo).To(Equal("test"))
 
-		value, err := store.GetByName("/test")
+		value, err := store.Get("/test")
 		Expect(err).To(BeNil())
 		Expect(value.Value()).To(Equal(echo))
 	})

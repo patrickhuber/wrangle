@@ -26,7 +26,7 @@ var _ = Describe("MetaStore", func() {
 
 		Context("WhenKeyIsConfigFilePath", func() {
 			It("returns path to config file", func() {
-				data, err := metaStore.GetByName(meta.ConfigFilePathKey)
+				data, err := metaStore.Get(meta.ConfigFilePathKey)
 				Expect(err).To(BeNil())
 				Expect(data).ToNot(BeNil())
 				Expect(data.Value()).To(Equal("/some/path.ext"))
@@ -35,7 +35,7 @@ var _ = Describe("MetaStore", func() {
 
 		Context("WhenKeyIsConfigFileFolder", func() {
 			It("returns path to config file directory", func() {
-				data, err := metaStore.GetByName(meta.ConfigFileFolderKey)
+				data, err := metaStore.Get(meta.ConfigFileFolderKey)
 				Expect(err).To(BeNil())
 				Expect(data).ToNot(BeNil())
 				Expect(data.Value()).To(Equal("/some"))
@@ -44,7 +44,7 @@ var _ = Describe("MetaStore", func() {
 
 		Context("WhenKeyIsNotInStore", func() {
 			It("returns error", func() {
-				_, err := metaStore.GetByName("this is not a key")
+				_, err := metaStore.Get("this is not a key")
 				Expect(err).ToNot(BeNil())
 			})
 		})
@@ -52,7 +52,7 @@ var _ = Describe("MetaStore", func() {
 
 	Describe("Put", func() {
 		It("is not implemented", func() {
-			_, err := metaStore.Put("test", "value")
+			_, err := metaStore.Set("test", "value")
 			Expect(err).ToNot(BeNil())
 		})
 	})

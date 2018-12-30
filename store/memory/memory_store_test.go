@@ -31,7 +31,7 @@ var _ = Describe("MemoryStore", func() {
 		It("can put value", func() {
 			key := "key"
 			value := "value"
-			_, err := memoryStore.Put(key, value)
+			_, err := memoryStore.Set(key, value)
 			Expect(err).To(BeNil())
 		})
 	})
@@ -39,10 +39,10 @@ var _ = Describe("MemoryStore", func() {
 		It("returns value", func() {
 			key := "key"
 			value := "value"
-			_, err := memoryStore.Put(key, value)
+			_, err := memoryStore.Set(key, value)
 			Expect(err).To(BeNil())
 
-			data, err := memoryStore.GetByName(key)
+			data, err := memoryStore.Get(key)
 
 			Expect(err).To(BeNil())
 			Expect(data.Value()).To(Equal(value))
@@ -53,7 +53,7 @@ var _ = Describe("MemoryStore", func() {
 			key := "key"
 			value := "value"
 
-			_, err := memoryStore.Put(key, value)
+			_, err := memoryStore.Set(key, value)
 			Expect(err).To(BeNil())
 
 			count, err := memoryStore.Delete(key)

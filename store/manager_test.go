@@ -26,7 +26,7 @@ func (store *dummyConfigStore) Delete(name string) (int, error) {
 	return 0, nil
 }
 
-func (store *dummyConfigStore) GetByName(name string) (Data, error) {
+func (store *dummyConfigStore) Get(name string) (Data, error) {
 	return &data{}, nil
 }
 
@@ -38,7 +38,7 @@ func (store *dummyConfigStore) Type() string {
 	return "dummy"
 }
 
-func (store *dummyConfigStore) Put(key string, value string) (string, error) {
+func (store *dummyConfigStore) Set(key string, value string) (string, error) {
 	return "", nil
 }
 

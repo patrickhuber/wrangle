@@ -51,7 +51,7 @@ func (config *fileStore) Type() string {
 	return "file"
 }
 
-func (config *fileStore) GetByName(key string) (store.Data, error) {
+func (config *fileStore) Get(key string) (store.Data, error) {
 
 	data, err := config.getFileData()
 	if err != nil {
@@ -159,7 +159,7 @@ func (config *fileStore) Delete(key string) (int, error) {
 	return 0, fmt.Errorf("method Delete is not Implemented")
 }
 
-func (config *fileStore) Put(key string, value string) (string, error) {
+func (config *fileStore) Set(key string, value string) (string, error) {
 	return "", fmt.Errorf("method Put is not implemented")
 }
 
