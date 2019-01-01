@@ -1,0 +1,9 @@
+language: go
+go:
+- "1.11.4"
+- master
+os: 
+- linux
+- osx
+script:
+- env GO111MODULE=on ./scripts/travis_build.sh
