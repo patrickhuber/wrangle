@@ -49,8 +49,9 @@ func (s *metaStore) Get(key string) (store.Data, error) {
 	default:
 		return nil, fmt.Errorf("unable to find key '%s' in meta store", key)
 	}
-	return store.NewData(key, key, value), nil
+	return store.NewData(key, value), nil
 }
-func (s *metaStore) Delete(key string) (int, error) {
-	return 0, fmt.Errorf("meta Delete is not implemented")
+
+func (s *metaStore) Delete(key string) error {
+	return fmt.Errorf("meta Delete is not implemented")
 }

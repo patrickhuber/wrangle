@@ -43,11 +43,11 @@ func (s *envStore) Get(key string) (store.Data, error) {
 		return nil, fmt.Errorf("variable '%s' is not set in the environment variables", environmentVariableName)
 	}
 
-	return store.NewData(key, key, data), nil
+	return store.NewData(key, data), nil
 }
 
-func (s *envStore) Delete(key string) (int, error) {
-	return 1, fmt.Errorf("Delete method not implemented")
+func (s *envStore) Delete(key string) error {
+	return fmt.Errorf("Delete method not implemented")
 }
 
 func (s *envStore) Set(key string, value string) (string, error) {

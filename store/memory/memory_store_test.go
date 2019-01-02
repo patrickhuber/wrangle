@@ -56,9 +56,8 @@ var _ = Describe("MemoryStore", func() {
 			_, err := memoryStore.Set(key, value)
 			Expect(err).To(BeNil())
 
-			count, err := memoryStore.Delete(key)
+			err = memoryStore.Delete(key)
 			Expect(err).To(BeNil())
-			Expect(count).To(Equal(1))
 		})
 	})
 })

@@ -106,7 +106,7 @@ func (config *fileStore) Get(key string) (store.Data, error) {
 	default:
 		value = response
 	}
-	return store.NewData(name, name, value), nil
+	return store.NewData( name, value), nil
 }
 
 func (config *fileStore) getFileData() ([]byte, error) {
@@ -155,8 +155,8 @@ func splitToNameAndProperty(key string) (name string, property string, err error
 	return key, "", nil
 }
 
-func (config *fileStore) Delete(key string) (int, error) {
-	return 0, fmt.Errorf("method Delete is not Implemented")
+func (config *fileStore) Delete(key string) error {
+	return fmt.Errorf("method Delete is not Implemented")
 }
 
 func (config *fileStore) Set(key string, value string) (string, error) {

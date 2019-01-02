@@ -21,6 +21,6 @@ func (s *promptStore) Get(key string) (store.Data, error) {
 	return nil, nil
 }
 
-func (s *promptStore) Delete(key string) (int, error) {
-	return 0, nil
+func (s *promptStore) Delete(key string) error {
+	return nil
 }

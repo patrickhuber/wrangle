@@ -79,7 +79,6 @@ func (s *credHubStore) Get(key string) (store.Data, error) {
 
 	if property == "" {
 		return store.NewData(
-			cred.Id,
 			cred.Name,
 			cred.Value), nil
 	}
@@ -94,14 +93,13 @@ func (s *credHubStore) Get(key string) (store.Data, error) {
 	}
 
 	return store.NewData(
-		cred.Id,
 		cred.Name,
 		propertyValue,
 	), nil
 }
 
-func (s *credHubStore) Delete(name string) (int, error) {
-	return 0, fmt.Errorf("not implemented")
+func (s *credHubStore) Delete(key string) error {
+	return fmt.Errorf("not implemented")
 }
 
 func (s *credHubStore) Type() string {

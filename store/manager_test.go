@@ -22,8 +22,8 @@ func (provider *dummyConfigStoreProvider) Create(store *config.Store) (Store, er
 type dummyConfigStore struct {
 }
 
-func (store *dummyConfigStore) Delete(name string) (int, error) {
-	return 0, nil
+func (store *dummyConfigStore) Delete(name string) error {
+	return nil
 }
 
 func (store *dummyConfigStore) Get(name string) (Data, error) {
