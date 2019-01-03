@@ -8,7 +8,8 @@ import (
 
 // CreatePackagesCommand creates a packages command from the cli context
 func CreatePackagesCommand(
-	packagesService services.PackagesService) *cli.Command {
+	packageServiceFactory services.PackageServiceFactory,
+	feedServiceFactory services.FeedServiceFactory) *cli.Command {
 	return &cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},
@@ -19,10 +20,18 @@ func CreatePackagesCommand(
 				Usage:  "the package install path",
 				EnvVar: global.PackagePathKey,
 			},
+			cli.StringFlag{
+				Name:   "url, u",
+				Usage:  "the feed url",
+				EnvVar: global.PackageFeedURLKey,
+			},
 		},
 		Action: func(context *cli.Context) error {
 			packagesPath := context.String("path")
-			return packagesService.List(packagesPath)
+			feedURL := context.String("url")
+			feedService := feedServiceFactory.Get(packagesPath, feedURL)
+			packagesService := packageServiceFactory.Get(feedService)
+			return packagesService.List()
 		},
 	}
 }

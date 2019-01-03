@@ -12,4 +12,7 @@ const (
 
 	// RootPathKey defines the root directory wrangle uses. If specified, defaults for WRANGLE_PACKAGES, WRANGLE_BIN can be infered
 	RootPathKey = "WRANGLE_ROOT"
+
+	// PackageFeedURLKey defines the variable used to store the feed url for fetching remote packages.
+	PackageFeedURLKey = "WRANGLE_FEED_URL"
 )

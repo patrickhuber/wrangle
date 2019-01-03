@@ -54,7 +54,8 @@ func createApplication(
 	initService := services.NewInitService(fileSystem)
 	runService := services.NewRunService(manager, fileSystem, processFactory, console, loader)
 	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
-	packagesService := services.NewPackagesService(fileSystem, console)
+	packagesServiceFactory := services.NewPackageServiceFactory(console)
+	feedServiceFactory := services.NewFeedServiceFactory(fileSystem)
 	installService, err := services.NewInstallService(platform, fileSystem, packagesManager, loader)
 	envService := services.NewEnvService(console, envDictionary)
 	storesService := services.NewStoresService(console, loader)
@@ -69,7 +70,7 @@ func createApplication(
 		*commands.CreateRunCommand(runService),
 		*commands.CreatePrintCommand(printService),
 		*commands.CreatePrintEnvCommand(printService),
-		*commands.CreatePackagesCommand(packagesService),
+		*commands.CreatePackagesCommand(packagesServiceFactory, feedServiceFactory),
 		*commands.CreateInstallCommand(installService),
 		*commands.CreateEnvCommand(envService),
 		*commands.CreateStoresCommand(storesService),

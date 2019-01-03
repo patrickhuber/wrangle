@@ -36,13 +36,20 @@ func CreateInstallCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			packagesRoot := context.String("path")
-			root := context.String("root")
-			bin := context.String("bin")
-			packageName := context.Args().First()
-			packageVersion := context.String("version")
+			installServiceRequest := &services.InstallServiceRequest{
+				Directories: &services.InstallServiceRequestDirectories{
+					Root:     context.String("root"),
+					Bin:      context.String("bin"),
+					Packages: context.String("path"),
+				},
+				Package: &services.InstallServiceRequestPackage{
+					Name:    context.Args().First(),
+					Version: context.String("version"),
+				},
+				Feed: &services.InstallServiceRequestFeed{	},
+			}
 
-			return installService.Install(root, bin, packagesRoot, packageName, packageVersion)
+			return installService.Install(installServiceRequest)
 		},
 	}
 }

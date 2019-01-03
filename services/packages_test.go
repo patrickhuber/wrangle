@@ -18,9 +18,11 @@ var _ = Describe("Packages", func() {
 			fileSystem := afero.NewMemMapFs()
 			afero.WriteFile(fileSystem, "/opt/wrangle/packages/test/0.1.1/test.0.1.1.yml", []byte("this is a package"), 0600)
 
-			service := services.NewPackagesService(fileSystem, console)
+			feedService := services.NewFsFeedService(fileSystem, packagePath)
+
+			service := services.NewPackagesService(feedService, console)
 			Expect(service).ToNot(BeNil())			
-			Expect(service.List(packagePath)).To(BeNil())
+			Expect(service.List()).To(BeNil())
 
 			output := console.OutAsString()
 

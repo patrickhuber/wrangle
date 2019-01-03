@@ -99,7 +99,17 @@ var _ = Describe("InstallService", func() {
 			service, err := services.NewInstallService(platform, fs, manager, loader)
 			Expect(err).To(BeNil())
 
-			err = service.Install(wrangleRoot, packagesBin, packagesRoot, packageName, packageVersion)
+			err = service.Install(
+				&services.InstallServiceRequest{
+					Directories: &services.InstallServiceRequestDirectories{
+						Bin: packagesBin,
+						Root: wrangleRoot,
+						Packages: packagesRoot},
+					Package: &services.InstallServiceRequestPackage{
+						Name: packageName, 
+						Version: packageVersion	},
+					Feed: &services.InstallServiceRequestFeed{	},
+				})
 			Expect(err).To(BeNil())
 		})
 		When("Windows", func() {
