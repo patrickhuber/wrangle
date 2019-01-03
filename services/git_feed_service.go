@@ -1,6 +1,7 @@
 package services
 
 import (	
+	"strings"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"fmt"
 
@@ -44,15 +45,47 @@ func (svc *gitFeedService) List(request *FeedListRequest) (*FeedListResponse, er
 	if err != nil{
 		return nil, err
 	}
-
+	
+	packages := map[string]FeedListResponsePackage{}
 	tree.Files().ForEach(func (f *object.File) error{
-		_, err:= fmt.Printf("file: %s", f.Name)		
-		if err != nil{
-			return err
+
+		segments := strings.Split(f.Name, "/")
+		
+		if len(segments) != 4 {			
+			return nil
+		}	
+
+		if segments[0] != "feed"{			
+			return nil
 		}
-		_, err = fmt.Println("")
-		return err
+
+		packageName := segments[1]
+		packageVersion := segments[2]		
+		packageVersionManifestFile := segments[3]
+
+		packageVersionManifestName := fmt.Sprintf("%s.%s.yml", packageName, packageVersion)
+
+		if packageVersionManifestName != packageVersionManifestFile {			
+			return nil
+		}
+
+		pkg, ok := packages[packageName]
+		if !ok{
+			pkg = FeedListResponsePackage{}
+			packages[packageName] = pkg
+		}
+
+		pkg.Versions = append(pkg.Versions, packageVersion)	
+
+		return nil
 	})
 
-	return nil, fmt.Errorf("method not implemented")
+	response := &FeedListResponse{
+		Packages : []FeedListResponsePackage{},
+	}
+	for _,pkg := range packages {
+		response.Packages = append(response.Packages, pkg)
+	}
+
+	return response, nil	
 }
