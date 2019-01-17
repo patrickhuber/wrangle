@@ -8,23 +8,23 @@ import (
 	_ "golang.org/x/crypto/ripemd160" // <-- required to run this unit test
 )
 
-type pgpEncryptor struct {
+type pgpEncrypter struct {
 	entityList openpgp.EntityList
 }
 
-// NewPgpEncryptor creates a new pgp encryptor using the given public key ring
-func NewPgpEncryptor(publicKeyRingReader io.Reader) (Encryptor, error) {
+// NewPgpEncrypter creates a new pgp encrypter using the given public key ring
+func NewPgpEncrypter(publicKeyRingReader io.Reader) (Encrypter, error) {
 	// load the entity list
 	entitylist, err := openpgp.ReadKeyRing(publicKeyRingReader)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pgpEncryptor{
+	return &pgpEncrypter{
 		entityList: entitylist}, nil
 }
 
-func (e *pgpEncryptor) Encrypt(reader io.Reader, writer io.Writer) error {
+func (e *pgpEncrypter) Encrypt(reader io.Reader, writer io.Writer) error {
 
 	// create the encryption writer
 	w, err := openpgp.Encrypt(writer, e.entityList, nil, nil, nil)

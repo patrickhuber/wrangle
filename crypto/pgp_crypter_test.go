@@ -19,7 +19,7 @@ var _ = Describe("PgpCryptor", func() {
 		err = entity.Serialize(pubring)
 		Expect(err).To(BeNil())
 
-		encryptor, err := NewPgpEncryptor(pubring)
+		encrypter, err := NewPgpEncrypter(pubring)
 		Expect(err).To(BeNil())
 
 		original := &bytes.Buffer{}
@@ -27,18 +27,18 @@ var _ = Describe("PgpCryptor", func() {
 		Expect(err).To(BeNil())
 
 		encrypted := &bytes.Buffer{}
-		err = encryptor.Encrypt(original, encrypted)
+		err = encrypter.Encrypt(original, encrypted)
 		Expect(err).To(BeNil())
 
 		secring := &bytes.Buffer{}
 		err = entity.SerializePrivate(secring, nil)
 		Expect(err).To(BeNil())
 
-		decryptor, err := NewPgpDecryptor(secring)
+		decrypter, err := NewPgpDecrypter(secring)
 		Expect(err).To(BeNil())
 
 		final := &bytes.Buffer{}
-		err = decryptor.Decrypt(encrypted, final)
+		err = decrypter.Decrypt(encrypted, final)
 		Expect(err).To(BeNil())
 
 		Expect(final.String()).To(Equal("this is plaintext"))

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/urfave/cli"
@@ -9,7 +10,7 @@ import (
 // CreatePackagesCommand creates a packages command from the cli context
 func CreatePackagesCommand(
 	packageServiceFactory services.PackageServiceFactory,
-	feedServiceFactory services.FeedServiceFactory) *cli.Command {
+	feedServiceFactory feed.FeedServiceFactory) *cli.Command {
 	return &cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},

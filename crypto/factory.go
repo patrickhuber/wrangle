@@ -1,7 +1,7 @@
 package crypto
 
-// Factory creates a decrytor or encryptor
+// Factory creates a decryter or encrypter
 type Factory interface {
-	CreateDecryptor() (Decryptor, error)
-	CreateEncryptor() (Encryptor, error)
+	CreateDecrypter() (Decrypter, error)
+	CreateEncrypter() (Encrypter, error)
 }

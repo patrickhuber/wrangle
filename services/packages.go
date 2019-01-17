@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"text/tabwriter"
 
+	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/ui"
 )
 
 type packagesService struct {
 	console     ui.Console
-	feedService FeedService
+	feedService feed.FeedService
 }
 
 // PackagesService lists all packages in the configuration
@@ -18,7 +19,7 @@ type PackagesService interface {
 }
 
 // NewPackagesService returns a new packages command object
-func NewPackagesService(feedService FeedService, console ui.Console) PackagesService {
+func NewPackagesService(feedService feed.FeedService, console ui.Console) PackagesService {
 	return &packagesService{
 		feedService: feedService,
 		console:     console}
@@ -31,14 +32,14 @@ func (service *packagesService) List() error {
 	fmt.Fprintln(w, "name\tversion")
 	fmt.Fprintln(w, "----\t-------")
 
-	response, err := service.feedService.List(&FeedListRequest{})
+	response, err := service.feedService.List(&feed.FeedListRequest{})
 	if err != nil {
 		return err
 	}
 
 	for _, pkg := range response.Packages {
 		for _, ver := range pkg.Versions {
-			fmt.Fprintf(w, "%s\t%s", pkg.Name, ver)
+			fmt.Fprintf(w, "%s\t%s", pkg.Name, ver.Version)
 			fmt.Fprintln(w)
 		}
 	}

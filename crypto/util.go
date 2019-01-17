@@ -2,8 +2,8 @@ package crypto
 
 import "github.com/spf13/afero"
 
-// EncryptFile encrypts a file for the given filesystem, encryptor and files
-func EncryptFile(fs afero.Fs, encryptor Encryptor, plainTextFile string, encryptedFile string) error {
+// EncryptFile encrypts a file for the given filesystem, encrypter and files
+func EncryptFile(fs afero.Fs, encrypter Encrypter, plainTextFile string, encryptedFile string) error {
 	plaintext, err := fs.Open(plainTextFile)
 	if err != nil {
 		return err
@@ -16,5 +16,5 @@ func EncryptFile(fs afero.Fs, encryptor Encryptor, plainTextFile string, encrypt
 	}
 	defer encrypted.Close()
 
-	return encryptor.Encrypt(plaintext, encrypted)
+	return encrypter.Encrypt(plaintext, encrypted)
 }

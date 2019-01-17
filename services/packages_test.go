@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/services"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,7 +19,7 @@ var _ = Describe("Packages", func() {
 			fileSystem := afero.NewMemMapFs()
 			afero.WriteFile(fileSystem, "/opt/wrangle/packages/test/0.1.1/test.0.1.1.yml", []byte("this is a package"), 0600)
 
-			feedService := services.NewFsFeedService(fileSystem, packagePath)
+			feedService := feed.NewFsFeedService(fileSystem, packagePath)
 
 			service := services.NewPackagesService(feedService, console)
 			Expect(service).ToNot(BeNil())			

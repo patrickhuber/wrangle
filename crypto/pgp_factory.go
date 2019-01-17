@@ -29,7 +29,7 @@ func NewPgpFactory(fileSystem afero.Fs, platform string) (PgpFactory, error) {
 	return &pgpFactory{fileSystem: fileSystem, context: context}, nil
 }
 
-func (f *pgpFactory) CreateDecryptor() (Decryptor, error) {
+func (f *pgpFactory) CreateDecrypter() (Decrypter, error) {
 	secureKeyRingReader, err := f.fileSystem.Open(f.context.SecureKeyRing().FullPath())
 	if err != nil {
 		v2Err := f.assertIsNotGpgV2()
@@ -39,10 +39,10 @@ func (f *pgpFactory) CreateDecryptor() (Decryptor, error) {
 		return nil, err
 	}
 	defer secureKeyRingReader.Close()
-	return NewPgpDecryptor(secureKeyRingReader)
+	return NewPgpDecrypter(secureKeyRingReader)
 }
 
-func (f *pgpFactory) CreateEncryptor() (Encryptor, error) {
+func (f *pgpFactory) CreateEncrypter() (Encrypter, error) {
 	publicKeyRingReader, err := f.fileSystem.Open(f.context.PublicKeyRing().FullPath())
 	if err != nil {
 		v2Err := f.assertIsNotGpgV2()
@@ -52,7 +52,7 @@ func (f *pgpFactory) CreateEncryptor() (Encryptor, error) {
 		return nil, err
 	}
 	defer publicKeyRingReader.Close()
-	return NewPgpEncryptor(publicKeyRingReader)
+	return NewPgpEncrypter(publicKeyRingReader)
 }
 
 func (f *pgpFactory) Context() PgpContext {

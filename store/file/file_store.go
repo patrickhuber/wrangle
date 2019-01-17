@@ -20,11 +20,11 @@ type fileStore struct {
 	name       string
 	path       string
 	fileSystem afero.Fs
-	decryptor  crypto.Decryptor
+	decrypter  crypto.Decrypter
 	cache      []byte
 }
 
-func NewFileStore(name string, path string, fileSystem afero.Fs, decryptor crypto.Decryptor) (store.Store, error) {
+func NewFileStore(name string, path string, fileSystem afero.Fs, decrypter crypto.Decrypter) (store.Store, error) {
 
 	if path == "" {
 		return nil, errors.New("file path is required")
@@ -39,7 +39,7 @@ func NewFileStore(name string, path string, fileSystem afero.Fs, decryptor crypt
 		name:       name,
 		path:       path,
 		fileSystem: fileSystem,
-		decryptor:  decryptor,
+		decrypter:  decrypter,
 	}, nil
 }
 
@@ -51,7 +51,7 @@ func (config *fileStore) Type() string {
 	return "file"
 }
 
-func (config *fileStore) Get(key string) (store.Data, error) {
+func (config *fileStore) Get(key string) (store.Item, error) {
 
 	data, err := config.getFileData()
 	if err != nil {
@@ -121,12 +121,12 @@ func (config *fileStore) getFileData() ([]byte, error) {
 		return data, nil
 	}
 
-	if config.decryptor == nil {
-		return nil, fmt.Errorf("decryptor is nil. A decryptor must be specified to decrypt gpg files")
+	if config.decrypter == nil {
+		return nil, fmt.Errorf("decrypter is nil. A decrypter must be specified to decrypt gpg files")
 	}
 
 	decrypted := &bytes.Buffer{}
-	err = config.decryptor.Decrypt(bytes.NewBuffer(data), decrypted)
+	err = config.decrypter.Decrypt(bytes.NewBuffer(data), decrypted)
 	if err != nil {
 		return nil, err
 	}

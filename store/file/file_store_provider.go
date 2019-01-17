@@ -28,15 +28,15 @@ func (provider *fileStoreProvider) Create(configSource *config.Store) (store.Sto
 		return nil, errors.Wrap(err, "unable to create file store config")
 	}
 
-	var decryptor crypto.Decryptor
+	var decrypter crypto.Decrypter
 	if provider.factory != nil {
-		decryptor, err = provider.factory.CreateDecryptor()
+		decrypter, err = provider.factory.CreateDecrypter()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	store, err := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem, decryptor)
+	store, err := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem, decrypter)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create file store")
 	}

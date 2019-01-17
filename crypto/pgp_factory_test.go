@@ -19,7 +19,7 @@ var _ = Describe("PgpFactory", func() {
 		factory, err := NewPgpFactory(fs, platform)
 		Expect(err).To(BeNil())
 
-		_, err = factory.CreateEncryptor()
+		_, err = factory.CreateEncrypter()
 		Expect(err).ToNot(BeNil())
 		Expect(err.Error()).To(ContainSubstring("gpg v2 keyring is not supported"))
 	})
@@ -34,12 +34,12 @@ var _ = Describe("PgpFactory", func() {
 		factory, err := NewPgpFactory(fs, platform)
 		Expect(err).To(BeNil())
 
-		_, err = factory.CreateEncryptor()
+		_, err = factory.CreateEncrypter()
 		Expect(err).ToNot(BeNil())
 		Expect(err.Error()).To(ContainSubstring("gpg v2 keyring is not supported"))
 	})
 
-	It("can create encryptor", func() {
+	It("can create encrypter", func() {
 
 		platform := "linux"
 		fs := afero.NewMemMapFs()
@@ -49,12 +49,12 @@ var _ = Describe("PgpFactory", func() {
 		factory, err := NewPgpFactory(fs, platform)
 		Expect(err).To(BeNil())
 
-		encryptor, err := factory.CreateEncryptor()
+		encrypter, err := factory.CreateEncrypter()
 		Expect(err).To(BeNil())
-		Expect(encryptor).ToNot(BeNil())
+		Expect(encrypter).ToNot(BeNil())
 	})
 
-	It("can create decryptor", func() {
+	It("can create decrypter", func() {
 
 		platform := "linux"
 		fs := afero.NewMemMapFs()
@@ -64,9 +64,9 @@ var _ = Describe("PgpFactory", func() {
 		factory, err := NewPgpFactory(fs, platform)
 		Expect(err).To(BeNil())
 
-		decryptor, err := factory.CreateDecryptor()
+		decrypter, err := factory.CreateDecrypter()
 		Expect(err).To(BeNil())
-		Expect(decryptor).ToNot(BeNil())
+		Expect(decrypter).ToNot(BeNil())
 	})
 })
 

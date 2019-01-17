@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
@@ -55,7 +56,7 @@ func createApplication(
 	runService := services.NewRunService(manager, fileSystem, processFactory, console, loader)
 	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
 	packagesServiceFactory := services.NewPackageServiceFactory(console)
-	feedServiceFactory := services.NewFeedServiceFactory(fileSystem)
+	feedServiceFactory := feed.NewFeedServiceFactory(fileSystem)
 	installService, err := services.NewInstallService(platform, fileSystem, packagesManager, loader)
 	envService := services.NewEnvService(console, envDictionary)
 	storesService := services.NewStoresService(console, loader)

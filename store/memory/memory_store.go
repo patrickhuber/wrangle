@@ -9,12 +9,12 @@ import (
 // MemoryStore - Struct that represents a memory store
 type memoryStore struct {
 	name string
-	data map[string]store.Data
+	data map[string]store.Item
 }
 
 // NewMemoryStore - Creates a new memory store with the given name
 func NewMemoryStore(name string) store.Store {
-	data := map[string]store.Data{}
+	data := map[string]store.Item{}
 	return &memoryStore{
 		name: name,
 		data: data,
@@ -42,7 +42,7 @@ func (s *memoryStore) Set(key string, value string) (string, error) {
 }
 
 // Get - Gets the config value by name
-func (s *memoryStore) Get(key string) (store.Data, error) {
+func (s *memoryStore) Get(key string) (store.Item, error) {
 	value, ok := s.data[key]
 	if !ok {
 		return nil, fmt.Errorf("unable to locate key %s", key)

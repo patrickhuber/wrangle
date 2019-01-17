@@ -8,7 +8,7 @@ import (
 type localStore struct {
 }
 
-func (s *localStore) Get(key string) (store.Data, error) {
+func (s *localStore) Get(key string) (store.Item, error) {
 
 	ring, err := loadKeyRing()
 	if err != nil {

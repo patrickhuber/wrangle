@@ -12,3 +12,4 @@ env:
 
 script:
 - ./scripts/travis_build.sh
+- ./scripts/travis_test.sh

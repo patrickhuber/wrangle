@@ -39,7 +39,7 @@ func (s *metaStore) Set(key string, value string) (string, error) {
 	return "", fmt.Errorf("meta.Set is not implemented")
 }
 
-func (s *metaStore) Get(key string) (store.Data, error) {
+func (s *metaStore) Get(key string) (store.Item, error) {
 	var value string
 	switch key {
 	case ConfigFilePathKey:

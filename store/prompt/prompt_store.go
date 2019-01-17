@@ -17,7 +17,7 @@ func (s *promptStore) Set(key string, value string) (string, error) {
 	return "", nil
 }
 
-func (s *promptStore) Get(key string) (store.Data, error) {
+func (s *promptStore) Get(key string) (store.Item, error) {
 	return nil, nil
 }
 

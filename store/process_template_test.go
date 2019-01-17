@@ -11,14 +11,14 @@ import (
 )
 
 type fakeStore struct {
-	getByNameDelegate func(name string) (store.Data, error)
+	getByNameDelegate func(name string) (store.Item, error)
 	nameDelegate      func() string
 	typeDelegate      func() string
 	putDelegate       func(key string, value string) (string, error)
 	deleteDelegate    func(key string) (error)
 }
 
-func (s *fakeStore) Get(name string) (store.Data, error) {
+func (s *fakeStore) Get(name string) (store.Item, error) {
 	return s.getByNameDelegate(name)
 }
 
@@ -71,7 +71,7 @@ processes:
 			name: "fake",
 			createDelegate: func(source *config.Store) (store.Store, error) {
 				return &fakeStore{
-					getByNameDelegate: func(name string) (store.Data, error) {
+					getByNameDelegate: func(name string) (store.Item, error) {
 						return store.NewData("version", "version"), nil
 					},
 				}, nil

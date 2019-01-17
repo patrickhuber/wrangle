@@ -1,13 +1,14 @@
-package templates
+package templates_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/templates"
 )
 
 var _ = Describe("", func() {
 	It("can evaluate string", func() {
-		template := NewTemplate("((key))")
+		template := templates.NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -16,7 +17,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate int", func() {
-		template := NewTemplate("((key))")
+		template := templates.NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", 1)
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -25,7 +26,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate two keys in string", func() {
-		template := NewTemplate("((key)):((other))")
+		template := templates.NewTemplate("((key)):((other))")
 		resolver, err := newSimpleResolver("/key", "value", "/other", "thing")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -35,7 +36,7 @@ var _ = Describe("", func() {
 
 	It("can evaluate map string of string", func() {
 		m := map[string]string{"key": "((key))"}
-		template := NewTemplate(m)
+		template := templates.NewTemplate(m)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -48,7 +49,7 @@ var _ = Describe("", func() {
 
 	It("can evaluate map string of interface", func() {
 		m := map[string]interface{}{"key": "((key))"}
-		template := NewTemplate(m)
+		template := templates.NewTemplate(m)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -61,7 +62,7 @@ var _ = Describe("", func() {
 
 	It("can evaluate map interface of interface", func() {
 		m := map[interface{}]interface{}{"key": "((key))"}
-		template := NewTemplate(m)
+		template := templates.NewTemplate(m)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -75,7 +76,7 @@ var _ = Describe("", func() {
 	It("can evaluate nested map", func() {
 
 		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
-		template := NewTemplate(m)
+		template := templates.NewTemplate(m)
 		resolver, err := newSimpleResolver("/nested", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -92,7 +93,7 @@ var _ = Describe("", func() {
 	It("can evaluate string array", func() {
 
 		a := []string{"one", "((key))", "three"}
-		template := NewTemplate(a)
+		template := templates.NewTemplate(a)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -106,7 +107,7 @@ var _ = Describe("", func() {
 	It("can evaluate interface array", func() {
 
 		a := []interface{}{"one", "((key))", "three"}
-		template := NewTemplate(a)
+		template := templates.NewTemplate(a)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -118,7 +119,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can patch in slice for string", func() {
-		template := NewTemplate("((key))")
+		template := templates.NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", []string{"one", "two"})
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -131,7 +132,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can patch in map for string", func() {
-		template := NewTemplate("((key))")
+		template := templates.NewTemplate("((key))")
 		resolver, err := newSimpleResolver("/key", map[string]string{"one": "test", "two": "other"})
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -144,7 +145,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate resolver pipeline", func() {
-		template := NewTemplate("((key1))")
+		template := templates.NewTemplate("((key1))")
 		resolver1, err := newSimpleResolver("/key1", "((key2))")
 		Expect(err).To(BeNil())
 		resolver2, err := newSimpleResolver("/key2", "value")
@@ -153,4 +154,5 @@ var _ = Describe("", func() {
 		Expect(err).To(BeNil())
 		Expect(document).To(Equal("value"))
 	})
+
 })

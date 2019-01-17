@@ -79,16 +79,16 @@ ssh:
 			err = createEncryptionKey(fileSystem, factory.Context())
 			Expect(err).To(BeNil())
 
-			encryptor, err := factory.CreateEncryptor()
+			encrypter, err := factory.CreateEncrypter()
 			Expect(err).To(BeNil())
 
-			err = crypto.EncryptFile(fileSystem, encryptor, file, file+".gpg")
+			err = crypto.EncryptFile(fileSystem, encrypter, file, file+".gpg")
 			Expect(err).To(BeNil())
 
-			decryptor, err := factory.CreateDecryptor()
+			decrypter, err := factory.CreateDecrypter()
 			Expect(err).To(BeNil())
 
-			encryptedFileStore, err = NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decryptor)
+			encryptedFileStore, err = NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decrypter)
 			Expect(err).To(BeNil())
 		})
 

@@ -27,7 +27,7 @@ func (s *envStore) Type() string {
 	return "env"
 }
 
-func (s *envStore) Get(key string) (store.Data, error) {
+func (s *envStore) Get(key string) (store.Item, error) {
 	// cleanup the key just in case there is a forward slash
 	key = s.cleanKey(key)
 
