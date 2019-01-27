@@ -35,8 +35,8 @@ func (s *metaStore) Name() string { return s.name }
 
 func (s *metaStore) Type() string { return "meta" }
 
-func (s *metaStore) Set(key string, value string) (string, error) {
-	return "", fmt.Errorf("meta.Set is not implemented")
+func (s *metaStore) Set(item store.Item) error {
+	return fmt.Errorf("meta.Set is not implemented")
 }
 
 func (s *metaStore) Get(key string) (store.Item, error) {
@@ -49,7 +49,7 @@ func (s *metaStore) Get(key string) (store.Item, error) {
 	default:
 		return nil, fmt.Errorf("unable to find key '%s' in meta store", key)
 	}
-	return store.NewData(key, value), nil
+	return store.NewItem(key, value), nil
 }
 
 func (s *metaStore) Delete(key string) error {

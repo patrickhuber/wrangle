@@ -13,8 +13,8 @@ func (s *promptStore) Type() string {
 	return ""
 }
 
-func (s *promptStore) Set(key string, value string) (string, error) {
-	return "", nil
+func (s *promptStore) Set(item store.Item) error {
+	return nil
 }
 
 func (s *promptStore) Get(key string) (store.Item, error) {

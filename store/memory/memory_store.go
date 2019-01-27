@@ -32,13 +32,9 @@ func (s *memoryStore) Type() string {
 }
 
 // Set - Puts the config value under the value in the memory store
-func (s *memoryStore) Set(key string, value string) (string, error) {
-	data := store.NewData(
-		key,
-		value,
-	)
-	s.data[key] = data
-	return value, nil
+func (s *memoryStore) Set(item store.Item) error {
+	s.data[item.Name()] = item
+	return nil
 }
 
 // Get - Gets the config value by name
@@ -52,10 +48,10 @@ func (s *memoryStore) Get(key string) (store.Item, error) {
 
 // Delete - Deletes the value from the config store
 func (s *memoryStore) Delete(key string) error {
-	data, err := s.Get(key)
+	_, err := s.Get(key)
 	if err != nil {
 		return err
 	}
-	delete(s.data, data.Name())
+	delete(s.data, key)
 	return nil
 }

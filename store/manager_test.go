@@ -1,7 +1,8 @@
-package store
+package store_test
 
 import (
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/store"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,43 +16,43 @@ func (provider *dummyConfigStoreProvider) Name() string {
 	return provider.name
 }
 
-func (provider *dummyConfigStoreProvider) Create(store *config.Store) (Store, error) {
+func (provider *dummyConfigStoreProvider) Create(store *config.Store) (store.Store, error) {
 	return &dummyConfigStore{}, nil
 }
 
 type dummyConfigStore struct {
 }
 
-func (store *dummyConfigStore) Delete(name string) error {
+func (s *dummyConfigStore) Delete(name string) error {
 	return nil
 }
 
-func (store *dummyConfigStore) Get(name string) (Item, error) {
-	return &item{}, nil
+func (s *dummyConfigStore) Get(name string) (store.Item, error) {
+	return store.NewItem(name, nil), nil
 }
 
-func (store *dummyConfigStore) Name() string {
+func (s *dummyConfigStore) Name() string {
 	return ""
 }
 
-func (store *dummyConfigStore) Type() string {
+func (s *dummyConfigStore) Type() string {
 	return "dummy"
 }
 
-func (store *dummyConfigStore) Set(key string, value string) (string, error) {
-	return "", nil
+func (s *dummyConfigStore) Set(item store.Item) error {
+	return nil
 }
 
 var _ = Describe("", func() {
 	It("can register provider", func() {
-		manager := NewManager()
+		manager := store.NewManager()
 		manager.Register(&dummyConfigStoreProvider{name: "test"})
 		_, ok := manager.Get("test")
 		Expect(ok).To(BeTrue())
 	})
 
 	It("can create config store", func() {
-		manager := NewManager()
+		manager := store.NewManager()
 		manager.Register(&dummyConfigStoreProvider{name: "dummy"})
 		store, err := manager.Create(&config.Store{
 			Name:      "test",
@@ -65,7 +66,7 @@ var _ = Describe("", func() {
 	Context("missing config store provider", func() {
 
 		It("throws error", func() {
-			manager := NewManager()
+			manager := store.NewManager()
 			_, err := manager.Create(&config.Store{Name: "test"})
 			Expect(err).ToNot(BeNil())
 		})

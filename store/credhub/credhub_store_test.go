@@ -11,6 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/store/values"
 )
 
 type DummyAuth struct {
@@ -112,7 +113,7 @@ var _ = Describe("credhub store", func() {
 
 		data, err := store.Get("/example-value")
 		Expect(err).To(BeNil())
-		Expect(data.Value()).To(Equal("some-value"))
+		Expect(data.Value()).To(Equal(values.Password("some-value")))
 	})
 
 	It("can get certificate by name", func() {
@@ -134,20 +135,12 @@ var _ = Describe("credhub store", func() {
 		data, err := store.Get("/example-certificate")
 		Expect(err).To(BeNil())
 
-		valueMap, ok := data.Value().(map[string]interface{})
-		Expect(ok).To(BeTrue(), "Unable to map data value to map[string]interface{}. Found type '%v'", reflect.TypeOf(data.Value()))
+		certificate, ok := data.Value().(values.Certificate)
+		Expect(ok).To(BeTrue(), "Unable to map data value to values.Certificate. Found type '%v'", reflect.TypeOf(data.Value()))
 
-		privateKey, ok := valueMap["private_key"]
-		Expect(ok).To(BeTrue(), "unable to find private key")
-		Expect(privateKey).To(Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"))
-
-		ca, ok := valueMap["ca"]
-		Expect(ok).To(BeTrue(), "unable to find ca")
-		Expect(ca).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
-
-		certificate, ok := valueMap["certificate"]
-		Expect(ok).To(BeTrue(), "unable to find certificate")
-		Expect(certificate).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
+		Expect(certificate.PrivateKey).To(Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"))
+		Expect(certificate.CertificateAuthority).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
+		Expect(certificate.PublicKey).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
 	})
 
 	It("can get certificate by name and property", func() {
@@ -169,9 +162,11 @@ var _ = Describe("credhub store", func() {
 		data, err := store.Get("/example-certificate.certificate")
 		Expect(err).To(BeNil())
 
-		certificate, ok := data.Value().(string)
+		certificate, ok := data.Value().(values.Certificate)
 		Expect(ok).To(BeTrue(), "unable to find certificate")
-		Expect(certificate).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
+		Expect(certificate.CertificateAuthority).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
+		Expect(certificate.PublicKey).To(Equal("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"))
+		Expect(certificate.PrivateKey).To(Equal("-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"))
 	})
 
 	It("can get rsa by name", func() {
@@ -196,16 +191,11 @@ var _ = Describe("credhub store", func() {
 		data, err := store.Get("/example-rsa")
 		Expect(err).To(BeNil())
 
-		stringMap, ok := data.Value().(map[string]interface{})
-		Expect(ok).To(BeTrue(), "Unable to map data.Value to map[string]interface{}")
+		rsa, ok := data.Value().(values.RSA)
+		Expect(ok).To(BeTrue(), "Unable to map data.Value to values.RSA")
 
-		publicKey, ok := stringMap["public_key"]
-		Expect(ok).To(BeTrue(), "unable to find public_key")
-		Expect(publicKey).To(Equal("public-key"))
-
-		privateKey, ok := stringMap["private_key"]
-		Expect(ok).To(BeTrue(), "unable to find private_key")
-		Expect(privateKey).To(Equal("private-key"))
+		Expect(rsa.PublicKey).To(Equal("public-key"))
+		Expect(rsa.PrivateKey).To(Equal("private-key"))
 	})
 
 	It("can get ssh by name", func() {
@@ -231,19 +221,10 @@ var _ = Describe("credhub store", func() {
 		data, err := store.Get("/example-ssh")
 		Expect(err).To(BeNil())
 
-		stringMap, ok := data.Value().(map[string]interface{})
-		Expect(ok).To(BeTrue(), "Unable to map data.Value to map[string]interface{}")
+		ssh, ok := data.Value().(values.SSH)
+		Expect(ok).To(BeTrue(), "Unable to map data.Value to values.SSH")
 
-		publicKey, ok := stringMap["public_key"]
-		Expect(ok).To(BeTrue(), "unable to find public_key")
-		Expect(publicKey).To(Equal("public-key"))
-
-		privateKey, ok := stringMap["private_key"]
-		Expect(ok).To(BeTrue(), "unable to find private_key")
-		Expect(privateKey).To(Equal("private-key"))
-
-		publicKeyFingerPrint, ok := stringMap["public_key_fingerprint"]
-		Expect(ok).To(BeTrue(), "unable to find public_key_fingerprint")
-		Expect(publicKeyFingerPrint).To(Equal("public-key-fingerprint"))
+		Expect(ssh.PublicKey).To(Equal("public-key"))
+		Expect(ssh.PrivateKey).To(Equal("private-key"))
 	})
 })

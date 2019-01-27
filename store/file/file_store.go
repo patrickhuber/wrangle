@@ -82,31 +82,33 @@ func (config *fileStore) Get(key string) (store.Item, error) {
 		return nil, errors.Wrapf(err, "unable to find key '%s' in file '%s'", key, config.path)
 	}
 
+	return config.createItem(response, name, property)
+}
+
+func (config *fileStore) createItem(document interface{}, name string, property string) (store.Item, error){	
 	// map document to canonical type
 	// (for compatibilty with credhub return types)
-	var value interface{}
-	switch v := response.(type) {
-	case (map[interface{}]interface{}):
+	switch v := document.(type){
+	case(string):
+		return store.NewValueItem(name, v), nil
+	case(map[interface{}]interface{}):
 		stringMap := make(map[string]interface{})
 		for key := range v {
 			stringMap[key.(string)] = v[key]
 		}
-		if property == "" {
-			value = stringMap
-		} else {
-			value = stringMap[property]
+		return config.createItem(stringMap, name, property)
+	case(map[string]interface{}):
+		if property == ""{
+			return store.NewStructuredItem(name, v), nil
 		}
-	case (map[string]interface{}):
-
-		if property == "" {
-			value = v
-		} else {
-			value = v[property]
-		}
-	default:
-		value = response
+		// do type interpolation here?
+		// username, password => user
+		// private_key, ca, certificate => certificate
+		// public_key, private_key(contains("RSA")) => RSA 
+		// public_key, private_key => SSH
+		return config.createItem(v[property], name, "")
 	}
-	return store.NewData( name, value), nil
+	return nil, fmt.Errorf("Unrecognized type %T", document)
 }
 
 func (config *fileStore) getFileData() ([]byte, error) {
@@ -159,8 +161,12 @@ func (config *fileStore) Delete(key string) error {
 	return fmt.Errorf("method Delete is not Implemented")
 }
 
-func (config *fileStore) Set(key string, value string) (string, error) {
-	return "", fmt.Errorf("method Put is not implemented")
+func (config *fileStore) Set(item store.Item) error{
+	return fmt.Errorf("method Put is not implemented")
+}
+
+func (config *fileStore) Copy(item store.Item, destination string) error {
+	return nil
 }
 
 func readAllBytes(config *fileStore) (*[]byte, error) {

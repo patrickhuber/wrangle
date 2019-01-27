@@ -27,33 +27,36 @@ var _ = Describe("MemoryStore", func() {
 			Expect(memoryStore.Type()).To(Equal("memory"))
 		})
 	})
-	Describe("Put", func() {
-		It("can put value", func() {
-			key := "key"
-			value := "value"
-			_, err := memoryStore.Set(key, value)
+	Describe("Set", func() {
+		It("can set value", func() {
+			item := store.NewItem("key", "value")
+			err := memoryStore.Set(item)
 			Expect(err).To(BeNil())
 		})
 	})
 	Describe("GetByName", func() {
 		It("returns value", func() {
-			key := "key"
-			value := "value"
-			_, err := memoryStore.Set(key, value)
+			item := store.NewItem("key", "value")
+			err := memoryStore.Set(item)
 			Expect(err).To(BeNil())
 
-			data, err := memoryStore.Get(key)
+			data, err := memoryStore.Get(item.Name())
 
 			Expect(err).To(BeNil())
-			Expect(data.Value()).To(Equal(value))
+			Expect(data.Value()).To(Equal(item.Value()))
+		})
+		Context("when doesn't exist", func() {
+			It("returns an error", func() {
+				_, err := memoryStore.Get("key")
+				Expect(err).ToNot(BeNil())
+			})
 		})
 	})
 	Describe("Delete", func() {
 		It("deletes value", func() {
 			key := "key"
-			value := "value"
-
-			_, err := memoryStore.Set(key, value)
+			item := store.NewItem(key, "value")
+			err := memoryStore.Set(item)
 			Expect(err).To(BeNil())
 
 			err = memoryStore.Delete(key)

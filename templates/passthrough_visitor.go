@@ -76,5 +76,6 @@ func (visitor *passthroughVisitor) VisitSliceOfString(value []string) (interface
 }
 
 func (visitor *passthroughVisitor) VisitSliceOfInterface(value []interface{}) (interface{}, error) {
+
 	return value, nil
 }

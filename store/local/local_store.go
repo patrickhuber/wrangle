@@ -20,26 +20,29 @@ func (s *localStore) Get(key string) (store.Item, error) {
 		return nil, err
 	}
 
-	return store.NewData(key, item.Data), nil
+	return store.NewItem(key, item.Data), nil
 }
 
-func (s *localStore) Set(key string, value string) (string, error) {
+func (s *localStore) Set(item store.Item) error {
 	ring, err := loadKeyRing()
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	item := keyring.Item{
+	key := item.Name()
+	// need to use structure -> byte array serialization here
+	value := []byte{}
+	keyringItem := keyring.Item{
 		Key:  key,
-		Data: []byte(value),
+		Data: value,
 	}
 
-	err = ring.Set(item)
+	err = ring.Set(keyringItem)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return value, nil
+	return nil
 }
 
 func (s *localStore) Delete(key string) error {
@@ -48,6 +51,10 @@ func (s *localStore) Delete(key string) error {
 		return err
 	}
 	return ring.Remove(key)
+}
+
+func (s *localStore) Copy(item store.Item, destination string) error {
+	return nil
 }
 
 func loadKeyRing() (keyring.Keyring, error) {

@@ -14,7 +14,7 @@ type fakeStore struct {
 	getByNameDelegate func(name string) (store.Item, error)
 	nameDelegate      func() string
 	typeDelegate      func() string
-	putDelegate       func(key string, value string) (string, error)
+	putDelegate       func(store.Item) (error)
 	deleteDelegate    func(key string) (error)
 }
 
@@ -30,8 +30,8 @@ func (s *fakeStore) Type() string {
 	return s.typeDelegate()
 }
 
-func (s *fakeStore) Set(key string, value string) (string, error) {
-	return s.putDelegate(key, value)
+func (s *fakeStore) Set(item store.Item) error{
+	return s.putDelegate(item)
 }
 
 func (s *fakeStore) Delete(key string) error {
@@ -72,7 +72,7 @@ processes:
 			createDelegate: func(source *config.Store) (store.Store, error) {
 				return &fakeStore{
 					getByNameDelegate: func(name string) (store.Item, error) {
-						return store.NewData("version", "version"), nil
+						return store.NewItem("version", "version"), nil
 					},
 				}, nil
 			},

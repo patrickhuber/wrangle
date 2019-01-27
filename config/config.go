@@ -5,6 +5,7 @@ type Config struct {
 	Stores    []Store            `yaml:"stores"`
 	Processes []Process          `yaml:"processes"`
 	Imports   []PackageReference `yaml:"imports"`
+	Feeds     []Feed             `yaml:"feeds"`
 }
 
 // Store represents a configuration store
@@ -12,7 +13,6 @@ type Store struct {
 	Name      string   `yaml:"name"`
 	StoreType string   `yaml:"type"`
 	Stores    []string `yaml:"stores"`
-	Feeds     []Feed   `yaml:"feeds"`
 
 	Params map[string]string `yaml:"params"`
 }

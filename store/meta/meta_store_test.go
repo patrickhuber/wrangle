@@ -52,7 +52,8 @@ var _ = Describe("MetaStore", func() {
 
 	Describe("Put", func() {
 		It("is not implemented", func() {
-			_, err := metaStore.Set("test", "value")
+			item := store.NewItem("test", "value")
+			err := metaStore.Set(item)
 			Expect(err).ToNot(BeNil())
 		})
 	})
