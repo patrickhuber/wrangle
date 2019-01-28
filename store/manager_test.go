@@ -28,7 +28,7 @@ func (s *dummyConfigStore) Delete(name string) error {
 }
 
 func (s *dummyConfigStore) Get(name string) (store.Item, error) {
-	return store.NewItem(name, nil), nil
+	return store.NewItem(name, store.Value, nil), nil
 }
 
 func (s *dummyConfigStore) Name() string {

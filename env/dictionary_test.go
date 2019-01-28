@@ -34,6 +34,9 @@ var _ = Describe("Dictionary", func() {
 			})
 		})
 		Context("WhenVariableNotSet", func() {
+			BeforeEach(func() {
+				os.Unsetenv(key)
+			})
 			It("should fail", func() {
 				_, err := dictionary.Get(key)
 				Expect(err).NotTo(BeNil())

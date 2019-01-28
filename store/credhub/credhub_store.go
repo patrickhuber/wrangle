@@ -269,10 +269,6 @@ func setCertificate(ch *credhubcli.CredHub, item store.Item) error {
 	return err
 }
 
-func (s *credHubStore) Copy(item store.Item, destination string) error {
-	return nil
-}
-
 func (s *credHubStore) String() string {
 	return s.Name()
 }

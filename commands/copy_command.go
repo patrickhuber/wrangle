@@ -5,7 +5,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func CopyCommand(copyService services.CopyService) *cli.Command {
+func CopyCommand(credentialService services.CredentialService) *cli.Command {
 	return &cli.Command{
 		Name: "copy",
 		Aliases: []string{"mv"},
@@ -33,7 +33,7 @@ func CopyCommand(copyService services.CopyService) *cli.Command {
 			sourcePath := context.String("source-path")
 			destination := context.String("destination")			
 			destinationPath := context.String("destination-path")
-			return copyService.Copy(source, sourcePath, destination, destinationPath)
+			return credentialService.Copy(source, sourcePath, destination, destinationPath)
 		},
 	}
 }

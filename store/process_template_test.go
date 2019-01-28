@@ -72,7 +72,7 @@ processes:
 			createDelegate: func(source *config.Store) (store.Store, error) {
 				return &fakeStore{
 					getByNameDelegate: func(name string) (store.Item, error) {
-						return store.NewItem("version", "version"), nil
+						return store.NewItem("version", store.Value, "version"), nil
 					},
 				}, nil
 			},

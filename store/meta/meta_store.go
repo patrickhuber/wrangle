@@ -49,7 +49,7 @@ func (s *metaStore) Get(key string) (store.Item, error) {
 	default:
 		return nil, fmt.Errorf("unable to find key '%s' in meta store", key)
 	}
-	return store.NewItem(key, value), nil
+	return store.NewItem(key, store.Value, value), nil
 }
 
 func (s *metaStore) Delete(key string) error {

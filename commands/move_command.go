@@ -5,7 +5,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func MoveCommand(moveService services.MoveService) *cli.Command {
+func MoveCommand(credentialService services.CredentialService) *cli.Command {
 	return &cli.Command{
 		Name: "move",
 		Aliases: []string{"mv"},
@@ -33,7 +33,7 @@ func MoveCommand(moveService services.MoveService) *cli.Command {
 			sourcePath := context.String("source-path")
 			destination := context.String("destination")			
 			destinationPath := context.String("destination-path")
-			return moveService.Move(source, sourcePath, destination, destinationPath)
+			return credentialService.Move(source, sourcePath, destination, destinationPath)
 		},
 	}
 }

@@ -11,7 +11,7 @@ var _ = Describe("StoreVariableResolver", func() {
 	It("can get value from resolver", func() {
 
 		memoryStore := memory.NewMemoryStore("test")
-		item := store.NewItem("key", "value")
+		item := store.NewItem("key", store.Value, "value")
 		err := memoryStore.Set(item)
 		Expect(err).To(BeNil())
 

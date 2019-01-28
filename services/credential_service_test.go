@@ -58,7 +58,7 @@ var _ = Describe("CredentialService", func() {
 	Describe("Move", func() {
 		Context("when source exists and target exists", func() {
 			Context("when source credential exists and target credential doesn't exist" ,func(){
-				It("overwrites the target", func(){
+				It("moves the credential", func(){
 					err := credentialService.Move(sourceKey, sourceOnlyKey, destinationKey, destinationOnlyKey)
 					Expect(err).To(BeNil())
 
@@ -71,7 +71,7 @@ var _ = Describe("CredentialService", func() {
 					Expect(err).ToNot(BeNil())
 				})
 			})			
-			Context("when source credential exists and target credential doesn't exist" ,func(){
+			Context("when source credential exists and target credential exists" ,func(){
 				It("overwrites the target", func(){
 					err := credentialService.Move(sourceKey, bothKey, destinationKey, bothKey)
 					Expect(err).To(BeNil())

@@ -1,6 +1,6 @@
 package file
 
-import (
+import (	
 	"bufio"
 	"bytes"
 	"fmt"
@@ -91,6 +91,8 @@ func (config *fileStore) createItem(document interface{}, name string, property 
 	switch v := document.(type){
 	case(string):
 		return store.NewValueItem(name, v), nil
+	case(int):
+		return store.NewItem(name, store.Value, v), nil
 	case(map[interface{}]interface{}):
 		stringMap := make(map[string]interface{})
 		for key := range v {

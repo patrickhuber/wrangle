@@ -29,14 +29,14 @@ var _ = Describe("MemoryStore", func() {
 	})
 	Describe("Set", func() {
 		It("can set value", func() {
-			item := store.NewItem("key", "value")
+			item := store.NewItem("key", store.Value, "value")
 			err := memoryStore.Set(item)
 			Expect(err).To(BeNil())
 		})
 	})
 	Describe("GetByName", func() {
 		It("returns value", func() {
-			item := store.NewItem("key", "value")
+			item := store.NewItem("key", store.Value, "value")
 			err := memoryStore.Set(item)
 			Expect(err).To(BeNil())
 
@@ -55,7 +55,7 @@ var _ = Describe("MemoryStore", func() {
 	Describe("Delete", func() {
 		It("deletes value", func() {
 			key := "key"
-			item := store.NewItem(key, "value")
+			item := store.NewItem(key, store.Value, "value")
 			err := memoryStore.Set(item)
 			Expect(err).To(BeNil())
 

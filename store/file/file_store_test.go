@@ -1,6 +1,7 @@
 package file
 
 import (
+	"github.com/patrickhuber/wrangle/store/values"
 	"reflect"
 
 	"github.com/patrickhuber/wrangle/store"
@@ -133,8 +134,8 @@ ssh:
 						Expect(err).To(BeNil())
 						Expect(data).ToNot(BeNil())
 
-						stringMap, ok := data.Value().(map[string]interface{})
-						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
+						stringMap, ok := data.Value().(values.Structured)
+						Expect(ok).To(BeTrue(), "unable to cast data.Value to values.Structured. Actual '%s'", reflect.TypeOf(data.Value()))
 
 						privateKey, ok := stringMap["private_key"]
 						Expect(ok).To(BeTrue())
@@ -156,8 +157,8 @@ ssh:
 						Expect(err).To(BeNil())
 						Expect(data).ToNot(BeNil())
 
-						stringMap, ok := data.Value().(map[string]interface{})
-						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
+						stringMap, ok := data.Value().(values.Structured)
+						Expect(ok).To(BeTrue(), "unable to cast data.Value to values.Structured. Actual '%s'", reflect.TypeOf(data.Value()))
 
 						privateKey, ok := stringMap["private_key"]
 						Expect(ok).To(BeTrue())
@@ -170,13 +171,13 @@ ssh:
 				})
 
 				Context("SSH", func() {
-					It("resturns ssh", func() {
+					It("returns ssh", func() {
 						data, err := fileStore.Get("/ssh")
 						Expect(err).To(BeNil())
 						Expect(data).ToNot(BeNil())
 
-						stringMap, ok := data.Value().(map[string]interface{})
-						Expect(ok).To(BeTrue(), "unable to cast data.Value to map[string]interface{}. Actual '%s'", reflect.TypeOf(data.Value()))
+						stringMap, ok := data.Value().(values.Structured)
+						Expect(ok).To(BeTrue(), "unable to cast data.Value to values.Structured. Actual '%s'", reflect.TypeOf(data.Value()))
 
 						privateKey, ok := stringMap["private_key"]
 						Expect(ok).To(BeTrue())
