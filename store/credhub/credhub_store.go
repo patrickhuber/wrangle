@@ -20,7 +20,7 @@ type credHubStore struct {
 	credHub *credhubcli.CredHub
 }
 
-func NewCredHubStore(config *CredHubStoreConfig) (*credHubStore, error) {
+func NewCredHubStore(config *CredHubStoreConfig) (store.Store, error) {
 	if config.ClientID == "" {
 		return nil, errors.New("ClientID is required")
 	}
@@ -168,7 +168,8 @@ func getSSH(cred *credentials.Credential)(store.Item, error) {
 }
 
 func (s *credHubStore) Delete(key string) error {
-	return fmt.Errorf("not implemented")
+	ch := s.credHub
+	return ch.Delete(key)
 }
 
 func (s *credHubStore) Type() string {

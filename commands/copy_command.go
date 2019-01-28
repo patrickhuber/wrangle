@@ -5,10 +5,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-func CopyCommand(credentialService services.CredentialService) *cli.Command {
+func CreateCopyCommand(credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
 	return &cli.Command{
 		Name: "copy",
-		Aliases: []string{"mv"},
+		Aliases: []string{"cp"},
 		Usage: "copies a credential from one store to another",
 		Flags: []cli.Flag{
 			cli.StringFlag{
@@ -33,6 +33,13 @@ func CopyCommand(credentialService services.CredentialService) *cli.Command {
 			sourcePath := context.String("source-path")
 			destination := context.String("destination")			
 			destinationPath := context.String("destination-path")
+			// need to pass this to the credential service
+			config := context.GlobalString("config")
+
+			credentialService, err := credentialServiceFactory.Create(config)
+			if err != nil{
+				return err
+			}
 			return credentialService.Copy(source, sourcePath, destination, destinationPath)
 		},
 	}

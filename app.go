@@ -61,6 +61,7 @@ func createApplication(
 	envService := services.NewEnvService(console, envDictionary)
 	storesService := services.NewStoresService(console, loader)
 	processesService := services.NewProcessesService(console, loader)
+	credentialServiceFactory := services.NewCredentialServiceFactory(manager, loader)
 
 	if err != nil {
 		return nil, err
@@ -76,6 +77,8 @@ func createApplication(
 		*commands.CreateEnvCommand(envService),
 		*commands.CreateStoresCommand(storesService),
 		*commands.CreateListProcessesCommand(processesService),
+		*commands.CreateMoveCommand(credentialServiceFactory),
+		*commands.CreateCopyCommand(credentialServiceFactory),
 	}
 	return cliApp, nil
 }

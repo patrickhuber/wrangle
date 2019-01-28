@@ -1,0 +1,10 @@
+stores:
+- name: credhub
+  type: credhub
+  params:
+    client_id: credhub_client
+    client_secret: secret
+    username:
+    password:
+    server: https://127.0.0.1:9000    
+    skip_tls_validation: true
