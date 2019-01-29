@@ -21,6 +21,7 @@ import (
 var version = ""
 
 func createApplication(
+	workingDirectory string,
 	manager store.Manager,
 	fileSystem filesystem.FsWrapper,
 	processFactory processes.Factory,
@@ -32,7 +33,7 @@ func createApplication(
 
 	rendererFactory := renderers.NewFactory(env.NewDictionary())
 
-	defaultConfigPath, err := config.GetDefaultConfigPath()
+	defaultConfigPath, err := config.GetDefaultConfigPath(workingDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -68,17 +69,19 @@ func createApplication(
 	}
 
 	cliApp.Commands = []cli.Command{
-		*commands.CreateInitCommand(initService),
-		*commands.CreateRunCommand(runService),
-		*commands.CreatePrintCommand(printService),
-		*commands.CreatePrintEnvCommand(printService),
+		*commands.CreateInitCommand(cliApp, initService),
+		*commands.CreateRunCommand(cliApp, runService),
+		*commands.CreatePrintCommand(cliApp, printService),
+		*commands.CreatePrintEnvCommand(cliApp, printService),
 		*commands.CreatePackagesCommand(packagesServiceFactory, feedServiceFactory),
 		*commands.CreateInstallCommand(installService),
 		*commands.CreateEnvCommand(envService),
-		*commands.CreateStoresCommand(storesService),
-		*commands.CreateListProcessesCommand(processesService),
-		*commands.CreateMoveCommand(credentialServiceFactory),
-		*commands.CreateCopyCommand(credentialServiceFactory),
+		*commands.CreateStoresCommand(cliApp, storesService),
+		*commands.CreateListProcessesCommand(cliApp, processesService),
+		*commands.CreateMoveCommand(cliApp, credentialServiceFactory),
+		*commands.CreateCopyCommand(cliApp, credentialServiceFactory),
 	}
+	
+	
 	return cliApp, nil
 }

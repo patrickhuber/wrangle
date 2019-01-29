@@ -20,7 +20,7 @@ func (s *localStore) Get(key string) (store.Item, error) {
 		return nil, err
 	}
 
-	return store.NewItem(key, item.Data), nil
+	return store.NewItem(key, store.Value, item.Data), nil
 }
 
 func (s *localStore) Set(item store.Item) error {

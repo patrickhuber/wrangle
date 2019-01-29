@@ -5,8 +5,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-func CreateMoveCommand(credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
-	return &cli.Command{
+func CreateMoveCommand(
+	app *cli.App,
+	credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
+	command := &cli.Command{
 		Name: "move",
 		Aliases: []string{"mv"},
 		Usage: "moves a credential from one store to another",
@@ -43,4 +45,7 @@ func CreateMoveCommand(credentialServiceFactory services.CredentialServiceFactor
 			return credentialService.Move(source, sourcePath, destination, destinationPath)
 		},
 	}
+
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+	return command
 }

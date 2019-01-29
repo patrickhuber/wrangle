@@ -28,7 +28,7 @@ var _ = Describe("Init", func() {
 			},
 		}
 		app.Commands = []cli.Command{
-			*commands.CreateInitCommand(initService),
+			*commands.CreateInitCommand(app,initService),
 		}
 		
 		err := app.Run([]string{"wrangle", "init"})

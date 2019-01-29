@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os/user"
 
 	"github.com/patrickhuber/wrangle/filepath"
 
@@ -78,12 +77,8 @@ func (loader *loader) loadFileData(path string) ([]byte, error) {
 }
 
 // GetDefaultConfigPath returns the default config path
-func GetDefaultConfigPath() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	configDir := filepath.Join(usr.HomeDir, ".wrangle", "config.yml")
+func GetDefaultConfigPath(workingDirectory string) (string, error) {
+	configDir := filepath.Join(workingDirectory, "config.yml")
 	configDir = filepath.ToSlash(configDir)
 	return configDir, nil
 }

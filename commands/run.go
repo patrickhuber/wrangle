@@ -9,9 +9,10 @@ import (
 
 // CreateRunCommand creates a run command from the cli context
 func CreateRunCommand(
+	app *cli.App,
 	runService services.RunService) *cli.Command {		
 
-	return &cli.Command{
+	command := &cli.Command{
 		Name:      "run",
 		Aliases:   []string{"r"},
 		Usage:     "run a command",
@@ -31,4 +32,7 @@ func CreateRunCommand(
 			return runService.Run(configFile, params)
 		},
 	}
+	
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+	return command
 }

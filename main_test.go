@@ -102,6 +102,7 @@ processes:
 
 	// create cli
 	app, err := createApplication(
+		"/wd",
 		storeManager,
 		fileSystem,
 		processFactory,

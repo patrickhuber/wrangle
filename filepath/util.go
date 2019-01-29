@@ -49,3 +49,8 @@ func Rel(basepath string, targetpath string) (string, error) {
 	}
 	return ToSlash(r), nil
 }
+
+// Abs is a passhthrough function to filepath.Rel
+func Abs(basepath string) (string, error) {
+	return filepath.Abs(basepath)
+}

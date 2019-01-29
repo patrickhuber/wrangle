@@ -9,11 +9,12 @@ import (
 	"github.com/urfave/cli"
 )
 
-// Creates a Print Command from the cli context
+// CreatePrintCommand Creates a Print Command from the cli context
 func CreatePrintCommand(
+	app *cli.App,
 	printService services.PrintService) *cli.Command {
 
-	return &cli.Command{
+	command := &cli.Command{
 		Name:      "print",
 		Aliases:   []string{"p"},
 		Usage:     "prints the process as it would be executed",
@@ -46,4 +47,7 @@ func CreatePrintCommand(
 			return printService.Print(params)
 		},
 	}
+	
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+	return command
 }

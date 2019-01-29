@@ -24,17 +24,17 @@ import (
 )
 
 func main() {
-	// create platform, filesystem and console
+	// create platform, filesystem, working directory and console
 	platform := runtime.GOOS
-	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())	
 	console := ui.NewOSConsole()
+	workingDirectory, err := os.Getwd()
+	failOnError(err)
 
 	// create config store manager
 	configStoreManager, err := createConfigStoreManager(fileSystem, platform)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
+	failOnError(err)
+
 	validateConfigStoreManager(configStoreManager)
 
 	// create process factory
@@ -59,6 +59,7 @@ func main() {
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template
 	app, err := createApplication(
+		workingDirectory,
 		configStoreManager,
 		fileSystem,
 		processFactory,
@@ -67,16 +68,10 @@ func main() {
 		envDictionary,
 		loader,
 		packagesManager)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
+	failOnError(err)
 
 	err = app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
+	failOnError(err)
 }
 
 func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manager, error) {
@@ -94,6 +89,13 @@ func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manag
 func validateConfigStoreManager(manager store.Manager) {
 	if manager == nil {
 		fmt.Printf("unable to create config store manager\n")
+		os.Exit(1)
+	}
+}
+
+func failOnError(err error){
+	if err != nil {
+		log.Fatal(err)
 		os.Exit(1)
 	}
 }

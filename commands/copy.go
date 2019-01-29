@@ -5,8 +5,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-func CreateCopyCommand(credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
-	return &cli.Command{
+func CreateCopyCommand(
+	app *cli.App,
+	credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
+	command := &cli.Command{
 		Name: "copy",
 		Aliases: []string{"cp"},
 		Usage: "copies a credential from one store to another",
@@ -43,4 +45,7 @@ func CreateCopyCommand(credentialServiceFactory services.CredentialServiceFactor
 			return credentialService.Copy(source, sourcePath, destination, destinationPath)
 		},
 	}
+	
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+	return command
 }

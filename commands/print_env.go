@@ -10,9 +10,10 @@ import (
 
 // CreatePrintEnvCommand creates a print env command from the cli context
 func CreatePrintEnvCommand(
+	app *cli.App,
 	printService services.PrintService) *cli.Command {
 
-	return &cli.Command{
+	command := &cli.Command{
 		Name:  "print-env",
 		Usage: "print command environemnt variables",
 		Flags: []cli.Flag{
@@ -40,4 +41,7 @@ func CreatePrintEnvCommand(
 			return printService.Print(params)
 		},
 	}
+	
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+	return command
 }
