@@ -29,7 +29,7 @@ For ease of use you can set the WRANGLE_CONFIG and WRANGLE_PACKAGES environment 
 
 ### The Configuration File
 
-An example configuration file is located here [config file](doc/example-config.yml)
+An example configuration file is located here [config file](examples/example-config.yml)
 
 The default location for the config file is the current working directory
 
@@ -144,59 +144,25 @@ With the configuration example above, `some_variable` is now available as a vari
 
 The meta store provides contextual information about the current config file. This can be useful when you need to know the directory of the config file or config file containing directory for loading other files.
 
+> command
+
 ```
-```
-
-#### Environments
-
-Environments allow for different parameters to be passed to CLIs that may share the same name. For example, a customer may have several credhubs across lab and production environments as well as several in a control plane and PCF install. Environments provide a easy grouping to avoid name conflicts when attempting to run a cli. 
-
-Each environment has a list of processes. Processes are comprised of the path to the process as well as arguments, environment variables and a list of configurations. Arguments and Environment Variables can contain variables which can be looked up in configurations. 
-
-The configurations are evaluated in the order they are specified. Variables can be cascaded and will be resolved in the order the configuraitons are listed. 
-
-Here is an example process that run fly login:
-
-```yml
-processes:
-- name: fly
-  stores: 
-  - bosh-lab-credhub
-  path: fly
-  args:
-  - -t
-  - main
-  - login
-  - -u
-  - ((/bosh-lab/concourse/atc_basic_auth.username))
-  - -p 
-  - ((/bosh-lab/concourse/atc_basic_auth.password))
+wrangle list -s meta
 ```
 
-It assumes the cli is the environment PATH, if you placed your WRANGLE_PACKAGE_PATH environment variable in the PATH, the above will resolve once you install the fly package. 
+> result
 
-This is an example of running the command above using the wrangle:
-
-```bash
-wrangle run -e lab -n fly
 ```
-
-If you would like to see the output that would be executed you can use the `print` command
-
-```bash
-wrangle print -e lab -n fly
-```
-
-If you would just like to print the environment variables you can use the `print-env` command
-
-
-```bash
-wrangle print-env -e lab -n fly
+bin: "/opt/wrangle/bin"
+root: "/opt/wrangle"
+packges_folder: "/opt/wrangle/packages"
+config_file: "/home/abc/source/github.com/org/repo/wrangle.yml"
+config_file_folder: "/home/abc/source/github.com/org/repo"
 ```
 
 #### Packages
 
-Packages allow the cli manager tool to actually manage CLIs. Each package can target multiple platforms. Packages have a download and an extract step. If the package downloaded is a binary, the extract step can be skipped. If the Package is a tarball, tgz or zip file, the extract step can be used to extract the binary. 
+Packages are currently just ways of installing self contained binaries. Each package can target multiple platforms. Packages have a download and an extract step. If the package downloaded is a binary, the extract step can be skipped. If the Package is a tarball, tgz or zip file, the extract step can be used to extract the binary. 
 
 Each package platform has an alias that will be used to create a symlink to the fully versioned name of the package. This allows scripts to reference the short name of the executable while allowing multiple CLIs to be installed. 
 
@@ -209,31 +175,28 @@ This is an example that both downloads and extracts the credhub cli:
 ```yml
 - name: credhub
   version: 1.7.6  
-  platforms:    
-  - name: linux
-    alias: credhub
-    download: 
-      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz      
-      out: credhub-((version))-linux.tgz
-    extract:
-      filter: credhub
-      out: credhub-((version))-linux
-  - name: darwin
-    alias: credhub
-    download: 
-      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz      
-      out: credhub-((version))-darwin.tgz
-    extract:
-      filter: credhub
-      out: credhub-((version))-darwin
-  - name: windows
-    alias: credhub.exe
-    download: 
-      url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
-      out: credhub-((version))-windows.tgz
-    extract:
-      filter: credhub
-      out: credhub-((version))-windows.exe
+  targets:    
+  - platform: linux
+    tasks:    
+    - download: 
+        url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-linux-((version)).tgz      
+        out: credhub-((version))-linux.tgz
+    - extract:        
+        archive: credhub-((version))-linux.tgz
+  - platform: darwin    
+    tasks:
+    - download:
+        url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-darwin-((version)).tgz      
+        out: credhub-((version))-darwin.tgz
+    - extract:
+        archive: credhub-((version))-darwin.tgz
+  - name: windows    
+    tasks:
+    - download: 
+        url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
+        out: credhub-((version))-windows.tgz
+    - extract:        
+        archive: credhub-((version))-windows.tgz
 ```
 
 This example simply downloads the binary and doesn't do any extraction
@@ -241,152 +204,22 @@ This example simply downloads the binary and doesn't do any extraction
 ```yml
 - name: bosh
   version: 3.0.1  
-  platforms:
-  - name: linux
-    alias: bosh
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
-      out: bosh-cli-((version))-linux-amd64
-  - name: windows
-    alias: bosh.exe
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
-      out: bosh-cli-((version))-windows-amd64.exe
-  - name: darwin
-    alias: bosh
-    download:
-      url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
-      out: bosh-cli-((version))-darwin-amd64
-```
-
-## usage
-
-```
-NAME:
-   wrangle - a cli management tool
-
-USAGE:
-   wrangle [global options] command [command options] [arguments...]
-
-VERSION:
-   0.0.0
-
-COMMANDS:
-     run, r              run a command
-     print, p            print command environemnt variables
-     environments, e     prints the list of environments in the config file
-     packages, k         prints the list of packages and versions in the config file
-     install, i  installs the package with the given `NAME` for the current platform
-     help, h             Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --config FILE, -c FILE  Load configuration from FILE (default: "/home/patrick/.wrangle/config.yml") [$WRANGLE_CONFIG]
-   --help, -h              show help
-   --version, -v           print the version
-```
-
-### run command
-
-```bash
-wrangle run --help
-```
-
-```
-NAME:
-   wrangle run - run a command
-
-USAGE:
-   wrangle run [command options] [arguments...]
-
-OPTIONS:
-   --name NAME, -n NAME                       Execute command named NAME
-   --environment ENVIRONMENT, -e ENVIRONMENT  Use environment named ENVIRONMENT
-```
-
-### print command
-
-```bash
-wrangle print --help
-```
-
-```
-NAME:
-   wrangle print - print command environemnt variables
-
-USAGE:
-   wrangle print [command options] [arguments...]
-
-OPTIONS:
-   --name NAME, -n NAME                       process named NAME
-   --environment ENVIRONMENT, -e ENVIRONMENT  Use environment named ENVIRONMENT
-```
-
-### environments command
-
-```bash
-wrangle environments --help
-```
-
-```
-NAME:
-   wrangle environments - prints the list of environments in the config file
-
-USAGE:
-   wrangle environments [arguments...]
-```
-
-### packages command
-
-```bash
-wrangle packages --help
-```
-
-```
-NAME:
-   wrangle packages - prints the list of packages and versions in the config file
-
-USAGE:
-   wrangle packages [arguments...]
-```
-
-### install-package command
-
-```bash
-wrangle install-package --help
-```
-
-```
-NAME:
-   wrangle install-package - installs the package with the given `NAME` for the current platform
-
-USAGE:
-   wrangle install-package [command options] [arguments...]
-
-OPTIONS:
-   --name NAME, -n NAME    package named NAME
-   --path value, -p value  the package install path [$WRANGLE_PACKAGE_PATH]
-```
-
-## building
-
-to restore packages (requires dep)
-
-```
-make restore
-```
-
-to perform a build
-
-```
-make build
-```
-
-## testing
-
-to run unit tests
-
-```
-make unit
+  targets:
+  - platform: linux
+    tasks:
+    - download:
+        url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-linux-amd64
+        out: bosh-cli-((version))-linux-amd64
+  - platform: windows    
+    tasks:
+    - download:
+        url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-windows-amd64.exe
+        out: bosh-cli-((version))-windows-amd64.exe
+  - platform: darwin    
+    tasks:
+    - download:
+        url: https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-((version))-darwin-amd64
+        out: bosh-cli-((version))-darwin-amd64
 ```
 
 ## sample files
