@@ -14,7 +14,7 @@ func NewFileStoreConfig(configSource *config.Store) (*FileStoreConfig, error) {
 	cfg := &FileStoreConfig{}
 	value, ok := configSource.Params["path"]
 	if !ok {
-		return nil, errors.New("unable to find required parameter 'path' in configuration source.")
+		return nil, errors.New("unable to find required parameter 'path' in configuration source")
 	}
 	cfg.Path = value
 	cfg.Name = configSource.Name

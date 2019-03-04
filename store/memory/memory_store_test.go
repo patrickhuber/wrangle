@@ -34,7 +34,7 @@ var _ = Describe("MemoryStore", func() {
 			Expect(err).To(BeNil())
 		})
 	})
-	Describe("GetByName", func() {
+	Describe("Get", func() {
 		It("returns value", func() {
 			item := store.NewItem("key", store.Value, "value")
 			err := memoryStore.Set(item)
@@ -61,6 +61,48 @@ var _ = Describe("MemoryStore", func() {
 
 			err = memoryStore.Delete(key)
 			Expect(err).To(BeNil())
+		})
+	})
+	Describe("List", func() {
+		BeforeEach(func() {
+			items := []store.Item{
+				store.NewItem("/test", store.Value, "test"),
+				store.NewItem("/test2", store.Value, "test2"),
+				store.NewItem("/parent/child", store.Value, "child"),
+				store.NewItem("/parent/child2", store.Value, "child2"),
+			}
+			for _, i := range items {
+				err := memoryStore.Set(i)
+				Expect(err).To(BeNil())
+			}
+		})
+		When("Path Rooted", func() {
+			It("Lists All Values", func() {
+				items, err := memoryStore.List("/")
+				Expect(err).To(BeNil())
+				Expect(len(items)).To(Equal(4))
+			})
+		})
+		When("Path Blank", func() {
+			It("Lists All Values", func() {
+				items, err := memoryStore.List("")
+				Expect(err).To(BeNil())
+				Expect(len(items)).To(Equal(4))
+			})
+		})
+		When("Path Matches Parent", func() {
+			It("Returns only children", func() {
+				items, err := memoryStore.List("parent")
+				Expect(err).To(BeNil())
+				Expect(len(items)).To(Equal(2))
+			})
+		})
+		When("Path Matches only one key", func() {
+			It("Returns only that key", func() {
+				items, err := memoryStore.List("test")
+				Expect(err).To(BeNil())
+				Expect(len(items)).To(Equal(1))
+			})
 		})
 	})
 })

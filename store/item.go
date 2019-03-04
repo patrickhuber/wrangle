@@ -5,24 +5,24 @@ import "github.com/patrickhuber/wrangle/store/values"
 // ItemType represents the type of the object in the value field.
 // A canonical representation of these types is needed to support providers that expose types.
 // This aids in copy and move semantics and avoids the many to many mapping problems of supporting the cross section of types each provider exposes.
-type ItemType int
+type ItemType string
 
 const (
 	// Password item types represent a password
-	Password ItemType = 0
+	Password ItemType = "password"
 	// Value item types represent a string
-	Value ItemType = 1
+	Value ItemType = "value"
 	// RSA item types represent a RSA public and private key
-	RSA ItemType = 2
+	RSA ItemType = "rsa"
 	// SSH item types represent a public and private ssh key
-	SSH ItemType = 3
+	SSH ItemType = "ssh"
 	// Certificate item types represent a public and private key as well as a ca
-	Certificate ItemType = 4
+	Certificate ItemType = "certificate"
 	// User item types represent a password username combination
-	User ItemType = 5
+	User ItemType = "user"
 	// Structured item types represent objects that are maps of key value pairs.
 	// Ultimately these can translate to json or yaml after serialization.
-	Structured ItemType = 6
+	Structured ItemType = "structured"
 )
 
 type item struct {

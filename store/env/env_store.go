@@ -46,6 +46,10 @@ func (s *envStore) Get(key string) (store.Item, error) {
 	return store.NewValueItem(key, data), nil
 }
 
+func (s *envStore) List(path string) ([]store.Item, error) {
+	return nil, nil
+}
+
 func (s *envStore) Delete(key string) error {
 	return fmt.Errorf("Delete method not implemented")
 }

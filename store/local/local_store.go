@@ -53,8 +53,8 @@ func (s *localStore) Delete(key string) error {
 	return ring.Remove(key)
 }
 
-func (s *localStore) Copy(item store.Item, destination string) error {
-	return nil
+func (s *localStore) List(path string) ([]store.Item, error) {
+	return nil, nil
 }
 
 func loadKeyRing() (keyring.Keyring, error) {

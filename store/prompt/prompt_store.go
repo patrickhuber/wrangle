@@ -21,6 +21,10 @@ func (s *promptStore) Get(key string) (store.Item, error) {
 	return nil, nil
 }
 
+func (s *promptStore) List(path string) ([]store.Item, error) {
+	return nil, nil
+}
+
 func (s *promptStore) Delete(key string) error {
 	return nil
 }

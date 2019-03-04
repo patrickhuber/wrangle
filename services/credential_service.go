@@ -19,6 +19,9 @@ type credentialService struct {
 type CredentialService interface {
 	Copy(source string, sourcePath string, destination string, destinationPath string) error
 	Move(source string, sourcePath string, destination string, destinationPath string) error
+	Set(storeName string, item store.Item) error
+	Get(storeName string, path string) (store.Item, error)
+	List(storeName string, path string) ([]store.Item, error)
 }
 
 func (svc *credentialService) Copy(source, sourcePath, destination, destinationPath string) error {
@@ -93,6 +96,32 @@ func (svc *credentialService) Move(source, sourcePath, destination, destinationP
 
 	// delete the old value
 	return sourceStore.Delete(sourcePath)
+}
+
+func (svc *credentialService) Set(storeName string, item store.Item) error{
+	// get the store
+	s, err := svc.getStore(storeName)
+	if err != nil{
+		return err
+	}
+	return s.Set(item)
+}
+
+func (svc *credentialService) Get(storeName string, path string) (store.Item, error){
+	// get the store
+	s, err := svc.getStore(storeName)
+	if err != nil{
+		return nil,err
+	}
+	return s.Get(path)
+}
+
+func (svc *credentialService) List(storeName string, path string) ([]store.Item, error){
+	s, err := svc.getStore(storeName)
+	if err != nil{
+		return nil, err
+	}
+	return s.List(path)
 }
 
 func (svc *credentialService) getStore(storeName string) (store.Store, error) {

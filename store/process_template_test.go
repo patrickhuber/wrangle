@@ -16,6 +16,7 @@ type fakeStore struct {
 	typeDelegate      func() string
 	putDelegate       func(store.Item) (error)
 	deleteDelegate    func(key string) (error)
+	listDelegate func(path string)([]store.Item, error)
 }
 
 func (s *fakeStore) Get(name string) (store.Item, error) {
@@ -36,6 +37,10 @@ func (s *fakeStore) Set(item store.Item) error{
 
 func (s *fakeStore) Delete(key string) error {
 	return s.deleteDelegate(key)
+}
+
+func (s *fakeStore) List(path string) ([]store.Item, error){
+	return s.listDelegate(path)
 }
 
 type fakeProvider struct {

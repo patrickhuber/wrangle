@@ -43,17 +43,17 @@ func NewFileStore(name string, path string, fileSystem afero.Fs, decrypter crypt
 	}, nil
 }
 
-func (config *fileStore) Name() string {
-	return config.name
+func (s *fileStore) Name() string {
+	return s.name
 }
 
-func (config *fileStore) Type() string {
+func (s *fileStore) Type() string {
 	return "file"
 }
 
-func (config *fileStore) Get(key string) (store.Item, error) {
+func (s *fileStore) Get(key string) (store.Item, error) {
 
-	data, err := config.getFileData()
+	data, err := s.getFileData()
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (config *fileStore) Get(key string) (store.Item, error) {
 	document := make(map[interface{}]interface{})
 	err = yaml.Unmarshal(data, &document)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", config.path)
+		return nil, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", s.path)
 	}
 
 	name, property, err := splitToNameAndProperty(key)
@@ -79,13 +79,18 @@ func (config *fileStore) Get(key string) (store.Item, error) {
 	// find the pointer in the document
 	response, err := patch.FindOp{Path: pointer}.Apply(document)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to find key '%s' in file '%s'", key, config.path)
+		return nil, errors.Wrapf(err, "unable to find key '%s' in file '%s'", key, s.path)
 	}
 
-	return config.createItem(response, name, property)
+	return s.createItem(response, name, property)
 }
 
-func (config *fileStore) createItem(document interface{}, name string, property string) (store.Item, error){	
+func (s *fileStore) List(path string) ([]store.Item, error) {
+	return nil, nil
+}
+
+
+func (s *fileStore) createItem(document interface{}, name string, property string) (store.Item, error){	
 	// map document to canonical type
 	// (for compatibilty with credhub return types)
 	switch v := document.(type){
@@ -98,7 +103,7 @@ func (config *fileStore) createItem(document interface{}, name string, property 
 		for key := range v {
 			stringMap[key.(string)] = v[key]
 		}
-		return config.createItem(stringMap, name, property)
+		return s.createItem(stringMap, name, property)
 	case(map[string]interface{}):
 		if property == ""{
 			return store.NewStructuredItem(name, v), nil
@@ -108,29 +113,29 @@ func (config *fileStore) createItem(document interface{}, name string, property 
 		// private_key, ca, certificate => certificate
 		// public_key, private_key(contains("RSA")) => RSA 
 		// public_key, private_key => SSH
-		return config.createItem(v[property], name, "")
+		return s.createItem(v[property], name, "")
 	}
 	return nil, fmt.Errorf("Unrecognized type %T", document)
 }
 
-func (config *fileStore) getFileData() ([]byte, error) {
-	// read the file store config as bytes
-	data, err := afero.ReadFile(config.fileSystem, config.path)
+func (s *fileStore) getFileData() ([]byte, error) {
+	// read the file store s as bytes
+	data, err := afero.ReadFile(s.fileSystem, s.path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to read file '%s'", config.path)
+		return nil, errors.Wrapf(err, "unable to read file '%s'", s.path)
 	}
 
-	extension := filepath.Ext(config.path)
+	extension := filepath.Ext(s.path)
 	if extension != ".gpg" {
 		return data, nil
 	}
 
-	if config.decrypter == nil {
+	if s.decrypter == nil {
 		return nil, fmt.Errorf("decrypter is nil. A decrypter must be specified to decrypt gpg files")
 	}
 
 	decrypted := &bytes.Buffer{}
-	err = config.decrypter.Decrypt(bytes.NewBuffer(data), decrypted)
+	err = s.decrypter.Decrypt(bytes.NewBuffer(data), decrypted)
 	if err != nil {
 		return nil, err
 	}
@@ -159,22 +164,22 @@ func splitToNameAndProperty(key string) (name string, property string, err error
 	return key, "", nil
 }
 
-func (config *fileStore) Delete(key string) error {
+func (s *fileStore) Delete(key string) error {
 	return fmt.Errorf("method Delete is not Implemented")
 }
 
-func (config *fileStore) Set(item store.Item) error{
+func (s *fileStore) Set(item store.Item) error{
 	return fmt.Errorf("method Put is not implemented")
 }
 
-func (config *fileStore) Copy(item store.Item, destination string) error {
+func (s *fileStore) Copy(item store.Item, destination string) error {
 	return nil
 }
 
-func readAllBytes(config *fileStore) (*[]byte, error) {
+func readAllBytes(s *fileStore) (*[]byte, error) {
 
 	// open the file and defer close
-	file, err := config.fileSystem.Open(config.path)
+	file, err := s.fileSystem.Open(s.path)
 	defer file.Close()
 	if err != nil {
 		return nil, err
@@ -189,6 +194,6 @@ func readAllBytes(config *fileStore) (*[]byte, error) {
 	return &data, nil
 }
 
-func (config *fileStore) String() string {
-	return config.Name()
+func (s *fileStore) String() string {
+	return s.Name()
 }

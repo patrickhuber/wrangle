@@ -128,4 +128,31 @@ var _ = Describe("CredentialService", func() {
 			})
 		})
 	})
+	Describe("Set", func(){
+		It("sets the item", func(){
+			err := credentialService.Set(sourceKey, store.NewValueItem("test", "something"))
+			Expect(err).To(BeNil())
+			item, err := sourceStore.Get("test")
+			Expect(err).To(BeNil())
+			s, ok := item.Value().(string)
+			Expect(ok).To(BeTrue())
+			Expect(s).To(Equal("something"))
+		})
+	})
+	Describe("Get", func(){
+		It("gets the item", func(){
+			item, err := credentialService.Get(sourceKey, sourceOnlyKey)
+			Expect(err).To(BeNil())
+			s, ok := item.Value().(string)
+			Expect(ok).To(BeTrue())
+			Expect(s).To(Equal(sourceOnlyKey))
+		})
+	})
+	Describe("List", func(){
+		It("lists the items", func(){
+			items, err := credentialService.List(sourceKey, "/")
+			Expect(err).To(BeNil())
+			Expect(len(items)).To(Equal(2))
+		})
+	})
 })

@@ -1,6 +1,8 @@
 package credhub
 
 import (
+	"sync"
+	"golang.org/x/sync/errgroup"
 	"github.com/patrickhuber/wrangle/store/values"
 
 	"fmt"
@@ -65,21 +67,136 @@ func (s *credHubStore) Get(key string) (store.Item, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to lookup credential '%s'.", key)
 	}
+	return getItem(&cred)
+}
+
+func (s *credHubStore) List(path string) ([]store.Item, error){
+	return s.listAsyncWithWorkers(path)
+}
+
+func (s *credHubStore) listSequential(path string) ([] store.Item, error){
+	ch := s.credHub
+	findResults, err := ch.FindByPath(path)
+	if err != nil{
+		return nil, errors.Wrapf(err, "unable to lookup credential path '%s'", path)
+	}
+	items := []store.Item{}	
+	for _, base := range findResults.Credentials{	
+		// do this in some worker to speed it up
+		item, err := s.Get(base.Name)
+		if err != nil{
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+// see https://godoc.org/golang.org/x/sync/errgroup#example-Group--Parallel
+func (s *credHubStore) listParallel(path string) ([]store.Item, error){
+	ch := s.credHub
+	findResults, err := ch.FindByPath(path)
+	if err != nil{
+		return nil, errors.Wrapf(err, "unable to lookup credential path '%s'", path)
+	}
+	
+	var g errgroup.Group
+	items := []store.Item{}
+	mutex := sync.Mutex{}
+
+	for _, base := range findResults.Credentials{	
+		g.Go(func() error{
+			item, err := s.Get(base.Name)
+			if err != nil{
+				return err
+			}
+			mutex.Lock()
+			defer mutex.Unlock()
+			items = append(items, item)
+			return nil
+		})
+	}
+	
+	if err := g.Wait(); err != nil{
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// see https://godoc.org/golang.org/x/sync/errgroup#example-Group--Pipeline
+func (s *credHubStore) listAsyncWithWorkers(path string)([]store.Item, error){
+	ch := s.credHub
+	findResults, err := ch.FindByPath(path)
+	if err != nil{
+		return nil, errors.Wrapf(err, "unable to lookup credential path '%s'", path)
+	}
+	
+	var g errgroup.Group
+	names := make(chan string)
+
+	// this is the hopper go routine the feeds names into the names channel
+	g.Go(func()error{
+		defer close(names)
+		for _, base := range findResults.Credentials{
+			names <- base.Name
+		}
+		return nil
+	})	
+
+	// this is the worker pool that reads names from the names channel and processes them
+	// there will be max |workers| workers
+	const workers = 5
+	itemsCh := make(chan store.Item)
+	for i:= 0; i< workers; i++{
+		g.Go(func() error{
+			for name := range names{
+				item, err := s.Get(name)
+				if err != nil{
+					return err
+				}
+				itemsCh <- item
+			}
+			return nil
+		})
+	}
+
+	// a go routine to close the itemsCh channel when done
+	go func(){
+		g.Wait()
+		close(itemsCh)
+	}()
+
+	// process items as they complete (ranging over itemsCh blocks)
+	items := []store.Item{}
+	for item := range itemsCh{
+		items = append(items, item)
+	}
+
+	// block the main thread until g is done
+	if err := g.Wait(); err != nil{
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func getItem(cred *credentials.Credential) (store.Item, error){
 	switch cred.Type {
 	case "value":
-		return getValue(&cred)
+		return getValue(cred)
 	case "certificate":
-		return getCertificate(&cred)
+		return getCertificate(cred)
 	case "json":
-		return getJSON(&cred)
+		return getJSON(cred)
 	case "rsa":
-		return getRSA(&cred)
+		return getRSA(cred)
 	case "ssh":
-		return getSSH(&cred)
+		return getSSH(cred)
 	case "password":
-		return getPassword(&cred)
+		return getPassword(cred)
 	case "user":
-		return getUser(&cred)
+		return getUser(cred)
 	default:
 		return nil, fmt.Errorf("unrecognized credential type %s", cred.Type)
 	}

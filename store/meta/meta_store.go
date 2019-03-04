@@ -52,6 +52,10 @@ func (s *metaStore) Get(key string) (store.Item, error) {
 	return store.NewItem(key, store.Value, value), nil
 }
 
+func (s *metaStore) List(path string) ([]store.Item, error) {
+	return nil, nil
+}
+
 func (s *metaStore) Delete(key string) error {
 	return fmt.Errorf("meta Delete is not implemented")
 }

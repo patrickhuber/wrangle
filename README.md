@@ -2,6 +2,24 @@
 
 Wrangle is a solution for managing multiple configuration stores and multiple command line interfaces across multiple environments. It is meant to address team collaboration by using declarative configuration that is committed to source control. 
 
+# Table of Contents
+
+* [Wrangle](#wrangle)
+  * [Getting Started](#getting-started)
+    * [Download](#download)
+    * [Install](#install)
+    * [Environment Variables](#environment-variables)
+    * [The Configuration File](#the-configuration-file)
+      * [Stores](#stores)
+        * [file](#file)
+        * [CredHub](#credhub)
+        * [env](#env)
+        * [meta](#meta)
+      * [Packages](#packages)
+  * [sample files](#sample-files)
+  
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go)
+
 ## Getting Started
 
 ### Download 
@@ -57,7 +75,7 @@ Additional config sources could be other key managers like Vault, LastPass, Amaz
 
 Stores can receive configuration from other stores through their "stores: " list. 
 
-##### FILE
+##### File
 
 this is an example file config
 
@@ -104,7 +122,7 @@ gpg --export-secret-keys --output secring.gpg
 gpg --export --output pubring.gpg
 ```
 
-##### CREDHUB
+##### CredHub
 
 This is an example credhub config. You can see this config references the bosh-lab-yaml configuration where it will read any variables defined in the params.  
 
@@ -140,7 +158,7 @@ stores:
 
 With the configuration example above, `some_variable` is now available as a variable in consumers of this store.
 
-#### META
+##### Meta
 
 The meta store provides contextual information about the current config file. This can be useful when you need to know the directory of the config file or config file containing directory for loading other files.
 

@@ -43,6 +43,10 @@ func (s *dummyConfigStore) Set(item store.Item) error {
 	return nil
 }
 
+func (s *dummyConfigStore) List(path string) ([]store.Item, error) {
+	return []store.Item{}, nil
+}
+
 var _ = Describe("", func() {
 	It("can register provider", func() {
 		manager := store.NewManager()
