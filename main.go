@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 
+	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/env"
@@ -26,22 +27,22 @@ import (
 func main() {
 	// create platform, filesystem, working directory and console
 	platform := runtime.GOOS
-	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())	
+	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
 	console := ui.NewOSConsole()
 	workingDirectory, err := os.Getwd()
 	failOnError(err)
 
+	// create env dictionary
+	environmentVariables := env.NewDictionary()
+
 	// create config store manager
-	configStoreManager, err := createConfigStoreManager(fileSystem, platform)
+	configStoreManager, err := createConfigStoreManager(fileSystem, platform, environmentVariables)
 	failOnError(err)
 
 	validateConfigStoreManager(configStoreManager)
 
 	// create process factory
 	processFactory := processes.NewOsFactory()
-
-	// create env dictionary
-	envDictionary := env.NewDictionary()
 
 	// create config loader
 	loader := config.NewLoader(fileSystem)
@@ -65,7 +66,7 @@ func main() {
 		processFactory,
 		console,
 		platform,
-		envDictionary,
+		environmentVariables,
 		loader,
 		packagesManager)
 	failOnError(err)
@@ -74,7 +75,7 @@ func main() {
 	failOnError(err)
 }
 
-func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manager, error) {
+func createConfigStoreManager(fileSystem afero.Fs, platform string, environmentVariables collections.Dictionary) (store.Manager, error) {
 	manager := store.NewManager()
 	factory, err := crypto.NewPgpFactory(fileSystem, platform)
 	if err != nil {
@@ -82,7 +83,7 @@ func createConfigStoreManager(fileSystem afero.Fs, platform string) (store.Manag
 	}
 	manager.Register(credhub.NewCredHubStoreProvider())
 	manager.Register(file.NewFileStoreProvider(fileSystem, factory))
-	manager.Register(store_env.NewEnvStoreProvider())
+	manager.Register(store_env.NewEnvStoreProvider(environmentVariables))
 	return manager, nil
 }
 
@@ -93,7 +94,7 @@ func validateConfigStoreManager(manager store.Manager) {
 	}
 }
 
-func failOnError(err error){
+func failOnError(err error) {
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)

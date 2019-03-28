@@ -2,21 +2,27 @@ package env
 
 import (
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/patrickhuber/wrangle/collections"
 
 	"github.com/patrickhuber/wrangle/store"
 )
 
 type envStore struct {
-	name   string
-	lookup map[string]string
+	name      string
+	lookup    map[string]string
+	variables collections.Dictionary
 }
 
-func NewEnvStore(name string, lookup map[string]string) store.Store {
+func NewEnvStore(
+	name string,
+	lookup map[string]string,
+	variables collections.Dictionary) store.Store {
 	return &envStore{
-		name:   name,
-		lookup: lookup}
+		name:      name,
+		lookup:    lookup,
+		variables: variables}
 }
 
 func (s *envStore) Name() string {
@@ -38,7 +44,7 @@ func (s *envStore) Get(key string) (store.Item, error) {
 	}
 
 	// look up the environment variable
-	data, ok := os.LookupEnv(environmentVariableName)
+	data, ok := s.variables.Lookup(environmentVariableName)
 	if !ok {
 		return nil, fmt.Errorf("variable '%s' is not set in the environment variables", environmentVariableName)
 	}

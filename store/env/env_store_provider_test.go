@@ -1,7 +1,7 @@
 package env
 
 import (
-	"os"
+	"github.com/patrickhuber/wrangle/collections"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,14 +11,15 @@ import (
 
 var _ = Describe("", func() {
 	It("can crate env store provider", func() {
-		provider := NewEnvStoreProvider()
+		variables := collections.NewDictionary()
+		provider := NewEnvStoreProvider(variables)
 		name := provider.Name()
 
 		Expect(name).To(Equal("env"))
 	})
 	It("can create env store", func() {
-
-		provider := NewEnvStoreProvider()
+		variables := collections.NewDictionary()
+		provider := NewEnvStoreProvider(variables)
 
 		prop1 := "test1"
 		prop2 := "test2"
@@ -45,8 +46,8 @@ var _ = Describe("", func() {
 		Expect(s.Name()).To(Equal(source.Name))
 
 		// set the env vars
-		os.Setenv(env1, val1)
-		os.Setenv(env2, val2)
+		variables.Set(env1, val1)
+		variables.Set(env2, val2)
 
 		// verify
 		d1, err := s.Get(prop1)
