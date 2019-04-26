@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/wrangle/feed"
+	"github.com/patrickhuber/wrangle/global"
 )
 
 var _ = Describe("GitFeedService", func() {
@@ -12,7 +13,7 @@ var _ = Describe("GitFeedService", func() {
 		svc feed.FeedService
 	)
 	BeforeEach(func() {
-		svc = feed.NewGitFeedService("https://github.com/patrickhuber/wrangle-packages")
+		svc = feed.NewGitFeedService(global.PackageFeedURL)
 		Expect(svc).ToNot(BeNil())
 	})
 	Describe("List", func() {

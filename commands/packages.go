@@ -14,7 +14,7 @@ func CreatePackagesCommand(
 	return &cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},
-		Usage:   "prints the list of packages and versions in the feed directory",
+		Usage:   "prints the list of packages and versions in the feed directory. If the feed directory isn't specified, uses the feed URL instead.",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:   "path, p",
@@ -25,6 +25,7 @@ func CreatePackagesCommand(
 				Name:   "url, u",
 				Usage:  "the feed url",
 				EnvVar: global.PackageFeedURLKey,
+				Value:  global.PackageFeedURL,
 			},
 		},
 		Action: func(context *cli.Context) error {

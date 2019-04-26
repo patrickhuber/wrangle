@@ -13,7 +13,7 @@ func CreateInstallCommand(
 		Name:      "install",
 		Aliases:   []string{"i"},
 		Usage:     "installs the package with the given `NAME` for the current platform",
-		ArgsUsage: "<package name>",
+		ArgsUsage: "<package name> [options]",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:   "path, p",
@@ -31,6 +31,12 @@ func CreateInstallCommand(
 				EnvVar: global.RootPathKey,
 			},
 			cli.StringFlag{
+				Name:   "url, u",
+				Usage:  "the feed url",
+				EnvVar: global.PackageFeedURLKey,
+				Value:  global.PackageFeedURL,
+			},
+			cli.StringFlag{
 				Name:  "version, v",
 				Usage: "the package version",
 			},
@@ -46,7 +52,9 @@ func CreateInstallCommand(
 					Name:    context.Args().First(),
 					Version: context.String("version"),
 				},
-				Feed: &services.InstallServiceRequestFeed{	},
+				Feed: &services.InstallServiceRequestFeed{
+					URL: context.String("url"),
+				},
 			}
 
 			return installService.Install(installServiceRequest)

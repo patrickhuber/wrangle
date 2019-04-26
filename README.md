@@ -34,16 +34,22 @@ Use tar or 7zip to extract and decompress the package.
 
 Set the WRANGLE_BIN environment variable. Add WRANGLE_BIN to your path. 
 
+* For windows the default suggested value for `WRANGLE_BIN` is : `c:\tools\wrangle\bin`
+* For linux and mac the default suggested value for `WRANGLE_BIN` is : `/opt/wrangle/bin`
+
 Place the wrangle executable in WRANGLE_BIN
 
+### Settings
+
+There are several settings that can be configured for wrangle. 
 ### Environment Variables
 
 For ease of use you can set the WRANGLE_CONFIG and WRANGLE_PACKAGES environment variables. 
 
 * WRANGLE_CONFIG - specifies where the configuration will reside, similar to bosh bootloader's BBL_STATE_DIR, this is set to your working directory. You can also specify this file with the -c flag. 
-* WRANGLE_PACKAGES - specifies where package versions will be installed. You can also specify this path with the -p flag. 
+* WRANGLE_PACKAGES - specifies where package versions will be installed. You can also specify this path with the -p flag. This is optional if you specify the WRANGLE_ROOT and will default to $WRANGLE_ROOT/packages
 * WRANGLE_ROOT - the root directory where wrangle stores artifacts
-* WRANGLE_BIN - the location where wrangle stores symlinks (or shims)
+* WRANGLE_BIN - the location where wrangle stores symlinks (or shims). This is optional if you specify the WRANGLE_ROOT and will default to $WRANGLE_ROOT/bin
 
 ### The Configuration File
 
