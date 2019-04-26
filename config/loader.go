@@ -16,8 +16,6 @@ type loader struct {
 type Loader interface {
 	FileSystem() afero.Fs
 	LoadConfig(configPath string) (*Config, error)
-	LoadPackage(packagePath string) (*Package, error)
-	LoadPackageAsInterface(packagePath string) (interface{}, error)
 }
 
 // NewLoader creates a new config loader
@@ -35,22 +33,6 @@ func (loader *loader) LoadConfig(configPath string) (*Config, error) {
 		return nil, err
 	}
 	return DeserializeConfig(data)
-}
-
-func (loader *loader) LoadPackage(packagePath string) (*Package, error) {
-	data, err := loader.loadFileData(packagePath)
-	if err != nil {
-		return nil, err
-	}
-	return DeserializePackage(data)
-}
-
-func (loader *loader) LoadPackageAsInterface(packagePath string) (interface{}, error) {
-	data, err := loader.loadFileData(packagePath)
-	if err != nil {
-		return nil, err
-	}
-	return DeserializePackageAsInterface(data)
 }
 
 func (loader *loader) loadFileData(path string) ([]byte, error) {

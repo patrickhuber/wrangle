@@ -50,21 +50,4 @@ imports:
 		Expect(len(config.Imports)).To(Equal(1))
 
 	})
-
-	It("can parse package", func() {
-		var data = `
-name: test
-version: 1.0.0
-targets:
-- platform: windows
-  architecture: amd64
-  tasks:
-  - download:
-      url: https://test.myfile.com
-      out: myfile
-`
-		pkg := config.Package{}
-		err := yaml.UnmarshalStrict([]byte(data), &pkg)
-		Expect(err).To(BeNil())
-	})
 })

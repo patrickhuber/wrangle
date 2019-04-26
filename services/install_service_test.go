@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"bytes"
 	"fmt"
 	"net/http/httptest"
 	"strings"
@@ -102,13 +103,13 @@ var _ = Describe("InstallService", func() {
 			err = service.Install(
 				&services.InstallServiceRequest{
 					Directories: &services.InstallServiceRequestDirectories{
-						Bin: packagesBin,
-						Root: wrangleRoot,
+						Bin:      packagesBin,
+						Root:     wrangleRoot,
 						Packages: packagesRoot},
 					Package: &services.InstallServiceRequestPackage{
-						Name: packageName, 
-						Version: packageVersion	},
-					Feed: &services.InstallServiceRequestFeed{	},
+						Name:    packageName,
+						Version: packageVersion},
+					Feed: &services.InstallServiceRequestFeed{},
 				})
 			Expect(err).To(BeNil())
 		})
@@ -166,17 +167,23 @@ func createPackageManifest(
 		extract := tasks.NewExtractTask(archive)
 		taskList = append(taskList, extract)
 	}
-	pkg := &config.Package{
+	pkg := &packages.Manifest{
 		Name:    name,
 		Version: version,
-		Targets: []config.Target{
-			config.Target{
+		Targets: []packages.Target{
+			packages.Target{
 				Platform:     platform,
 				Architecture: "amd64",
 				Tasks:        taskList,
 			},
 		},
 	}
-	return config.SerializePackage(pkg)
+	var buffer bytes.Buffer
+	writer := packages.NewYamlManifestWriter(&buffer)
+	err := writer.Write(pkg)
+	if err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
 
 }

@@ -1,7 +1,7 @@
-package config
+package packages
 
-// Package represents a versioned artifiact
-type Package struct {
+// Manifest represents a versioned artifiact
+type Manifest struct {
 	Name    string   `yaml:"name"`
 	Version string   `yaml:"version"`
 	Targets []Target `yaml:"targets"`
