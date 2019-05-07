@@ -4,22 +4,24 @@ import (
 	"github.com/patrickhuber/wrangle/filepath"
 	"strings"
 	"fmt"
-	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/packages"
 )
 
+// InstallServiceRequestPackage a package for the install service request
 type InstallServiceRequestPackage struct{
 	Name string
 	Version string
 }
 
+// InstallServiceRequestDirectories directories for install service request
 type InstallServiceRequestDirectories struct{
 	Root string
 	Bin string
 	Packages string
 }
 
+// InstallServiceRequestFeed a feed for install service requests
 type InstallServiceRequestFeed struct{
 	URL string
 }
@@ -40,21 +42,18 @@ type installService struct {
 	platform   string
 	fileSystem filesystem.FsWrapper
 	manager    packages.Manager
-	loader     config.Loader
 }
 
 // NewInstallService creates a new install service
 func NewInstallService(
 	platform string,
 	fileSystem filesystem.FsWrapper,
-	manager packages.Manager,
-	loader config.Loader) (InstallService, error) {
+	manager packages.Manager) (InstallService, error) {
 
 	return &installService{
 		platform:   platform,
 		fileSystem: fileSystem,
-		manager:    manager,
-		loader:     loader}, nil
+		manager:    manager}, nil
 }
 
 func (service *installService) Install(request *InstallServiceRequest) error {	

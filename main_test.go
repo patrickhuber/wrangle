@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/processes"
@@ -27,7 +26,7 @@ var _ = Describe("Main", func() {
 		os.Unsetenv(global.ConfigFileKey)
 		os.Unsetenv(global.PackagePathKey)
 	})
-	
+
 	Describe("Print Env", func() {
 		It("can cascade configuration", func() {
 			runPrintTest("print-env", "export WRANGLE_TEST=value\n")
@@ -38,14 +37,14 @@ var _ = Describe("Main", func() {
 			runPrintTest("print", "export WRANGLE_TEST=value\necho\n")
 		})
 	})
-	
+
 })
 
-func printDirectory(fileSystem filesystem.FsWrapper, path string){
+func printDirectory(fileSystem filesystem.FsWrapper, path string) {
 	fmt.Println(path)
 	files, err := afero.ReadDir(fileSystem, path)
 	Expect(err).To(BeNil())
-	for _, f := range files{
+	for _, f := range files {
 		fmt.Println(f.Name())
 	}
 }
@@ -58,8 +57,6 @@ func runPrintTest(command string, expected string) {
 	storeManager.Register(file.NewFileStoreProvider(fileSystem, nil))
 	processFactory := processes.NewOsFactory() // change to fake process factory?
 	console := ui.NewMemoryConsole()
-
-	loader := config.NewLoader(fileSystem)
 
 	taskProviders := tasks.NewProviderRegistry()
 	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
@@ -109,7 +106,6 @@ processes:
 		console,
 		platform,
 		collections.NewDictionary(),
-		loader,
 		packagesManager)
 	Expect(err).To(BeNil())
 	Expect(app).ToNot(BeNil())

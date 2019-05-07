@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 
@@ -11,16 +12,22 @@ type yamlReader struct {
 	reader io.Reader
 }
 
+// NewYamlReader creates a new yaml config reader
 func NewYamlReader(reader io.Reader) Reader {
-	return &yamlReader{}
+	return &yamlReader{
+		reader: reader,
+	}
 }
 
 func (r *yamlReader) Read() (*Config, error) {
+	if r.reader == nil {
+		return nil, fmt.Errorf("YamlReader.reader is null")
+	}
 	in, err := ioutil.ReadAll(r.reader)
 	if err != nil {
 		return nil, err
 	}
-	var c *Config
+	c := &Config{}
 	err = yaml.UnmarshalStrict(in, c)
 	return c, err
 }

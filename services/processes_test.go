@@ -1,7 +1,6 @@
 package services_test
 
 import (
-	"github.com/spf13/afero"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
@@ -13,25 +12,28 @@ import (
 var _ = Describe("Processes", func() {
 	It("can list processes", func() {
 		console := ui.NewMemoryConsole()
-		fs := afero.NewMemMapFs()
-		loader := config.NewLoader(fs)
 		
-		// write config file
-		content := `
-processes:
-- name: go 
-- name: echo
-- name: wrangle
-- name: dangle
-`
-		err := afero.WriteFile(fs, "/config", []byte(content), 0600)
-		Expect(err).To(BeNil())
-
+		cfg := &config.Config{
+			Processes: []config.Process{
+				config.Process{
+					Name: "go",
+				},
+				config.Process{
+					Name: "echo",
+				},
+				config.Process{
+					Name: "wrangle",
+				},
+				config.Process{
+					Name: "dangle",
+				},
+			},
+		}
 		// create the service
-		service := services.NewProcessesService(console, loader)		
+		service := services.NewProcessesService(console)		
 		Expect(service).ToNot(BeNil())
 
-		err = service.List("/config")
+		err := service.List(cfg)
 		Expect(err).To(BeNil())
 
 		value := console.OutAsString()

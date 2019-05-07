@@ -22,7 +22,7 @@ var _ = Describe("GitFeedService", func() {
 			resp, err := svc.List(request)
 			Expect(err).To(BeNil())
 			Expect(resp).ToNot(BeNil())
-			Expect(len(resp.Packages)).To(Equal(13))
+			Expect(len(resp.Packages)).To(Equal(14))
 		})
 	})
 

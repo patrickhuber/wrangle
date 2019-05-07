@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/config"
 	"strings"
 
 	"github.com/patrickhuber/wrangle/services"
@@ -11,7 +13,8 @@ import (
 // CreatePrintEnvCommand creates a print env command from the cli context
 func CreatePrintEnvCommand(
 	app *cli.App,
-	printService services.PrintService) *cli.Command {
+	printService services.PrintService,
+	fs afero.Fs) *cli.Command {
 
 	command := &cli.Command{
 		Name:  "print-env",
@@ -34,8 +37,15 @@ func CreatePrintEnvCommand(
 			format := context.String("format")
 			configFile := context.GlobalString("config")
 
+			configProvider := config.NewFsProvider(fs, configFile)
+			
+			cfg, err := configProvider.Get()
+			if err != nil{
+				return err
+			}
+
 			params := &services.PrintParams{
-				ConfigFile:  configFile,
+				Config:  cfg,
 				ProcessName: processName,
 				Format:      format}
 			return printService.Print(params)

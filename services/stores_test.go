@@ -1,9 +1,7 @@
 package services_test
 
-import (
-	"github.com/spf13/afero"
+import (	
 	"github.com/patrickhuber/wrangle/services"
-	"github.com/patrickhuber/wrangle/filesystem"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/ui"
@@ -15,23 +13,23 @@ import (
 var _ = Describe("StoresService", func(){
     It("can list stores", func(){
 
-		fs := filesystem.NewMemMapFs()
-		console := ui.NewMemoryConsole()		
-		loader := config.NewLoader(fs)
+		console := ui.NewMemoryConsole()
 
-		service := services.NewStoresService(console, loader)
+		service := services.NewStoresService(console)
 
-		content := `
-stores:
-- name: one
-  type: file
-- name: two
-  type: credhub
-`
-		err := afero.WriteFile(fs, "/config", []byte(content), 0600)
-		Expect(err).To(BeNil())
-
-		err = service.List("/config")		
+		cfg := &config.Config{
+			Stores: []config.Store{
+				config.Store{
+					Name: "one",					
+					StoreType: "file",
+				},
+				config.Store{
+					Name: "two",
+					StoreType: "credhub",
+				},
+			},
+		}
+		err := service.List(cfg)		
 		Expect(err).To(BeNil())
 
 		Expect(console.OutAsString()).To(Equal("name type\n---- ----\none  file\ntwo  credhub\n"))

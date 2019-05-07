@@ -13,8 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/commands"
-	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/commands"	
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/packages"
@@ -28,8 +27,7 @@ var _ = Describe("Install", func() {
 		// rewrite this test to use new package management features
 		fs := filesystem.NewMemMapFs()
 		console := ui.NewMemoryConsole()
-		variables := collections.NewDictionary()
-		loader := config.NewLoader(fs)
+		variables := collections.NewDictionary()		
 
 		taskProviders := tasks.NewProviderRegistry()
 		taskProviders.Register(tasks.NewDownloadProvider(fs, console))
@@ -39,7 +37,7 @@ var _ = Describe("Install", func() {
 
 		packagesManager := packages.NewManager(fs, taskProviders)
 
-		installService, err := services.NewInstallService("linux", fs, packagesManager, loader)
+		installService, err := services.NewInstallService("linux", fs, packagesManager)
 		Expect(err).To(BeNil())
 
 		variables.Set(global.PackagePathKey, "/packages")

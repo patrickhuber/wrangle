@@ -3,7 +3,7 @@ package services
 import "github.com/patrickhuber/wrangle/config"
 
 type processParams struct {
-	config              *config.Config
+	cfg                 *config.Config
 	processName         string
 	additionalArguments []string
 }
@@ -12,12 +12,14 @@ type processParams struct {
 type ProcessParams interface {
 	ProcessName() string
 	AdditionalArguments() []string
+	Config() *config.Config
 }
 
 // NewProcessParams creates run command parameters
-func NewProcessParams(processName string, additionalArguments ...string) ProcessParams {
+func NewProcessParams(processName string, cfg *config.Config, additionalArguments ...string) ProcessParams {
 	return &processParams{
 		processName:         processName,
+		cfg:                 cfg,
 		additionalArguments: additionalArguments}
 }
 
@@ -27,4 +29,8 @@ func (params *processParams) ProcessName() string {
 
 func (params *processParams) AdditionalArguments() []string {
 	return params.additionalArguments
+}
+
+func (params *processParams) Config() *config.Config {
+	return params.cfg
 }

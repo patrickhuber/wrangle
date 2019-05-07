@@ -1,6 +1,8 @@
 package commands
 
 import (	
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/spf13/afero"
 	"github.com/patrickhuber/wrangle/services"
 	"strings"
 	"github.com/pkg/errors"
@@ -10,7 +12,8 @@ import (
 // CreateRunCommand creates a run command from the cli context
 func CreateRunCommand(
 	app *cli.App,
-	runService services.RunService) *cli.Command {		
+	runService services.RunService,
+	fs afero.Fs) *cli.Command {		
 
 	command := &cli.Command{
 		Name:      "run",
@@ -18,7 +21,6 @@ func CreateRunCommand(
 		Usage:     "run a command",
 		ArgsUsage: "<process name> [arguments]",
 		Action: func(context *cli.Context) error {
-			configFile := context.GlobalString("config")
 
 			processName := context.Args().First()
 			if strings.TrimSpace(processName) == "" {
@@ -26,10 +28,18 @@ func CreateRunCommand(
 			}
 
 			additionalArguments := context.Args().Tail()
+			configFile := context.GlobalString("config")
 
-			params := services.NewProcessParams(processName, additionalArguments...)			
+			configProvider := config.NewFsProvider(fs, configFile)
+			
+			cfg, err := configProvider.Get()
+			if err != nil{
+				return err
+			}
 
-			return runService.Run(configFile, params)
+			params := services.NewProcessParams(processName, cfg, additionalArguments...)			
+
+			return runService.Run(params)
 		},
 	}
 	

@@ -1,8 +1,9 @@
 package services_test
 
 import (
-	"github.com/patrickhuber/wrangle/services"
 	"bytes"
+
+	"github.com/patrickhuber/wrangle/services"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,16 +25,16 @@ var _ = Describe("Execute", func() {
 	)
 	Describe("WithSimpleConfig", func() {
 		AfterEach(func() {
-			// create config file
-			configFileContent := `
----
-stores:
-processes:
-- name: echo
-  path: echo
-  env:
-    WRANGLE_TEST: value`
-			RunPrintTest(configFileContent, "", "echo", includeProcessInfo, expectedOutput)
+			cfg := &config.Config{
+				Processes: []config.Process{
+					config.Process{
+						Name: "echo",
+						Path: "echo",
+						Vars: map[string]string{"WRANGLE_TEST": "value"},
+					},
+				},
+			}
+			RunPrintTest(cfg, "", "echo", includeProcessInfo, expectedOutput)
 		})
 		Context("WhenNotIncludeProcessAndArgs", func() {
 			It("prints only environment", func() {
@@ -59,21 +60,23 @@ processes:
 			// create filesystem
 			fileSystem := afero.NewMemMapFs()
 
-			// create config file
-			configFileContent := `
----
-stores:
-- name: store1
-  type: file
-  params: 
-    path: /store1
-processes:
-- name: echo
-  path: echo
-  stores: [ store1 ]
-  env:
-    WRANGLE_TEST: ((/key))`
-			afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
+			cfg := &config.Config{
+				Stores: []config.Store{
+					config.Store{
+						Name:      "store1",
+						StoreType: "file",
+						Params:    map[string]string{"path": "/store1"},
+					},
+				},
+				Processes: []config.Process{
+					config.Process{
+						Name:   "echo",
+						Path:   "echo",
+						Stores: []string{"store1"},
+						Vars:   map[string]string{"WRANGLE_TEST": "((/key))"},
+					},
+				},
+			}
 			afero.WriteFile(fileSystem, "/store1", []byte("key: value"), 0644)
 
 			// create store manager
@@ -83,14 +86,12 @@ processes:
 			// create console
 			console := ui.NewMemoryConsole()
 
-			loader := config.NewLoader(fileSystem)
-
 			// create and run command
-			service := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
+			service := services.NewPrintService(manager, fileSystem, console, rendererFactory)
 			params := &services.PrintParams{
-				ConfigFile: "/config",
-				ProcessName:   "echo",
-				Format:        "",
+				Config:      cfg,
+				ProcessName: "echo",
+				Format:      "",
 				Include: services.PrintParamsInclude{
 					ProcessAndArgs: includeProcessInfo,
 				}}
@@ -123,14 +124,16 @@ processes:
 			includeProcessInfo bool
 		)
 		AfterEach(func() {
-			content := `
-processes:
-- name: go
-  path: go
-  args: 
-  - version
-`
-			RunPrintTest(content, "", "go", includeProcessInfo, expectedOutput)
+			cfg := &config.Config{
+				Processes: []config.Process{
+					config.Process{
+						Name: "go",
+						Path: "go",
+						Args: []string{"version"},
+					},
+				},
+			}
+			RunPrintTest(cfg, "", "go", includeProcessInfo, expectedOutput)
 		})
 		Context("WhenPrintOnlyEnvironment", func() {
 			It("prints nothing", func() {
@@ -151,14 +154,16 @@ processes:
 			expectedOutput string
 		)
 		AfterEach(func() {
-			content := `
-processes:
-- name: go
-  path: go
-  args: 
-  - version
-`
-			RunPrintTest(content, format, "go", false, expectedOutput)
+			cfg := &config.Config{
+				Processes: []config.Process{
+					config.Process{
+						Name: "go",
+						Path: "go",
+						Args: []string{"version"},
+					},
+				},
+			}
+			RunPrintTest(cfg, format, "go", false, expectedOutput)
 		})
 		Context("WhenFormatPosix", func() {
 
@@ -193,7 +198,7 @@ processes:
 })
 
 func RunPrintTest(
-	content string,
+	cfg *config.Config,
 	format string,
 	processName string,
 	includeProcessInfo bool,
@@ -205,18 +210,14 @@ func RunPrintTest(
 	manager := store.NewManager()
 
 	fileSystem := afero.NewMemMapFs()
-	afero.WriteFile(fileSystem, "/config", []byte(content), 0444)
 	console := ui.NewMemoryConsole()
 
-	// load the config
-	loader := config.NewLoader(fileSystem)
-	
 	// create and run command
-	service := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
+	service := services.NewPrintService(manager, fileSystem, console, rendererFactory)
 	params := &services.PrintParams{
-		ConfigFile: "/config",
-		ProcessName:   processName,
-		Format:        format,
+		Config:      cfg,
+		ProcessName: processName,
+		Format:      format,
 		Include: services.PrintParamsInclude{
 			ProcessAndArgs: includeProcessInfo,
 		},

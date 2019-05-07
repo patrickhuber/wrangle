@@ -5,6 +5,7 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 )
 
+// PackageServiceFactory defines a factory for creating PackagesService instantces
 type PackageServiceFactory interface {
 	Get(feedService feed.FeedService) PackagesService
 }
@@ -17,6 +18,7 @@ func (factory *packageServiceFactory) Get(feedService feed.FeedService) Packages
 	return NewPackagesService(feedService, factory.console)
 }
 
+// NewPackageServiceFactory creates a new package service factory
 func NewPackageServiceFactory(console ui.Console) PackageServiceFactory {
 	return &packageServiceFactory{
 		console: console,

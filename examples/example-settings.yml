@@ -1,0 +1,6 @@
+feeds:
+- https://github.com/patrickhuber/wrangle-packages
+paths:
+  root: /opt/wrangle
+  bin: /opt/wrangle/bin
+  packages: /opt/wrangle/packages

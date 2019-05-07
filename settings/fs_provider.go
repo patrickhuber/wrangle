@@ -14,12 +14,17 @@ type fsProvider struct {
 	homeDirectory string
 }
 
+// NewFsProvider defines a constructor for creating a file system based settings provider
 func NewFsProvider(fs afero.Fs, platform string, homeDirectory string) Provider {
 	return &fsProvider{
 		fs:            fs,
 		platform:      platform,
 		homeDirectory: homeDirectory,
 	}
+}
+
+func (provider *fsProvider) Initialize() (*Settings, error) {
+	return provider.Get()
 }
 
 func (provider *fsProvider) Get() (*Settings, error) {

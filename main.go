@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/env"
 	"github.com/patrickhuber/wrangle/filesystem"
@@ -44,9 +43,6 @@ func main() {
 	// create process factory
 	processFactory := processes.NewOsFactory()
 
-	// create config loader
-	loader := config.NewLoader(fileSystem)
-
 	// create task providers
 	taskProviders := tasks.NewProviderRegistry()
 	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
@@ -67,7 +63,6 @@ func main() {
 		console,
 		platform,
 		environmentVariables,
-		loader,
 		packagesManager)
 	failOnError(err)
 

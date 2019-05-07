@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/env"
+	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/packages"
@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-// set with -ldflags 
+// set with -ldflags
 var version = ""
 
 func createApplication(
@@ -28,7 +28,6 @@ func createApplication(
 	console ui.Console,
 	platform string,
 	envDictionary collections.Dictionary,
-	loader config.Loader,
 	packagesManager packages.Manager) (*cli.App, error) {
 
 	rendererFactory := renderers.NewFactory(env.NewDictionary())
@@ -54,15 +53,15 @@ func createApplication(
 	}
 
 	initService := services.NewInitService(fileSystem)
-	runService := services.NewRunService(manager, fileSystem, processFactory, console, loader)
-	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory, loader)
+	runService := services.NewRunService(manager, fileSystem, processFactory, console)
+	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory)
 	packagesServiceFactory := services.NewPackageServiceFactory(console)
 	feedServiceFactory := feed.NewFeedServiceFactory(fileSystem)
-	installService, err := services.NewInstallService(platform, fileSystem, packagesManager, loader)
+	installService, err := services.NewInstallService(platform, fileSystem, packagesManager)
 	envService := services.NewEnvService(console, envDictionary)
-	storesService := services.NewStoresService(console, loader)
-	processesService := services.NewProcessesService(console, loader)
-	credentialServiceFactory := services.NewCredentialServiceFactory(manager, loader)
+	storesService := services.NewStoresService(console)
+	processesService := services.NewProcessesService(console)
+	credentialServiceFactory := services.NewCredentialServiceFactory(manager, fileSystem)
 
 	if err != nil {
 		return nil, err
@@ -70,18 +69,17 @@ func createApplication(
 
 	cliApp.Commands = []cli.Command{
 		*commands.CreateInitCommand(cliApp, initService),
-		*commands.CreateRunCommand(cliApp, runService),
-		*commands.CreatePrintCommand(cliApp, printService),
-		*commands.CreatePrintEnvCommand(cliApp, printService),
+		*commands.CreateRunCommand(cliApp, runService, fileSystem),
+		*commands.CreatePrintCommand(cliApp, printService, fileSystem),
+		*commands.CreatePrintEnvCommand(cliApp, printService, fileSystem),
 		*commands.CreatePackagesCommand(packagesServiceFactory, feedServiceFactory),
 		*commands.CreateInstallCommand(installService),
 		*commands.CreateEnvCommand(envService),
-		*commands.CreateStoresCommand(cliApp, storesService),
-		*commands.CreateListProcessesCommand(cliApp, processesService),
+		*commands.CreateStoresCommand(cliApp, storesService, fileSystem),
+		*commands.CreateListProcessesCommand(cliApp, processesService, fileSystem),
 		*commands.CreateMoveCommand(cliApp, credentialServiceFactory),
 		*commands.CreateCopyCommand(cliApp, credentialServiceFactory),
 	}
-	
-	
+
 	return cliApp, nil
 }

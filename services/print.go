@@ -17,7 +17,6 @@ type printService struct {
 	console         ui.Console
 	manager         store.Manager
 	rendererFactory renderers.Factory
-	loader config.Loader
 }
 
 // PrintParamsInclude defines what additional output to include
@@ -27,10 +26,10 @@ type PrintParamsInclude struct {
 
 // PrintParams defines parameters for the print command
 type PrintParams struct {
-	ConfigFile    string
-	ProcessName   string
-	Format        string
-	Include       PrintParamsInclude	
+	Config      *config.Config
+	ProcessName string
+	Format      string
+	Include     PrintParamsInclude
 }
 
 // PrintService represents an environment command
@@ -43,14 +42,12 @@ func NewPrintService(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	console ui.Console,
-	rendererFactory renderers.Factory,
-	loader config.Loader) PrintService {
+	rendererFactory renderers.Factory) PrintService {
 	return &printService{
 		manager:         manager,
 		fileSystem:      fileSystem,
 		console:         console,
-		rendererFactory: rendererFactory,
-		loader: loader}
+		rendererFactory: rendererFactory}
 }
 
 func (service *printService) Print(params *PrintParams) error {
@@ -61,14 +58,7 @@ func (service *printService) Print(params *PrintParams) error {
 		return errors.New("process name is required for the print command")
 	}
 
-	cfg, err := service.loader.LoadConfig(params.ConfigFile)
-	if err != nil{
-		return err
-	}
-	if cfg == nil {
-		return errors.New("unable to load configuration")
-	}
-
+	cfg := params.Config
 	processTemplate, err := store.NewProcessTemplate(cfg, service.manager)
 	if err != nil {
 		return err

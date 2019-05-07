@@ -8,14 +8,14 @@ Wrangle is a solution for managing multiple configuration stores and multiple co
   * [Getting Started](#getting-started)
     * [Download](#download)
     * [Install](#install)
-    * [Environment Variables](#environment-variables)
-    * [The Configuration File](#the-configuration-file)
-      * [Stores](#stores)
-        * [file](#file)
-        * [CredHub](#credhub)
-        * [env](#env)
-        * [meta](#meta)
-      * [Packages](#packages)
+    * [Initialize](#initialize)
+  * [The Configuration File](#the-configuration-file)
+    * [Stores](#stores)
+      * [file](#file)
+      * [CredHub](#credhub)
+      * [env](#env)
+      * [meta](#meta)
+  * [Packages](#packages)
   * [sample files](#sample-files)
   
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go)
@@ -39,9 +39,21 @@ Set the WRANGLE_BIN environment variable. Add WRANGLE_BIN to your path.
 
 Place the wrangle executable in WRANGLE_BIN
 
-### Settings
+### Initialize
 
-There are several settings that can be configured for wrangle. 
+#### Open Working Directory
+
+```
+mkdir ~/wrangle-playground
+cd ~/wrangle-playground
+```
+
+#### Run Init
+
+```
+$ wrangle init
+```
+
 ### Environment Variables
 
 For ease of use you can set the WRANGLE_CONFIG and WRANGLE_PACKAGES environment variables. 

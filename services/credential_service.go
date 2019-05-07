@@ -1,17 +1,18 @@
 package services
 
 import (
-	"strings"
 	"fmt"
-	"github.com/patrickhuber/wrangle/templates"
+	"strings"
+
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/templates"
 )
 
 type credentialService struct {
-	manager store.Manager
-	graph   config.Graph
-	cfg     *config.Config
+	manager  store.Manager
+	graph    config.Graph
+	cfg      *config.Config
 	registry store.ResolverRegistry
 }
 
@@ -24,6 +25,21 @@ type CredentialService interface {
 	List(storeName string, path string) ([]store.Item, error)
 }
 
+// NewCredentialService creates a new credential service
+func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager) (CredentialService, error) {
+	// create the template for getting values we are going to use this to create our stores
+	registry, err := store.NewResolverRegistry(cfg, graph, manager)
+	if err != nil {
+		return nil, err
+	}
+
+	return &credentialService{
+		graph:    graph,
+		manager:  manager,
+		registry: registry,
+	}, nil
+}
+
 func (svc *credentialService) Copy(source, sourcePath, destination, destinationPath string) error {
 
 	if strings.TrimSpace(source) == "" {
@@ -32,9 +48,9 @@ func (svc *credentialService) Copy(source, sourcePath, destination, destinationP
 	if strings.TrimSpace(destination) == "" {
 		return fmt.Errorf("destination can not be empty")
 	}
-	
+
 	// if source and destination are the same, skip
-	if source == destination && sourcePath == destinationPath{
+	if source == destination && sourcePath == destinationPath {
 		return nil
 	}
 
@@ -43,9 +59,9 @@ func (svc *credentialService) Copy(source, sourcePath, destination, destinationP
 	if err != nil {
 		return err
 	}
-	
+
 	// create the destination item by cloning the old item
-	destinationItem := store.NewItem(destinationPath, item.ItemType(), item.Value())	
+	destinationItem := store.NewItem(destinationPath, item.ItemType(), item.Value())
 
 	// get the destination store
 	destinationStore, err := svc.getStore(destination)
@@ -64,9 +80,9 @@ func (svc *credentialService) Move(source, sourcePath, destination, destinationP
 	if strings.TrimSpace(destination) == "" {
 		return fmt.Errorf("destination can not be empty")
 	}
-	
+
 	// if source and destination are the same, skip
-	if source == destination && sourcePath == destinationPath{
+	if source == destination && sourcePath == destinationPath {
 		return nil
 	}
 
@@ -75,7 +91,7 @@ func (svc *credentialService) Move(source, sourcePath, destination, destinationP
 	if err != nil {
 		return err
 	}
-	
+
 	// get the source item
 	item, err := sourceStore.Get(sourcePath)
 	if err != nil {
@@ -83,7 +99,7 @@ func (svc *credentialService) Move(source, sourcePath, destination, destinationP
 	}
 
 	// create the destination item by cloning the old item
-	destinationItem := store.NewItem(destinationPath, item.ItemType(), item.Value())	
+	destinationItem := store.NewItem(destinationPath, item.ItemType(), item.Value())
 
 	// get the destination store
 	destinationStore, err := svc.getStore(destination)
@@ -98,40 +114,40 @@ func (svc *credentialService) Move(source, sourcePath, destination, destinationP
 	return sourceStore.Delete(sourcePath)
 }
 
-func (svc *credentialService) Set(storeName string, item store.Item) error{
+func (svc *credentialService) Set(storeName string, item store.Item) error {
 	// get the store
 	s, err := svc.getStore(storeName)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return s.Set(item)
 }
 
-func (svc *credentialService) Get(storeName string, path string) (store.Item, error){
+func (svc *credentialService) Get(storeName string, path string) (store.Item, error) {
 	// get the store
 	s, err := svc.getStore(storeName)
-	if err != nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	return s.Get(path)
 }
 
-func (svc *credentialService) List(storeName string, path string) ([]store.Item, error){
+func (svc *credentialService) List(storeName string, path string) ([]store.Item, error) {
 	s, err := svc.getStore(storeName)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return s.List(path)
 }
 
 func (svc *credentialService) getStore(storeName string) (store.Store, error) {
-	if strings.TrimSpace(storeName) == ""{
+	if strings.TrimSpace(storeName) == "" {
 		return nil, fmt.Errorf("storeName parameter can not be an empty string")
 	}
 
 	// get the source config
 	cfg := svc.graph.Store(storeName)
-	if cfg == nil{
+	if cfg == nil {
 		return nil, fmt.Errorf("unable to locate store %s", storeName)
 	}
 
@@ -165,18 +181,4 @@ func (svc *credentialService) getItem(storeName, path string) (store.Item, error
 	}
 
 	return item, nil
-}
-
-func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager) (CredentialService, error) {	
-	// create the template for getting values we are going to use this to create our stores
-	registry, err := store.NewResolverRegistry(cfg, graph, manager)
-	if err != nil {
-		return nil, err
-	}
-
-	return &credentialService{
-		graph:   graph,
-		manager: manager,
-		registry: registry,
-	},nil
 }

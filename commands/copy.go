@@ -9,43 +9,44 @@ func CreateCopyCommand(
 	app *cli.App,
 	credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
 	command := &cli.Command{
-		Name: "copy",
+		Name:    "copy",
 		Aliases: []string{"cp"},
-		Usage: "copies a credential from one store to another",
+		Usage:   "copies a credential from one store to another",
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name: "source, s",
+				Name:  "source, s",
 				Usage: "the source store name",
 			},
 			cli.StringFlag{
-				Name: "source-path, sp",
+				Name:  "source-path, sp",
 				Usage: "the path in the source store to the credential",
 			},
 			cli.StringFlag{
-				Name: "destination, d",
+				Name:  "destination, d",
 				Usage: "the desination store name",
 			},
 			cli.StringFlag{
-				Name: "destination-path, dp",
+				Name:  "destination-path, dp",
 				Usage: "the path in the destination to the credential",
 			},
 		},
-		Action: func(context *cli.Context) error{
+		Action: func(context *cli.Context) error {
 			source := context.String("source")
 			sourcePath := context.String("source-path")
-			destination := context.String("destination")			
+			destination := context.String("destination")
 			destinationPath := context.String("destination-path")
-			// need to pass this to the credential service
-			config := context.GlobalString("config")
 
-			credentialService, err := credentialServiceFactory.Create(config)
-			if err != nil{
+			// need to pass this to the credential service
+			configPath := context.GlobalString("config")
+
+			credentialService, err := credentialServiceFactory.Create(configPath)
+			if err != nil {
 				return err
 			}
 			return credentialService.Copy(source, sourcePath, destination, destinationPath)
 		},
 	}
-	
-	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)
 	return command
 }

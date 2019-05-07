@@ -8,7 +8,6 @@ import (
 
 	"github.com/patrickhuber/wrangle/services"
 
-	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/filesystem"
@@ -26,13 +25,11 @@ var _ = Describe("InstallService", func() {
 	var (
 		fs      filesystem.FsWrapper
 		manager packages.Manager
-		loader  config.Loader
 	)
 	BeforeEach(func() {
 		// create command dependencies
 		console := ui.NewMemoryConsole()
 		fs = filesystem.NewMemMapFs()
-		loader = config.NewLoader(fs)
 
 		taskProviders := tasks.NewProviderRegistry()
 		taskProviders.Register(tasks.NewExtractProvider(fs, console))
@@ -45,7 +42,7 @@ var _ = Describe("InstallService", func() {
 	Describe("NewInstall", func() {
 		It("returns install command", func() {
 			platform := "platform"
-			service, err := services.NewInstallService(platform, fs, manager, loader)
+			service, err := services.NewInstallService(platform, fs, manager)
 			Expect(err).To(BeNil())
 			Expect(service).ToNot(BeNil())
 		})
@@ -97,7 +94,7 @@ var _ = Describe("InstallService", func() {
 			Expect(err).To(BeNil())
 
 			// create the command and execute it
-			service, err := services.NewInstallService(platform, fs, manager, loader)
+			service, err := services.NewInstallService(platform, fs, manager)
 			Expect(err).To(BeNil())
 
 			err = service.Install(

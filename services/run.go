@@ -13,7 +13,7 @@ import (
 
 // RunService runs a process defined by params
 type RunService interface {
-	Run(configFile string, params ProcessParams) error
+	Run(params ProcessParams) error
 }
 
 type runService struct {
@@ -21,7 +21,6 @@ type runService struct {
 	fileSystem     afero.Fs
 	processFactory processes.Factory
 	console        ui.Console
-	loader config.Loader
 }
 
 // NewRunService - creates a new run command
@@ -29,17 +28,15 @@ func NewRunService(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	processFactory processes.Factory,
-	console ui.Console,
-	loader config.Loader) RunService{
+	console ui.Console) RunService {
 	return &runService{
 		manager:        manager,
 		fileSystem:     fileSystem,
 		processFactory: processFactory,
-		console:        console,
-		loader: loader}
+		console:        console}
 }
 
-func (service *runService) Run(configFile string, params ProcessParams) error {
+func (service *runService) Run(params ProcessParams) error {
 
 	processName := params.ProcessName()
 
@@ -47,15 +44,7 @@ func (service *runService) Run(configFile string, params ProcessParams) error {
 		return errors.New("process name is required for the run command")
 	}
 
-	cfg, err := service.loader.LoadConfig(configFile)
-	if err  != nil{
-		return err
-	}
-	
-	if cfg == nil {
-		return errors.New("unable to load configuration")
-	}
-
+	cfg := params.Config()
 	processTemplate, err := store.NewProcessTemplate(cfg, service.manager)
 	if err != nil {
 		return err

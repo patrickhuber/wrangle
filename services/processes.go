@@ -10,14 +10,13 @@ import (
 
 // ProcessesService provides a service for processes
 type ProcessesService interface {
-	List(configFile string) error
+	List(cfg *config.Config) error
 }
 
 // NewProcessesService creates a new processes service
-func NewProcessesService(console ui.Console, loader config.Loader) ProcessesService {
+func NewProcessesService(console ui.Console) ProcessesService {
 	return &processesService{
 		console: console,
-		loader:  loader,
 	}
 }
 
@@ -26,15 +25,11 @@ type processesService struct {
 	loader  config.Loader
 }
 
-func (service *processesService) List(configFile string) error {
+func (service *processesService) List(cfg *config.Config) error {
 
-	w := tabwriter.NewWriter(service.console.Out(), 0, 0, 1, ' ', 0)
+	w := tabwriter.NewWriter(service.console.Out(), 0, 0, 1, ' ', 0)	
 	fmt.Fprintln(w, "name")
-	fmt.Fprintln(w, "----")
-	cfg, err := service.loader.LoadConfig(configFile)
-	if err != nil {
-		return err
-	}
+	fmt.Fprintln(w, "----")	
 	for _, process := range cfg.Processes {
 		fmt.Fprintf(w, "%s", process.Name)
 		fmt.Fprintln(w)
