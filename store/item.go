@@ -1,6 +1,11 @@
 package store
 
-import "github.com/patrickhuber/wrangle/store/values"
+import (
+	"encoding/json"
+
+	"github.com/patrickhuber/wrangle/store/values"
+	"gopkg.in/yaml.v2"
+)
 
 // ItemType represents the type of the object in the value field.
 // A canonical representation of these types is needed to support providers that expose types.
@@ -26,37 +31,35 @@ const (
 )
 
 type item struct {
-	name     string
-	value    interface{}
-	itemType ItemType
+	NameField  string      `yaml:"name" json:"name"`
+	ValueField interface{} `yaml:"value" json:"value"`
+	TypeField  ItemType    `yaml:"type" json:"type"`
 }
 
-// ItemReader represents an item's readable properties
-type ItemReader interface {
+// ReadOnlyItem represents an item's readable properties
+type ReadOnlyItem interface {
 	Name() string
 	Value() interface{}
 	ItemType() ItemType
+	Json() ([]byte, error)
+	Yaml() ([]byte, error)
 }
 
-// ItemWriter represents an item's writable properties
-type ItemWriter interface {
+// Item represents data from the store
+type Item interface {
+	ReadOnlyItem
+
 	SetName(name string)
 	SetValue(value interface{})
 	SetItemType(itemType ItemType)
 }
 
-// Item represents data from the store
-type Item interface {
-	ItemReader
-	ItemWriter
-}
-
 // NewItem returns a new data element with the specified properties set
 func NewItem(name string, itemType ItemType, value interface{}) Item {
 	return &item{
-		name:     name,
-		value:    value,
-		itemType: itemType,
+		NameField:  name,
+		ValueField: value,
+		TypeField:  itemType,
 	}
 }
 
@@ -103,9 +106,17 @@ func NewCertificateItem(name string, privateKey, publicKey, certificateAuthority
 	return item
 }
 
-func (i *item) Name() string                  { return i.name }
-func (i *item) SetName(name string)           { i.name = name }
-func (i *item) Value() interface{}            { return i.value }
-func (i *item) SetValue(value interface{})    { i.value = value }
-func (i *item) ItemType() ItemType            { return i.itemType }
-func (i *item) SetItemType(itemType ItemType) { i.itemType = itemType }
+func (i *item) Json() ([]byte, error) {
+	return json.Marshal(&i)
+}
+
+func (i *item) Yaml() ([]byte, error) {
+	return yaml.Marshal(&i)
+}
+
+func (i *item) Name() string                  { return i.NameField }
+func (i *item) SetName(name string)           { i.NameField = name }
+func (i *item) Value() interface{}            { return i.ValueField }
+func (i *item) SetValue(value interface{})    { i.ValueField = value }
+func (i *item) ItemType() ItemType            { return i.TypeField }
+func (i *item) SetItemType(itemType ItemType) { i.TypeField = itemType }

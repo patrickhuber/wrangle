@@ -16,7 +16,7 @@ var _ = Describe("Aes256gcmCrypter", func() {
 			key := make([]byte, 32)
 			_, err := rand.Read(key)
 
-			crypter, err := crypto.NewAES256GCMCrypter(key)
+			crypter, err := crypto.NewAES256GCMCrypter(key, nil)
 			Expect(err).To(BeNil())
 
 			original := &bytes.Buffer{}

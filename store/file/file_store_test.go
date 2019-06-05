@@ -1,10 +1,11 @@
-package file
+package file_test
 
 import (
 	"github.com/patrickhuber/wrangle/store/values"
 	"reflect"
 
 	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/store/file"
 	"golang.org/x/crypto/openpgp"
 
 	"github.com/patrickhuber/wrangle/crypto"
@@ -63,14 +64,16 @@ rsa:
 ssh:
   public_key: public-key
   private_key: private-key
-  public_key_fingerprint: public-key-fingerprint`
+  public_key_fingerprint: public-key-fingerprint
+encrypted: ((@ENC:AES256:keylengthmustbe16or32characters_:3MS1R224UPrVFNzz:lsfuHSGDQh315D4ZVGFhJNpMopBPS0nDkg==))`
 
 			platform := "linux"
 			err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
 			Expect(err).To(BeNil())
 
-			file := "/test"
-			fileStore, err = NewFileStore(fileStoreName, file, fileSystem, nil)
+			macroManagerFactory := file.NewMacroManagerFactory()
+			filePath := "/test"
+			fileStore, err = file.NewFileStore(fileStoreName, filePath, fileSystem, nil, macroManagerFactory.Create())
 			Expect(err).To(BeNil())
 			Expect(fileStore).ToNot(BeNil())
 
@@ -83,13 +86,13 @@ ssh:
 			encrypter, err := factory.CreateEncrypter()
 			Expect(err).To(BeNil())
 
-			err = crypto.EncryptFile(fileSystem, encrypter, file, file+".gpg")
+			err = crypto.EncryptFile(fileSystem, encrypter, filePath, filePath+".gpg")
 			Expect(err).To(BeNil())
 
 			decrypter, err := factory.CreateDecrypter()
 			Expect(err).To(BeNil())
 
-			encryptedFileStore, err = NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decrypter)
+			encryptedFileStore, err = file.NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decrypter, nil)
 			Expect(err).To(BeNil())
 		})
 
@@ -206,6 +209,13 @@ ssh:
 					})
 				})
 
+			})
+			Context("UsingMacro", func(){
+				It("returns decrypted text", func(){
+					data, err := fileStore.Get("/encrypted")
+					Expect(err).To(BeNil())
+					Expect(data.Value()).To(Equal("plaintext"))
+				})
 			})
 		})
 		It("can roundtrip encrypted file", func() {

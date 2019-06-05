@@ -1,4 +1,4 @@
-package file
+package file_test
 
 import (
 	"github.com/spf13/afero"
@@ -6,27 +6,29 @@ import (
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
-	
+	"github.com/patrickhuber/wrangle/store/file"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("", func(){
-	It("can get by name", func(){
+var _ = Describe("", func() {
+	It("can get by name", func() {
 
 		fs := afero.NewMemMapFs()
+		macroManagerFactory := file.NewMacroManagerFactory()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
 		Expect(err).To(BeNil())
 
 		err = createKeys(fs, factory.Context())
 		Expect(err).To(BeNil())
 
-		provider := NewFileStoreProvider(afero.NewMemMapFs(), factory)
+		provider := file.NewFileStoreProvider(afero.NewMemMapFs(), factory, macroManagerFactory.Create())
 		name := provider.Name()
 		Expect(name).To(Equal("file"))
 	})
 
-	It("can create", func(){
+	It("can create", func() {
 		fs := afero.NewMemMapFs()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
 		Expect(err).To(BeNil())
@@ -34,7 +36,8 @@ var _ = Describe("", func(){
 		err = createKeys(fs, factory.Context())
 		Expect(err).To(BeNil())
 
-		provider := NewFileStoreProvider(fs, factory)
+		macroManagerFactory := file.NewMacroManagerFactory()
+		provider := file.NewFileStoreProvider(fs, factory, macroManagerFactory.Create())
 		configSource := &config.Store{
 			Name:      "test",
 			StoreType: "file",

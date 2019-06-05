@@ -46,7 +46,7 @@ func (crypter *aes256GCMCrypter) Decrypt(reader io.Reader, writer io.Writer) err
 }
 
 // NewAES256GCMCrypter creates a new AES 256 GCM encryptor
-func NewAES256GCMCrypter(key []byte) (Crypter, error) {
+func NewAES256GCMCrypter(key []byte, nonce []byte) (Crypter, error) {
 
 	// check key length. Optionally pad with some text
 	if len(key) != 16 && len(key) != 32 {
@@ -62,7 +62,10 @@ func NewAES256GCMCrypter(key []byte) (Crypter, error) {
 	if err != nil {
 		return nil, err
 	}
-	nonce := make([]byte, aesgcm.NonceSize())
+
+	if nonce == nil {
+		nonce = make([]byte, aesgcm.NonceSize())
+	}
 
 	return &aes256GCMCrypter{
 		key:    key,

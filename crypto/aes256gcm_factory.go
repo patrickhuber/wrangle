@@ -4,8 +4,9 @@ type aes256gcmFactory struct {
 	crypter Crypter
 }
 
-func NewAES256GCMFactory(key []byte) (Factory, error) {
-	crypter, err := NewAES256GCMCrypter(key)
+// NewAES256GCMFactory creates a aes 256 gcm cryptor
+func NewAES256GCMFactory(key []byte, nonce []byte) (Factory, error) {
+	crypter, err := NewAES256GCMCrypter(key, nonce)
 	if err != nil {
 		return nil, err
 	}
