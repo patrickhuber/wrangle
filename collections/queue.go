@@ -15,6 +15,7 @@ type queue struct {
 type Queue interface {
 	Enqueue(item interface{})
 	Dequeue() interface{}
+	Peek() interface{}
 	Count() int
 	Empty() bool
 }
@@ -49,6 +50,13 @@ func (q *queue) Dequeue() interface{} {
 	q.tail = q.tail.previous
 	q.count--
 	return item
+}
+
+func (q *queue) Peek() interface{} {
+	if q.count == 0{
+		return nil
+	}
+	return q.tail.item
 }
 
 func (q *queue) Count() int {
