@@ -6,19 +6,6 @@ import (
 	"github.com/patrickhuber/wrangle/collections"
 )
 
-type TokenType int
-
-const (
-	OpenVariable  TokenType = 0
-	CloseVariable TokenType = 1
-	Text          TokenType = 2
-)
-
-type Token struct {
-	TokenType TokenType
-	Capture   string
-}
-
 type variableTokenizer struct {
 	position int
 	state    int
@@ -28,6 +15,7 @@ type variableTokenizer struct {
 	queue    collections.Queue
 }
 
+// VariableTokenizer defines a tokenizer for variables
 type VariableTokenizer interface {
 	Next() *Token
 	Peek() *Token

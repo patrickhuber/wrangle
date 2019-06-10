@@ -12,11 +12,6 @@ type VariableParser interface{
 	Parse(tokenizer VariableTokenizer) *VariableAst
 }
 
-type VariableAst struct{
-	Children []*VariableAst
-	Leaf *Token
-}
-
 func NewVariableParser() VariableParser{
 	return &variableParser{
 
