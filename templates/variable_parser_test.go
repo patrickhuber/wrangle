@@ -73,18 +73,18 @@ var _ = Describe("VariableParser", func() {
 		output := parser.Parse(tokenizer)
 
 		Expect(output).ToNot(BeNil())
-		Expect(len(output.Children)).To(Equal(3))
+		Expect(len(output.Children)).To(Equal(1))
 
-		Expect(output.Children[0].Leaf).ToNot(BeNil())
-		Expect(output.Children[0].Leaf.TokenType).To(Equal(templates.OpenVariable))
+		Expect(len(output.Children[0].Children)).To(Equal(3))
+		Expect(output.Children[0].Children[0].Leaf).ToNot(BeNil())
+		Expect(output.Children[0].Children[0].Leaf.TokenType).To(Equal(templates.OpenVariable))
 
-		Expect(len(output.Children[1].Children)).To(Equal(1))
-		Expect(output.Children[1].Children[0].Leaf.TokenType).To(Equal(templates.Text))
-		Expect(output.Children[1].Children[0].Leaf.TokenType).To(Equal(templates.Text))
-		Expect(output.Children[1].Children[0].Leaf.Capture).To(Equal("test"))
+		Expect(output.Children[0].Children[1].Leaf.TokenType).To(Equal(templates.Text))
+		Expect(output.Children[0].Children[1].Leaf.TokenType).To(Equal(templates.Text))
+		Expect(output.Children[0].Children[1].Leaf.Capture).To(Equal("test"))
 
-		Expect(output.Children[2].Leaf).ToNot(BeNil())
-		Expect(output.Children[2].Leaf.TokenType).To(Equal(templates.CloseVariable))
+		Expect(output.Children[0].Children[2].Leaf).ToNot(BeNil())
+		Expect(output.Children[0].Children[2].Leaf.TokenType).To(Equal(templates.CloseVariable))
 	})
 
 	It("parses nested structures", func() {
@@ -130,24 +130,47 @@ var _ = Describe("VariableParser", func() {
 		parser := templates.NewVariableParser()
 		output := parser.Parse(tokenizer)
 		Expect(output).ToNot(BeNil())
-		Expect(len(output.Children)).To(Equal(5))
+		Expect(len(output.Children)).To(Equal(3))
 
 		// before
 		Expect(output.Children[0].Leaf).ToNot(BeNil())
 		Expect(output.Children[0].Leaf.TokenType).To(Equal(templates.Text))
 		Expect(output.Children[0].Leaf.Capture).To(Equal("before"))
 
-		// first capture
-		Expect(output.Children[1].Leaf).ToNot(BeNil())
-		Expect(output.Children[1].Leaf.TokenType).To(Equal(templates.OpenVariable))
+		// before nest
+		Expect(len(output.Children[1].Children)).To(Equal(5))
+		Expect(output.Children[1].Children[0].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[0].Leaf.TokenType).To(Equal(templates.OpenVariable))
 
-		// end first capture
-		Expect(output.Children[3].Leaf).ToNot(BeNil())
-		Expect(output.Children[3].Leaf.TokenType).To(Equal(templates.CloseVariable))
+		Expect(output.Children[1].Children[1].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[1].Leaf.TokenType).To(Equal(templates.Text))
+		Expect(output.Children[1].Children[1].Leaf.Capture).To(Equal("before-nest"))
+
+		// nest
+		Expect(len(output.Children[1].Children[2].Children)).To(Equal(3))
+
+		Expect(output.Children[1].Children[2].Children[0].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[2].Children[0].Leaf.TokenType).To(Equal(templates.OpenVariable))
+
+		Expect(output.Children[1].Children[2].Children[1].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[2].Children[1].Leaf.TokenType).To(Equal(templates.Text))
+		Expect(output.Children[1].Children[2].Children[1].Leaf.Capture).To(Equal("nest"))
+
+		Expect(output.Children[1].Children[2].Children[2].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[2].Children[2].Leaf.TokenType).To(Equal(templates.CloseVariable))
+
+		// after nest
+		Expect(output.Children[1].Children[3].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[3].Leaf.TokenType).To(Equal(templates.Text))
+		Expect(output.Children[1].Children[3].Leaf.Capture).To(Equal("after-nest"))
+
+		Expect(len(output.Children[1].Children)).To(Equal(5))
+		Expect(output.Children[1].Children[4].Leaf).ToNot(BeNil())
+		Expect(output.Children[1].Children[4].Leaf.TokenType).To(Equal(templates.CloseVariable))
 
 		// after
-		Expect(output.Children[4].Leaf).ToNot(BeNil())
-		Expect(output.Children[4].Leaf.TokenType).To(Equal(templates.Text))
-		Expect(output.Children[4].Leaf.Capture).To(Equal("after"))
+		Expect(output.Children[2].Leaf).ToNot(BeNil())
+		Expect(output.Children[2].Leaf.TokenType).To(Equal(templates.Text))
+		Expect(output.Children[2].Leaf.Capture).To(Equal("after"))
 	})
 })

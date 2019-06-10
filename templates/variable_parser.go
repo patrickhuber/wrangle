@@ -45,19 +45,19 @@ func (p *variableParser) Parse(tokenizer VariableTokenizer) *VariableAst{
 			ast.Children = append(ast.Children, &VariableAst{Leaf: token})
 			break
 
-		case OpenVariable:	
-			ast.Children = append(ast.Children, &VariableAst{ Leaf: token})
+		case OpenVariable:				
 			stack.Push(ast)
 			ast = &VariableAst{
 				Children: []*VariableAst{},
 			}
+			ast.Children = append(ast.Children, &VariableAst{ Leaf: token})
 			break
 
 		case CloseVariable:				
+			ast.Children = append(ast.Children, &VariableAst{ Leaf: token})
 			oldAst := ast		
 			ast  = stack.Pop().(*VariableAst)
-			ast.Children = append(ast.Children, oldAst)
-			ast.Children = append(ast.Children, &VariableAst{ Leaf: token})
+			ast.Children = append(ast.Children, oldAst)			
 			break
 		}
 	}
