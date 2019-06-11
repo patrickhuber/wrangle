@@ -58,10 +58,10 @@ func evaluateString(template string, resolver VariableResolver) (interface{}, er
 	parser := NewVariableParser()
 	ast := parser.Parse(tokenizer)
 	
-	return evaluateVariableAst(ast, resolver, 0)
+	return evaluateVariableAst(ast, resolver)
 }
 
-func evaluateVariableAst(ast *VariableAst, resolver VariableResolver, depth int)(interface{}, error){
+func evaluateVariableAst(ast *VariableAst, resolver VariableResolver)(interface{}, error){
 	// leaf text node
 	if ast.Leaf != nil && ast.Leaf.TokenType == Text {
 		return ast.Leaf.Capture, nil
@@ -87,7 +87,7 @@ func evaluateVariableAst(ast *VariableAst, resolver VariableResolver, depth int)
 			}
 		}
 
-		vTemp, err := evaluateVariableAst(n, resolver, depth + 1)
+		vTemp, err := evaluateVariableAst(n, resolver)
 		if err != nil {
 			return nil, err
 		}
