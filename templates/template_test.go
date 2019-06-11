@@ -155,4 +155,12 @@ var _ = Describe("", func() {
 		Expect(document).To(Equal("value"))
 	})
 
+	It("can evaluate nested variables", func(){
+		template := templates.NewTemplate("((abc((key))def))")
+		resolver, err := newSimpleResolver("/key", "123","/abc123def", "value")
+		Expect(err).To(BeNil())
+		document, err := template.Evaluate(resolver)
+		Expect(err).To(BeNil())
+		Expect(document).To(Equal("value"))
+	})
 })
