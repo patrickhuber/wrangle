@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/templates"
 	"github.com/patrickhuber/wrangle/ui"
 
 	"github.com/patrickhuber/wrangle/config"
@@ -17,10 +18,11 @@ type RunService interface {
 }
 
 type runService struct {
-	manager        store.Manager
-	fileSystem     afero.Fs
-	processFactory processes.Factory
-	console        ui.Console
+	manager         store.Manager
+	fileSystem      afero.Fs
+	processFactory  processes.Factory
+	console         ui.Console
+	templateFactory templates.Factory
 }
 
 // NewRunService - creates a new run command
@@ -28,12 +30,14 @@ func NewRunService(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	processFactory processes.Factory,
-	console ui.Console) RunService {
+	console ui.Console,
+	templateFactory templates.Factory) RunService {
 	return &runService{
-		manager:        manager,
-		fileSystem:     fileSystem,
-		processFactory: processFactory,
-		console:        console}
+		manager:         manager,
+		fileSystem:      fileSystem,
+		processFactory:  processFactory,
+		console:         console,
+		templateFactory: templateFactory}
 }
 
 func (service *runService) Run(params ProcessParams) error {
@@ -45,7 +49,7 @@ func (service *runService) Run(params ProcessParams) error {
 	}
 
 	cfg := params.Config()
-	processTemplate, err := store.NewProcessTemplate(cfg, service.manager)
+	processTemplate, err := store.NewProcessTemplate(cfg, service.manager, service.templateFactory)
 	if err != nil {
 		return err
 	}

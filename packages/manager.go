@@ -13,6 +13,7 @@ type manager struct {
 	taskProviders    tasks.ProviderRegistry
 	contextProvider  ContextProvider
 	manifestProvider ManifestProvider
+	templateFactory  templates.Factory
 }
 
 // Manager defines a manager interface
@@ -22,10 +23,11 @@ type Manager interface {
 }
 
 // NewManager creates a new package manager
-func NewManager(fileSystem filesystem.FsWrapper, taskProviders tasks.ProviderRegistry) Manager {
+func NewManager(fileSystem filesystem.FsWrapper, taskProviders tasks.ProviderRegistry, templateFactory templates.Factory) Manager {
 	return &manager{
-		fileSystem:    fileSystem,
-		taskProviders: taskProviders}
+		fileSystem:      fileSystem,
+		taskProviders:   taskProviders,
+		templateFactory: templateFactory}
 }
 
 func (manager *manager) Install(p Package) error {
@@ -72,7 +74,7 @@ func (manager *manager) Load(root, bin, packagesRoot, packageName, packageVersio
 
 func (manager *manager) interpolatePackageManifest(pkg interface{}, values map[string]string) (interface{}, error) {
 
-	template := templates.NewTemplate(pkg)
+	template := manager.templateFactory.Create(pkg)
 	dictionary := collections.NewDictionaryFromMap(values)
 	resolver := templates.NewDictionaryResolver(dictionary)
 

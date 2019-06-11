@@ -1,4 +1,4 @@
-package file
+package templates
 
 // Macro is used to process a value
 type Macro interface {

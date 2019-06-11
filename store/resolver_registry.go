@@ -6,12 +6,14 @@ import (
 	"github.com/patrickhuber/wrangle/templates"
 )
 
+// ResolverRegistry defines a registry for resolvers
 type ResolverRegistry interface {
 	GetResolvers(stores []string) ([]templates.VariableResolver, error)
 }
 
 type resolverRegistry struct {
 	resolvers map[string]templates.VariableResolver
+	templateFactory templates.Factory
 }
 
 func (reg *resolverRegistry) GetResolvers(stores []string) ([]templates.VariableResolver, error) {
@@ -26,7 +28,8 @@ func (reg *resolverRegistry) GetResolvers(stores []string) ([]templates.Variable
 	return resolvers, nil
 }
 
-func NewResolverRegistry(cfg *config.Config, graph config.Graph, manager Manager) (ResolverRegistry, error) {
+// NewResolverRegistry creates a new resolver registry
+func NewResolverRegistry(cfg *config.Config, graph config.Graph, manager Manager, templateFactory templates.Factory) (ResolverRegistry, error) {
 	queue := collections.NewQueue()
 
 	for _, s := range cfg.Stores {
@@ -36,6 +39,7 @@ func NewResolverRegistry(cfg *config.Config, graph config.Graph, manager Manager
 
 	reg := &resolverRegistry{
 		resolvers: map[string]templates.VariableResolver{},
+		templateFactory: templateFactory,
 	}
 
 	for !queue.Empty() {
@@ -103,7 +107,7 @@ func (reg *resolverRegistry) resolveConfigSourceParameters(configSource *config.
 	}
 
 	// create a template and use the template to resolve the params with the current in-order resolvers
-	template := templates.NewTemplate(configSource.Params)
+	template := reg.templateFactory.Create(configSource.Params)
 	document, err := template.Evaluate(resolvers...)
 	if err != nil {
 		return nil, err

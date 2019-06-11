@@ -1,4 +1,4 @@
-package file_test
+package templates_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/patrickhuber/wrangle/store/file"
+	"github.com/patrickhuber/wrangle/templates"
 )
 
 var _ = Describe("Aes256Macro", func() {
@@ -39,7 +39,7 @@ var _ = Describe("Aes256Macro", func() {
 		Expect(err).To(BeNil())
 
 		// create the macro
-		m := file.NewAES256Macro()
+		m := templates.NewAES256Macro()
 
 		encodedNonce := base64.StdEncoding.EncodeToString(nonce)
 		encodedCipherText := base64.StdEncoding.EncodeToString(writer.Bytes())
@@ -48,7 +48,7 @@ var _ = Describe("Aes256Macro", func() {
 		fmt.Printf("cipher text: '%s'", encodedCipherText)
 		fmt.Println()
 
-		metadata := &file.MacroMetadata{
+		metadata := &templates.MacroMetadata{
 			Name: "ENC",
 			Values: []string{
 				"AES256",

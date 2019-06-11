@@ -1,7 +1,6 @@
 package file
 
-import (	
-	"strings"
+import (		
 	"bufio"
 	"bytes"
 	"fmt"
@@ -22,12 +21,11 @@ type fileStore struct {
 	path       string
 	fileSystem afero.Fs
 	decrypter  crypto.Decrypter
-	macroManager MacroManager
 	cache      []byte	
 }
 
 // NewFileStore creates a new file store
-func NewFileStore(name string, path string, fileSystem afero.Fs, decrypter crypto.Decrypter, macroManager MacroManager) (store.Store, error) {
+func NewFileStore(name string, path string, fileSystem afero.Fs, decrypter crypto.Decrypter) (store.Store, error) {
 
 	if path == "" {
 		return nil, errors.New("file path is required")
@@ -42,8 +40,7 @@ func NewFileStore(name string, path string, fileSystem afero.Fs, decrypter crypt
 		name:       name,
 		path:       path,
 		fileSystem: fileSystem,
-		decrypter:  decrypter,
-		macroManager: macroManager,
+		decrypter:  decrypter,		
 	}, nil
 }
 
@@ -99,26 +96,7 @@ func (s *fileStore) createItem(document interface{}, name string, property strin
 	// (for compatibilty with credhub return types)
 	switch v := document.(type){
 	case(string):
-		// detect macro @ here
-		if !strings.HasPrefix(v, "((@"){
-			return store.NewValueItem(name, v), nil
-		}
-		 
-		v = strings.TrimPrefix(v, "((")
-		v = strings.TrimSuffix(v, "))")
-		
-		metadata, err := ParseMacroMetadata(v)
-		if err != nil{
-			return nil, err
-		}
-
-		v, err = s.macroManager.Run(metadata)
-		if err != nil{
-			return nil, err
-		}
-		
-		return store.NewValueItem(name, v), nil
-		
+		return store.NewValueItem(name, v), nil		
 	case(int):
 		return store.NewItem(name, store.Value, v), nil
 	case(map[interface{}]interface{}):

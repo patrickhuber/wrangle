@@ -10,10 +10,11 @@ import (
 )
 
 type credentialService struct {
-	manager  store.Manager
-	graph    config.Graph
-	cfg      *config.Config
-	registry store.ResolverRegistry
+	manager         store.Manager
+	graph           config.Graph
+	cfg             *config.Config
+	templateFactory templates.Factory
+	registry        store.ResolverRegistry
 }
 
 // CredentialService provides a service contract for common credential operations
@@ -26,17 +27,18 @@ type CredentialService interface {
 }
 
 // NewCredentialService creates a new credential service
-func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager) (CredentialService, error) {
+func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager, templateFactory templates.Factory) (CredentialService, error) {
 	// create the template for getting values we are going to use this to create our stores
-	registry, err := store.NewResolverRegistry(cfg, graph, manager)
+	registry, err := store.NewResolverRegistry(cfg, graph, manager, templateFactory)
 	if err != nil {
 		return nil, err
 	}
 
 	return &credentialService{
-		graph:    graph,
-		manager:  manager,
-		registry: registry,
+		graph:           graph,
+		manager:         manager,
+		registry:        registry,
+		templateFactory: templateFactory,
 	}, nil
 }
 
@@ -158,7 +160,7 @@ func (svc *credentialService) getStore(storeName string) (store.Store, error) {
 	}
 
 	// create the template and evaluate it
-	template := templates.NewTemplate(cfg.Params)
+	template := svc.templateFactory.Create(cfg.Params)
 	document, err := template.Evaluate(resolvers...)
 	if err != nil {
 		return nil, err

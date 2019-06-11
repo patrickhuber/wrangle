@@ -64,16 +64,14 @@ rsa:
 ssh:
   public_key: public-key
   private_key: private-key
-  public_key_fingerprint: public-key-fingerprint
-encrypted: ((@ENC:AES256:keylengthmustbe16or32characters_:3MS1R224UPrVFNzz:lsfuHSGDQh315D4ZVGFhJNpMopBPS0nDkg==))`
+  public_key_fingerprint: public-key-fingerprint`
 
 			platform := "linux"
 			err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
 			Expect(err).To(BeNil())
-
-			macroManagerFactory := file.NewMacroManagerFactory()
+			
 			filePath := "/test"
-			fileStore, err = file.NewFileStore(fileStoreName, filePath, fileSystem, nil, macroManagerFactory.Create())
+			fileStore, err = file.NewFileStore(fileStoreName, filePath, fileSystem, nil)
 			Expect(err).To(BeNil())
 			Expect(fileStore).ToNot(BeNil())
 
@@ -92,7 +90,7 @@ encrypted: ((@ENC:AES256:keylengthmustbe16or32characters_:3MS1R224UPrVFNzz:lsfuH
 			decrypter, err := factory.CreateDecrypter()
 			Expect(err).To(BeNil())
 
-			encryptedFileStore, err = file.NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decrypter, nil)
+			encryptedFileStore, err = file.NewFileStore("encryptedFileStore", "/test.gpg", fileSystem, decrypter)
 			Expect(err).To(BeNil())
 		})
 
@@ -209,13 +207,6 @@ encrypted: ((@ENC:AES256:keylengthmustbe16or32characters_:3MS1R224UPrVFNzz:lsfuH
 					})
 				})
 
-			})
-			Context("UsingMacro", func(){
-				It("returns decrypted text", func(){
-					data, err := fileStore.Get("/encrypted")
-					Expect(err).To(BeNil())
-					Expect(data.Value()).To(Equal("plaintext"))
-				})
 			})
 		})
 		It("can roundtrip encrypted file", func() {

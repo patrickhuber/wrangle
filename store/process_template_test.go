@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"github.com/patrickhuber/wrangle/templates"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/file"
@@ -86,7 +87,9 @@ processes:
 		manager := store.NewManager()
 		manager.Register(provider)
 
-		template, err := store.NewProcessTemplate(cfg, manager)
+		templateFactory := templates.NewFactory(nil)
+
+		template, err := store.NewProcessTemplate(cfg, manager, templateFactory)
 		Expect(err).To(BeNil())
 
 		processName := "go"
@@ -127,7 +130,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		template, err := store.NewProcessTemplate(configuration, manager)
+		templateFactory := templates.NewFactory(nil)
+		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
@@ -160,7 +164,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		template, err := store.NewProcessTemplate(configuration, manager)
+		templateFactory := templates.NewFactory(nil)
+		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
@@ -205,7 +210,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		template, err := store.NewProcessTemplate(configuration, manager)
+		templateFactory := templates.NewFactory(nil)
+		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
@@ -252,7 +258,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		_, err = store.NewProcessTemplate(configuration, manager)
+		templateFactory := templates.NewFactory(nil)
+		_, err = store.NewProcessTemplate(configuration, manager, templateFactory)
 		Expect(err).ToNot(BeNil())
 	})
 
@@ -288,7 +295,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		template, err := store.NewProcessTemplate(configuration, manager)
+		templateFactory := templates.NewFactory(nil)
+		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
 		Expect(err).To(BeNil())
 		p, err := template.Evaluate("a")
 		Expect(err).To(BeNil())

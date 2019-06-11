@@ -1,4 +1,4 @@
-package file
+package templates
 
 type MacroManager interface {
 	Run(metadata *MacroMetadata) (string, error)

@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"github.com/patrickhuber/wrangle/templates"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -15,8 +16,8 @@ var _ = Describe("ResolverRegistry", func() {
 		Expect(err).To(BeNil())
 
 		manager := store.NewManager()
-
-		registry, err := store.NewResolverRegistry(cfg, graph, manager)
+		templateFactory := templates.NewFactory(nil)
+		registry, err := store.NewResolverRegistry(cfg, graph, manager, templateFactory)
 		Expect(err).To(BeNil())
 
 		resolvers, err := registry.GetResolvers([]string{})

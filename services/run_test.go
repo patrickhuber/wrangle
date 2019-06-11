@@ -5,6 +5,7 @@ import (
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/templates"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 
@@ -36,7 +37,8 @@ var _ = Describe("Execute", func() {
 
 		// create run command
 		configStoreManager := store.NewManager()
-		runService = services.NewRunService(configStoreManager, fs, processes.NewOsFactory(), console)
+		templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
+		runService = services.NewRunService(configStoreManager, fs, processes.NewOsFactory(), console, templateFactory)
 	})
 	It("can run go version process", func() {
 

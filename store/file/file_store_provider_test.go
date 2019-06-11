@@ -16,14 +16,13 @@ var _ = Describe("", func() {
 	It("can get by name", func() {
 
 		fs := afero.NewMemMapFs()
-		macroManagerFactory := file.NewMacroManagerFactory()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
 		Expect(err).To(BeNil())
 
 		err = createKeys(fs, factory.Context())
 		Expect(err).To(BeNil())
 
-		provider := file.NewFileStoreProvider(afero.NewMemMapFs(), factory, macroManagerFactory.Create())
+		provider := file.NewFileStoreProvider(afero.NewMemMapFs(), factory)
 		name := provider.Name()
 		Expect(name).To(Equal("file"))
 	})
@@ -36,8 +35,7 @@ var _ = Describe("", func() {
 		err = createKeys(fs, factory.Context())
 		Expect(err).To(BeNil())
 
-		macroManagerFactory := file.NewMacroManagerFactory()
-		provider := file.NewFileStoreProvider(fs, factory, macroManagerFactory.Create())
+		provider := file.NewFileStoreProvider(fs, factory)
 		configSource := &config.Store{
 			Name:      "test",
 			StoreType: "file",

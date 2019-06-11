@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"github.com/patrickhuber/wrangle/templates"
 	"bytes"
 	"fmt"
 	"net/http/httptest"
@@ -37,7 +38,8 @@ var _ = Describe("InstallService", func() {
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
 		taskProviders.Register(tasks.NewLinkProvider(fs, console))
 
-		manager = packages.NewManager(fs, taskProviders)
+		templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
+		manager = packages.NewManager(fs, taskProviders, templateFactory)
 	})
 	Describe("NewInstall", func() {
 		It("returns install command", func() {

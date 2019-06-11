@@ -13,11 +13,14 @@ type Template interface {
 
 type template struct {
 	document interface{}
+	macroManager MacroManager
 }
 
 // NewTemplate - Creates a new template with the given document parameter
-func NewTemplate(document interface{}) Template {
-	return &template{document: document}
+func NewTemplate(document interface{}, macroManager MacroManager) Template {
+	return &template{
+		document: document,
+		macroManager: macroManager}
 }
 
 // Evaluate - Evaluates the template using the variable resolver for variable lookup

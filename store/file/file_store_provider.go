@@ -9,17 +9,15 @@ import (
 )
 
 type fileStoreProvider struct {
-	fileSystem   afero.Fs
-	factory      crypto.PgpFactory
-	macroManager MacroManager
+	fileSystem afero.Fs
+	factory    crypto.PgpFactory
 }
 
 // NewFileStoreProvider creates a new file store provider which implements the store.Provider interface
-func NewFileStoreProvider(fileSystem afero.Fs, factory crypto.PgpFactory, macroManager MacroManager) store.Provider {
+func NewFileStoreProvider(fileSystem afero.Fs, factory crypto.PgpFactory) store.Provider {
 	return &fileStoreProvider{
-		fileSystem:   fileSystem,
-		factory:      factory,
-		macroManager: macroManager}
+		fileSystem: fileSystem,
+		factory:    factory}
 }
 
 func (provider *fileStoreProvider) Name() string {
@@ -40,7 +38,7 @@ func (provider *fileStoreProvider) Create(configSource *config.Store) (store.Sto
 		}
 	}
 
-	store, err := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem, decrypter, provider.macroManager)
+	store, err := NewFileStore(cfg.Name, cfg.Path, provider.fileSystem, decrypter)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create file store")
 	}

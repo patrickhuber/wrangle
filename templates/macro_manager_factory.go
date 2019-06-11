@@ -1,4 +1,4 @@
-package file
+package templates
 
 type MacroManagerFactory interface {
 	Create() MacroManager

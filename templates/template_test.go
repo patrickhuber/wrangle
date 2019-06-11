@@ -6,9 +6,16 @@ import (
 	"github.com/patrickhuber/wrangle/templates"
 )
 
-var _ = Describe("", func() {
+var _ = Describe("Evaluate", func() {
+	var(
+		templateFactory templates.Factory
+	)
+	BeforeEach(func(){
+		macroManager := templates.NewMacroManager()
+		templateFactory = templates.NewFactory(macroManager)
+	})
 	It("can evaluate string", func() {
-		template := templates.NewTemplate("((key))")
+		template := templateFactory.Create("((key))")
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -17,7 +24,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate int", func() {
-		template := templates.NewTemplate("((key))")
+		template := templateFactory.Create("((key))")
 		resolver, err := newSimpleResolver("/key", 1)
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -26,7 +33,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate two keys in string", func() {
-		template := templates.NewTemplate("((key)):((other))")
+		template := templateFactory.Create("((key)):((other))")
 		resolver, err := newSimpleResolver("/key", "value", "/other", "thing")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -36,7 +43,7 @@ var _ = Describe("", func() {
 
 	It("can evaluate map string of string", func() {
 		m := map[string]string{"key": "((key))"}
-		template := templates.NewTemplate(m)
+		template := templateFactory.Create(m)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -49,7 +56,7 @@ var _ = Describe("", func() {
 
 	It("can evaluate map string of interface", func() {
 		m := map[string]interface{}{"key": "((key))"}
-		template := templates.NewTemplate(m)
+		template := templateFactory.Create(m)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -62,7 +69,7 @@ var _ = Describe("", func() {
 
 	It("can evaluate map interface of interface", func() {
 		m := map[interface{}]interface{}{"key": "((key))"}
-		template := templates.NewTemplate(m)
+		template := templateFactory.Create(m)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -76,7 +83,7 @@ var _ = Describe("", func() {
 	It("can evaluate nested map", func() {
 
 		m := map[string]interface{}{"key": map[string]string{"nested": "((nested))"}}
-		template := templates.NewTemplate(m)
+		template := templateFactory.Create(m)
 		resolver, err := newSimpleResolver("/nested", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -93,7 +100,7 @@ var _ = Describe("", func() {
 	It("can evaluate string array", func() {
 
 		a := []string{"one", "((key))", "three"}
-		template := templates.NewTemplate(a)
+		template := templateFactory.Create(a)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -107,7 +114,7 @@ var _ = Describe("", func() {
 	It("can evaluate interface array", func() {
 
 		a := []interface{}{"one", "((key))", "three"}
-		template := templates.NewTemplate(a)
+		template := templateFactory.Create(a)
 		resolver, err := newSimpleResolver("/key", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -119,7 +126,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can patch in slice for string", func() {
-		template := templates.NewTemplate("((key))")
+		template := templateFactory.Create("((key))")
 		resolver, err := newSimpleResolver("/key", []string{"one", "two"})
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -132,7 +139,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can patch in map for string", func() {
-		template := templates.NewTemplate("((key))")
+		template := templateFactory.Create("((key))")
 		resolver, err := newSimpleResolver("/key", map[string]string{"one": "test", "two": "other"})
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)
@@ -145,7 +152,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate resolver pipeline", func() {
-		template := templates.NewTemplate("((key1))")
+		template := templateFactory.Create("((key1))")
 		resolver1, err := newSimpleResolver("/key1", "((key2))")
 		Expect(err).To(BeNil())
 		resolver2, err := newSimpleResolver("/key2", "value")
@@ -156,7 +163,7 @@ var _ = Describe("", func() {
 	})
 
 	It("can evaluate nested variables", func(){
-		template := templates.NewTemplate("((abc((key))def))")
+		template := templateFactory.Create("((abc((key))def))")
 		resolver, err := newSimpleResolver("/key", "123","/abc123def", "value")
 		Expect(err).To(BeNil())
 		document, err := template.Evaluate(resolver)

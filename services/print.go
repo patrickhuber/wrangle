@@ -8,6 +8,7 @@ import (
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/templates"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/spf13/afero"
 )
@@ -17,6 +18,7 @@ type printService struct {
 	console         ui.Console
 	manager         store.Manager
 	rendererFactory renderers.Factory
+	templateFactory templates.Factory
 }
 
 // PrintParamsInclude defines what additional output to include
@@ -42,12 +44,14 @@ func NewPrintService(
 	manager store.Manager,
 	fileSystem afero.Fs,
 	console ui.Console,
-	rendererFactory renderers.Factory) PrintService {
+	rendererFactory renderers.Factory,
+	templateFactory templates.Factory) PrintService {
 	return &printService{
 		manager:         manager,
 		fileSystem:      fileSystem,
 		console:         console,
-		rendererFactory: rendererFactory}
+		rendererFactory: rendererFactory,
+		templateFactory: templateFactory}
 }
 
 func (service *printService) Print(params *PrintParams) error {
@@ -59,7 +63,7 @@ func (service *printService) Print(params *PrintParams) error {
 	}
 
 	cfg := params.Config
-	processTemplate, err := store.NewProcessTemplate(cfg, service.manager)
+	processTemplate, err := store.NewProcessTemplate(cfg, service.manager, service.templateFactory)
 	if err != nil {
 		return err
 	}
