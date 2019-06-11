@@ -63,7 +63,7 @@ func evaluateString(template string, resolver VariableResolver) (interface{}, er
 
 func evaluateVariableAst(ast *VariableAst, resolver VariableResolver)(interface{}, error){
 	// leaf text node
-	if ast.Leaf != nil && ast.Leaf.TokenType == Text {
+	if ast.Leaf != nil && ast.Leaf.TokenType == VariableAstText {
 		return ast.Leaf.Capture, nil
 	}
 
@@ -76,13 +76,13 @@ func evaluateVariableAst(ast *VariableAst, resolver VariableResolver)(interface{
 	for i, n := range ast.Children{
 
 		if n.Leaf != nil{
-			if n.Leaf.TokenType == OpenVariable {
+			if n.Leaf.TokenType == VariableAstOpen {
 				if i == 0{
 					isClosure = true
 				}
 				continue
 			}
-			if n.Leaf.TokenType == CloseVariable {
+			if n.Leaf.TokenType == VariableAstClose {
 				continue
 			}
 		}

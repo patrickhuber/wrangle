@@ -14,7 +14,7 @@ var _ = Describe("Tokenizer", func() {
 				t := templates.NewVariableTokenizer("abc 123")
 				token := t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.Text))
+				Expect(token.TokenType).To(Equal(templates.VariableAstText))
 				Expect(t.Next()).To(BeNil())
 			})
 		})
@@ -24,16 +24,16 @@ var _ = Describe("Tokenizer", func() {
 
 				token := t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.OpenVariable))
+				Expect(token.TokenType).To(Equal(templates.VariableAstOpen))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.Text))
+				Expect(token.TokenType).To(Equal(templates.VariableAstText))
 				Expect(token.Capture).To(Equal("test"))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.CloseVariable))
+				Expect(token.TokenType).To(Equal(templates.VariableAstClose))
 
 				Expect(t.Next()).To(BeNil())
 			})
@@ -44,29 +44,29 @@ var _ = Describe("Tokenizer", func() {
 
 				token := t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.OpenVariable))
+				Expect(token.TokenType).To(Equal(templates.VariableAstOpen))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.Text))
+				Expect(token.TokenType).To(Equal(templates.VariableAstText))
 				Expect(token.Capture).To(Equal("test"))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.OpenVariable))
+				Expect(token.TokenType).To(Equal(templates.VariableAstOpen))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.Text))
+				Expect(token.TokenType).To(Equal(templates.VariableAstText))
 				Expect(token.Capture).To(Equal("nested"))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.CloseVariable))
+				Expect(token.TokenType).To(Equal(templates.VariableAstClose))
 
 				token = t.Next()
 				Expect(token).ToNot(BeNil())
-				Expect(token.TokenType).To(Equal(templates.CloseVariable))
+				Expect(token.TokenType).To(Equal(templates.VariableAstClose))
 			})
 		})
 	})

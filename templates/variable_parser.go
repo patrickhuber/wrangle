@@ -31,7 +31,7 @@ func (p *variableParser) Parse(tokenizer VariableTokenizer) *VariableAst{
 		}
 
 		switch token.TokenType{
-		case Text:
+		case VariableAstText:
 			peek := tokenizer.Peek()
 			if peek == nil && len(ast.Children) == 0{
 				ast.Leaf = token
@@ -40,7 +40,7 @@ func (p *variableParser) Parse(tokenizer VariableTokenizer) *VariableAst{
 			ast.Children = append(ast.Children, &VariableAst{Leaf: token})
 			break
 
-		case OpenVariable:				
+		case VariableAstOpen:				
 			stack.Push(ast)
 			ast = &VariableAst{
 				Children: []*VariableAst{},
@@ -48,7 +48,7 @@ func (p *variableParser) Parse(tokenizer VariableTokenizer) *VariableAst{
 			ast.Children = append(ast.Children, &VariableAst{ Leaf: token})
 			break
 
-		case CloseVariable:				
+		case VariableAstClose:				
 			ast.Children = append(ast.Children, &VariableAst{ Leaf: token})
 			oldAst := ast		
 			ast  = stack.Pop().(*VariableAst)

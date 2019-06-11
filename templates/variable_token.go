@@ -3,9 +3,9 @@ package templates
 type TokenType int
 
 const (
-	OpenVariable  TokenType = 0
-	CloseVariable TokenType = 1
-	Text          TokenType = 2
+	VariableAstOpen  TokenType = 0
+	VariableAstClose TokenType = 1
+	VariableAstText  TokenType = 2
 )
 
 type Token struct {

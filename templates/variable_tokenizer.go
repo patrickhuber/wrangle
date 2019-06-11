@@ -75,7 +75,7 @@ func (t *variableTokenizer) Peek() *Token {
 
 			if t.capture.Len() > 0 {
 				t.queue.Enqueue(&Token{
-					TokenType: Text,
+					TokenType: VariableAstText,
 					Capture:   t.capture.String(),
 				})
 				t.capture.Reset()
@@ -83,7 +83,7 @@ func (t *variableTokenizer) Peek() *Token {
 
 			t.queue.Enqueue(
 				&Token{
-					TokenType: OpenVariable,
+					TokenType: VariableAstOpen,
 					Capture:   "((",
 				})
 
@@ -100,7 +100,7 @@ func (t *variableTokenizer) Peek() *Token {
 
 			if t.capture.Len() > 0 {
 				t.queue.Enqueue(&Token{
-					TokenType: Text,
+					TokenType: VariableAstText,
 					Capture:   t.capture.String(),
 				})
 				t.capture.Reset()
@@ -108,7 +108,7 @@ func (t *variableTokenizer) Peek() *Token {
 
 			t.queue.Enqueue(
 				&Token{
-					TokenType: CloseVariable,
+					TokenType: VariableAstClose,
 					Capture:   "))",
 				})
 
@@ -122,7 +122,7 @@ func (t *variableTokenizer) Peek() *Token {
 
 	t.queue.Enqueue(
 		&Token{
-			TokenType: Text,
+			TokenType: VariableAstText,
 			Capture:   t.capture.String(),
 		})
 	t.capture.Reset()
