@@ -1,10 +1,9 @@
 package templates
 
-import (
-	"bytes"
+import (		
+	"strings"
 	"fmt"
-	"reflect"
-	"regexp"
+	"reflect"	
 )
 
 // Template - contains a go object document that contains placeholders for variables
@@ -55,48 +54,59 @@ func evaluate(document interface{}, resolver VariableResolver) (interface{}, err
 }
 
 func evaluateString(template string, resolver VariableResolver) (interface{}, error) {
-	re := regexp.MustCompile(`\(\((?P<key>[^)]*)\)\)`)
-	index := 0
-	result := bytes.Buffer{}
-	for _, submatches := range re.FindAllStringSubmatchIndex(template, -1) {
-		matchStart := submatches[0]
-		matchEnd := submatches[1]
-		subMatchStart := submatches[2]
-		subMatchEnd := submatches[3]
+	tokenizer := NewVariableTokenizer(template)
+	parser := NewVariableParser()
+	ast := parser.Parse(tokenizer)
+	
+	return evaluateVariableAst(ast, resolver, 0)
+}
 
-		key := template[subMatchStart:subMatchEnd]
-		if len(key) > 0 && key[0] != '/' {
-			key = string('/') + key
+func evaluateVariableAst(ast *VariableAst, resolver VariableResolver, depth int)(interface{}, error){
+	// leaf text node
+	if ast.Leaf != nil && ast.Leaf.TokenType == Text {
+		return ast.Leaf.Capture, nil
+	}
+
+	if len(ast.Children ) == 0 {
+		return nil, fmt.Errorf("invalid ast detected, no children of non text node is invalid")
+	}
+		
+	value := ""
+	isClosure := false
+	for i, n := range ast.Children{
+
+		if n.Leaf != nil{
+			if n.Leaf.TokenType == OpenVariable {
+				if i == 0{
+					isClosure = true
+				}
+				continue
+			}
+			if n.Leaf.TokenType == CloseVariable {
+				continue
+			}
 		}
-		value, err := resolver.Get(string(key))
+
+		vTemp, err := evaluateVariableAst(n, resolver, depth + 1)
 		if err != nil {
 			return nil, err
 		}
-
-		// return the value if it is the only match
-		if matchStart == 0 && matchEnd == len(template) {
-			return value, nil
-		}
-
-		// check the value type
-		// if it is non-string, return a failure
-		v, ok := value.(string)
+		v, ok := vTemp.(string)
 		if !ok {
-			return nil, fmt.Errorf("unable to evaluate template. Multiple values detected in source string and key '%s' resulted in a variable lookup of type '%v'. Make sure the source is a single variable ((variable)) or the lookup value is of type string", key, reflect.TypeOf(v))
+			if len(value) > 0 {
+				return nil, fmt.Errorf("resolved value is a structure. values of mixed strings and structures are not allowed")
+			}
+			return vTemp, nil
 		}
-
-		// append the string previous to the match to the result
-		// up to the start of the match
-		result.WriteString(template[index:matchStart])
-		// update the index
-		index = submatches[1]
-		// append the lookup result
-		result.WriteString(v)
+		value += v
 	}
-	if index < len(template) {
-		result.WriteString(template[index:])
+	if !isClosure {
+		return value, nil
 	}
-	return result.String(), nil
+	if !strings.HasPrefix(value, "/"){
+		value = "/" + value
+	}
+	return resolver.Get(value)
 }
 
 func evaluateMapStringOfString(template map[string]string, resolver VariableResolver) (interface{}, error) {
