@@ -51,6 +51,18 @@ var _ = Describe("MemoryStore", func() {
 				Expect(err).ToNot(BeNil())
 			})
 		})
+		Context("when path starts with slash", func(){
+			It("returns value", func(){
+				item := store.NewItem("key", store.Value, "value")
+				err := memoryStore.Set(item)
+				Expect(err).To(BeNil())
+
+				data, err := memoryStore.Get("/key")
+
+				Expect(err).To(BeNil())
+				Expect(data.Value()).To(Equal(item.Value()))
+			})
+		})
 	})
 	Describe("Delete", func() {
 		It("deletes value", func() {

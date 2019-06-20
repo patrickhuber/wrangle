@@ -56,6 +56,25 @@ func (s *envStore) List(path string) ([]store.Item, error) {
 	return nil, nil
 }
 
+func (s *envStore) Lookup(path string) (store.Item, bool, error){
+	// cleanup the key just in case there is a forward slash
+	key := s.cleanKey(path)
+
+	// lookup the variable
+	environmentVariableName, ok := s.lookup[key]
+	if !ok {
+		return nil, false, nil
+	}
+
+	// look up the environment variable
+	data, ok := s.variables.Lookup(environmentVariableName)
+	if !ok {
+		return nil, false, nil
+	}
+	
+	return store.NewValueItem(key, data), true, nil
+}
+
 func (s *envStore) Delete(key string) error {
 	return fmt.Errorf("Delete method not implemented")
 }

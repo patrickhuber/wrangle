@@ -1,7 +1,6 @@
 package commands_test
 
-import (
-	"github.com/patrickhuber/wrangle/templates"
+import (	
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -35,9 +34,8 @@ var _ = Describe("Install", func() {
 		taskProviders.Register(tasks.NewExtractProvider(fs, console))
 		taskProviders.Register(tasks.NewLinkProvider(fs, console))
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
-
-		templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
-		packagesManager := packages.NewManager(fs, taskProviders, templateFactory)
+		
+		packagesManager := packages.NewManager(fs, taskProviders)
 
 		installService, err := services.NewInstallService("linux", fs, packagesManager)
 		Expect(err).To(BeNil())

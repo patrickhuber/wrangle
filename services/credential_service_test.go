@@ -7,7 +7,6 @@ import (
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/memory"
-	"github.com/patrickhuber/wrangle/templates"
 )
 
 var _ = Describe("CredentialService", func() {
@@ -52,8 +51,7 @@ var _ = Describe("CredentialService", func() {
 
 		manager.Register(memory.NewMemoryStoreProvider(sourceStore, destinationStore))
 
-		templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
-		credentialService, err = services.NewCredentialService(cfg, graph, manager, templateFactory)
+		credentialService, err = services.NewCredentialService(cfg, graph, manager)
 
 		Expect(err).To(BeNil())
 		Expect(credentialService).ToNot(BeNil())

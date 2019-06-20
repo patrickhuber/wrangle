@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/patrickhuber/wrangle/templates"
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/config"
@@ -29,8 +28,7 @@ func createApplication(
 	console ui.Console,
 	platform string,
 	envDictionary collections.Dictionary,
-	packagesManager packages.Manager,
-	templateFactory templates.Factory) (*cli.App, error) {
+	packagesManager packages.Manager) (*cli.App, error) {
 
 	rendererFactory := renderers.NewFactory(env.NewDictionary())
 
@@ -55,15 +53,15 @@ func createApplication(
 	}
 
 	initService := services.NewInitService(fileSystem)
-	runService := services.NewRunService(manager, fileSystem, processFactory, console, templateFactory)
-	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory, templateFactory)
+	runService := services.NewRunService(manager, fileSystem, processFactory, console)
+	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory)
 	packagesServiceFactory := services.NewPackageServiceFactory(console)
 	feedServiceFactory := feed.NewFeedServiceFactory(fileSystem)
 	installService, err := services.NewInstallService(platform, fileSystem, packagesManager)
 	envService := services.NewEnvService(console, envDictionary)
 	storesService := services.NewStoresService(console)
 	processesService := services.NewProcessesService(console)
-	credentialServiceFactory := services.NewCredentialServiceFactory(manager, fileSystem, templateFactory)
+	credentialServiceFactory := services.NewCredentialServiceFactory(manager, fileSystem)
 
 	if err != nil {
 		return nil, err

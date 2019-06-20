@@ -1,7 +1,6 @@
 package main
 
-import (
-	"github.com/patrickhuber/wrangle/templates"
+import (	
 	"fmt"
 	"log"
 	"os"
@@ -51,12 +50,8 @@ func main() {
 	taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
 
-	// create template factory
-	macroManagerFactory := templates.NewMacroManagerFactory()
-	templateFactory := templates.NewFactory(macroManagerFactory.Create())
-
 	// create package manager
-	packagesManager := packages.NewManager(fileSystem, taskProviders, templateFactory)
+	packagesManager := packages.NewManager(fileSystem, taskProviders)
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template
@@ -68,8 +63,7 @@ func main() {
 		console,
 		platform,
 		environmentVariables,
-		packagesManager,
-		templateFactory)
+		packagesManager)
 	failOnError(err)
 
 	err = app.Run(os.Args)

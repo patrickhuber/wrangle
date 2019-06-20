@@ -1,20 +1,19 @@
 package services
 
 import (
+	"github.com/patrickhuber/wrangle/templates"
 	"fmt"
 	"strings"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
-	"github.com/patrickhuber/wrangle/templates"
 )
 
 type credentialService struct {
-	manager         store.Manager
-	graph           config.Graph
-	cfg             *config.Config
-	templateFactory templates.Factory
-	registry        store.ResolverRegistry
+	manager  store.Manager
+	graph    config.Graph
+	cfg      *config.Config
+	registry store.ResolverRegistry
 }
 
 // CredentialService provides a service contract for common credential operations
@@ -27,18 +26,17 @@ type CredentialService interface {
 }
 
 // NewCredentialService creates a new credential service
-func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager, templateFactory templates.Factory) (CredentialService, error) {
+func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager) (CredentialService, error) {
 	// create the template for getting values we are going to use this to create our stores
-	registry, err := store.NewResolverRegistry(cfg, graph, manager, templateFactory)
+	registry, err := store.NewResolverRegistry(cfg, graph, manager)
 	if err != nil {
 		return nil, err
 	}
 
 	return &credentialService{
-		graph:           graph,
-		manager:         manager,
-		registry:        registry,
-		templateFactory: templateFactory,
+		graph:    graph,
+		manager:  manager,
+		registry: registry,
 	}, nil
 }
 
@@ -160,7 +158,7 @@ func (svc *credentialService) getStore(storeName string) (store.Store, error) {
 	}
 
 	// create the template and evaluate it
-	template := svc.templateFactory.Create(cfg.Params)
+	template := templates.NewTemplate(cfg.Params)
 	document, err := template.Evaluate(resolvers...)
 	if err != nil {
 		return nil, err

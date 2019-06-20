@@ -1,7 +1,7 @@
 package store_test
 
 import (
-	"github.com/patrickhuber/wrangle/templates"
+	"github.com/patrickhuber/wrangle/store/memory"	
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/file"
@@ -11,58 +11,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type fakeStore struct {
-	getByNameDelegate func(name string) (store.Item, error)
-	nameDelegate      func() string
-	typeDelegate      func() string
-	putDelegate       func(store.Item) (error)
-	deleteDelegate    func(key string) (error)
-	listDelegate func(path string)([]store.Item, error)
-}
-
-func (s *fakeStore) Get(name string) (store.Item, error) {
-	return s.getByNameDelegate(name)
-}
-
-func (s *fakeStore) Name() string {
-	return s.nameDelegate()
-}
-
-func (s *fakeStore) Type() string {
-	return s.typeDelegate()
-}
-
-func (s *fakeStore) Set(item store.Item) error{
-	return s.putDelegate(item)
-}
-
-func (s *fakeStore) Delete(key string) error {
-	return s.deleteDelegate(key)
-}
-
-func (s *fakeStore) List(path string) ([]store.Item, error){
-	return s.listDelegate(path)
-}
-
-type fakeProvider struct {
-	name           string
-	createDelegate func(source *config.Store) (store.Store, error)
-}
-
-func (p *fakeProvider) Name() string {
-	return p.name
-}
-
-func (p *fakeProvider) Create(source *config.Store) (store.Store, error) {
-	return p.createDelegate(source)
-}
-
 var _ = Describe("ProcessTemplate", func() {
 	It("can evaluate single store", func() {
 		data := `
 stores:
 - name: one
-  type: fake
+  type: memory
 processes:
 - name: go
   stores:
@@ -73,23 +27,14 @@ processes:
 		cfg, err := config.DeserializeConfigString(data)
 		Expect(err).To(BeNil())
 
-		provider := &fakeProvider{
-			name: "fake",
-			createDelegate: func(source *config.Store) (store.Store, error) {
-				return &fakeStore{
-					getByNameDelegate: func(name string) (store.Item, error) {
-						return store.NewItem("version", store.Value, "version"), nil
-					},
-				}, nil
-			},
-		}
-
+		memoryStore := memory.NewMemoryStore("one")
+		memoryStore.Set(store.NewItem("version", "value", "version"))
+		provider := memory.NewMemoryStoreProvider(memoryStore)
+		
 		manager := store.NewManager()
 		manager.Register(provider)
 
-		templateFactory := templates.NewFactory(nil)
-
-		template, err := store.NewProcessTemplate(cfg, manager, templateFactory)
+		template, err := store.NewProcessTemplate(cfg, manager)
 		Expect(err).To(BeNil())
 
 		processName := "go"
@@ -129,9 +74,8 @@ processes:
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
-
-		templateFactory := templates.NewFactory(nil)
-		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
+		
+		template, err := store.NewProcessTemplate(configuration, manager)
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
@@ -163,9 +107,8 @@ processes:
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
-
-		templateFactory := templates.NewFactory(nil)
-		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
+		
+		template, err := store.NewProcessTemplate(configuration, manager)
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
@@ -210,8 +153,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		templateFactory := templates.NewFactory(nil)
-		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
+		
+		template, err := store.NewProcessTemplate(configuration, manager)
 		Expect(err).To(BeNil())
 		environment, err := template.Evaluate("echo")
 		Expect(err).To(BeNil())
@@ -258,8 +201,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		templateFactory := templates.NewFactory(nil)
-		_, err = store.NewProcessTemplate(configuration, manager, templateFactory)
+		
+		_, err = store.NewProcessTemplate(configuration, manager)
 		Expect(err).ToNot(BeNil())
 	})
 
@@ -295,8 +238,8 @@ processes:
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
 
-		templateFactory := templates.NewFactory(nil)
-		template, err := store.NewProcessTemplate(configuration, manager, templateFactory)
+		
+		template, err := store.NewProcessTemplate(configuration, manager)
 		Expect(err).To(BeNil())
 		p, err := template.Evaluate("a")
 		Expect(err).To(BeNil())

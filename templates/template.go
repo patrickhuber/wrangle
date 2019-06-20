@@ -13,14 +13,12 @@ type Template interface {
 
 type template struct {
 	document interface{}
-	macroManager MacroManager
 }
 
 // NewTemplate - Creates a new template with the given document parameter
-func NewTemplate(document interface{}, macroManager MacroManager) Template {
+func NewTemplate(document interface{}) Template {
 	return &template{
-		document: document,
-		macroManager: macroManager}
+		document: document}
 }
 
 // Evaluate - Evaluates the template using the variable resolver for variable lookup
@@ -74,7 +72,7 @@ func evaluateVariableAst(ast *VariableAst, resolver VariableResolver)(interface{
 		return nil, fmt.Errorf("invalid ast detected, no children of non text node is invalid")
 	}
 		
-	value := ""
+	key := ""
 	isClosure := false
 	for i, n := range ast.Children{
 
@@ -96,20 +94,32 @@ func evaluateVariableAst(ast *VariableAst, resolver VariableResolver)(interface{
 		}
 		v, ok := vTemp.(string)
 		if !ok {
-			if len(value) > 0 {
+			if len(key) > 0 {
 				return nil, fmt.Errorf("resolved value is a structure. values of mixed strings and structures are not allowed")
 			}
 			return vTemp, nil
 		}
-		value += v
+		key += v
 	}
 	if !isClosure {
-		return value, nil
+		return key, nil
 	}
-	if !strings.HasPrefix(value, "/"){
-		value = "/" + value
+
+	original := key
+	if !strings.HasPrefix(key, "/") && !strings.HasPrefix(key, "@"){
+		key = "/" + key
 	}
-	return resolver.Get(value)
+
+	v, ok, err := resolver.Lookup(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok{
+		// this resolver didn't process the value so return it as a variable
+		return fmt.Sprintf("((%s))", original), nil
+	}
+	return v, nil
 }
 
 func evaluateMapStringOfString(template map[string]string, resolver VariableResolver) (interface{}, error) {

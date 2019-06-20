@@ -18,3 +18,14 @@ func (resolver *storeVariableResolver) Get(name string) (interface{}, error) {
 	}
 	return data.Value(), nil
 }
+
+func (resolver *storeVariableResolver) Lookup(name string) (interface{}, bool, error){
+	data, ok, err := resolver.store.Lookup(name)
+	if err != nil {
+		return nil, false, err
+	}
+	if !ok{
+		return nil, false, nil
+	}
+	return data.Value(), true, nil
+}

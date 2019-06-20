@@ -74,6 +74,22 @@ func (s *credHubStore) List(path string) ([]store.Item, error){
 	return s.listAsyncWithWorkers(path)
 }
 
+func (s *credHubStore) Lookup(path string) (store.Item, bool, error){
+	ch := s.credHub
+	results, err := ch.FindByPath(path)
+	if err != nil {
+		return nil, false, err
+	}
+	if len(results.Credentials) == 0 {
+		return nil, false, nil
+	}
+	item, err := s.Get(path)
+	if err != nil {
+		return nil, false, err
+	}
+	return item, true, nil
+}
+
 func (s *credHubStore) listSequential(path string) ([] store.Item, error){
 	ch := s.credHub
 	findResults, err := ch.FindByPath(path)

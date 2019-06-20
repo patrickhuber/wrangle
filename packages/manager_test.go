@@ -1,7 +1,6 @@
 package packages_test
 
-import (
-	"github.com/patrickhuber/wrangle/templates"
+import (	
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -33,9 +32,8 @@ var _ = Describe("Manager", func() {
 		registry.Register(tasks.NewDownloadProvider(fs, console))
 		registry.Register(tasks.NewExtractProvider(fs, console))
 		registry.Register(tasks.NewLinkProvider(fs, console))
-
-		templateFactory := templates.NewFactory(nil)
-		manager = packages.NewManager(fs, registry, templateFactory)
+		
+		manager = packages.NewManager(fs, registry)
 
 		context = packages.NewDefaultContext("/wrangle", "test", "1.0.0")
 	})

@@ -3,15 +3,13 @@ package store
 import (
 	"fmt"
 
-	"github.com/patrickhuber/wrangle/templates"
-
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/templates"
 )
 
 type processTemplate struct {
-	cfg             *config.Config
-	registry        ResolverRegistry
-	templateFactory templates.Factory
+	cfg      *config.Config
+	registry ResolverRegistry
 }
 
 // ProcessTemplate defines a template for processes
@@ -20,22 +18,21 @@ type ProcessTemplate interface {
 }
 
 // NewProcessTemplate  creates a new process template with the given config and manager
-func NewProcessTemplate(cfg *config.Config, manager Manager, templateFactory templates.Factory) (ProcessTemplate, error) {
+func NewProcessTemplate(cfg *config.Config, manager Manager) (ProcessTemplate, error) {
 
 	g, err := config.NewConfigurationGraph(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	registry, err := NewResolverRegistry(cfg, g, manager, templateFactory)
+	registry, err := NewResolverRegistry(cfg, g, manager)
 	if err != nil {
 		return nil, err
 	}
 
 	return &processTemplate{
-		registry:        registry,
-		cfg:             cfg,
-		templateFactory: templateFactory,
+		registry: registry,
+		cfg:      cfg,
 	}, nil
 }
 
@@ -67,7 +64,7 @@ func (t *processTemplate) evaluate(process *config.Process) (*config.Process, er
 		return nil, err
 	}
 
-	template := t.templateFactory.Create(document)
+	template := templates.NewTemplate(document)
 	resolved, err := template.Evaluate(resolvers...)
 	if err != nil {
 		return nil, err

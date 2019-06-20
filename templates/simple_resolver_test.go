@@ -36,6 +36,14 @@ func (resolver *simpleResolver) Get(key string) (interface{}, error) {
 	return value, nil
 }
 
+func (resolver *simpleResolver) Lookup(key string)(interface{}, bool, error){
+	value, ok := resolver.innerMap[key]
+	if !ok{
+		return nil, ok, nil
+	}
+	return value, true, nil
+}
+
 var _ = Describe("SimpleResolver", func() {
 	It("can create", func() {
 

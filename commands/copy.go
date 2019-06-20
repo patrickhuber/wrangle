@@ -1,7 +1,10 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/store"
 	"github.com/urfave/cli"
 )
 
@@ -9,32 +12,30 @@ func CreateCopyCommand(
 	app *cli.App,
 	credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
 	command := &cli.Command{
-		Name:    "copy",
-		Aliases: []string{"cp"},
-		Usage:   "copies a credential from one store to another",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "source, s",
-				Usage: "the source store name",
-			},
-			cli.StringFlag{
-				Name:  "source-path, sp",
-				Usage: "the path in the source store to the credential",
-			},
-			cli.StringFlag{
-				Name:  "destination, d",
-				Usage: "the desination store name",
-			},
-			cli.StringFlag{
-				Name:  "destination-path, dp",
-				Usage: "the path in the destination to the credential",
-			},
-		},
+		Name:      "copy",
+		Aliases:   []string{"cp"},
+		Usage:     "copies a credential from one store to another",
+		ArgsUsage: "<source>:<key> <destination>:<key>",
 		Action: func(context *cli.Context) error {
-			source := context.String("source")
-			sourcePath := context.String("source-path")
-			destination := context.String("destination")
-			destinationPath := context.String("destination-path")
+			source := context.Args().Get(0)
+			if len(source) == 0 {
+				return fmt.Errorf("missing source")
+			}
+
+			destination := context.Args().Get(1)
+			if len(destination) == 0 {
+				return fmt.Errorf("missing destination")
+			}
+
+			sourceStoreAndPath, err := store.ParsePath(source)
+			if err != nil {
+				return err
+			}
+
+			destinationStoreAndPath, err := store.ParsePath(destination)
+			if err != nil {
+				return err
+			}
 
 			// need to pass this to the credential service
 			configPath := context.GlobalString("config")
@@ -43,7 +44,9 @@ func CreateCopyCommand(
 			if err != nil {
 				return err
 			}
-			return credentialService.Copy(source, sourcePath, destination, destinationPath)
+			return credentialService.Copy(
+				sourceStoreAndPath.Store, sourceStoreAndPath.Path,
+				destinationStoreAndPath.Store, destinationStoreAndPath.Path)
 		},
 	}
 

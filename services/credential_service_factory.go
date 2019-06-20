@@ -3,7 +3,6 @@ package services
 import (
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
-	"github.com/patrickhuber/wrangle/templates"
 	"github.com/spf13/afero"
 )
 
@@ -13,17 +12,15 @@ type CredentialServiceFactory interface {
 }
 
 type credentialServiceFactory struct {
-	manager         store.Manager
-	fs              afero.Fs
-	templateFactory templates.Factory
+	manager store.Manager
+	fs      afero.Fs
 }
 
 // NewCredentialServiceFactory creates a new credential service factory
-func NewCredentialServiceFactory(manager store.Manager, fs afero.Fs, templateFactory templates.Factory) CredentialServiceFactory {
+func NewCredentialServiceFactory(manager store.Manager, fs afero.Fs) CredentialServiceFactory {
 	return &credentialServiceFactory{
-		manager:         manager,
-		fs:              fs,
-		templateFactory: templateFactory,
+		manager: manager,
+		fs:      fs,
 	}
 }
 
@@ -40,5 +37,5 @@ func (factory *credentialServiceFactory) Create(configFile string) (CredentialSe
 		return nil, err
 	}
 
-	return NewCredentialService(cfg, graph, factory.manager, factory.templateFactory)
+	return NewCredentialService(cfg, graph, factory.manager)
 }

@@ -16,3 +16,8 @@ func NewDictionaryResolver(dictionary collections.ReadOnlyDictionary) VariableRe
 func (resolver *dictionaryResolver) Get(name string) (interface{}, error) {
 	return resolver.dictionary.Get(name)
 }
+
+func (resolver *dictionaryResolver) Lookup(name string) (interface{}, bool, error) {
+	v, ok := resolver.dictionary.Lookup(name)
+	return v, ok, nil
+}

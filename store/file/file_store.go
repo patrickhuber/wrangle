@@ -90,6 +90,41 @@ func (s *fileStore) List(path string) ([]store.Item, error) {
 	return nil, nil
 }
 
+func (s *fileStore) Lookup(path string) (store.Item, bool, error){
+	data, err := s.getFileData()
+	if err != nil {
+		return nil, false, err
+	}
+
+	// read the document
+	document := make(map[interface{}]interface{})
+	err = yaml.Unmarshal(data, &document)
+	if err != nil {
+		return nil, false, errors.Wrapf(err, "unable to unmarshal yaml data from file '%s'", s.path)
+	}
+
+	name, property, err := splitToNameAndProperty(path)
+	if err != nil {
+		return nil, false, err
+	}
+
+	// turn the key into a patch pointer
+	pointer, err := patch.NewPointerFromString(name)
+	if err != nil {
+		return nil, false, errors.Wrapf(err, "unable to create patch pointer for key '%s'", path)
+	}
+
+	// find the pointer in the document
+	response, err := patch.FindOp{Path: pointer}.Apply(document)
+	if err != nil {
+		return nil, false, nil
+	}
+	item, err := s.createItem(response, name, property)
+	if err != nil {
+		return nil, false, err
+	}
+	return item, true, nil
+}
 
 func (s *fileStore) createItem(document interface{}, name string, property string) (store.Item, error){	
 	// map document to canonical type

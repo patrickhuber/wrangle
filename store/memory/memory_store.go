@@ -49,6 +49,15 @@ func (s *memoryStore) Get(key string) (store.Item, error) {
 	return value, nil
 }
 
+func (s *memoryStore) Lookup(key string) (store.Item, bool, error){
+	key = s.normalizeKey(key)
+	value, ok := s.data[key]
+	if !ok{
+		return nil, false, nil
+	}
+	return value, true, nil
+}
+
 func (s *memoryStore) List(path string) ([]store.Item, error) {
 	path = s.normalizeKey(path)
 	pathSplit := strings.Split(path, "/")

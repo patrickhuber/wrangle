@@ -4,7 +4,6 @@ import (
 	"bytes"
 
 	"github.com/patrickhuber/wrangle/services"
-	"github.com/patrickhuber/wrangle/templates"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -87,10 +86,8 @@ var _ = Describe("Execute", func() {
 			// create console
 			console := ui.NewMemoryConsole()
 
-			templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
-
 			// create and run command
-			service := services.NewPrintService(manager, fileSystem, console, rendererFactory, templateFactory)
+			service := services.NewPrintService(manager, fileSystem, console, rendererFactory)
 			params := &services.PrintParams{
 				Config:      cfg,
 				ProcessName: "echo",
@@ -215,10 +212,8 @@ func RunPrintTest(
 	fileSystem := afero.NewMemMapFs()
 	console := ui.NewMemoryConsole()
 
-	templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
-
 	// create and run command
-	service := services.NewPrintService(manager, fileSystem, console, rendererFactory, templateFactory)
+	service := services.NewPrintService(manager, fileSystem, console, rendererFactory)
 	params := &services.PrintParams{
 		Config:      cfg,
 		ProcessName: processName,

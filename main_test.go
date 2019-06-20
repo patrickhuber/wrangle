@@ -7,7 +7,6 @@ import (
 
 	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/tasks"
-	"github.com/patrickhuber/wrangle/templates"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -65,8 +64,7 @@ func runPrintTest(command string, expected string) {
 	taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
 
-	templateFactory := templates.NewFactory(templates.NewMacroManagerFactory().Create())
-	packagesManager := packages.NewManager(fileSystem, taskProviders, templateFactory)
+	packagesManager := packages.NewManager(fileSystem, taskProviders)
 
 	// create config file
 	configFileContent := `
@@ -108,8 +106,7 @@ processes:
 		console,
 		platform,
 		collections.NewDictionary(),
-		packagesManager,
-		templateFactory)
+		packagesManager)
 	Expect(err).To(BeNil())
 	Expect(app).ToNot(BeNil())
 

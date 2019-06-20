@@ -40,6 +40,21 @@ func (s *metaStore) Set(item store.Item) error {
 }
 
 func (s *metaStore) Get(key string) (store.Item, error) {
+	item, found, err := s.Lookup(key)
+	if err != nil {
+		return nil, err
+	}
+	if !found{
+		return nil, fmt.Errorf("unable to find key '%s' in meta store", key)
+	}
+	return item, nil
+}
+
+func (s *metaStore) List(path string) ([]store.Item, error) {
+	return nil, nil
+}
+
+func (s *metaStore) Lookup(key string) (store.Item, bool, error){
 	var value string
 	switch key {
 	case ConfigFilePathKey:
@@ -47,13 +62,9 @@ func (s *metaStore) Get(key string) (store.Item, error) {
 	case ConfigFileFolderKey:
 		value = s.configFileFolder
 	default:
-		return nil, fmt.Errorf("unable to find key '%s' in meta store", key)
+		return nil, false, nil
 	}
-	return store.NewItem(key, store.Value, value), nil
-}
-
-func (s *metaStore) List(path string) ([]store.Item, error) {
-	return nil, nil
+	return store.NewItem(key, store.Value, value), true, nil
 }
 
 func (s *metaStore) Delete(key string) error {
