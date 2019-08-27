@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/patrickhuber/wrangle/config"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/config"	
 	"strings"
 
 	"github.com/patrickhuber/wrangle/services"
@@ -15,7 +15,7 @@ import (
 func CreatePrintCommand(
 	app *cli.App,
 	printService services.PrintService,
-	fs afero.Fs) *cli.Command {
+	fs filesystem.FileSystem) *cli.Command {
 
 	command := &cli.Command{
 		Name:      "print",

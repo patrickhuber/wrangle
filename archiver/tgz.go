@@ -1,19 +1,18 @@
 package archiver
 
 import (
+	"github.com/patrickhuber/wrangle/filesystem"
 	"compress/gzip"
 	"fmt"
-
-	"github.com/spf13/afero"
 )
 
 // https://github.com/mholt/archiver/blob/master/targz.go
 type tgzArchiver struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 }
 
 // NewTargz returns a new targz archiver
-func NewTargz(fileSystem afero.Fs) Archiver {
+func NewTargz(fileSystem filesystem.FileSystem) Archiver {
 	return &tgzArchiver{fileSystem: fileSystem}
 }
 

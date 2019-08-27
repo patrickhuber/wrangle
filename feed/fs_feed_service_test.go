@@ -3,33 +3,36 @@ package feed_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/spf13/afero"
+
+	"github.com/patrickhuber/wrangle/filesystem"
 
 	"github.com/patrickhuber/wrangle/feed"
 )
 
 var _ = Describe("FeedService", func() {
-	var (fs afero.Fs
-		 feedService feed.FeedService)
-	BeforeEach(func(){
-		fs = afero.NewMemMapFs()
+	var (
+		fs          filesystem.FileSystem
+		feedService feed.FeedService
+	)
+	BeforeEach(func() {
+		fs = filesystem.NewMemory()
 
-		err := afero.WriteFile(fs, "/wrangle/packages/test/1.0.0/test.1.0.0.yml", []byte(""), 0666)
+		err := fs.Write("/wrangle/packages/test/1.0.0/test.1.0.0.yml", []byte(""), 0666)
 		Expect(err).To(BeNil())
 
-		err = afero.WriteFile(fs, "/wrangle/packages/test/1.0.1/test.1.0.1.yml", []byte(""), 0666)
+		err = fs.Write("/wrangle/packages/test/1.0.1/test.1.0.1.yml", []byte(""), 0666)
 		Expect(err).To(BeNil())
 
-		err = afero.WriteFile(fs, "/wrangle/packages/other/1.0.0/other.1.0.0.yml", []byte(""), 0666)
+		err = fs.Write("/wrangle/packages/other/1.0.0/other.1.0.0.yml", []byte(""), 0666)
 		Expect(err).To(BeNil())
 
-		err = afero.WriteFile(fs, "/wrangle/packages/last/1.0.0/last.1.0.0.yml", []byte(""), 0666)
+		err = fs.Write("/wrangle/packages/last/1.0.0/last.1.0.0.yml", []byte(""), 0666)
 		Expect(err).To(BeNil())
 
 		feedService = feed.NewFsFeedService(fs, "/wrangle/packages")
 	})
 	Describe("List", func() {
-		It("lists all packages", func() {			
+		It("lists all packages", func() {
 			response, err := feedService.List(&feed.FeedListRequest{})
 			Expect(err).To(BeNil())
 			Expect(len(response.Packages)).To(Equal(3))

@@ -1,11 +1,11 @@
 package commands_test
 
 import (
-	"github.com/patrickhuber/wrangle/global"
-	"github.com/urfave/cli"
-	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/commands"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/global"
+	"github.com/patrickhuber/wrangle/services"
+	"github.com/urfave/cli"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,9 +13,9 @@ import (
 
 var _ = Describe("Init", func() {
 	It("creates config file", func() {
-		fileSystem := afero.NewMemMapFs()
+		fileSystem := filesystem.NewMemory()
 		initService := services.NewInitService(fileSystem)
-		
+
 		defaultConfigPath := "/config"
 
 		app := cli.NewApp()
@@ -28,17 +28,17 @@ var _ = Describe("Init", func() {
 			},
 		}
 		app.Commands = []cli.Command{
-			*commands.CreateInitCommand(app,initService),
+			*commands.CreateInitCommand(app, initService),
 		}
-		
+
 		err := app.Run([]string{"wrangle", "init"})
 		Expect(err).To(BeNil())
 
-		ok, err := afero.Exists(fileSystem, "/config")
+		ok, err := fileSystem.Exists("/config")
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 
-		data, err := afero.ReadFile(fileSystem, "/config")
+		data, err := fileSystem.Read("/config")
 		Expect(err).To(BeNil())
 		Expect(string(data)).To(Equal("stores: \nprocesses: \n"))
 	})

@@ -3,12 +3,12 @@ package services
 import (
 	"github.com/pkg/errors"
 
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/spf13/afero"
 )
 
 // RunService runs a process defined by params
@@ -18,7 +18,7 @@ type RunService interface {
 
 type runService struct {
 	manager        store.Manager
-	fileSystem     afero.Fs
+	fileSystem     filesystem.FileSystem
 	processFactory processes.Factory
 	console        ui.Console
 }
@@ -26,7 +26,7 @@ type runService struct {
 // NewRunService - creates a new run command
 func NewRunService(
 	manager store.Manager,
-	fileSystem afero.Fs,
+	fileSystem filesystem.FileSystem,
 	processFactory processes.Factory,
 	console ui.Console) RunService {
 	return &runService{

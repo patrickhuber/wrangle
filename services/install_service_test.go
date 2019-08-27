@@ -15,25 +15,23 @@ import (
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
 
-	"github.com/spf13/afero"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("InstallService", func() {
 	var (
-		fs      filesystem.FsWrapper
+		fs      filesystem.FileSystem
 		manager packages.Manager
 	)
 	BeforeEach(func() {
 		// create command dependencies
 		console := ui.NewMemoryConsole()
-		fs = filesystem.NewMemMapFs()
-
+		fs = filesystem.NewMemory()
+		
 		taskProviders := tasks.NewProviderRegistry()
 		taskProviders.Register(tasks.NewExtractProvider(fs, console))
-		taskProviders.Register(tasks.NewDownloadProvider(fs, console))
+		taskProviders.Register(tasks.NewDownloadProvider(fs, console))		
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
 		taskProviders.Register(tasks.NewLinkProvider(fs, console))
 		
@@ -90,7 +88,7 @@ var _ = Describe("InstallService", func() {
 
 			packagePath := filepath.Join(packagesRoot, packageName, packageVersion)
 			packageManifestPath := filepath.Join(packagePath, fmt.Sprintf("%s.%s.yml", packageName, packageVersion))
-			err = afero.WriteFile(fs, packageManifestPath, []byte(packageManifest), 0600)
+			err = fs.Write(packageManifestPath, []byte(packageManifest), 0600)
 			Expect(err).To(BeNil())
 
 			// create the command and execute it

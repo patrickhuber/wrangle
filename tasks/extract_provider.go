@@ -2,25 +2,25 @@ package tasks
 
 import (
 	"github.com/mitchellh/mapstructure"
-	"fmt"
-	"path/filepath"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/filepath"
+	"fmt"	
 	"strings"
 
 	"github.com/patrickhuber/wrangle/archiver"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 )
 
 const extractTaskType = "extract"
 
 type extractProvider struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 	console    ui.Console
 }
 
 // NewExtractProvider creates a new provider
-func NewExtractProvider(fileSystem afero.Fs, console ui.Console) Provider {
+func NewExtractProvider(fileSystem filesystem.FileSystem, console ui.Console) Provider {
 	return &extractProvider{
 		fileSystem: fileSystem,
 		console:    console,
@@ -32,10 +32,15 @@ func (provider *extractProvider) TaskType() string {
 }
 
 func (provider *extractProvider) Execute(task Task, context TaskContext) error {
-	archive, ok := task.Params().Lookup("archive")
+	archiveInterface, ok := task.Params()["archive"]
 	if !ok {
-		return errors.New("archive parameter is required for extract tasks")
+		return errors.New("extract task, archive parameter is required for extract tasks")
 	}
+	archive, ok := archiveInterface.(string)
+	if !ok{
+		return errors.New("extract task, archive parameter is expected to be of type string")
+	}
+
 	archive = filepath.Join(context.PackageVersionPath(), archive)
 
 	destination := context.PackageVersionPath()

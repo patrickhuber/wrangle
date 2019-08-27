@@ -3,15 +3,15 @@ package settings_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/settings"
-	"github.com/spf13/afero"
 )
 
 var _ = Describe("FsProvider", func() {
 	Context("Write", func() {
 		It("can write settings", func() {
-			fs := afero.NewMemMapFs()
+			fs := filesystem.NewMemory()
 			s := &settings.Settings{
 				Feeds: []string{global.PackageFeedURL},
 				Paths: &settings.Paths{
@@ -24,14 +24,14 @@ var _ = Describe("FsProvider", func() {
 			err := provider.Set(s)
 			Expect(err).To(BeNil())
 
-			ok, err := afero.Exists(fs, "/home/user/.wrangle/settings.yml")
+			ok, err := fs.Exists("/home/user/.wrangle/settings.yml")
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})
 	})
 	Context("Read", func() {
 		It("can read when file exists", func() {
-			fs := afero.NewMemMapFs()
+			fs := filesystem.NewMemory()
 
 			err := fs.Mkdir("/home/user/.wrangle", 0600)
 			Expect(err).To(BeNil())

@@ -9,7 +9,7 @@ import (
 )
 
 type manager struct {
-	fileSystem       filesystem.FsWrapper
+	fileSystem       filesystem.FileSystem
 	taskProviders    tasks.ProviderRegistry
 	contextProvider  ContextProvider
 	manifestProvider ManifestProvider
@@ -22,7 +22,7 @@ type Manager interface {
 }
 
 // NewManager creates a new package manager
-func NewManager(fileSystem filesystem.FsWrapper, taskProviders tasks.ProviderRegistry) Manager {
+func NewManager(fileSystem filesystem.FileSystem, taskProviders tasks.ProviderRegistry) Manager {
 	return &manager{
 		fileSystem:    fileSystem,
 		taskProviders: taskProviders}

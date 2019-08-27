@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"github.com/patrickhuber/wrangle/filepath"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/mitchellh/mapstructure"
 	"fmt"
 	"io"
@@ -10,18 +11,17 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 )
 
 const downloadTaskType = "download"
 
 type downloadProvider struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 	console    ui.Console
 }
 
 // NewDownloadProvider creates a new task provider that downloads a file
-func NewDownloadProvider(fileSystem afero.Fs, console ui.Console) Provider {
+func NewDownloadProvider(fileSystem filesystem.FileSystem, console ui.Console) Provider {
 	return &downloadProvider{
 		fileSystem: fileSystem,
 		console:    console,
@@ -33,15 +33,23 @@ func (provider *downloadProvider) TaskType() string {
 }
 
 func (provider *downloadProvider) Execute(task Task, context TaskContext) error {
-
-	url, ok := task.Params().Lookup("url")
+	
+	urlInterface, ok := task.Params()["url"]
 	if !ok {
 		return errors.New("url parameter is required for download tasks")
 	}
+	url, ok := urlInterface.(string)
+	if !ok {
+		return errors.New("url parameter is expected to be of type string")
+	}
 
-	out, ok := task.Params().Lookup("out")
+	outInterface, ok := task.Params()["out"]
 	if !ok {
 		return errors.New("out parameter is required for download task")
+	}
+	out, ok := outInterface.(string)
+	if !ok{
+		return errors.New("out parameter is expected to be of type string")
 	}
 
 	out = filepath.Join(context.PackageVersionPath(), out)

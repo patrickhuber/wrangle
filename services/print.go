@@ -6,14 +6,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 )
 
 type printService struct {
-	fileSystem      afero.Fs
+	fileSystem      filesystem.FileSystem
 	console         ui.Console
 	manager         store.Manager
 	rendererFactory renderers.Factory
@@ -40,7 +40,7 @@ type PrintService interface {
 // NewPrintService creates a new environment command
 func NewPrintService(
 	manager store.Manager,
-	fileSystem afero.Fs,
+	fileSystem filesystem.FileSystem,
 	console ui.Console,
 	rendererFactory renderers.Factory) PrintService {
 	return &printService{

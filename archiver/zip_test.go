@@ -2,7 +2,7 @@ package archiver_test
 
 import (
 	"github.com/patrickhuber/wrangle/archiver"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,10 +11,10 @@ import (
 var _ = Describe("Zip", func() {
 	Describe("RoundTrip", func() {
 		It("can write and read back a zip file", func() {
-			fs := afero.NewMemMapFs()
+			fs := filesystem.NewMemory()
 
 			// create the test file
-			err := afero.WriteFile(fs, "/test", []byte("test"), 0666)
+			err := fs.Write("/test", []byte("test"), 0666)
 			Expect(err).To(BeNil())
 
 			// create the archiver and write out the archive
@@ -23,7 +23,7 @@ var _ = Describe("Zip", func() {
 			Expect(err).To(BeNil())
 
 			// verify the file exists
-			ok, err := afero.Exists(fs, "/test.zip")
+			ok, err := fs.Exists("/test.zip")
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 
@@ -36,7 +36,7 @@ var _ = Describe("Zip", func() {
 			Expect(err).To(BeNil())
 
 			// verify the file exists
-			ok, err = afero.Exists(fs, "/test")
+			ok, err = fs.Exists("/test")
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})

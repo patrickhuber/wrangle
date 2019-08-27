@@ -6,8 +6,7 @@ import (
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/filepath"
-
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -31,7 +30,7 @@ var _ = Describe("Loader", func() {
 
 	It("returns error if config file does not exist", func() {
 		configFilePath := "/test/config.yml"
-		fileSystem := afero.NewMemMapFs()
+		fileSystem := filesystem.NewMemory()
 		loader := config.NewLoader(fileSystem)
 		_, err := loader.LoadConfig(configFilePath)
 		Expect(err).ToNot(BeNil())
@@ -43,8 +42,8 @@ var _ = Describe("Loader", func() {
 stores:
 customers:
 `
-		fileSystem := afero.NewMemMapFs()
-		err := afero.WriteFile(fileSystem, path, []byte(content), 0600)
+		fileSystem := filesystem.NewMemory()
+		err := fileSystem.Write(path, []byte(content), 0600)
 		Expect(err).To(BeNil())
 
 		loader := config.NewLoader(fileSystem)
@@ -75,9 +74,9 @@ imports:
   version: 11.2.3
 `
 	Expect(strings.ContainsAny(content, "\t")).To(BeFalse(), "tabs in content, must be spaces only for indention")
-	fileSystem := afero.NewMemMapFs()
+	fileSystem := filesystem.NewMemory()
 
-	afero.WriteFile(fileSystem, configFilePath, []byte(content), 0644)
+	fileSystem.Write(configFilePath, []byte(content), 0644)
 
 	loader := config.NewLoader(fileSystem)
 

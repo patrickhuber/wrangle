@@ -1,7 +1,8 @@
 package commands
 
 import (
-	"github.com/spf13/afero"
+	
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/urfave/cli"
@@ -11,7 +12,7 @@ import (
 func CreateStoresCommand(
 	app *cli.App,
 	storesService services.StoresService,
-	fs afero.Fs) *cli.Command {
+	fs filesystem.FileSystem) *cli.Command {
 	command := &cli.Command{
 		Name:    "stores",
 		Aliases: []string{"s"},

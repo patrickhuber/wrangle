@@ -3,19 +3,18 @@ package settings
 import (
 	"path/filepath"
 
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
-
-	"github.com/spf13/afero"
 )
 
 type fsProvider struct {
-	fs            afero.Fs
+	fs            filesystem.FileSystem
 	platform      string
 	homeDirectory string
 }
 
 // NewFsProvider defines a constructor for creating a file system based settings provider
-func NewFsProvider(fs afero.Fs, platform string, homeDirectory string) Provider {
+func NewFsProvider(fs filesystem.FileSystem, platform string, homeDirectory string) Provider {
 	return &fsProvider{
 		fs:            fs,
 		platform:      platform,
@@ -69,7 +68,7 @@ func (provider *fsProvider) getSettingsFilePath(settingsPath string) string {
 }
 
 func (provider *fsProvider) ensureSettingsPathExists(path string) error {
-	ok, err := afero.Exists(provider.fs, path)
+	ok, err := provider.fs.Exists(path)
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,7 @@ func (provider *fsProvider) ensureSettingsPathExists(path string) error {
 }
 
 func (provider *fsProvider) ensureSettingsFileExists(filePath string) error {
-	ok, err := afero.Exists(provider.fs, filePath)
+	ok, err := provider.fs.Exists(filePath)
 	if err != nil {
 		return err
 	}

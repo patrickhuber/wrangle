@@ -54,3 +54,8 @@ func Rel(basepath string, targetpath string) (string, error) {
 func Abs(basepath string) (string, error) {
 	return filepath.Abs(basepath)
 }
+
+// Ext is a passhtrough function to filepath.Ext
+func Ext(path string) string{
+	return filepath.Ext(path)
+}

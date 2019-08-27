@@ -1,9 +1,11 @@
 package services
 
-import "github.com/spf13/afero"
+import (
+	"github.com/patrickhuber/wrangle/filesystem"
+)
 
 type initService struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 }
 
 // InitService executes directory initialization
@@ -12,7 +14,7 @@ type InitService interface {
 }
 
 // NewInitService cretes a new init command
-func NewInitService(fileSystem afero.Fs) InitService {
+func NewInitService(fileSystem filesystem.FileSystem) InitService {
 	return &initService{
 		fileSystem: fileSystem,
 	}
@@ -20,5 +22,5 @@ func NewInitService(fileSystem afero.Fs) InitService {
 
 func (i *initService) Init(configFilePath string) error {
 	data := "stores: \nprocesses: \n"
-	return afero.WriteFile(i.fileSystem, configFilePath, []byte(data), 0640)
+	return i.fileSystem.Write(configFilePath, []byte(data), 0640)
 }

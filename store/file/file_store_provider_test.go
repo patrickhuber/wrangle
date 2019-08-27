@@ -1,11 +1,11 @@
 package file_test
 
 import (
-	"github.com/spf13/afero"
 	"golang.org/x/crypto/openpgp"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/store/file"
 
 	. "github.com/onsi/ginkgo"
@@ -15,20 +15,20 @@ import (
 var _ = Describe("", func() {
 	It("can get by name", func() {
 
-		fs := afero.NewMemMapFs()
+		fs := filesystem.NewMemory()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
 		Expect(err).To(BeNil())
 
 		err = createKeys(fs, factory.Context())
 		Expect(err).To(BeNil())
 
-		provider := file.NewFileStoreProvider(afero.NewMemMapFs(), factory)
+		provider := file.NewFileStoreProvider(filesystem.NewMemory(), factory)
 		name := provider.Name()
 		Expect(name).To(Equal("file"))
 	})
 
 	It("can create", func() {
-		fs := afero.NewMemMapFs()
+		fs := filesystem.NewMemory()
 		factory, err := crypto.NewPgpFactory(fs, "linux")
 		Expect(err).To(BeNil())
 
@@ -49,7 +49,7 @@ var _ = Describe("", func() {
 	})
 })
 
-func createKeys(fs afero.Fs, context crypto.PgpContext) error {
+func createKeys(fs filesystem.FileSystem, context crypto.PgpContext) error {
 	entity, err := openpgp.NewEntity("hi", "hi", "hi@hi.hi", nil)
 	if err != nil {
 		return err

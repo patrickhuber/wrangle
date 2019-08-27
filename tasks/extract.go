@@ -1,9 +1,5 @@
 package tasks
 
-import (
-	"github.com/patrickhuber/wrangle/collections"
-)
-
 // ExtractTask represents an extract task
 type ExtractTask struct {
 	Details ExtractTaskDetails `yaml:"extract" mapstructure:"extract"`
@@ -18,9 +14,9 @@ func (t *ExtractTask) Type() string {
 	return "extract"
 }
 
-func (t *ExtractTask) Params() collections.ReadOnlyDictionary {
-	dictionary := collections.NewDictionary()
-	dictionary.Set("archive", t.Details.Archive)
+func (t *ExtractTask) Params() map[string]interface{} {
+	dictionary := make(map[string]interface{})
+	dictionary["archive"]= t.Details.Archive
 	return dictionary
 }
 

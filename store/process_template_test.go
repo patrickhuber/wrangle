@@ -1,11 +1,11 @@
 package store_test
 
 import (
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/store/memory"	
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
-	"github.com/patrickhuber/wrangle/store/file"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/store/file"	
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -68,9 +68,9 @@ processes:
 		configuration, err := config.DeserializeConfigString(content)
 		Expect(err).To(BeNil())
 
-		fileSystem := afero.NewMemMapFs()
-		afero.WriteFile(fileSystem, "/test1", []byte("key: value"), 0644)
-		afero.WriteFile(fileSystem, "/test2", []byte("file-name: /test1"), 0644)
+		fileSystem := filesystem.NewMemory()
+		fileSystem.Write("/test1", []byte("key: value"), 0644)
+		fileSystem.Write("/test2", []byte("file-name: /test1"), 0644)
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
@@ -102,8 +102,8 @@ processes:
 		configuration, err := config.DeserializeConfigString(content)
 		Expect(err).To(BeNil())
 
-		fileSystem := afero.NewMemMapFs()
-		afero.WriteFile(fileSystem, "/test", []byte("key: 1\nprop: 2"), 0644)
+		fileSystem := filesystem.NewMemory()
+		fileSystem.Write( "/test", []byte("key: 1\nprop: 2"), 0644)
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
@@ -145,10 +145,10 @@ processes:
 		configuration, err := config.DeserializeConfigString(content)
 		Expect(err).To(BeNil())
 
-		fileSystem := afero.NewMemMapFs()
-		afero.WriteFile(fileSystem, "/test1", []byte("key1: ((/key2))"), 0644)
-		afero.WriteFile(fileSystem, "/test2", []byte("key2: ((/key3))"), 0644)
-		afero.WriteFile(fileSystem, "/test3", []byte("key3: value"), 0644)
+		fileSystem := filesystem.NewMemory()
+		fileSystem.Write("/test1", []byte("key1: ((/key2))"), 0644)
+		fileSystem.Write("/test2", []byte("key2: ((/key3))"), 0644)
+		fileSystem.Write("/test3", []byte("key3: value"), 0644)
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
@@ -193,10 +193,10 @@ processes:
 		configuration, err := config.DeserializeConfigString(content)
 		Expect(err).To(BeNil())
 
-		fileSystem := afero.NewMemMapFs()
-		afero.WriteFile(fileSystem, "/test1", []byte("key1: ((/key2))"), 0644)
-		afero.WriteFile(fileSystem, "/test2", []byte("key2: ((/key3))"), 0644)
-		afero.WriteFile(fileSystem, "/test3", []byte("key3: value"), 0644)
+		fileSystem := filesystem.NewMemory()
+		fileSystem.Write( "/test1", []byte("key1: ((/key2))"), 0644)
+		fileSystem.Write( "/test2", []byte("key2: ((/key3))"), 0644)
+		fileSystem.Write( "/test3", []byte("key3: value"), 0644)
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
@@ -231,9 +231,9 @@ processes:
 		configuration, err := config.DeserializeConfigString(content)
 		Expect(err).To(BeNil())
 
-		fileSystem := afero.NewMemMapFs()
-		afero.WriteFile(fileSystem, "/one", []byte("key: /two"), 0666)
-		afero.WriteFile(fileSystem, "/two", []byte("a: a\nb: b\nc: c\n"), 0666)
+		fileSystem := filesystem.NewMemory()
+		fileSystem.Write("/one", []byte("key: /two"), 0666)
+		fileSystem.Write("/two", []byte("a: a\nb: b\nc: c\n"), 0666)
 
 		manager := store.NewManager()
 		manager.Register(file.NewFileStoreProvider(fileSystem, nil))

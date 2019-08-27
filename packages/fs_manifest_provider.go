@@ -1,15 +1,14 @@
 package packages
 
-import (
-	"github.com/spf13/afero"
-)
+import "github.com/patrickhuber/wrangle/filesystem"
 
 type fsManifestProvider struct {
-	fs                afero.Fs
+	fs                filesystem.FileSystem
 	packagesDirectory string
 }
 
-func NewFsManifestProvider(fs afero.Fs, packagesDirectory string) ManifestProvider {
+// NewFsManifestProvider creates a ManifestProvider for the given file system and package directory
+func NewFsManifestProvider(fs filesystem.FileSystem, packagesDirectory string) ManifestProvider {
 	return &fsManifestProvider{
 		fs:                fs,
 		packagesDirectory: packagesDirectory,

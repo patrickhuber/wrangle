@@ -2,11 +2,11 @@ package tasks_test
 
 import (
 	"github.com/patrickhuber/wrangle/filepath"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"gopkg.in/yaml.v2"
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,14 +14,14 @@ import (
 
 var _ = Describe("DownloadProvider", func() {
 	var(
-		fileSystem afero.Fs
+		fs filesystem.FileSystem
 		console ui.Console
 		provider tasks.Provider
 	)
 	BeforeEach(func(){
-		fileSystem = afero.NewMemMapFs()
+		fs = filesystem.NewMemory()
 		console = ui.NewMemoryConsole()
-		provider = tasks.NewDownloadProvider(fileSystem, console)
+		provider = tasks.NewDownloadProvider(fs, console)
 	})
 	Describe("Execute", func(){
 		It("downloads file", func() {
@@ -38,7 +38,7 @@ var _ = Describe("DownloadProvider", func() {
 			Expect(err).To(BeNil())
 	
 			expected := filepath.Join(taskContext.PackageVersionPath(), "file")
-			ok, err := afero.Exists(fileSystem, expected)
+			ok, err := fs.Exists(expected)
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})

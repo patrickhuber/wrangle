@@ -3,7 +3,7 @@ package feed
 import (
 	"strings"
 
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type FeedServiceFactory interface {
@@ -11,7 +11,7 @@ type FeedServiceFactory interface {
 }
 
 type feedServiceFactory struct {
-	fs afero.Fs
+	fs filesystem.FileSystem
 }
 
 func (factory *feedServiceFactory) Get(packagesPath, feedURL string) FeedService {
@@ -21,7 +21,7 @@ func (factory *feedServiceFactory) Get(packagesPath, feedURL string) FeedService
 	return NewFsFeedService(factory.fs, packagesPath)
 }
 
-func NewFeedServiceFactory(fs afero.Fs) FeedServiceFactory {
+func NewFeedServiceFactory(fs filesystem.FileSystem) FeedServiceFactory {
 	return &feedServiceFactory{
 		fs: fs,
 	}

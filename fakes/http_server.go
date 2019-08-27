@@ -6,10 +6,9 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	"github.com/patrickhuber/wrangle/filepath"
-
 	"github.com/patrickhuber/wrangle/archiver"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filepath"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 // NewHTTPServer creates a new http server
@@ -21,14 +20,14 @@ func NewHTTPServer() *httptest.Server {
 func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		path := req.URL.Path
-		fs := afero.NewMemMapFs()
+		fs := filesystem.NewMemory()
 
 		var filePaths = make([]string, 0)
 
 		// write out the data files
 		for _, testFile := range testFiles {
 			filePaths = append(filePaths, testFile.Path)
-			err := afero.WriteFile(fs, testFile.Path, []byte(testFile.Data), 0666)
+			err := fs.Write(testFile.Path, []byte(testFile.Data), 0666)
 			if err != nil {
 				rw.WriteHeader(400)
 				rw.Write([]byte("error creating executable"))
@@ -45,7 +44,7 @@ func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 		} else if strings.HasSuffix(path, ".zip") {
 			a = archiver.NewZip(fs)
 		} else {
-			ok, err := afero.Exists(fs, path)
+			ok, err := fs.Exists(path)
 			if err != nil {
 				rw.WriteHeader(400)
 				rw.Write([]byte(fmt.Sprintf("error finding file %s: %s", path, err.Error())))
@@ -70,7 +69,7 @@ func NewHTTPServerWithArchive(testFiles []TestFile) *httptest.Server {
 			loadPath = fileName
 		}
 
-		buf, err := afero.ReadFile(fs, loadPath)
+		buf, err := fs.Read(loadPath)
 		if err != nil {
 			rw.WriteHeader(400)
 			rw.Write([]byte(fmt.Sprintf("error reading file %s: %s", fileName, err.Error())))

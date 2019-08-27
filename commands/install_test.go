@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"os"
 
-	"github.com/spf13/afero"
 	"github.com/urfave/cli"
 
 	. "github.com/onsi/ginkgo"
@@ -24,15 +23,15 @@ import (
 
 var _ = Describe("Install", func() {
 	It("can run with environment variables", func() {
-		// rewrite this test to use new package management features
-		fs := filesystem.NewMemMapFs()
+		// rewrite this test to use new package management features		
 		console := ui.NewMemoryConsole()
 		variables := collections.NewDictionary()		
+		fs := filesystem.NewMemory()
 
-		taskProviders := tasks.NewProviderRegistry()
+		taskProviders := tasks.NewProviderRegistry()		
 		taskProviders.Register(tasks.NewDownloadProvider(fs, console))
 		taskProviders.Register(tasks.NewExtractProvider(fs, console))
-		taskProviders.Register(tasks.NewLinkProvider(fs, console))
+		taskProviders.Register(tasks.NewLinkProvider(fs, console))		
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
 		
 		packagesManager := packages.NewManager(fs, taskProviders)
@@ -68,7 +67,7 @@ targets:
 		err = fs.Mkdir("/packages/test/1.0.0", 0666)
 		Expect(err).To(BeNil())
 
-		err = afero.WriteFile(fs, "/packages/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
+		err = fs.Write("/packages/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
 		Expect(err).To(BeNil())
 
 		app := cli.NewApp()
@@ -93,7 +92,7 @@ targets:
 		})
 		Expect(err).To(BeNil())
 
-		ok, err := afero.Exists(fs, "/packages/test/1.0.0/test.html")
+		ok, err := fs.Exists("/packages/test/1.0.0/test.html")
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 	})

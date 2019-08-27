@@ -1,11 +1,11 @@
 package tasks_test
 
 import (
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/archiver"
 	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/tasks"
-	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/ui"	
 	yaml "gopkg.in/yaml.v2"
 
 	. "github.com/onsi/ginkgo"
@@ -14,12 +14,12 @@ import (
 
 var _ = Describe("ExtractProvider", func() {
 	var (
-		fileSystem afero.Fs
+		fileSystem filesystem.FileSystem
 		console    ui.Console
 		provider   tasks.Provider
 	)
 	BeforeEach(func() {
-		fileSystem = afero.NewMemMapFs()
+		fileSystem = filesystem.NewMemory()
 		console = ui.NewMemoryConsole()
 		provider = tasks.NewExtractProvider(fileSystem, console)
 	})
@@ -28,7 +28,7 @@ var _ = Describe("ExtractProvider", func() {
 			taskContext := newTaskContext("/opt/wrangle", "test", "1.0.0")
 
 			filePath := filepath.Join(taskContext.PackageVersionPath(), "test1")
-			err := afero.WriteFile(fileSystem, filePath, []byte("this is a test"), 0600)
+			err := fileSystem.Write(filePath, []byte("this is a test"), 0600)
 			Expect(err).To(BeNil())
 
 			archivePath := filepath.Join(taskContext.PackageVersionPath(), "test.tgz")
@@ -45,11 +45,11 @@ var _ = Describe("ExtractProvider", func() {
 			err = provider.Execute(task, taskContext)
 			Expect(err).To(BeNil())
 
-			ok, err := afero.Exists(fileSystem, archivePath)
+			ok, err := fileSystem.Exists(archivePath)
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 
-			ok, err = afero.Exists(fileSystem, filePath)
+			ok, err = fileSystem.Exists(filePath)
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})

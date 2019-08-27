@@ -40,14 +40,14 @@ type InstallService interface {
 
 type installService struct {
 	platform   string
-	fileSystem filesystem.FsWrapper
+	fileSystem filesystem.FileSystem
 	manager    packages.Manager
 }
 
 // NewInstallService creates a new install service
 func NewInstallService(
 	platform string,
-	fileSystem filesystem.FsWrapper,
+	fileSystem filesystem.FileSystem,
 	manager packages.Manager) (InstallService, error) {
 
 	return &installService{

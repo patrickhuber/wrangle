@@ -1,13 +1,13 @@
 package services_test
 
 import (
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/services"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"bytes"
-	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/ui"	
 )
 
 var _ = Describe("Packages", func() {
@@ -16,8 +16,8 @@ var _ = Describe("Packages", func() {
 			console := ui.NewMemoryConsole()
 			packagePath := "/opt/wrangle/packages"
 
-			fileSystem := afero.NewMemMapFs()
-			afero.WriteFile(fileSystem, "/opt/wrangle/packages/test/0.1.1/test.0.1.1.yml", []byte("this is a package"), 0600)
+			fileSystem := filesystem.NewMemory()
+			fileSystem.Write("/opt/wrangle/packages/test/0.1.1/test.0.1.1.yml", []byte("this is a package"), 0600)
 
 			feedService := feed.NewFsFeedService(fileSystem, packagePath)
 

@@ -15,20 +15,19 @@ import (
 	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 )
 
 var _ = Describe("Manager", func() {
 	var (
 		manager packages.Manager
-		fs      filesystem.FsWrapper
+		fs      filesystem.FileSystem
 		context packages.PackageContext
 	)
 	BeforeEach(func() {
-		fs = filesystem.NewMemMapFs()
+		fs = filesystem.NewMemory()
 		console := ui.NewMemoryConsole()
 
-		registry := tasks.NewProviderRegistry()
+		registry := tasks.NewProviderRegistry()		
 		registry.Register(tasks.NewDownloadProvider(fs, console))
 		registry.Register(tasks.NewExtractProvider(fs, console))
 		registry.Register(tasks.NewLinkProvider(fs, console))
@@ -60,7 +59,7 @@ var _ = Describe("Manager", func() {
 				Expect(err).To(BeNil())
 
 				expected := filepath.Join(context.PackageVersionPath(), fileName)
-				ok, err := afero.Exists(fs, expected)
+				ok, err := fs.Exists(expected)
 				Expect(err).To(BeNil())
 				Expect(ok).To(BeTrue())
 			})
@@ -100,7 +99,7 @@ var _ = Describe("Manager", func() {
 				err := manager.Install(pkg)
 				Expect(err).ToNot(BeNil())
 
-				ok, err := afero.Exists(fs, "/test/file")
+				ok, err := fs.Exists("/test/file")
 				Expect(err).To(BeNil())
 				Expect(ok).To(BeFalse())
 			})
@@ -140,7 +139,7 @@ var _ = Describe("Manager", func() {
 
 				expected := filepath.Join(context.PackageVersionPath(), "data")
 
-				ok, err := afero.Exists(fs, expected)
+				ok, err := fs.Exists(expected)
 				Expect(err).To(BeNil())
 				Expect(ok).To(BeTrue())
 			})
@@ -195,7 +194,7 @@ var _ = Describe("Manager", func() {
 		})
 		Context("WhenSymlinkExists", func() {
 			It("deletes existing symlink", func() {
-				afero.WriteFile(fs, "/out/symlink", []byte(""), 0666)
+				fs.Write("/out/symlink", []byte(""), 0666)
 			})
 		})
 	})
@@ -216,7 +215,7 @@ targets:
 			for _, version := range versions {
 				path := strings.Replace(filePathTemplate, "{{version}}", version, -1)
 				content := strings.Replace(contentTemplate, "{{version}}", version, -1)
-				afero.WriteFile(fs, path, []byte(content), 0666)
+				fs.Write(path, []byte(content), 0666)
 			}
 		})
 		Context("WhenVersionSpecified", func() {
@@ -240,7 +239,7 @@ targets:
 			})
 			/* When("latest file present", func(){
 				It("loads specified version in file", func(){
-					afero.WriteFile(fs, "/packages/test/latest", []byte("1.1.0"), 0666)
+					fs.Write("/packages/test/latest", []byte("1.1.0"), 0666)
 					pkg, err := manager.Load("/packages", "test", "")
 					Expect(err).To(BeNil())
 					Expect(pkg).ToNot(BeNil())
@@ -256,7 +255,7 @@ targets:
 			Expect(pkg).ToNot(BeNil())
 			Expect(len(pkg.Tasks())).To(Equal(1))
 			task := pkg.Tasks()[0]
-			out, ok := task.Params().Lookup("out")
+			out, ok := task.Params()["out"]
 			Expect(ok).To(BeTrue())
 			Expect(out).To(Equal("index.1.1.0.html"))
 		})

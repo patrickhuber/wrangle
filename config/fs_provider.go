@@ -1,16 +1,16 @@
 package config
 
 import (
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type fsProvider struct {
-	fs             afero.Fs
+	fs             filesystem.FileSystem
 	configFilePath string
 }
 
 // NewFsProvider creates a new file system provider
-func NewFsProvider(fs afero.Fs, configFilePath string) Provider {
+func NewFsProvider(fs filesystem.FileSystem, configFilePath string) Provider {
 	return &fsProvider{
 		fs:             fs,
 		configFilePath: configFilePath,
@@ -24,7 +24,7 @@ func (provider *fsProvider) Initialize() (*Config, error) {
 func (provider *fsProvider) Get() (*Config, error) {
 
 	// validate file exists
-	ok, err := afero.Exists(provider.fs, provider.configFilePath)
+	ok, err := provider.fs.Exists(provider.configFilePath)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,7 @@ var version = ""
 func createApplication(
 	workingDirectory string,
 	manager store.Manager,
-	fileSystem filesystem.FsWrapper,
+	fileSystem filesystem.FileSystem,
 	processFactory processes.Factory,
 	console ui.Console,
 	platform string,

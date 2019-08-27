@@ -7,16 +7,15 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/filepath"
-
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type zipArchive struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 }
 
 // NewZip creates a new zip archiver
-func NewZip(fs afero.Fs) Archiver {
+func NewZip(fs filesystem.FileSystem) Archiver {
 	return &zipArchive{
 		fileSystem: fs,
 	}

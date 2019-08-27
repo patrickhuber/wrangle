@@ -2,9 +2,9 @@ package tasks_test
 
 import (
 	"github.com/patrickhuber/wrangle/filepath"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 	yaml "gopkg.in/yaml.v2"
 
 	. "github.com/onsi/ginkgo"
@@ -14,11 +14,11 @@ import (
 var _ = Describe("MoveProvider", func() {
 	var (
 		provider   tasks.Provider
-		fileSystem afero.Fs
+		fileSystem filesystem.FileSystem
 		console    ui.Console
 	)
 	BeforeEach(func() {
-		fileSystem = afero.NewMemMapFs()
+		fileSystem = filesystem.NewMemory()
 		console = ui.NewMemoryConsole()
 		provider = tasks.NewMoveProvider(fileSystem, console)
 
@@ -32,43 +32,42 @@ var _ = Describe("MoveProvider", func() {
 		})
 		It("can move file", func() {
 			sourcePath := filepath.Join(taskContext.PackageVersionPath(), "file")
-
-			afero.WriteFile(fileSystem, sourcePath, []byte("test"), 0666)
+			fileSystem.Write(sourcePath, []byte("test"), 0666)
 			task := tasks.NewMoveTask("file", "renamed")
 
 			err := provider.Execute(task, taskContext)
 			Expect(err).To(BeNil())
 
 			destinationPath := filepath.Join(taskContext.PackageVersionPath(), "renamed")
-			exists, err := afero.Exists(fileSystem, destinationPath)
+			exists, err := fileSystem.Exists(destinationPath)
 			Expect(err).To(BeNil())
 			Expect(exists).To(BeTrue())
 
-			isDirectory, err := afero.IsDir(fileSystem, destinationPath)
+			isDirectory, err := fileSystem.IsDir(destinationPath)
 			Expect(err).To(BeNil())
 			Expect(isDirectory).To(BeFalse())
 		})
 		It("can move directory", func() {
 
 			sourcePath := filepath.Join(taskContext.PackageVersionPath(), "folder/sub/file")
-			afero.WriteFile(fileSystem, sourcePath, []byte("test"), 0666)
+			fileSystem.Write(sourcePath, []byte("test"), 0666)
 
 			task := tasks.NewMoveTask("folder/sub", "folder")
 			err := provider.Execute(task, taskContext)
 			Expect(err).To(BeNil())
 
 			/* destinationPath := filepath.Join(taskContext.PackageVersionPath(), "folder/file")
-			exists, err := afero.Exists(fileSystem, destinationPath)
+			exists, err := fileSystem.Exists(destinationPath)
 			Expect(err).To(BeNil())
 			Expect(exists).To(BeTrue()) */
 
 			destinationDirectory := filepath.Join(taskContext.PackageVersionPath(), "folder")
-			isDirectory, err := afero.IsDir(fileSystem, destinationDirectory)
+			isDirectory, err := fileSystem.IsDir(destinationDirectory)
 			Expect(err).To(BeNil())
 			Expect(isDirectory).To(BeTrue())
 
 			/*
-				exists, err = afero.Exists(fileSystem, "/test1/file")
+				exists, err = fileSystem.Exists( "/test1/file")
 				Expect(err).To(BeNil())
 				Expect(exists).To(BeTrue())
 			*/

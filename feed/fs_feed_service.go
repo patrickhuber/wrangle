@@ -5,17 +5,18 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/filepath"
-	"github.com/spf13/afero"
+
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type fsFeedService struct {
-	fs   afero.Fs
+	fs   filesystem.FileSystem
 	path string
 	name string
 }
 
 // NewFsFeedService defines a feed service over the filesystem
-func NewFsFeedService(fs afero.Fs, path string) FeedService {
+func NewFsFeedService(fs filesystem.FileSystem, path string) FeedService {
 	return &fsFeedService{
 		fs:   fs,
 		path: path,
@@ -69,7 +70,7 @@ func (svc *fsFeedService) Get(request *FeedGetRequest) (*FeedGetResponse, error)
 }
 
 func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageInclude) ([]*Package, error) {
-	packageFolders, err := afero.ReadDir(svc.fs, svc.path)
+	packageFolders, err := svc.fs.ReadDir(svc.path)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 		}
 		packageName := packageFolder.Name()
 		packagePath := filepath.Join(svc.path, packageFolder.Name())
-		packageVersions, err := afero.ReadDir(svc.fs, packagePath)
+		packageVersions, err := svc.fs.ReadDir(packagePath)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +95,7 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 			packageVersionManifestName := fmt.Sprintf("%s.%s.yml", packageName, packageVersion)
 			packageVersionManifestPath := filepath.Join(packagePath, packageVersion, packageVersionManifestName)
 
-			ok, err := afero.Exists(svc.fs, packageVersionManifestPath)
+			ok, err := svc.fs.Exists(packageVersionManifestPath)
 			if err != nil {
 				return nil, err
 			}
@@ -114,7 +115,7 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 				Feeds:   []string{svc.name}}
 
 			if include != nil && include.Content {
-				content, err := afero.ReadFile(svc.fs, packageVersionManifestPath)
+				content, err := svc.fs.Read(packageVersionManifestPath)
 				if err != nil {
 					return nil, err
 				}

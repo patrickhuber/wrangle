@@ -1,9 +1,5 @@
 package tasks
 
-import (
-	"github.com/patrickhuber/wrangle/collections"
-)
-
 // MoveTask represents a move task
 type MoveTask struct {
 	Details MoveTaskDetails `yaml:"move" mapstructure:"move"`
@@ -19,10 +15,10 @@ func (t *MoveTask) Type() string {
 	return "move"
 }
 
-func (t *MoveTask) Params() collections.ReadOnlyDictionary {
-	dictionary := collections.NewDictionary()
-	dictionary.Set("source", t.Details.Source)
-	dictionary.Set("destination", t.Details.Destination)
+func (t *MoveTask) Params() map[string]interface{} {
+	dictionary := make(map[string]interface{})
+	dictionary["source"] = t.Details.Source
+	dictionary["destination"] = t.Details.Destination
 	return dictionary
 }
 

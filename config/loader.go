@@ -5,25 +5,25 @@ import (
 
 	"github.com/patrickhuber/wrangle/filepath"
 
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type loader struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 }
 
 // Loader - loads a config
 type Loader interface {
-	FileSystem() afero.Fs
+	FileSystem() filesystem.FileSystem
 	LoadConfig(configPath string) (*Config, error)
 }
 
 // NewLoader creates a new config loader
-func NewLoader(fileSystem afero.Fs) Loader {
+func NewLoader(fileSystem filesystem.FileSystem) Loader {
 	return &loader{fileSystem: fileSystem}
 }
 
-func (loader *loader) FileSystem() afero.Fs {
+func (loader *loader) FileSystem() filesystem.FileSystem {
 	return loader.fileSystem
 }
 
@@ -37,7 +37,7 @@ func (loader *loader) LoadConfig(configPath string) (*Config, error) {
 
 func (loader *loader) loadFileData(path string) ([]byte, error) {
 	// load the package file
-	ok, err := afero.Exists(loader.fileSystem, path)
+	ok, err := loader.fileSystem.Exists(path)
 
 	// if failure finding file, return the error
 	if err != nil {
@@ -51,7 +51,7 @@ func (loader *loader) loadFileData(path string) ([]byte, error) {
 	}
 
 	// red the file contents and return a serialized Config struct
-	data, err := afero.ReadFile(loader.fileSystem, path)
+	data, err := loader.fileSystem.Read(path)
 	if err != nil {
 		return nil, err
 	}

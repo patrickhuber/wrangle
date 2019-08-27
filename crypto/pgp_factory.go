@@ -6,11 +6,12 @@ import (
 	"github.com/patrickhuber/wrangle/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
+
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type pgpFactory struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 	context    PgpContext
 }
 
@@ -21,7 +22,7 @@ type PgpFactory interface {
 }
 
 // NewPgpFactory creates a pgp factory for the given filesystem and platform
-func NewPgpFactory(fileSystem afero.Fs, platform string) (PgpFactory, error) {
+func NewPgpFactory(fileSystem filesystem.FileSystem, platform string) (PgpFactory, error) {
 	context, err := NewPlatformPgpContext(platform)
 	if err != nil {
 		return nil, err
@@ -62,7 +63,7 @@ func (f *pgpFactory) Context() PgpContext {
 func (f *pgpFactory) assertIsNotGpgV2() error {
 	pubringKbx := filepath.Join(f.context.PublicKeyRing().Directory(), "pubring.kbx")
 	pubringKbx = filepath.ToSlash(pubringKbx)
-	isV2, err := afero.Exists(f.fileSystem, pubringKbx)
+	isV2, err := f.fileSystem.Exists(pubringKbx)
 	if err != nil {
 		return err
 	}

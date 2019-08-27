@@ -6,17 +6,18 @@ import (
 
 	semver "github.com/hashicorp/go-version"
 	"github.com/patrickhuber/wrangle/filepath"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 type fsContextProvider struct {
-	fs                afero.Fs
+	fs                filesystem.FileSystem
 	rootDirectory     string
 	binDirectory      string
 	packagesDirectory string
 }
 
-func NewFsContextProvider(fs afero.Fs, rootDirectory, binDirectory, packagesDirectory string) ContextProvider {
+// NewFsContextProvider creates a context provider for the file system
+func NewFsContextProvider(fs filesystem.FileSystem, rootDirectory, binDirectory, packagesDirectory string) ContextProvider {
 	return &fsContextProvider{
 		fs:                fs,
 		rootDirectory:     rootDirectory,
@@ -77,7 +78,7 @@ func (p *fsContextProvider) getPackageVersion(packagePath, packageVersion string
 }
 
 func (p *fsContextProvider) findLatestPackageVersion(packagePath string) (string, error) {
-	files, err := afero.ReadDir(p.fs, packagePath)
+	files, err := p.fs.ReadDir(packagePath)
 	if err != nil {
 		return "", err
 	}

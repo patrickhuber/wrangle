@@ -2,8 +2,8 @@ package services
 
 import (
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/store"
-	"github.com/spf13/afero"
 )
 
 // CredentialServiceFactory defines a factory for creating credential services
@@ -13,11 +13,11 @@ type CredentialServiceFactory interface {
 
 type credentialServiceFactory struct {
 	manager store.Manager
-	fs      afero.Fs
+	fs      filesystem.FileSystem
 }
 
 // NewCredentialServiceFactory creates a new credential service factory
-func NewCredentialServiceFactory(manager store.Manager, fs afero.Fs) CredentialServiceFactory {
+func NewCredentialServiceFactory(manager store.Manager, fs filesystem.FileSystem) CredentialServiceFactory {
 	return &credentialServiceFactory{
 		manager: manager,
 		fs:      fs,

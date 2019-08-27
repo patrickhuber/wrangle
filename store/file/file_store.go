@@ -1,6 +1,7 @@
 package file
 
 import (		
+	"github.com/patrickhuber/wrangle/filesystem"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -11,21 +12,20 @@ import (
 	"github.com/pkg/errors"
 
 	patch "github.com/cppforlife/go-patch/patch"
-
-	"github.com/spf13/afero"
+	
 	yaml "gopkg.in/yaml.v2"
 )
 
 type fileStore struct {
 	name       string
 	path       string
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 	decrypter  crypto.Decrypter
 	cache      []byte	
 }
 
 // NewFileStore creates a new file store
-func NewFileStore(name string, path string, fileSystem afero.Fs, decrypter crypto.Decrypter) (store.Store, error) {
+func NewFileStore(name string, path string, fileSystem filesystem.FileSystem, decrypter crypto.Decrypter) (store.Store, error) {
 
 	if path == "" {
 		return nil, errors.New("file path is required")
@@ -156,7 +156,7 @@ func (s *fileStore) createItem(document interface{}, name string, property strin
 
 func (s *fileStore) getFileData() ([]byte, error) {
 	// read the file store s as bytes
-	data, err := afero.ReadFile(s.fileSystem, s.path)
+	data, err := s.fileSystem.Read(s.path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to read file '%s'", s.path)
 	}

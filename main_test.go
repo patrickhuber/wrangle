@@ -17,7 +17,6 @@ import (
 	"github.com/patrickhuber/wrangle/store"
 	file "github.com/patrickhuber/wrangle/store/file"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 )
 
 var _ = Describe("Main", func() {
@@ -40,9 +39,9 @@ var _ = Describe("Main", func() {
 
 })
 
-func printDirectory(fileSystem filesystem.FsWrapper, path string) {
+func printDirectory(fileSystem filesystem.FileSystem, path string) {
 	fmt.Println(path)
-	files, err := afero.ReadDir(fileSystem, path)
+	files, err := fileSystem.ReadDir(path)
 	Expect(err).To(BeNil())
 	for _, f := range files {
 		fmt.Println(f.Name())
@@ -52,7 +51,8 @@ func printDirectory(fileSystem filesystem.FsWrapper, path string) {
 func runPrintTest(command string, expected string) {
 	// create dependencies
 	platform := "linux"
-	fileSystem := filesystem.NewMemMapFs()
+
+	fileSystem := filesystem.NewOs()
 	storeManager := store.NewManager()
 	storeManager.Register(file.NewFileStoreProvider(fileSystem, nil))
 	processFactory := processes.NewOsFactory() // change to fake process factory?
@@ -88,13 +88,13 @@ processes:
     WRANGLE_TEST: ((key))`
 
 	// create files
-	err := afero.WriteFile(fileSystem, "/config", []byte(configFileContent), 0644)
+	err := fileSystem.Write("/config", []byte(configFileContent), 0644)
 	Expect(err).To(BeNil())
 
-	err = afero.WriteFile(fileSystem, "/store1", []byte("key: ((key1))"), 0644)
+	err = fileSystem.Write("/store1", []byte("key: ((key1))"), 0644)
 	Expect(err).To(BeNil())
 
-	err = afero.WriteFile(fileSystem, "/store2", []byte("key1: value"), 0644)
+	err = fileSystem.Write("/store2", []byte("key1: value"), 0644)
 	Expect(err).To(BeNil())
 
 	// create cli

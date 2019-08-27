@@ -1,20 +1,20 @@
 package file
 
 import (
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/store"
-	"github.com/pkg/errors"
-	"github.com/spf13/afero"
+	"github.com/pkg/errors"	
 )
 
 type fileStoreProvider struct {
-	fileSystem afero.Fs
+	fileSystem filesystem.FileSystem
 	factory    crypto.PgpFactory
 }
 
 // NewFileStoreProvider creates a new file store provider which implements the store.Provider interface
-func NewFileStoreProvider(fileSystem afero.Fs, factory crypto.PgpFactory) store.Provider {
+func NewFileStoreProvider(fileSystem filesystem.FileSystem, factory crypto.PgpFactory) store.Provider {
 	return &fileStoreProvider{
 		fileSystem: fileSystem,
 		factory:    factory}

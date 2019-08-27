@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/patrickhuber/wrangle/filesystem"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/commands"
@@ -11,7 +13,6 @@ import (
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 	"github.com/urfave/cli"
 )
 
@@ -20,7 +21,7 @@ var _ = Describe("Packages", func() {
 		console := ui.NewMemoryConsole()
 		var packageServiceFactory services.PackageServiceFactory = services.NewPackageServiceFactory(console)
 
-		fs := afero.NewMemMapFs()
+		fs := filesystem.NewMemory()
 		fs.Mkdir("/packages", 0600)
 		var feedServiceFactory = feed.NewFeedServiceFactory(fs)
 
@@ -43,7 +44,7 @@ var _ = Describe("Packages", func() {
 		console := ui.NewMemoryConsole()
 		var packageServiceFactory services.PackageServiceFactory = services.NewPackageServiceFactory(console)
 
-		fs := afero.NewMemMapFs()
+		fs := filesystem.NewMemory()
 		fs.Mkdir("/packages", 0600)
 		var feedServiceFactory = feed.NewFeedServiceFactory(fs)
 

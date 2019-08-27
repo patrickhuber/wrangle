@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/wrangle/archiver"
-	"github.com/spf13/afero"
+	"github.com/patrickhuber/wrangle/filesystem"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,11 +13,11 @@ import (
 var _ = Describe("Tar", func() {
 	var (
 		a       archiver.Archiver
-		fs      afero.Fs
+		fs      filesystem.FileSystem
 		archive = "/tmp/temp.tar"
 	)
 	BeforeEach(func() {
-		fs = afero.NewMemMapFs()
+		fs = filesystem.NewMemory()
 
 		err := createFiles(fs, []testFile{
 			{content: "this is a test", folder: "/tmp", name: "test"},
@@ -55,25 +55,25 @@ var _ = Describe("Tar", func() {
 	})
 })
 
-func assertExists(fs afero.Fs, filePath string) {
-	ok, err := afero.Exists(fs, filePath)
+func assertExists(fs filesystem.FileSystem, filePath string) {
+	ok, err := fs.Exists(filePath)
 	Expect(err).To(BeNil())
 	Expect(ok).To(BeTrue(), fmt.Sprintf("'%s' should exist", filePath))
 }
 
-func assertNotExists(fs afero.Fs, filePath string) {
-	ok, err := afero.Exists(fs, filePath)
+func assertNotExists(fs filesystem.FileSystem, filePath string) {
+	ok, err := fs.Exists(filePath)
 	Expect(err).To(BeNil())
 	Expect(ok).To(BeFalse(), fmt.Sprintf("'%s' should not exist", filePath))
 }
 
-func assertIsFile(fs afero.Fs, filePath string) {
-	ok, err := afero.IsDir(fs, filePath)
+func assertIsFile(fs filesystem.FileSystem, filePath string) {
+	ok, err := fs.IsDir(filePath)
 	Expect(err).To(BeNil())
 	Expect(ok).To(BeFalse(), fmt.Sprintf("'%s' should be a file", filePath))
 }
 
-func testExtractTar(fs afero.Fs, a archiver.Archiver, filePath string, out string, files []string) {
+func testExtractTar(fs filesystem.FileSystem, a archiver.Archiver, filePath string, out string, files []string) {
 	source, err := fs.Open(filePath)
 	Expect(err).To(BeNil())
 	defer source.Close()

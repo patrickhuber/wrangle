@@ -1,6 +1,7 @@
 package file_test
 
 import (
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/store/values"
 	"reflect"
 
@@ -9,7 +10,6 @@ import (
 	"golang.org/x/crypto/openpgp"
 
 	"github.com/patrickhuber/wrangle/crypto"
-	"github.com/spf13/afero"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,13 +17,13 @@ import (
 
 var _ = Describe("FileStore", func() {
 	It("can round trip file", func() {
-		fileSystem := afero.NewMemMapFs()
+		fileSystem := filesystem.NewMemory()
 		fileContent := "this\nis\ntext"
 
-		err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
+		err := fileSystem.Write("/test", []byte(fileContent), 0644)
 		Expect(err).To(BeNil())
 
-		data, err := afero.ReadFile(fileSystem, "/test")
+		data, err := fileSystem.Read("/test")
 		Expect(err).To(BeNil())
 		Expect(string(data)).To(Equal(fileContent))
 	})
@@ -31,7 +31,7 @@ var _ = Describe("FileStore", func() {
 	Context("Encrypted", func() {
 
 		var (
-			fileSystem         afero.Fs
+			fileSystem         filesystem.FileSystem
 			fileContent        string
 			fileStore          store.Store
 			encryptedFileStore store.Store
@@ -41,7 +41,7 @@ var _ = Describe("FileStore", func() {
 
 		BeforeEach(func() {
 
-			fileSystem = afero.NewMemMapFs()
+			fileSystem = filesystem.NewMemory()
 
 			fileContent = `value: aaaaaaaaaaaaaaaa
 password: bbbbbbbbbbbbbbbb
@@ -67,7 +67,7 @@ ssh:
   public_key_fingerprint: public-key-fingerprint`
 
 			platform := "linux"
-			err := afero.WriteFile(fileSystem, "/test", []byte(fileContent), 0644)
+			err := fileSystem.Write("/test", []byte(fileContent), 0644)
 			Expect(err).To(BeNil())
 			
 			filePath := "/test"
@@ -217,7 +217,7 @@ ssh:
 	})
 })
 
-func createEncryptionKey(fs afero.Fs, context crypto.PgpContext) error {
+func createEncryptionKey(fs filesystem.FileSystem, context crypto.PgpContext) error {
 
 	// create the key
 	entity, err := openpgp.NewEntity("test", "test", "test@test.com", nil)

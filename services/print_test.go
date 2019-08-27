@@ -3,6 +3,7 @@ package services_test
 import (
 	"bytes"
 
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/services"
 
 	. "github.com/onsi/ginkgo"
@@ -15,7 +16,6 @@ import (
 	"github.com/patrickhuber/wrangle/store/file"
 
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 )
 
 var _ = Describe("Execute", func() {
@@ -58,7 +58,7 @@ var _ = Describe("Execute", func() {
 			rendererFactory := renderers.NewFactory(collections.NewDictionary())
 
 			// create filesystem
-			fileSystem := afero.NewMemMapFs()
+			fileSystem := filesystem.NewMemory()
 
 			cfg := &config.Config{
 				Stores: []config.Store{
@@ -77,7 +77,7 @@ var _ = Describe("Execute", func() {
 					},
 				},
 			}
-			afero.WriteFile(fileSystem, "/store1", []byte("key: value"), 0644)
+			fileSystem.Write("/store1", []byte("key: value"), 0644)
 
 			// create store manager
 			manager := store.NewManager()
@@ -209,7 +209,7 @@ func RunPrintTest(
 	// create store manager
 	manager := store.NewManager()
 
-	fileSystem := afero.NewMemMapFs()
+	fileSystem := filesystem.NewMemory()
 	console := ui.NewMemoryConsole()
 
 	// create and run command

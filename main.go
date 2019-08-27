@@ -6,8 +6,6 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/spf13/afero"
-
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/crypto"
 	"github.com/patrickhuber/wrangle/env"
@@ -25,8 +23,8 @@ import (
 
 func main() {
 	// create platform, filesystem, working directory and console
-	platform := runtime.GOOS
-	fileSystem := filesystem.NewOsFsWrapper(afero.NewOsFs())
+	platform := runtime.GOOS	
+	fileSystem := filesystem.NewOs()
 	console := ui.NewOSConsole()
 	workingDirectory, err := os.Getwd()
 	failOnError(err)
@@ -43,7 +41,7 @@ func main() {
 	// create process factory
 	processFactory := processes.NewOsFactory()
 
-	// create task providers
+	// create task providers	
 	taskProviders := tasks.NewProviderRegistry()
 	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
@@ -70,7 +68,7 @@ func main() {
 	failOnError(err)
 }
 
-func createConfigStoreManager(fileSystem afero.Fs, platform string, environmentVariables collections.Dictionary) (store.Manager, error) {
+func createConfigStoreManager(fileSystem filesystem.FileSystem, platform string, environmentVariables collections.Dictionary) (store.Manager, error) {
 	manager := store.NewManager()
 	factory, err := crypto.NewPgpFactory(fileSystem, platform)
 	if err != nil {

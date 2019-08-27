@@ -1,9 +1,5 @@
 package tasks
 
-import (
-	"github.com/patrickhuber/wrangle/collections"
-)
-
 // LinkTask represents a symlink
 type LinkTask struct {
 	Details LinkTaskDetails `yaml:"link" mapstructure:"link"`
@@ -19,10 +15,10 @@ func (task *LinkTask) Type() string {
 	return "link"
 }
 
-func (task *LinkTask) Params() collections.ReadOnlyDictionary {
-	dictionary := collections.NewDictionary()
-	dictionary.Set("source", task.Details.Source)
-	dictionary.Set("alias", task.Details.Alias)
+func (task *LinkTask) Params() map[string]interface{} {
+	dictionary := make(map[string]interface{})
+	dictionary["source"]= task.Details.Source
+	dictionary["alias"]= task.Details.Alias
 	return dictionary
 }
 

@@ -2,11 +2,11 @@ package services_test
 
 import (
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/spf13/afero"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,13 +14,13 @@ import (
 
 var _ = Describe("Execute", func() {
 	var (
-		fs         afero.Fs
+		fs         filesystem.FileSystem
 		runService services.RunService
 		console    ui.MemoryConsole
 		cfg        *config.Config
 	)
 	BeforeEach(func() {
-		fs = afero.NewMemMapFs()
+		fs = filesystem.NewMemory()
 
 		cfg = &config.Config{
 			Processes: []config.Process{

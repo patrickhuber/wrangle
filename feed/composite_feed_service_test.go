@@ -2,39 +2,43 @@ package feed_test
 
 import (
 	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/feed"
-	"github.com/spf13/afero"
+
+	"github.com/patrickhuber/wrangle/filesystem"
 )
 
 var _ = Describe("CompositeFeedService", func() {
 	var (
-		fs          afero.Fs
-		firstFeedService feed.FeedService
+		fs                filesystem.FileSystem
+		firstFeedService  feed.FeedService
 		secondFeedService feed.FeedService
 	)
 	BeforeEach(func() {
-		createService := func(list map[string][]string) (feed.FeedService, error){
-			fs = afero.NewMemMapFs()
+		createService := func(list map[string][]string) (feed.FeedService, error) {
+			fs = filesystem.NewMemory()
 
-			for packageName, packageVersions := range list{
-				for _, packageVersion := range packageVersions{
+			for packageName, packageVersions := range list {
+				for _, packageVersion := range packageVersions {
 					filePath := fmt.Sprintf("/wrangle/packages/%[1]s/%[2]s/%[1]s.%[2]s.yml", packageName, packageVersion)
-					err := afero.WriteFile(fs, filePath, []byte(""), 0666)
-					if err != nil{return nil,err}				
+					err := fs.Write(filePath, []byte(""), 0666)
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 
-			return feed.NewFsFeedService(fs, "/wrangle/packages"),nil
+			return feed.NewFsFeedService(fs, "/wrangle/packages"), nil
 		}
 
 		var err error
 
-		firstFeedService, err = createService(map[string][]string{"test": []string{"1.0.0", "1.0.1" }})
+		firstFeedService, err = createService(map[string][]string{"test": []string{"1.0.0", "1.0.1"}})
 		Expect(err).To(BeNil())
 
-		secondFeedService, err = createService(map[string][]string{"test": []string{"1.2.4", "1.0.1" }})
+		secondFeedService, err = createService(map[string][]string{"test": []string{"1.2.4", "1.0.1"}})
 		Expect(err).To(BeNil())
 	})
 	It("returns composite of both services", func() {
