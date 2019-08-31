@@ -237,17 +237,17 @@ targets:
 				Expect(pkg.Version()).To(Equal("2.0.0"))
 				Expect(len(pkg.Tasks())).To(Equal(1))
 			})
-			/* When("latest file present", func(){
-				It("loads specified version in file", func(){
-					fs.Write("/packages/test/latest", []byte("1.1.0"), 0666)
-					pkg, err := manager.Load("/packages", "test", "")
+			When("manifest at root", func(){
+				It("loads version from task provider", func(){
+					fs.Write("/packages/test/test.yml", []byte("1.1.0"), 0666)
+					pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "")
 					Expect(err).To(BeNil())
 					Expect(pkg).ToNot(BeNil())
 					Expect(pkg.Name()).To(Equal("test"))
 					Expect(pkg.Version()).To(Equal("1.1.0"))
 					Expect(len(pkg.Tasks())).To(Equal(0))
 				})
-			}) */
+			})
 		})
 		It("should interpolate version", func() {
 			pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "1.1.0")

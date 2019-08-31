@@ -1,6 +1,7 @@
 package packages
 
 import (
+	"github.com/patrickhuber/wrangle/tasks"
 	"fmt"
 
 	"github.com/patrickhuber/wrangle/filepath"
@@ -13,16 +14,12 @@ type packageContext struct {
 	packagePath                string
 	packageVersionPath         string
 	packageVersionManifestPath string
+	variables map[string]interface{}
 }
 
 // PackageContext defines the context for the given package
 type PackageContext interface {
-	Root() string
-	Bin() string
-	PackagesRoot() string
-	PackagePath() string
-	PackageVersionPath() string
-	PackageVersionManifestPath() string
+	tasks.TaskContext
 }
 
 // NewContext creates a new package context with the given parameters
@@ -69,4 +66,17 @@ func (pc *packageContext) PackageVersionPath() string {
 
 func (pc *packageContext) PackageVersionManifestPath() string {
 	return pc.packageVersionManifestPath
+}
+
+func (pc *packageContext) Variables() map[string]interface{} {
+	return pc.variables
+}
+
+func (pc *packageContext) Variable(name string) (interface{}, bool) {
+	value, ok := pc.variables[name]
+	return value, ok
+}
+
+func (pc *packageContext) SetVariable(name string, value interface{}) {
+	pc.variables[name] = value
 }

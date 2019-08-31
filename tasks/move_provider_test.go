@@ -28,7 +28,7 @@ var _ = Describe("MoveProvider", func() {
 			taskContext tasks.TaskContext
 		)
 		BeforeEach(func() {
-			taskContext = newTaskContext("/opt/wrangle", "test", "1.0.0")
+			taskContext = newFakeTaskContext("/opt/wrangle", "test", "1.0.0")
 		})
 		It("can move file", func() {
 			sourcePath := filepath.Join(taskContext.PackageVersionPath(), "file")

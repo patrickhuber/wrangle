@@ -13,7 +13,7 @@ import (
 var _ = Describe("LinkProvider", func() {
 	It("can create symlink", func() {
 
-		tc := newTaskContext("/wrangle", "test", "1.0.0")
+		tc := newFakeTaskContext("/wrangle", "test", "1.0.0")
 		sourceFile := filepath.Join(tc.PackageVersionPath(), "source")
 		fs := filesystem.NewMemory()
 		fs.Write(sourceFile, []byte("this is data"), 0600)

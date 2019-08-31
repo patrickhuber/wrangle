@@ -25,7 +25,7 @@ var _ = Describe("ExtractProvider", func() {
 	})
 	Describe("Execute", func() {
 		It("should extract single file", func() {
-			taskContext := newTaskContext("/opt/wrangle", "test", "1.0.0")
+			taskContext := newFakeTaskContext("/opt/wrangle", "test", "1.0.0")
 
 			filePath := filepath.Join(taskContext.PackageVersionPath(), "test1")
 			err := fileSystem.Write(filePath, []byte("this is a test"), 0600)

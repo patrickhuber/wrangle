@@ -14,6 +14,7 @@ type Task interface {
 type task struct {
 	taskType string
 	params   map[string]interface{}
+	outputs map[string]interface{}
 }
 
 func (t *task) Type() string {
@@ -33,6 +34,7 @@ func NewTask(taskType string, params map[string]interface{}) Task {
 	return &task{
 		taskType: taskType,
 		params:   dictionary,
+		outputs: make(map[string]interface{}),
 	}
 }
 

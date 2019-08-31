@@ -33,7 +33,7 @@ var _ = Describe("DownloadProvider", func() {
 				"file")
 			Expect(task).ToNot(BeNil())
 	
-			taskContext:= newTaskContext("/opt/wrangle", "test", "1.0.0")
+			taskContext:= newFakeTaskContext("/opt/wrangle", "test", "1.0.0")
 			err := provider.Execute(task, taskContext)
 			Expect(err).To(BeNil())
 	

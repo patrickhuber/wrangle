@@ -85,3 +85,7 @@ func (svc *compositeFeedService) Get(request *FeedGetRequest) (*FeedGetResponse,
 func (svc *compositeFeedService) Create(request *FeedCreateRequest) (*FeedCreateResponse, error) {
 	return nil, nil
 }
+
+func (svc *compositeFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
+	return nil, nil
+}

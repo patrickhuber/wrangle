@@ -1,6 +1,8 @@
 package feed_test
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -13,70 +15,92 @@ var _ = Describe("FeedService", func() {
 	var (
 		fs          filesystem.FileSystem
 		feedService feed.FeedService
+		feedTest    FeedTest
+		packages    []feed.Package
 	)
 	BeforeEach(func() {
 		fs = filesystem.NewMemory()
+		packages = []feed.Package{
+			feed.Package{
+				Name: "test",
+				Versions: []*feed.PackageVersion{
+					&feed.PackageVersion{
+						Version: "1.0.0",
+					},
+					&feed.PackageVersion{
+						Version: "1.0.1",
+					},
+				},
+			},
+			feed.Package{
+				Name: "other",
+				Versions: []*feed.PackageVersion{
+					&feed.PackageVersion{
+						Version: "1.0.0",
+					},
+				},
+			},
+			feed.Package{
+				Name: "last",
+				Versions: []*feed.PackageVersion{
+					&feed.PackageVersion{
+						Version: "1.0.0",
+					},
+				},
+			},
+		}
 
-		err := fs.Write("/wrangle/packages/test/1.0.0/test.1.0.0.yml", []byte(""), 0666)
-		Expect(err).To(BeNil())
-
-		err = fs.Write("/wrangle/packages/test/1.0.1/test.1.0.1.yml", []byte(""), 0666)
-		Expect(err).To(BeNil())
-
-		err = fs.Write("/wrangle/packages/other/1.0.0/other.1.0.0.yml", []byte(""), 0666)
-		Expect(err).To(BeNil())
-
-		err = fs.Write("/wrangle/packages/last/1.0.0/last.1.0.0.yml", []byte(""), 0666)
+		err := writePackagesToFileSystem(packages, fs)
 		Expect(err).To(BeNil())
 
 		feedService = feed.NewFsFeedService(fs, "/wrangle/packages")
+		feedTest = NewFeedTest(feedService)
 	})
 	Describe("List", func() {
 		It("lists all packages", func() {
-			response, err := feedService.List(&feed.FeedListRequest{})
-			Expect(err).To(BeNil())
-			Expect(len(response.Packages)).To(Equal(3))
-
-			for _, pkg := range response.Packages {
-				switch pkg.Name {
-				case "test":
-					Expect(len(pkg.Versions)).To(Equal(2))
-					break
-				case "other":
-					Expect(len(pkg.Versions)).To(Equal(1))
-					break
-				case "last":
-					Expect(len(pkg.Versions)).To(Equal(1))
-					break
-				default:
-					Fail("unrecognized package name")
-				}
-			}
+			feedTest.ListsExactPackages(packages)
 		})
 	})
 	Describe("Get", func() {
 		It("gets all versions by name", func() {
-			response, err := feedService.Get(&feed.FeedGetRequest{
-				Name: "test",
+			feedTest.GetsAllVersionsByName("test", []string{
+				"1.0.0",
+				"1.0.1",
 			})
-			Expect(err).To(BeNil())
-			Expect(response).ToNot(BeNil())
-			Expect(response.Package).ToNot(BeNil())
-			Expect(response.Package.Name).To(Equal("test"))
-			Expect(len(response.Package.Versions)).To(Equal(2))
 		})
 		It("gets specific version by name and version", func() {
-
+			feedTest.GetsSpecificVersionByNameAndVersion("test", "1.0.1")
 		})
 		Context("no package names match", func() {
 			It("is empty", func() {
-
+				feedTest.GetReturnsEmptyValueWhenNoPackageNameMatches("notFound")
 			})
 		})
 		Context("no package no versions match", func() {
-			It("is empty", func() {
-
+			It("version list is empty", func() {
+				feedTest.GetReturnsEmptyValueWhenNoPackageVersionMatches("test", "2.0.0")
 			})
 		})
 	})
+	Describe("Lastest", func() {
+		It("gets latest package version", func() {
+			feedTest.LastestReturnsLatestPackageVersion("test", "1.0.1")
+		})
+	})
 })
+
+func writePackagesToFileSystem(packages []feed.Package, fs filesystem.FileSystem) error {
+	// write packages to file system
+	for p := 0; p < len(packages); p++ {
+		pkg := packages[p]
+		for v := 0; v < len(pkg.Versions); v++ {
+			ver := pkg.Versions[v]
+			path := fmt.Sprintf("/wrangle/packages/%s/%s/%s.%s.yml", pkg.Name, ver.Version, pkg.Name, ver.Version)
+			err := fs.Write(path, []byte(""), 0666)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

@@ -2,17 +2,20 @@ package feed
 
 import "strings"
 
+// PackageVersionManifest defines a pacakge version manifest item and its content
 type PackageVersionManifest struct {
 	Content *string
 	Name    string
 }
 
+// PackageVersion defines a package version response object
 type PackageVersion struct {
 	Version  string
 	Manifest *PackageVersionManifest
 	Feeds    []string
 }
 
+// Package defines a package response object
 type Package struct {
 	Name     string
 	Versions []*PackageVersion
@@ -59,11 +62,22 @@ type FeedCreateResponse struct {
 	Packages []*Package
 }
 
+// FeedLatestRequest defines a query for the lastest version of a package
+type FeedLatestRequest struct {
+	Name string
+}
+
+// FeedLatestResponse defines a response for a FeedLastestRequest query
+type FeedLatestResponse struct {
+	Package *Package
+}
+
 // FeedService defines a package feed service
 type FeedService interface {
 	List(request *FeedListRequest) (*FeedListResponse, error)
 	Get(request *FeedGetRequest) (*FeedGetResponse, error)
 	Create(request *FeedCreateRequest) (*FeedCreateResponse, error)
+	Latest(request *FeedLatestRequest) (*FeedLatestResponse, error)
 }
 
 type packageCriteria struct {

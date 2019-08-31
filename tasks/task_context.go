@@ -8,4 +8,6 @@ type TaskContext interface {
 	PackagePath() string
 	PackageVersionPath() string
 	PackageVersionManifestPath() string
+	Variable(name string) (interface{}, bool)
+	Variables() map[string]interface{}
 }

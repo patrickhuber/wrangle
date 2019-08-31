@@ -139,5 +139,9 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 }
 
 func (svc *fsFeedService) Create(request *FeedCreateRequest) (*FeedCreateResponse, error) {
-	return nil, nil
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (svc *fsFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
+	return nil, fmt.Errorf("not implemented")
 }
