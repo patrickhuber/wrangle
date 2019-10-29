@@ -31,8 +31,14 @@ func CreatePackagesCommand(
 		Action: func(context *cli.Context) error {
 			packagesPath := context.String("path")
 			feedURL := context.String("url")
-			feedService := feedServiceFactory.Get(packagesPath, feedURL)
+
+			feedService, err := feedServiceFactory.Get(packagesPath, feedURL)
+			if err != nil{
+				return err
+			}
+
 			packagesService := packageServiceFactory.Get(feedService)
+			
 			return packagesService.List()
 		},
 	}

@@ -1,10 +1,12 @@
 package feed
 
-import "strings"
+import (
+	"strings"
+)
 
 // PackageVersionManifest defines a pacakge version manifest item and its content
 type PackageVersionManifest struct {
-	Content *string
+	Content string
 	Name    string
 }
 
@@ -19,6 +21,7 @@ type PackageVersion struct {
 type Package struct {
 	Name     string
 	Versions []*PackageVersion
+	Latest   string
 }
 
 // FeedListRequest contains the request for listing packages
@@ -95,6 +98,10 @@ type packageCriteriaAnd struct {
 
 type packageInclude struct {
 	Content bool
+}
+
+type packageApply struct {
+	Latest bool
 }
 
 func evaluate(filter *packageCriteriaWhere, packageName string, packageVersion string) bool {

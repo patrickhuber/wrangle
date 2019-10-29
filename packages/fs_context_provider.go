@@ -7,22 +7,19 @@ import (
 	semver "github.com/hashicorp/go-version"
 	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/settings"
 )
 
 type fsContextProvider struct {
-	fs                filesystem.FileSystem
-	rootDirectory     string
-	binDirectory      string
-	packagesDirectory string
+	fs    filesystem.FileSystem
+	paths *settings.Paths
 }
 
 // NewFsContextProvider creates a context provider for the file system
-func NewFsContextProvider(fs filesystem.FileSystem, rootDirectory, binDirectory, packagesDirectory string) ContextProvider {
+func NewFsContextProvider(fs filesystem.FileSystem, paths *settings.Paths) ContextProvider {
 	return &fsContextProvider{
-		fs:                fs,
-		rootDirectory:     rootDirectory,
-		binDirectory:      binDirectory,
-		packagesDirectory: packagesDirectory,
+		fs:    fs,
+		paths: paths,
 	}
 }
 
@@ -35,7 +32,7 @@ func (p *fsContextProvider) Get(packageName, packageVersion string) (PackageCont
 	//   ex: /packages/test/1.0.0/
 	// packageVersionManifestPath
 	//   ex: /packages/test/1.0.0/test.1.0.0.yml
-	packagePath, err := p.getPackagePath(p.packagesDirectory, packageName)
+	packagePath, err := p.getPackagePath(p.paths.Packages, packageName)
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +46,7 @@ func (p *fsContextProvider) Get(packageName, packageVersion string) (PackageCont
 	packageVersionManifestPath := fmt.Sprintf("%s/%s.%s.yml", packageVersionPath, packageName, packageVersion)
 
 	packageContext := NewContext(
-		p.rootDirectory,
-		p.binDirectory,
-		p.packagesDirectory,
+		p.paths,
 		packagePath,
 		packageVersionPath,
 		packageVersionManifestPath)
@@ -94,7 +89,7 @@ func (p *fsContextProvider) findLatestPackageVersion(packagePath string) (string
 		version := file.Name()
 		v, err := semver.NewVersion(version)
 		if err != nil {
-			return "", err
+			continue
 		}
 
 		if latest == nil {

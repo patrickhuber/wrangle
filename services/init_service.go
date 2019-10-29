@@ -20,6 +20,7 @@ func NewInitService(fileSystem filesystem.FileSystem) InitService {
 	}
 }
 
+// Init creates the config file as well as the settings file
 func (i *initService) Init(configFilePath string) error {
 	data := "stores: \nprocesses: \n"
 	return i.fileSystem.Write(configFilePath, []byte(data), 0640)

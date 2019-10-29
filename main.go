@@ -1,10 +1,12 @@
 package main
 
-import (	
+import (
 	"fmt"
 	"log"
 	"os"
 	"runtime"
+
+	"github.com/patrickhuber/wrangle/feed"
 
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/crypto"
@@ -12,6 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/processes"
+	"github.com/patrickhuber/wrangle/settings"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
@@ -23,7 +26,7 @@ import (
 
 func main() {
 	// create platform, filesystem, working directory and console
-	platform := runtime.GOOS	
+	platform := runtime.GOOS
 	fileSystem := filesystem.NewOs()
 	console := ui.NewOSConsole()
 	workingDirectory, err := os.Getwd()
@@ -41,7 +44,19 @@ func main() {
 	// create process factory
 	processFactory := processes.NewOsFactory()
 
-	// create task providers	
+	homeDir, err := os.UserHomeDir()
+	failOnError(err)
+	settingsProvider := settings.NewFsProvider(fileSystem, platform, homeDir)
+
+	setting, err := settingsProvider.Get()
+	failOnError(err)
+
+	paths := setting.Paths
+
+	contextProvider := packages.NewFsContextProvider(fileSystem, paths)
+	feedService := feed.NewFsFeedService(fileSystem, paths.Packages)
+
+	// create task providers
 	taskProviders := tasks.NewProviderRegistry()
 	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
@@ -49,7 +64,7 @@ func main() {
 	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
 
 	// create package manager
-	packagesManager := packages.NewManager(fileSystem, taskProviders)
+	packagesManager := packages.NewManager(fileSystem, feedService, contextProvider, taskProviders)
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template

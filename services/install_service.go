@@ -64,19 +64,7 @@ func (service *installService) Install(request *InstallServiceRequest) error {
 
 	packageVersion := service.getPackageVersion(request)
 
-	root, rootIsMissing := service.getRoot(request)
-
-	bin, err := service.getBin(request, rootIsMissing)	
-	if err != nil{
-		return err
-	}
-
-	packagesRoot, err := service.getPackagesRoot(request, rootIsMissing)	
-	if err != nil{
-		return err
-	}
-
-	pkg, err := service.manager.Load(root, bin, packagesRoot, packageName, packageVersion)
+	pkg, err := service.manager.Load(packageName, packageVersion)
 	if err != nil{
 		return err
 	}

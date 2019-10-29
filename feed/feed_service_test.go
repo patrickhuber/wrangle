@@ -19,6 +19,7 @@ type FeedTest interface {
 	LastestReturnsLatestPackageVersion(packageName string, expectedVersion string)
 	GetReturnsEmptyValueWhenNoPackageNameMatches(notFoundPackageName string)
 	GetReturnsEmptyValueWhenNoPackageVersionMatches(packageName string, notFoundVersionNumber string)
+	GetReturnsContentWhenRequested(packageName string, packageVersion string, expectedContent string)
 }
 
 func NewFeedTest(feedService feed.FeedService) FeedTest {
@@ -132,6 +133,27 @@ func (t *feedTest) GetsSpecificVersionByNameAndVersion(packageName string, packa
 	Expect(pkg.Name).To(Equal(packageName))
 	Expect(len(pkg.Versions)).To(Equal(1))
 	Expect(pkg.Versions[0].Version).To(Equal(packageVersion))
+}
+
+func (t *feedTest) GetReturnsContentWhenRequested(packageName string, packageVersion string, expectedContent string) {
+	request := &feed.FeedGetRequest{
+		Name:           packageName,
+		Version:        packageVersion,
+		IncludeContent: true,
+	}
+
+	resp, err := t.service.Get(request)
+	Expect(err).To(BeNil())
+	Expect(resp).ToNot(BeNil())
+	Expect(resp.Package).ToNot(BeNil())
+
+	pkg := resp.Package
+	Expect(pkg.Name).To(Equal(packageName))
+	Expect(len(pkg.Versions)).ToNot(BeZero())
+
+	manifest := pkg.Versions[0].Manifest
+	Expect(manifest).ToNot(BeNil())
+	Expect(manifest.Content).To(Equal(expectedContent))
 }
 
 func (t *feedTest) LastestReturnsLatestPackageVersion(packageName string, expectedVersion string) {

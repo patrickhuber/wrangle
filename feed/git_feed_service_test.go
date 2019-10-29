@@ -37,6 +37,25 @@ var _ = Describe("GitFeedService", func() {
 					},
 					&feed.PackageVersion{
 						Version: "1.3.2",
+						Manifest: &feed.PackageVersionManifest{
+							Content: "Content",
+							Name:    "Name",
+						},
+					},
+				},
+			},
+			feed.Package{
+				Name:   "test",
+				Latest: "1.0.1",
+				Versions: []*feed.PackageVersion{
+					&feed.PackageVersion{
+						Version: "1.0.0",
+					},
+					&feed.PackageVersion{
+						Version: "1.0.1",
+					},
+					&feed.PackageVersion{
+						Version: "2.0.0",
 					},
 				},
 			},
@@ -49,7 +68,7 @@ var _ = Describe("GitFeedService", func() {
 	})
 	Describe("List", func() {
 		It("lists all packages", func() {
-			tester.ListsAllPackages(1)
+			tester.ListsAllPackages(2)
 		})
 	})
 
@@ -70,6 +89,19 @@ var _ = Describe("GitFeedService", func() {
 				tester.GetReturnsEmptyValueWhenNoPackageVersionMatches("bbr", "2.0.0")
 			})
 		})
+		It("returns content", func() {
+			tester.GetReturnsContentWhenRequested("bbr", "1.3.2", "Content")
+		})
+	})
+	Describe("Lastest", func() {
+		It("gets latest package version", func() {
+			tester.LastestReturnsLatestPackageVersion("bbr", "1.3.2")
+		})
+		Context("when tagged", func() {
+			It("gets latest package version", func() {
+				tester.LastestReturnsLatestPackageVersion("test", "1.0.1")
+			})
+		})
 	})
 })
 
@@ -82,10 +114,30 @@ func writePackagesToGitRepository(packages []feed.Package, repository *git.Repos
 
 	for p := 0; p < len(packages); p++ {
 		pkg := packages[p]
+
+		packagePath := fs.Join("feed", pkg.Name)
+
+		err = fs.MkdirAll(packagePath, 0600)
+		if err != nil {
+			return nil
+		}
+
+		if pkg.Latest != "" {
+			latestFilePath := fs.Join(packagePath, "latest")
+			err = util.WriteFile(fs, latestFilePath, []byte(pkg.Latest), 0644)
+			if err != nil {
+				return err
+			}
+			_, err := worktree.Add(latestFilePath)
+			if err != nil {
+				return err
+			}
+		}
+
 		for v := 0; v < len(pkg.Versions); v++ {
 			ver := pkg.Versions[v]
 			fileName := fmt.Sprintf("%s.%s.yml", pkg.Name, ver.Version)
-			directoryPath := fs.Join("feed", pkg.Name, ver.Version)
+			directoryPath := fs.Join(packagePath, ver.Version)
 
 			err = fs.MkdirAll(directoryPath, 0600)
 			if err != nil {
@@ -95,8 +147,8 @@ func writePackagesToGitRepository(packages []feed.Package, repository *git.Repos
 			filePath := fs.Join(directoryPath, fileName)
 
 			content := []byte("")
-			if ver.Manifest != nil && ver.Manifest.Content != nil {
-				content = []byte(*ver.Manifest.Content)
+			if ver.Manifest != nil && ver.Manifest.Content != "" {
+				content = []byte(ver.Manifest.Content)
 			}
 
 			err = util.WriteFile(fs, filePath, content, 0644)

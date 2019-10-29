@@ -7,6 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/store"
 )
 
 var _ = Describe("credhub", func() {
@@ -24,7 +25,6 @@ var _ = Describe("credhub", func() {
 		ca, ok := os.LookupEnv("CREDHUB_CA_CERT")
 		Expect(ok).To(BeTrue())
 
-		// TODO: pull creds from environment
 		storeConfig := &CredHubStoreConfig{
 			Server:       server,
 			ClientSecret: clientSecret,
@@ -32,15 +32,15 @@ var _ = Describe("credhub", func() {
 			CaCert:       ca,
 		}
 
-		store, err := NewCredHubStore(storeConfig)
+		credHubStore, err := NewCredHubStore(storeConfig)
 		Expect(err).To(BeNil())
 
-		echo, err := store.Set("/test", "test")
+		item := store.NewItem("test", store.Value, "test")
+		err = credHubStore.Set(item)
 		Expect(err).To(BeNil())
-		Expect(echo).To(Equal("test"))
 
-		value, err := store.Get("/test")
+		item, err = credHubStore.Get("test")
 		Expect(err).To(BeNil())
-		Expect(value.Value()).To(Equal(echo))
+		Expect(item.Value()).To(Equal("test"))
 	})
 })

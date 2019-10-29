@@ -17,8 +17,8 @@ func (t *DownloadTask) Type() string {
 
 func (t *DownloadTask) Params() map[string]interface{} {
 	dictionary := make(map[string]interface{})
-	dictionary["out"]= t.Details.Out
-	dictionary["url"]= t.Details.URL
+	dictionary["out"] = t.Details.Out
+	dictionary["url"] = t.Details.URL
 	return dictionary
 }
 

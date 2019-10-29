@@ -23,16 +23,12 @@ func NewFsProvider(fs filesystem.FileSystem, platform string, homeDirectory stri
 }
 
 func (provider *fsProvider) Initialize() (*Settings, error) {
-	return provider.Get()
-}
-
-func (provider *fsProvider) Get() (*Settings, error) {
-
 	wrangleSettingsPath, err := provider.getSettingsPath()
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO: Remove side effects from get. Should return hard coded defaults unless the settings file exists.
 	// if the settings file directory doesn't exist, generate it
 	err = provider.ensureSettingsPathExists(wrangleSettingsPath)
 	if err != nil {
@@ -44,6 +40,33 @@ func (provider *fsProvider) Get() (*Settings, error) {
 	err = provider.ensureSettingsFileExists(wrangleSettingsFilePath)
 	if err != nil {
 		return nil, err
+	}
+
+	return provider.Get()
+}
+
+func (provider *fsProvider) Get() (*Settings, error) {
+	wrangleSettingsPath, err := provider.getSettingsPath()
+	if err != nil {
+		return nil, err
+	}
+
+	ok, err := provider.checkSettingsPathExists(wrangleSettingsPath)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return provider.generateSettings(), nil
+	}
+
+	wrangleSettingsFilePath := provider.getSettingsFilePath(wrangleSettingsPath)
+
+	ok, err = provider.checkSettingsFileExists(wrangleSettingsFilePath)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return provider.generateSettings(), nil
 	}
 
 	// load the settings file and return the settings
@@ -67,8 +90,12 @@ func (provider *fsProvider) getSettingsFilePath(settingsPath string) string {
 	return filepath.Join(settingsPath, "settings.yml")
 }
 
+func (provider *fsProvider) checkSettingsPathExists(filePath string) (bool, error) {
+	return provider.fs.Exists(filePath)
+}
+
 func (provider *fsProvider) ensureSettingsPathExists(path string) error {
-	ok, err := provider.fs.Exists(path)
+	ok, err := provider.checkSettingsPathExists(path)
 	if err != nil {
 		return err
 	}
@@ -78,8 +105,12 @@ func (provider *fsProvider) ensureSettingsPathExists(path string) error {
 	return provider.fs.Mkdir(path, 0600)
 }
 
+func (provider *fsProvider) checkSettingsFileExists(filePath string) (bool, error) {
+	return provider.fs.Exists(filePath)
+}
+
 func (provider *fsProvider) ensureSettingsFileExists(filePath string) error {
-	ok, err := provider.fs.Exists(filePath)
+	ok, err := provider.checkSettingsFileExists(filePath)
 	if err != nil {
 		return err
 	}

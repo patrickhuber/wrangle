@@ -9,8 +9,8 @@ import (
 )
 
 var _ = Describe("FsProvider", func() {
-	Context("Write", func() {
-		It("can write settings", func() {
+	Context("Set", func() {
+		It("can set settings", func() {
 			fs := filesystem.NewMemory()
 			s := &settings.Settings{
 				Feeds: []string{global.PackageFeedURL},
@@ -29,8 +29,11 @@ var _ = Describe("FsProvider", func() {
 			Expect(ok).To(BeTrue())
 		})
 	})
-	Context("Read", func() {
-		It("can read when file exists", func() {
+	Context("Get", func() {
+		It("returns default when no settings file exists", func() {
+
+		})
+		It("can get when file exists", func() {
 			fs := filesystem.NewMemory()
 
 			err := fs.Mkdir("/home/user/.wrangle", 0600)
@@ -52,5 +55,9 @@ paths:
 			Expect(err).To(BeNil())
 			Expect(s).ToNot(BeNil())
 		})
+	})
+	Context("Initialize", func() {
+		It("creates file if it doesn't exist", func() {})
+		It("returns existing file if it exists", func() {})
 	})
 })

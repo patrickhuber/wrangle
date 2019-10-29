@@ -5,12 +5,11 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/wrangle/filepath"
+	"github.com/patrickhuber/wrangle/settings"
 )
 
 type packageContext struct {
-	root                       string
-	bin                        string
-	packagesRoot               string
+	paths 					   *settings.Paths
 	packagePath                string
 	packageVersionPath         string
 	packageVersionManifestPath string
@@ -23,12 +22,9 @@ type PackageContext interface {
 }
 
 // NewContext creates a new package context with the given parameters
-func NewContext(root, bin, packagesRoot, packagePath, packageVersionPath, packageVersionManifestPath string) PackageContext {
+func NewContext(paths *settings.Paths, packagePath, packageVersionPath, packageVersionManifestPath string) PackageContext {
 	return &packageContext{
-		root:                       root,
-		bin:                        bin,
-		packagesRoot:               packagesRoot,
-		packagePath:                packagePath,
+		paths: paths,
 		packageVersionPath:         packageVersionPath,
 		packageVersionManifestPath: packageVersionManifestPath,
 	}
@@ -38,22 +34,27 @@ func NewContext(root, bin, packagesRoot, packagePath, packageVersionPath, packag
 func NewDefaultContext(root, packageName, packageVersion string) PackageContext {
 	bin := filepath.Join(root, "bin")
 	packagesRoot := filepath.Join(root, "packages")
+	paths := &settings.Paths{
+		Root: root,
+		Bin: bin,
+		Packages: packagesRoot,
+	}	
 	packagePath := filepath.Join(packagesRoot, packageName)
 	packageVersionPath := filepath.Join(packagePath, packageVersion)
 	packageVersionManifestPath := filepath.Join(packageVersionPath, fmt.Sprintf("%s.%s.yml", packageName, packageVersion))
-	return NewContext(root, bin, packagesRoot, packagePath, packageVersionPath, packageVersionManifestPath)
+	return NewContext(paths, packagePath, packageVersionPath, packageVersionManifestPath)
 }
 
 func (pc *packageContext) Root() string {
-	return pc.root
+	return pc.paths.Root
 }
 
 func (pc *packageContext) Bin() string {
-	return pc.bin
+	return pc.paths.Bin
 }
 
 func (pc *packageContext) PackagesRoot() string {
-	return pc.packagesRoot
+	return pc.paths.Packages
 }
 
 func (pc *packageContext) PackagePath() string {

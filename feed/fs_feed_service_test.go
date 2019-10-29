@@ -37,6 +37,10 @@ var _ = Describe("FeedService", func() {
 				Versions: []*feed.PackageVersion{
 					&feed.PackageVersion{
 						Version: "1.0.0",
+						Manifest: &feed.PackageVersionManifest{
+							Name:    "Name",
+							Content: "Content",
+						},
 					},
 				},
 			},
@@ -81,6 +85,9 @@ var _ = Describe("FeedService", func() {
 				feedTest.GetReturnsEmptyValueWhenNoPackageVersionMatches("test", "2.0.0")
 			})
 		})
+		It("returns content", func() {
+			feedTest.GetReturnsContentWhenRequested("other", "1.0.0", "Content")
+		})
 	})
 	Describe("Lastest", func() {
 		It("gets latest package version", func() {
@@ -96,7 +103,11 @@ func writePackagesToFileSystem(packages []feed.Package, fs filesystem.FileSystem
 		for v := 0; v < len(pkg.Versions); v++ {
 			ver := pkg.Versions[v]
 			path := fmt.Sprintf("/wrangle/packages/%s/%s/%s.%s.yml", pkg.Name, ver.Version, pkg.Name, ver.Version)
-			err := fs.Write(path, []byte(""), 0666)
+			content := ""
+			if ver.Manifest != nil {
+				content = ver.Manifest.Content
+			}
+			err := fs.Write(path, []byte(content), 0666)
 			if err != nil {
 				return err
 			}

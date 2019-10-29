@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	semver "github.com/hashicorp/go-version"
 	"github.com/patrickhuber/wrangle/filepath"
-
 	"github.com/patrickhuber/wrangle/filesystem"
 )
 
@@ -87,6 +87,14 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 		}
 
 		versions := []*PackageVersion{}
+
+		latest, err := svc.getLatestTag(packagePath)
+		if err != nil {
+			return nil, err
+		}
+
+		ignoreLatest := latest != nil
+
 		for _, packageVersionFolder := range packageVersions {
 			if !packageVersionFolder.IsDir() {
 				continue
@@ -120,8 +128,18 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 					return nil, err
 				}
 				stringContent := string(content)
-				version.Manifest.Content = &stringContent
+				version.Manifest.Content = stringContent
 			}
+
+			ver, err := semver.NewVersion(version.Version)
+			if err != nil {
+				return nil, err
+			}
+
+			if latest == nil || (latest.Compare(ver) == -1 && !ignoreLatest) {
+				latest = ver
+			}
+
 			versions = append(versions, version)
 		}
 
@@ -132,10 +150,34 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 		pkg := Package{
 			Name:     packageName,
 			Versions: versions,
+			Latest:   latest.String(),
 		}
 		packages = append(packages, &pkg)
 	}
 	return packages, nil
+}
+
+func (svc *fsFeedService) getLatestTag(packagePath string) (*semver.Version, error) {
+	var latest *semver.Version
+
+	latestTagPath := filepath.Join(packagePath, "latest")
+	tagExists, err := svc.fs.Exists(latestTagPath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tagExists {
+		version, err := svc.fs.Read(latestTagPath)
+		if err != nil {
+			return nil, err
+		}
+		latest, err = semver.NewVersion(string(version))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return latest, nil
 }
 
 func (svc *fsFeedService) Create(request *FeedCreateRequest) (*FeedCreateResponse, error) {
@@ -143,5 +185,21 @@ func (svc *fsFeedService) Create(request *FeedCreateRequest) (*FeedCreateRespons
 }
 
 func (svc *fsFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+	response, err := svc.Get(&FeedGetRequest{Name: request.Name})
+	if err != nil {
+		return nil, err
+	}
+
+	latest := response.Package.Latest
+	var latestPackageVersion *PackageVersion
+	for _, packageVersion := range response.Package.Versions {
+		if latest == packageVersion.Version {
+			latestPackageVersion = packageVersion
+		}
+	}
+
+	response.Package.Versions = []*PackageVersion{latestPackageVersion}
+	return &FeedLatestResponse{
+		Package: response.Package,
+	}, nil
 }

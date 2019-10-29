@@ -1,6 +1,7 @@
 package packages_test
 
 import (	
+	"github.com/patrickhuber/wrangle/settings"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
+	"github.com/patrickhuber/wrangle/feed"
 )
 
 var _ = Describe("Manager", func() {
@@ -24,17 +26,28 @@ var _ = Describe("Manager", func() {
 		context packages.PackageContext
 	)
 	BeforeEach(func() {
+		paths := &settings.Paths{
+			Root : "/wrangle",
+			Bin : "/wrangle/bin",
+			Packages : "/wrangle/packages",
+		}	
+
 		fs = filesystem.NewMemory()
+
 		console := ui.NewMemoryConsole()
+
+		feedService := feed.NewFsFeedService(fs, paths.Packages)
 
 		registry := tasks.NewProviderRegistry()		
 		registry.Register(tasks.NewDownloadProvider(fs, console))
 		registry.Register(tasks.NewExtractProvider(fs, console))
 		registry.Register(tasks.NewLinkProvider(fs, console))
-		
-		manager = packages.NewManager(fs, registry)
 
-		context = packages.NewDefaultContext("/wrangle", "test", "1.0.0")
+		contextProvider := packages.NewFsContextProvider(fs, paths)
+		
+		manager = packages.NewManager(fs, feedService, contextProvider, registry)
+
+		context = packages.NewDefaultContext(paths.Packages, "test", "1.0.0")
 	})
 	Describe("Download", func() {
 		Context("WhenDownloadSucceeds", func() {
@@ -220,7 +233,7 @@ targets:
 		})
 		Context("WhenVersionSpecified", func() {
 			It("loads specified version", func() {
-				pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "1.0.0")
+				pkg, err := manager.Load("test", "1.0.0")
 				Expect(err).To(BeNil())
 				Expect(pkg).ToNot(BeNil())
 				Expect(pkg.Name()).To(Equal("test"))
@@ -230,27 +243,27 @@ targets:
 		})
 		Context("WhenVersionNotSpecified", func() {
 			It("loads latest version by semver", func() {
-				pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "")
+				pkg, err := manager.Load("test", "")
 				Expect(err).To(BeNil())
 				Expect(pkg).ToNot(BeNil())
 				Expect(pkg.Name()).To(Equal("test"))
 				Expect(pkg.Version()).To(Equal("2.0.0"))
 				Expect(len(pkg.Tasks())).To(Equal(1))
 			})
-			When("manifest at root", func(){
-				It("loads version from task provider", func(){
-					fs.Write("/packages/test/test.yml", []byte("1.1.0"), 0666)
-					pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "")
+			When("latest tag", func(){
+				It("loads version from tag", func(){
+					fs.Write("/wrangle/packages/test/latest", []byte("1.1.0"), 0666)
+					pkg, err := manager.Load("test", "")
 					Expect(err).To(BeNil())
 					Expect(pkg).ToNot(BeNil())
 					Expect(pkg.Name()).To(Equal("test"))
 					Expect(pkg.Version()).To(Equal("1.1.0"))
-					Expect(len(pkg.Tasks())).To(Equal(0))
+					Expect(len(pkg.Tasks())).To(Equal(1))
 				})
 			})
 		})
 		It("should interpolate version", func() {
-			pkg, err := manager.Load("/wrangle", "/wrangle/bin", "/wrangle/packages", "test", "1.1.0")
+			pkg, err := manager.Load("test", "1.1.0")
 			Expect(err).To(BeNil())
 			Expect(pkg).ToNot(BeNil())
 			Expect(len(pkg.Tasks())).To(Equal(1))

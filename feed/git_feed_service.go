@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	semver "github.com/hashicorp/go-version"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
 	"gopkg.in/src-d/go-billy.v4/memfs"
@@ -90,7 +91,22 @@ func (svc *gitFeedService) Create(request *FeedCreateRequest) (*FeedCreateRespon
 }
 
 func (svc *gitFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
-	return nil, nil
+	response, err := svc.Get(&FeedGetRequest{Name: request.Name})
+	if err != nil {
+		return nil, err
+	}
+	latest := response.Package.Latest
+	var latestPackageVersion *PackageVersion
+	for _, packageVersion := range response.Package.Versions {
+		if latest == packageVersion.Version {
+			latestPackageVersion = packageVersion
+		}
+	}
+
+	response.Package.Versions = []*PackageVersion{latestPackageVersion}
+	return &FeedLatestResponse{
+		Package: response.Package,
+	}, nil
 }
 
 func (svc *gitFeedService) find(where *packageCriteriaWhere, include *packageInclude) ([]*Package, error) {
@@ -111,22 +127,51 @@ func (svc *gitFeedService) find(where *packageCriteriaWhere, include *packageInc
 	}
 
 	packages := map[string]*Package{}
+	latestVersions := map[string]*semver.Version{}
+	pinLatestVersion := map[string]bool{}
+
 	tree.Files().ForEach(func(f *object.File) error {
 
 		segments := strings.Split(f.Name, "/")
 
-		if len(segments) != 4 {
-			return nil
-		}
-
-		if segments[0] != "feed" {
+		isLatestVersionFile := len(segments) == 3 && segments[0] == "feed" && segments[2] == "latest"
+		isPackageVersionFile := len(segments) == 4 && segments[0] == "feed"
+		if !isLatestVersionFile && !isPackageVersionFile {
 			return nil
 		}
 
 		packageName := segments[1]
+
+		if isLatestVersionFile {
+			isLatestTagFile := segments[2] == "latest"
+			if isLatestTagFile {
+				// set the latest version in the array
+				content, err := f.Contents()
+				if err != nil {
+					return err
+				}
+				// should this exit without error?
+				ver, err := semver.NewVersion(content)
+				if err != nil {
+					return err
+				}
+
+				latestVersions[packageName] = ver
+				pinLatestVersion[packageName] = true
+				pkg, packageFound := packages[packageName]
+				if packageFound {
+					pkg.Latest = ver.String()
+				}
+			}
+			return nil
+		}
+
+		if !isPackageVersionFile {
+			return nil
+		}
+
 		packageVersion := segments[2]
 		packageVersionManifestFile := segments[3]
-
 		packageVersionManifestName := fmt.Sprintf("%s.%s.yml", packageName, packageVersion)
 
 		if packageVersionManifestName != packageVersionManifestFile {
@@ -146,18 +191,33 @@ func (svc *gitFeedService) find(where *packageCriteriaWhere, include *packageInc
 			packages[packageName] = pkg
 		}
 
+		ver, err := semver.NewVersion(packageVersion)
+		if err != nil {
+			return err
+		}
+
+		latest, latestFound := latestVersions[packageName]
+		_, isPinned := pinLatestVersion[packageName]
+
+		if !latestFound || (latest.Compare(ver) == -1 && !isPinned) {
+			latestVersions[packageName] = ver
+			latest = ver
+			pkg.Latest = latest.String()
+		}
+
 		version := &PackageVersion{
 			Manifest: &PackageVersionManifest{
 				Name: packageVersionManifestFile},
 			Version: packageVersion,
 			Feeds:   []string{svc.name},
 		}
+
 		if include != nil && include.Content {
 			content, err := f.Contents()
 			if err != nil {
 				return err
 			}
-			version.Manifest.Content = &content
+			version.Manifest.Content = content
 		}
 		pkg.Versions = append(pkg.Versions, version)
 

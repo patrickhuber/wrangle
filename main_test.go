@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/patrickhuber/wrangle/feed"
+	"github.com/patrickhuber/wrangle/settings"
+
 	"github.com/patrickhuber/wrangle/packages"
 	"github.com/patrickhuber/wrangle/tasks"
 
@@ -56,15 +59,23 @@ func runPrintTest(command string, expected string) {
 	storeManager := store.NewManager()
 	storeManager.Register(file.NewFileStoreProvider(fileSystem, nil))
 	processFactory := processes.NewOsFactory() // change to fake process factory?
-	console := ui.NewMemoryConsole()
 
+	paths := &settings.Paths{
+		Root:     "/opt/wrangle",
+		Bin:      "/opt/wrangle/bin",
+		Packages: "/opt/wrangle/packages",
+	}
+	feedService := feed.NewFsFeedService(fileSystem, paths.Packages)
+	contextProvider := packages.NewFsContextProvider(fileSystem, paths)
+
+	console := ui.NewMemoryConsole()
 	taskProviders := tasks.NewProviderRegistry()
 	taskProviders.Register(tasks.NewDownloadProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewExtractProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
 
-	packagesManager := packages.NewManager(fileSystem, taskProviders)
+	packagesManager := packages.NewManager(fileSystem, feedService, contextProvider, taskProviders)
 
 	// create config file
 	configFileContent := `
