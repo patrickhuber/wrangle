@@ -1,35 +1,34 @@
-package services_test
+package store_test
 
-import (	
-	"github.com/patrickhuber/wrangle/services"
-
+import (
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("StoresService", func(){
-    It("can list stores", func(){
+var _ = Describe("StoresService", func() {
+	It("can list stores", func() {
 
 		console := ui.NewMemoryConsole()
 
-		service := services.NewStoresService(console)
+		service := store.NewService(console)
 
 		cfg := &config.Config{
 			Stores: []config.Store{
 				config.Store{
-					Name: "one",					
+					Name:      "one",
 					StoreType: "file",
 				},
 				config.Store{
-					Name: "two",
+					Name:      "two",
 					StoreType: "credhub",
 				},
 			},
 		}
-		err := service.List(cfg)		
+		err := service.List(cfg)
 		Expect(err).To(BeNil())
 
 		Expect(console.OutAsString()).To(Equal("name type\n---- ----\none  file\ntwo  credhub\n"))

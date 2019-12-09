@@ -261,3 +261,4 @@ This example simply downloads the binary and doesn't do any extraction
 ## sample files
 
 [creds file](doc/example-creds.yml)
+

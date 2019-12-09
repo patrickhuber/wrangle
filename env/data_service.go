@@ -1,27 +1,27 @@
-package services
+package env
 
 import (
 	"github.com/patrickhuber/wrangle/collections"
 	"github.com/patrickhuber/wrangle/global"
 )
 
-type envDataService struct {
+type dataService struct {
 	dictionary collections.Dictionary
 }
 
-// EnvDataService defines a service for environment data
-type EnvDataService interface {
+// DataService defines a service for environment data
+type DataService interface {
 	List() map[string]string
 }
 
-// NewEnvDataService returns a new env data service for the given data
-func NewEnvDataService(dictionary collections.Dictionary) EnvDataService {
-	return &envDataService{
+// NewDataService returns a new env data service for the given data
+func NewDataService(dictionary collections.Dictionary) DataService {
+	return &dataService{
 		dictionary: dictionary,
 	}
 }
 
-func (e *envDataService) List() map[string]string {
+func (e *dataService) List() map[string]string {
 	keys := []string{
 		global.BinPathKey,
 		global.PackagePathKey,

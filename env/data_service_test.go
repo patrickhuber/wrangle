@@ -1,22 +1,22 @@
-package services_test
+package env_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/wrangle/collections"
+	"github.com/patrickhuber/wrangle/env"
 	"github.com/patrickhuber/wrangle/global"
-	"github.com/patrickhuber/wrangle/services"
 )
 
 var _ = Describe("EnvDataService", func() {
 	var (
 		dictionary collections.Dictionary
-		cmd        services.EnvDataService
+		cmd        env.DataService
 	)
 	BeforeEach(func() {
 		dictionary = collections.NewDictionary()
-		cmd = services.NewEnvDataService(dictionary)
+		cmd = env.NewDataService(dictionary)
 	})
 	Describe("NewEnvDataService", func() {
 		It("creates new env", func() {

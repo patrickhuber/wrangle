@@ -2,13 +2,13 @@ package commands
 
 import (
 	"github.com/patrickhuber/wrangle/global"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/packages"
 	"github.com/urfave/cli"
 )
 
 // CreateInstallCommand creates the install command
 func CreateInstallCommand(
-	installService services.InstallService) *cli.Command {
+	installService packages.InstallService) *cli.Command {
 	return &cli.Command{
 		Name:      "install",
 		Aliases:   []string{"i"},
@@ -42,17 +42,17 @@ func CreateInstallCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			installServiceRequest := &services.InstallServiceRequest{
-				Directories: &services.InstallServiceRequestDirectories{
+			installServiceRequest := &packages.InstallServiceRequest{
+				Directories: &packages.InstallServiceRequestDirectories{
 					Root:     context.String("root"),
 					Bin:      context.String("bin"),
 					Packages: context.String("path"),
 				},
-				Package: &services.InstallServiceRequestPackage{
+				Package: &packages.InstallServiceRequestPackage{
 					Name:    context.Args().First(),
 					Version: context.String("version"),
 				},
-				Feed: &services.InstallServiceRequestFeed{
+				Feed: &packages.InstallServiceRequestFeed{
 					URL: context.String("url"),
 				},
 			}

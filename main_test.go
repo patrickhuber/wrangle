@@ -31,12 +31,12 @@ var _ = Describe("Main", func() {
 
 	Describe("Print Env", func() {
 		It("can cascade configuration", func() {
-			runPrintTest("print-env", "export WRANGLE_TEST=value\n")
+			runPrintTest("env", "export WRANGLE_TEST=value\n")
 		})
 	})
 	Describe("Print", func() {
 		It("can cascade configurations", func() {
-			runPrintTest("print", "export WRANGLE_TEST=value\necho\n")
+			runPrintTest("process", "export WRANGLE_TEST=value\necho\n")
 		})
 	})
 
@@ -125,6 +125,7 @@ processes:
 	args := []string{
 		"wrangle",
 		"-c", "/config",
+		"print",
 		command,
 		"-f", "posix",
 		"echo"}

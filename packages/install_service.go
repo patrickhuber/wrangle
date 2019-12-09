@@ -1,36 +1,35 @@
-package services
+package packages
 
-import (	
-	"github.com/patrickhuber/wrangle/filepath"
-	"strings"
+import (
 	"fmt"
+	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/patrickhuber/wrangle/packages"
+	"strings"
 )
 
 // InstallServiceRequestPackage a package for the install service request
-type InstallServiceRequestPackage struct{
-	Name string
+type InstallServiceRequestPackage struct {
+	Name    string
 	Version string
 }
 
 // InstallServiceRequestDirectories directories for install service request
-type InstallServiceRequestDirectories struct{
-	Root string
-	Bin string
+type InstallServiceRequestDirectories struct {
+	Root     string
+	Bin      string
 	Packages string
 }
 
 // InstallServiceRequestFeed a feed for install service requests
-type InstallServiceRequestFeed struct{
+type InstallServiceRequestFeed struct {
 	URL string
 }
 
 // InstallServiceRequest defines a request for installation of a package
-type InstallServiceRequest struct{
-	Package *InstallServiceRequestPackage
+type InstallServiceRequest struct {
+	Package     *InstallServiceRequestPackage
 	Directories *InstallServiceRequestDirectories
-	Feed *InstallServiceRequestFeed
+	Feed        *InstallServiceRequestFeed
 }
 
 // InstallService is a service responsible for installing packages
@@ -41,14 +40,14 @@ type InstallService interface {
 type installService struct {
 	platform   string
 	fileSystem filesystem.FileSystem
-	manager    packages.Manager
+	manager    Manager
 }
 
 // NewInstallService creates a new install service
 func NewInstallService(
 	platform string,
 	fileSystem filesystem.FileSystem,
-	manager packages.Manager) (InstallService, error) {
+	manager Manager) (InstallService, error) {
 
 	return &installService{
 		platform:   platform,
@@ -56,16 +55,16 @@ func NewInstallService(
 		manager:    manager}, nil
 }
 
-func (service *installService) Install(request *InstallServiceRequest) error {	
+func (service *installService) Install(request *InstallServiceRequest) error {
 	packageName, err := service.getPackageName(request)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
 	packageVersion := service.getPackageVersion(request)
 
 	pkg, err := service.manager.Load(packageName, packageVersion)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
@@ -73,7 +72,7 @@ func (service *installService) Install(request *InstallServiceRequest) error {
 	return service.manager.Install(pkg)
 }
 
-func  (service *installService) getPackageName(request *InstallServiceRequest) (string, error){
+func (service *installService) getPackageName(request *InstallServiceRequest) (string, error) {
 	packageNameIsMissing := request.Package == nil || strings.TrimSpace(request.Package.Name) == ""
 	if packageNameIsMissing {
 		return "", fmt.Errorf("missing required argument package name")
@@ -81,23 +80,23 @@ func  (service *installService) getPackageName(request *InstallServiceRequest) (
 	return request.Package.Name, nil
 }
 
-func (service *installService) getPackageVersion(request *InstallServiceRequest) string{	
-	if request.Package != nil{
+func (service *installService) getPackageVersion(request *InstallServiceRequest) string {
+	if request.Package != nil {
 		return strings.TrimSpace(request.Package.Version)
 	}
 	return ""
 }
 
-func (service *installService) getRoot(request *InstallServiceRequest) (string, bool){	
-	if request.Directories == nil || strings.TrimSpace(request.Directories.Root) == ""	{
-		return "", true		
+func (service *installService) getRoot(request *InstallServiceRequest) (string, bool) {
+	if request.Directories == nil || strings.TrimSpace(request.Directories.Root) == "" {
+		return "", true
 	}
 	return request.Directories.Root, false
 }
 
-func (service *installService) getBin(request *InstallServiceRequest, rootIsMissing bool)(string, error){
-	binIsMissing := request.Directories == nil ||  strings.TrimSpace(request.Directories.Bin) == ""	
-	if !binIsMissing{
+func (service *installService) getBin(request *InstallServiceRequest, rootIsMissing bool) (string, error) {
+	binIsMissing := request.Directories == nil || strings.TrimSpace(request.Directories.Bin) == ""
+	if !binIsMissing {
 		return request.Directories.Bin, nil
 	}
 	if rootIsMissing {
@@ -106,10 +105,10 @@ func (service *installService) getBin(request *InstallServiceRequest, rootIsMiss
 	return filepath.Join(request.Directories.Root, "bin"), nil
 }
 
-func (service *installService) getPackagesRoot(request *InstallServiceRequest, rootIsMissing bool)(string, error){
-	packagesRootIsMissing := request.Directories== nil || strings.TrimSpace(request.Directories.Packages) == ""
-	if !packagesRootIsMissing{
-		return request.Directories.Packages,nil
+func (service *installService) getPackagesRoot(request *InstallServiceRequest, rootIsMissing bool) (string, error) {
+	packagesRootIsMissing := request.Directories == nil || strings.TrimSpace(request.Directories.Packages) == ""
+	if !packagesRootIsMissing {
+		return request.Directories.Packages, nil
 	}
 	if rootIsMissing {
 		return "", fmt.Errorf("packages root must be specified if root is not specified")

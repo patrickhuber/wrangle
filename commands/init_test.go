@@ -4,7 +4,7 @@ import (
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/initialize"
 	"github.com/urfave/cli"
 
 	. "github.com/onsi/ginkgo"
@@ -14,7 +14,7 @@ import (
 var _ = Describe("Init", func() {
 	It("creates config file", func() {
 		fileSystem := filesystem.NewMemory()
-		initService := services.NewInitService(fileSystem)
+		initService := initialize.NewService(fileSystem)
 
 		defaultConfigPath := "/config"
 

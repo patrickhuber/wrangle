@@ -3,15 +3,15 @@ package commands
 import (
 	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/global"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/packages"
 	"github.com/urfave/cli"
 )
 
-// CreatePackagesCommand creates a packages command from the cli context
-func CreatePackagesCommand(
-	packageServiceFactory services.PackageServiceFactory,
-	feedServiceFactory feed.FeedServiceFactory) *cli.Command {
-	return &cli.Command{
+// CreateListPackagesCommand creates a packages command from the cli context
+func CreateListPackagesCommand(
+	packageServiceFactory packages.ServiceFactory,
+	feedServiceFactory feed.FeedServiceFactory) cli.Command {
+	return cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},
 		Usage:   "prints the list of packages and versions in the feed directory. If the feed directory isn't specified, uses the feed URL instead.",
@@ -33,12 +33,12 @@ func CreatePackagesCommand(
 			feedURL := context.String("url")
 
 			feedService, err := feedServiceFactory.Get(packagesPath, feedURL)
-			if err != nil{
+			if err != nil {
 				return err
 			}
 
 			packagesService := packageServiceFactory.Get(feedService)
-			
+
 			return packagesService.List()
 		},
 	}

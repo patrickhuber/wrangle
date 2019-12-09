@@ -3,15 +3,15 @@ package commands
 import (
 	"fmt"
 
+	"github.com/patrickhuber/wrangle/credentials"
 	"github.com/patrickhuber/wrangle/store"
 
-	"github.com/patrickhuber/wrangle/services"
 	"github.com/urfave/cli"
 )
 
 func CreateMoveCommand(
 	app *cli.App,
-	credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
+	credentialServiceFactory credentials.ServiceFactory) *cli.Command {
 	command := &cli.Command{
 		Name:      "move",
 		Aliases:   []string{"mv"},

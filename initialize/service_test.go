@@ -1,8 +1,8 @@
-package services_test
+package initialize_test
 
 import (
 	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/initialize"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,7 +11,7 @@ import (
 var _ = Describe("Init", func() {
 	It("creates config file", func() {
 		fileSystem := filesystem.NewMemory()
-		service := services.NewInitService(fileSystem)
+		service := initialize.NewService(fileSystem)
 		Expect(service.Init("/test")).To(BeNil())
 
 		ok, err := fileSystem.Exists("/test")

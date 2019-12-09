@@ -44,6 +44,17 @@ func NewMemoryConsole() MemoryConsole {
 	}
 }
 
+// NewMemoryConsoleWithInitialInput creates a memory console and initializes the input
+func NewMemoryConsoleWithInitialInput(input string) MemoryConsole {
+	in := &bytes.Buffer{}
+	in.WriteString(input)
+	return &console{
+		out: &bytes.Buffer{},
+		err: &bytes.Buffer{},
+		in:  in,
+	}
+}
+
 func (console *console) Out() io.Writer {
 	return console.out
 }

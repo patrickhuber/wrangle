@@ -50,12 +50,12 @@ func Rel(basepath string, targetpath string) (string, error) {
 	return ToSlash(r), nil
 }
 
-// Abs is a passhthrough function to filepath.Rel
+// Abs is a passhthrough function to filepath.Abs
 func Abs(basepath string) (string, error) {
 	return filepath.Abs(basepath)
 }
 
 // Ext is a passhtrough function to filepath.Ext
-func Ext(path string) string{
+func Ext(path string) string {
 	return filepath.Ext(path)
 }

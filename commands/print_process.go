@@ -6,25 +6,23 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/services"
+
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
-// CreatePrintEnvCommand creates a print env command from the cli context
-func CreatePrintEnvCommand(
+// CreatePrintProcessCommand Creates a Print Command from the cli context
+func CreatePrintProcessCommand(
 	app *cli.App,
 	printService services.PrintService,
 	fs filesystem.FileSystem) cli.Command {
 
 	command := cli.Command{
-		Name:    "env",
-		Aliases: []string{"e"},
-		Usage:   "print command environemnt variables",
+		Name:      "process",
+		Aliases:   []string{"ps"},
+		Usage:     "prints the process as it would be executed",
+		ArgsUsage: "<process name> [arguments]",
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "name, n",
-				Usage: "process named `NAME`",
-			},
 			cli.StringFlag{
 				Name:  "format, f",
 				Usage: "Print for with the given format (bash|powershell)",
@@ -35,7 +33,9 @@ func CreatePrintEnvCommand(
 			if strings.TrimSpace(processName) == "" {
 				return errors.New("process name argument is required")
 			}
+
 			format := context.String("format")
+
 			configFile := context.GlobalString("config")
 
 			configProvider := config.NewFsProvider(fs, configFile)
@@ -48,7 +48,12 @@ func CreatePrintEnvCommand(
 			params := &services.PrintParams{
 				Config:      cfg,
 				ProcessName: processName,
-				Format:      format}
+				Format:      format,
+				Include: services.PrintParamsInclude{
+					ProcessAndArgs: true,
+				},
+			}
+
 			return printService.Print(params)
 		},
 	}

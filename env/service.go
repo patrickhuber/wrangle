@@ -1,4 +1,4 @@
-package services
+package env
 
 import (
 	"fmt"
@@ -11,18 +11,18 @@ import (
 
 type envService struct {
 	console     ui.Console
-	dataService EnvDataService
+	dataService DataService
 }
 
-// EnvService defines an env command
-type EnvService interface {
+// Service defines an env command
+type Service interface {
 	Execute() error
 	List() map[string]string
 }
 
-// NewEnvService creates a new env command
-func NewEnvService(console ui.Console, dictionary collections.Dictionary) EnvService {
-	dataService := NewEnvDataService(dictionary)
+// NewService creates a new env command
+func NewService(console ui.Console, dictionary collections.Dictionary) Service {
+	dataService := NewDataService(dictionary)
 	return &envService{console: console,
 		dataService: dataService}
 }

@@ -1,8 +1,8 @@
-package services_test
+package processes_test
 
 import (
-	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/ui"
 
 	. "github.com/onsi/ginkgo"
@@ -12,7 +12,7 @@ import (
 var _ = Describe("Processes", func() {
 	It("can list processes", func() {
 		console := ui.NewMemoryConsole()
-		
+
 		cfg := &config.Config{
 			Processes: []config.Process{
 				config.Process{
@@ -30,7 +30,7 @@ var _ = Describe("Processes", func() {
 			},
 		}
 		// create the service
-		service := services.NewProcessesService(console)		
+		service := processes.NewService(console)
 		Expect(service).ToNot(BeNil())
 
 		err := service.List(cfg)

@@ -1,4 +1,4 @@
-package services
+package packages
 
 import (
 	"fmt"
@@ -8,31 +8,31 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 )
 
-type packagesService struct {
+type service struct {
 	console     ui.Console
 	feedService feed.FeedService
 }
 
-// PackagesService lists all packages in the configuration
-type PackagesService interface {
+// Service lists all packages in the configuration
+type Service interface {
 	List() error
 }
 
-// NewPackagesService returns a new packages command object
-func NewPackagesService(feedService feed.FeedService, console ui.Console) PackagesService {
-	return &packagesService{
+// NewService returns a new packages command object
+func NewService(feedService feed.FeedService, console ui.Console) Service {
+	return &service{
 		feedService: feedService,
 		console:     console}
 }
 
-func (service *packagesService) List() error {
+func (s *service) List() error {
 
 	// create the tab writer and write out the header
-	w := tabwriter.NewWriter(service.console.Out(), 0, 0, 1, ' ', 0)
+	w := tabwriter.NewWriter(s.console.Out(), 0, 0, 1, ' ', 0)
 	fmt.Fprintln(w, "name\tversion")
 	fmt.Fprintln(w, "----\t-------")
 
-	response, err := service.feedService.List(&feed.FeedListRequest{})
+	response, err := s.feedService.List(&feed.FeedListRequest{})
 	if err != nil {
 		return err
 	}

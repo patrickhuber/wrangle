@@ -1,13 +1,14 @@
-package services_test
+package packages_test
 
 import (
-	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/patrickhuber/wrangle/feed"
-	"github.com/patrickhuber/wrangle/services"
+	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"bytes"
-	"github.com/patrickhuber/wrangle/ui"	
+	"github.com/patrickhuber/wrangle/feed"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/ui"
 )
 
 var _ = Describe("Packages", func() {
@@ -21,21 +22,21 @@ var _ = Describe("Packages", func() {
 
 			feedService := feed.NewFsFeedService(fileSystem, packagePath)
 
-			service := services.NewPackagesService(feedService, console)
-			Expect(service).ToNot(BeNil())			
+			service := packages.NewService(feedService, console)
+			Expect(service).ToNot(BeNil())
 			Expect(service.List()).To(BeNil())
 
 			output := console.OutAsString()
 
-			var lines = make([]bytes.Buffer,3,3)
+			var lines = make([]bytes.Buffer, 3, 3)
 			linecount := 0
 
-			for i:=0;i<len(output);i++{
-				if output[i] == '\n'{
-					linecount ++
-				}else if output[i] == '\r'{
+			for i := 0; i < len(output); i++ {
+				if output[i] == '\n' {
+					linecount++
+				} else if output[i] == '\r' {
 
-				}else{
+				} else {
 					lines[linecount].WriteByte(output[i])
 				}
 			}

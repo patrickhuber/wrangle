@@ -1,6 +1,6 @@
 package commands_test
 
-import (	
+import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -12,42 +12,41 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/wrangle/collections"
-	"github.com/patrickhuber/wrangle/commands"	
+	"github.com/patrickhuber/wrangle/commands"
+	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/global"
 	"github.com/patrickhuber/wrangle/packages"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/settings"
 	"github.com/patrickhuber/wrangle/tasks"
 	"github.com/patrickhuber/wrangle/ui"
-	"github.com/patrickhuber/wrangle/feed"
-	"github.com/patrickhuber/wrangle/settings"
 )
 
 var _ = Describe("Install", func() {
 	It("can run with environment variables", func() {
-		// rewrite this test to use new package management features		
+		// rewrite this test to use new package management features
 		console := ui.NewMemoryConsole()
-		variables := collections.NewDictionary()		
+		variables := collections.NewDictionary()
 		fs := filesystem.NewMemory()
 
 		paths := &settings.Paths{
-			Root: "/opt/wrangle",
-			Bin:"/opt/wrangle/bin",
-			Packages:"/opt/wrangle/packages",
+			Root:     "/opt/wrangle",
+			Bin:      "/opt/wrangle/bin",
+			Packages: "/opt/wrangle/packages",
 		}
 		feedService := feed.NewFsFeedService(fs, paths.Packages)
 
 		contextProvider := packages.NewFsContextProvider(fs, paths)
 
-		taskProviders := tasks.NewProviderRegistry()		
+		taskProviders := tasks.NewProviderRegistry()
 		taskProviders.Register(tasks.NewDownloadProvider(fs, console))
 		taskProviders.Register(tasks.NewExtractProvider(fs, console))
-		taskProviders.Register(tasks.NewLinkProvider(fs, console))		
+		taskProviders.Register(tasks.NewLinkProvider(fs, console))
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
-				
+
 		packagesManager := packages.NewManager(fs, feedService, contextProvider, taskProviders)
 
-		installService, err := services.NewInstallService("linux", fs, packagesManager)
+		installService, err := packages.NewInstallService("linux", fs, packagesManager)
 		Expect(err).To(BeNil())
 
 		variables.Set(global.PackagePathKey, paths.Packages)
@@ -75,10 +74,10 @@ targets:
 `
 		content = fmt.Sprintf(content, server.URL)
 
-		err = fs.Mkdir(paths.Packages + "/test/1.0.0", 0666)
+		err = fs.Mkdir(paths.Packages+"/test/1.0.0", 0666)
 		Expect(err).To(BeNil())
 
-		err = fs.Write(paths.Packages + "/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
+		err = fs.Write(paths.Packages+"/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
 		Expect(err).To(BeNil())
 
 		app := cli.NewApp()

@@ -5,13 +5,13 @@ import (
 	"os"
 
 	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/packages"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/commands"
 	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/global"
-	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/urfave/cli"
 )
@@ -19,7 +19,7 @@ import (
 var _ = Describe("Packages", func() {
 	It("lists local packages when package path is set", func() {
 		console := ui.NewMemoryConsole()
-		var packageServiceFactory services.PackageServiceFactory = services.NewPackageServiceFactory(console)
+		var packageServiceFactory packages.ServiceFactory = packages.NewServiceFactory(console)
 
 		fs := filesystem.NewMemory()
 		fs.Mkdir("/packages", 0600)
@@ -28,7 +28,7 @@ var _ = Describe("Packages", func() {
 		app := cli.NewApp()
 		app.Name = "wrangle"
 		app.Commands = []cli.Command{
-			*commands.CreatePackagesCommand(packageServiceFactory, feedServiceFactory),
+			commands.CreateListPackagesCommand(packageServiceFactory, feedServiceFactory),
 		}
 
 		os.Setenv(global.PackagePathKey, "/packages")
@@ -42,7 +42,7 @@ var _ = Describe("Packages", func() {
 	})
 	It("lists remote packages when package path is not set", func() {
 		console := ui.NewMemoryConsole()
-		var packageServiceFactory services.PackageServiceFactory = services.NewPackageServiceFactory(console)
+		var packageServiceFactory packages.ServiceFactory = packages.NewServiceFactory(console)
 
 		fs := filesystem.NewMemory()
 		fs.Mkdir("/packages", 0600)
@@ -51,7 +51,7 @@ var _ = Describe("Packages", func() {
 		app := cli.NewApp()
 		app.Name = "wrangle"
 		app.Commands = []cli.Command{
-			*commands.CreatePackagesCommand(packageServiceFactory, feedServiceFactory),
+			commands.CreateListPackagesCommand(packageServiceFactory, feedServiceFactory),
 		}
 
 		os.Unsetenv(global.PackagePathKey)

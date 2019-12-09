@@ -1,23 +1,23 @@
-package services
+package credentials
 
 import (
-	"github.com/patrickhuber/wrangle/templates"
 	"fmt"
+	"github.com/patrickhuber/wrangle/templates"
 	"strings"
 
 	"github.com/patrickhuber/wrangle/config"
 	"github.com/patrickhuber/wrangle/store"
 )
 
-type credentialService struct {
+type service struct {
 	manager  store.Manager
 	graph    config.Graph
 	cfg      *config.Config
 	registry store.ResolverRegistry
 }
 
-// CredentialService provides a service contract for common credential operations
-type CredentialService interface {
+// Service provides a service contract for common credential operations
+type Service interface {
 	Copy(source string, sourcePath string, destination string, destinationPath string) error
 	Move(source string, sourcePath string, destination string, destinationPath string) error
 	Set(storeName string, item store.Item) error
@@ -25,22 +25,22 @@ type CredentialService interface {
 	List(storeName string, path string) ([]store.Item, error)
 }
 
-// NewCredentialService creates a new credential service
-func NewCredentialService(cfg *config.Config, graph config.Graph, manager store.Manager) (CredentialService, error) {
+// NewService creates a new credential service
+func NewService(cfg *config.Config, graph config.Graph, manager store.Manager) (Service, error) {
 	// create the template for getting values we are going to use this to create our stores
 	registry, err := store.NewResolverRegistry(cfg, graph, manager)
 	if err != nil {
 		return nil, err
 	}
 
-	return &credentialService{
+	return &service{
 		graph:    graph,
 		manager:  manager,
 		registry: registry,
 	}, nil
 }
 
-func (svc *credentialService) Copy(source, sourcePath, destination, destinationPath string) error {
+func (svc *service) Copy(source, sourcePath, destination, destinationPath string) error {
 
 	if strings.TrimSpace(source) == "" {
 		return fmt.Errorf("source can not be empty")
@@ -73,7 +73,7 @@ func (svc *credentialService) Copy(source, sourcePath, destination, destinationP
 	return destinationStore.Set(destinationItem)
 }
 
-func (svc *credentialService) Move(source, sourcePath, destination, destinationPath string) error {
+func (svc *service) Move(source, sourcePath, destination, destinationPath string) error {
 	if strings.TrimSpace(source) == "" {
 		return fmt.Errorf("source can not be empty")
 	}
@@ -114,7 +114,7 @@ func (svc *credentialService) Move(source, sourcePath, destination, destinationP
 	return sourceStore.Delete(sourcePath)
 }
 
-func (svc *credentialService) Set(storeName string, item store.Item) error {
+func (svc *service) Set(storeName string, item store.Item) error {
 	// get the store
 	s, err := svc.getStore(storeName)
 	if err != nil {
@@ -123,7 +123,7 @@ func (svc *credentialService) Set(storeName string, item store.Item) error {
 	return s.Set(item)
 }
 
-func (svc *credentialService) Get(storeName string, path string) (store.Item, error) {
+func (svc *service) Get(storeName string, path string) (store.Item, error) {
 	// get the store
 	s, err := svc.getStore(storeName)
 	if err != nil {
@@ -132,7 +132,7 @@ func (svc *credentialService) Get(storeName string, path string) (store.Item, er
 	return s.Get(path)
 }
 
-func (svc *credentialService) List(storeName string, path string) ([]store.Item, error) {
+func (svc *service) List(storeName string, path string) ([]store.Item, error) {
 	s, err := svc.getStore(storeName)
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (svc *credentialService) List(storeName string, path string) ([]store.Item,
 	return s.List(path)
 }
 
-func (svc *credentialService) getStore(storeName string) (store.Store, error) {
+func (svc *service) getStore(storeName string) (store.Store, error) {
 	if strings.TrimSpace(storeName) == "" {
 		return nil, fmt.Errorf("storeName parameter can not be an empty string")
 	}
@@ -169,7 +169,7 @@ func (svc *credentialService) getStore(storeName string) (store.Store, error) {
 	return svc.manager.Create(cfg)
 }
 
-func (svc *credentialService) getItem(storeName, path string) (store.Item, error) {
+func (svc *service) getItem(storeName, path string) (store.Item, error) {
 	s, err := svc.getStore(storeName)
 	if err != nil {
 		return nil, err

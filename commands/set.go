@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/credentials"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/urfave/cli"
 )
 
 // CreateSetCommand creates the set command with the cli app and credential service
-func CreateSetCommand(app *cli.App, credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
+func CreateSetCommand(app *cli.App, credentialServiceFactory credentials.ServiceFactory) *cli.Command {
 	command := &cli.Command{
 		Name: "set",
 		Flags: []cli.Flag{

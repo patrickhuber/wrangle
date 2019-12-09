@@ -1,14 +1,12 @@
-package services_test
+package packages_test
 
-import (	
-	"github.com/patrickhuber/wrangle/settings"
-	"github.com/patrickhuber/wrangle/feed"
+import (
 	"bytes"
 	"fmt"
+	"github.com/patrickhuber/wrangle/feed"
+	"github.com/patrickhuber/wrangle/settings"
 	"net/http/httptest"
 	"strings"
-
-	"github.com/patrickhuber/wrangle/services"
 
 	"github.com/patrickhuber/wrangle/fakes"
 	"github.com/patrickhuber/wrangle/filepath"
@@ -21,32 +19,32 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type InstallServiceTester interface{
+type InstallServiceTester interface {
 	ExecuteInstallsPackage(platform, downloadFileName string)
 	NewInstallServiceCreatesInstance(platform string)
 }
 
-type installServiceTester struct{		
-	server           *httptest.Server
-	fileSystem  filesystem.FileSystem	
+type installServiceTester struct {
+	server     *httptest.Server
+	fileSystem filesystem.FileSystem
 }
 
-func NewInstallServiceTester(fs filesystem.FileSystem) InstallServiceTester{
-	tester := &installServiceTester {
-		fileSystem : fs,		
+func NewInstallServiceTester(fs filesystem.FileSystem) InstallServiceTester {
+	tester := &installServiceTester{
+		fileSystem: fs,
 	}
 	return tester
 }
 
-func (t *installServiceTester) NewInstallServiceCreatesInstance(platform string){
+func (t *installServiceTester) NewInstallServiceCreatesInstance(platform string) {
 	paths := t.createPaths(platform)
 	manager := t.createManager(paths)
-	service, err := services.NewInstallService(platform, t.fileSystem, manager)
+	service, err := packages.NewInstallService(platform, t.fileSystem, manager)
 	Expect(err).To(BeNil())
 	Expect(service).ToNot(BeNil())
 }
 
-func (t *installServiceTester) createPaths(platform string) *settings.Paths{
+func (t *installServiceTester) createPaths(platform string) *settings.Paths {
 	const wrangleRootPosix = "/opt/wrangle"
 	const wrangleRootWindows = "c:/wrangle"
 
@@ -56,20 +54,19 @@ func (t *installServiceTester) createPaths(platform string) *settings.Paths{
 	}
 
 	paths := &settings.Paths{
-		Root : wrangleRoot ,
-		Bin: wrangleRoot + "/bin",
+		Root:     wrangleRoot,
+		Bin:      wrangleRoot + "/bin",
 		Packages: wrangleRoot + "/packages",
 	}
 	return paths
 }
 
-
-func (t *installServiceTester) createManager(paths *settings.Paths) packages.Manager{
+func (t *installServiceTester) createManager(paths *settings.Paths) packages.Manager {
 	console := ui.NewMemoryConsole()
 
 	taskProviders := tasks.NewProviderRegistry()
 	taskProviders.Register(tasks.NewExtractProvider(t.fileSystem, console))
-	taskProviders.Register(tasks.NewDownloadProvider(t.fileSystem, console))		
+	taskProviders.Register(tasks.NewDownloadProvider(t.fileSystem, console))
 	taskProviders.Register(tasks.NewMoveProvider(t.fileSystem, console))
 	taskProviders.Register(tasks.NewLinkProvider(t.fileSystem, console))
 
@@ -79,12 +76,12 @@ func (t *installServiceTester) createManager(paths *settings.Paths) packages.Man
 	return manager
 }
 
-func (t *installServiceTester) ExecuteInstallsPackage(platform, downloadFileName string){	
+func (t *installServiceTester) ExecuteInstallsPackage(platform, downloadFileName string) {
 	paths := t.createPaths(platform)
 	manager := t.createManager(paths)
 
 	// create the command and execute it
-	service, err := services.NewInstallService(platform, t.fileSystem, manager)
+	service, err := packages.NewInstallService(platform, t.fileSystem, manager)
 	Expect(err).To(BeNil())
 
 	server := fakes.NewHTTPServerWithArchive(
@@ -96,7 +93,7 @@ func (t *installServiceTester) ExecuteInstallsPackage(platform, downloadFileName
 
 	url := server.URL
 	packageVersion := "1.0.0"
-    packageName := "test"
+	packageName := "test"
 
 	out := filepath.Join("/", downloadFileName)
 	if !strings.HasSuffix(url, "/") {
@@ -114,15 +111,15 @@ func (t *installServiceTester) ExecuteInstallsPackage(platform, downloadFileName
 	Expect(err).To(BeNil())
 
 	err = service.Install(
-		&services.InstallServiceRequest{
-			Directories: &services.InstallServiceRequestDirectories{
+		&packages.InstallServiceRequest{
+			Directories: &packages.InstallServiceRequestDirectories{
 				Bin:      paths.Bin,
 				Root:     paths.Root,
 				Packages: paths.Packages},
-			Package: &services.InstallServiceRequestPackage{
+			Package: &packages.InstallServiceRequestPackage{
 				Name:    packageName,
 				Version: packageVersion},
-			Feed: &services.InstallServiceRequestFeed{},
+			Feed: &packages.InstallServiceRequestFeed{},
 		})
 	Expect(err).To(BeNil())
 
@@ -169,23 +166,23 @@ var _ = Describe("InstallService", func() {
 	var (
 		fs      filesystem.FileSystem
 		manager packages.Manager
-		paths *settings.Paths		
+		paths   *settings.Paths
 	)
 	BeforeEach(func() {
 		// create command dependencies
 		console := ui.NewMemoryConsole()
 		fs = filesystem.NewMemory()
-		
+
 		taskProviders := tasks.NewProviderRegistry()
 		taskProviders.Register(tasks.NewExtractProvider(fs, console))
-		taskProviders.Register(tasks.NewDownloadProvider(fs, console))		
+		taskProviders.Register(tasks.NewDownloadProvider(fs, console))
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
 		taskProviders.Register(tasks.NewLinkProvider(fs, console))
-		
+
 		// needs to be cross platform
 		paths = &settings.Paths{
-			Root : "/opt/wrangle",
-			Bin: "/opt/wrangle/bin",
+			Root:     "/opt/wrangle",
+			Bin:      "/opt/wrangle/bin",
 			Packages: "/opt/wrangle/packages",
 		}
 		feedService := feed.NewFsFeedService(fs, paths.Packages)
@@ -195,35 +192,35 @@ var _ = Describe("InstallService", func() {
 	Describe("NewInstall", func() {
 		It("returns install command", func() {
 			platform := "platform"
-			service, err := services.NewInstallService(platform, fs, manager)
+			service, err := packages.NewInstallService(platform, fs, manager)
 			Expect(err).To(BeNil())
 			Expect(service).ToNot(BeNil())
 		})
 	})
 	Describe("Execute", func() {
-		var(
-			tester InstallServiceTester
+		var (
+			tester   InstallServiceTester
 			platform string
 		)
-		BeforeEach(func(){
+		BeforeEach(func() {
 			tester = NewInstallServiceTester(fs)
-		})		
+		})
 		When("Windows", func() {
-			BeforeEach(func() {				
+			BeforeEach(func() {
 				platform = "windows"
 			})
 			When("Tar", func() {
-				It("installs", func() {					
+				It("installs", func() {
 					tester.ExecuteInstallsPackage(platform, "test.tar")
 				})
 			})
 			When("Tgz", func() {
 				It("installs", func() {
-					tester.ExecuteInstallsPackage(platform, "test.tgz")					
+					tester.ExecuteInstallsPackage(platform, "test.tgz")
 				})
 			})
 			When("Zip", func() {
-				It("installs", func() {					
+				It("installs", func() {
 					tester.ExecuteInstallsPackage(platform, "test.zip")
 				})
 			})
@@ -238,17 +235,17 @@ var _ = Describe("InstallService", func() {
 				platform = "linux"
 			})
 			When("Tar", func() {
-				It("installs", func() {					
+				It("installs", func() {
 					tester.ExecuteInstallsPackage(platform, "test.tar")
 				})
 			})
 			When("Tgz", func() {
 				It("installs", func() {
-					tester.ExecuteInstallsPackage(platform, "test.tgz")					
+					tester.ExecuteInstallsPackage(platform, "test.tgz")
 				})
 			})
 			When("Zip", func() {
-				It("installs", func() {					
+				It("installs", func() {
 					tester.ExecuteInstallsPackage(platform, "test.zip")
 				})
 			})
@@ -263,17 +260,17 @@ var _ = Describe("InstallService", func() {
 				platform = "darwin"
 			})
 			When("Tar", func() {
-				It("installs", func() {					
+				It("installs", func() {
 					tester.ExecuteInstallsPackage(platform, "test.tar")
 				})
 			})
 			When("Tgz", func() {
 				It("installs", func() {
-					tester.ExecuteInstallsPackage(platform, "test.tgz")					
+					tester.ExecuteInstallsPackage(platform, "test.tgz")
 				})
 			})
 			When("Zip", func() {
-				It("installs", func() {					
+				It("installs", func() {
 					tester.ExecuteInstallsPackage(platform, "test.zip")
 				})
 			})

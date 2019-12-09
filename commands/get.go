@@ -1,49 +1,12 @@
 package commands
 
-import (
-	"github.com/patrickhuber/wrangle/services"
-	"github.com/patrickhuber/wrangle/ui"
-	"github.com/urfave/cli"
-)
+import "github.com/urfave/cli"
 
-// CreateGetCommand creates an get command from the cli context
-func CreateGetCommand(app *cli.App, credentialServiceFactory services.CredentialServiceFactory, console ui.Console) *cli.Command {
-	return &cli.Command{
-		Name:  "get",
-		Usage: "fetches the given value from the given store",
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "store, s",
-				Usage: "the store containing the credential",
-			},
-			cli.StringFlag{
-				Name:  "path, p",
-				Usage: "the path or key to the credential",
-			},
-		},
-		Action: func(context *cli.Context) error {
-
-			configFile := context.GlobalString("config")
-			storeName := context.String("store")
-			path := context.String("path")
-
-			credentialService, err := credentialServiceFactory.Create(configFile)
-			if err != nil {
-				return err
-			}
-
-			data, err := credentialService.Get(storeName, path)
-			if err != nil {
-				return err
-			}
-
-			j, err := data.Json()
-			if err != nil {
-				return err
-			}
-
-			_, err = console.Out().Write(j)
-			return err
-		},
+func CreateGetCommand(
+	subcommands ...cli.Command) cli.Command {
+	command := cli.Command{
+		Name:        "get",
+		Subcommands: subcommands,
 	}
+	return command
 }

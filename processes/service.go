@@ -1,4 +1,4 @@
-package services
+package processes
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 	"github.com/patrickhuber/wrangle/ui"
 )
 
-// ProcessesService provides a service for processes
-type ProcessesService interface {
+// Service provides a service for processes
+type Service interface {
 	List(cfg *config.Config) error
 }
 
-// NewProcessesService creates a new processes service
-func NewProcessesService(console ui.Console) ProcessesService {
+// NewService creates a new processes service
+func NewService(console ui.Console) Service {
 	return &processesService{
 		console: console,
 	}
@@ -27,9 +27,9 @@ type processesService struct {
 
 func (service *processesService) List(cfg *config.Config) error {
 
-	w := tabwriter.NewWriter(service.console.Out(), 0, 0, 1, ' ', 0)	
+	w := tabwriter.NewWriter(service.console.Out(), 0, 0, 1, ' ', 0)
 	fmt.Fprintln(w, "name")
-	fmt.Fprintln(w, "----")	
+	fmt.Fprintln(w, "----")
 	for _, process := range cfg.Processes {
 		fmt.Fprintf(w, "%s", process.Name)
 		fmt.Fprintln(w)

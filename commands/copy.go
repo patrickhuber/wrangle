@@ -3,14 +3,15 @@ package commands
 import (
 	"fmt"
 
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/credentials"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/urfave/cli"
 )
 
+// CreateCopyCommand creates a command for copying secrets from one store to another
 func CreateCopyCommand(
 	app *cli.App,
-	credentialServiceFactory services.CredentialServiceFactory) *cli.Command {
+	credentialServiceFactory credentials.ServiceFactory) *cli.Command {
 	command := &cli.Command{
 		Name:      "copy",
 		Aliases:   []string{"cp"},

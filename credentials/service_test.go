@@ -1,10 +1,10 @@
-package services_test
+package credentials_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/credentials"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/store/memory"
 )
@@ -18,7 +18,7 @@ var _ = Describe("CredentialService", func() {
 		bothKey            = "both"
 	)
 	var (
-		credentialService services.CredentialService
+		credentialService credentials.Service
 		sourceStore       store.Store
 		destinationStore  store.Store
 	)
@@ -51,7 +51,7 @@ var _ = Describe("CredentialService", func() {
 
 		manager.Register(memory.NewMemoryStoreProvider(sourceStore, destinationStore))
 
-		credentialService, err = services.NewCredentialService(cfg, graph, manager)
+		credentialService, err = credentials.NewService(cfg, graph, manager)
 
 		Expect(err).To(BeNil())
 		Expect(credentialService).ToNot(BeNil())
