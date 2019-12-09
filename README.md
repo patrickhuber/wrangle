@@ -226,7 +226,7 @@ This is an example that both downloads and extracts the credhub cli:
         out: credhub-((version))-darwin.tgz
     - extract:
         archive: credhub-((version))-darwin.tgz
-  - name: windows    
+  - platform: windows    
     tasks:
     - download: 
         url: https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/((version))/credhub-windows-((version)).tgz      
