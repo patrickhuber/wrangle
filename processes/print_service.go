@@ -1,22 +1,33 @@
-package services
+package processes
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/patrickhuber/wrangle/config"
-	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 )
 
+// PrintService prints out the process information
+type PrintService interface {
+	Print(params *PrintParams) error
+}
+
 type printService struct {
-	fileSystem      filesystem.FileSystem
-	console         ui.Console
 	manager         store.Manager
 	rendererFactory renderers.Factory
+	console         ui.Console
+}
+
+// NewPrintService creates a new print service with the given configuration
+func NewPrintService(console ui.Console, manager store.Manager, rendererFactory renderers.Factory) PrintService {
+	return &printService{
+		manager:         manager,
+		console:         console,
+		rendererFactory: rendererFactory,
+	}
 }
 
 // PrintParamsInclude defines what additional output to include
@@ -32,26 +43,7 @@ type PrintParams struct {
 	Include     PrintParamsInclude
 }
 
-// PrintService represents an environment command
-type PrintService interface {
-	Print(params *PrintParams) error
-}
-
-// NewPrintService creates a new environment command
-func NewPrintService(
-	manager store.Manager,
-	fileSystem filesystem.FileSystem,
-	console ui.Console,
-	rendererFactory renderers.Factory) PrintService {
-	return &printService{
-		manager:         manager,
-		fileSystem:      fileSystem,
-		console:         console,
-		rendererFactory: rendererFactory,
-	}
-}
-
-func (service *printService) Print(params *PrintParams) error {
+func (s *printService) Print(params *PrintParams) error {
 
 	processName := params.ProcessName
 
@@ -60,7 +52,7 @@ func (service *printService) Print(params *PrintParams) error {
 	}
 
 	cfg := params.Config
-	processTemplate, err := store.NewProcessTemplate(cfg, service.manager)
+	processTemplate, err := store.NewProcessTemplate(cfg, s.manager)
 	if err != nil {
 		return err
 	}
@@ -70,7 +62,7 @@ func (service *printService) Print(params *PrintParams) error {
 		return err
 	}
 
-	renderer, err := service.rendererFactory.Create(params.Format)
+	renderer, err := s.rendererFactory.Create(params.Format)
 	if err != nil {
 		return err
 	}
@@ -84,6 +76,6 @@ func (service *printService) Print(params *PrintParams) error {
 	} else {
 		renderedOutput = renderer.RenderEnvironment(process.Vars)
 	}
-	_, err = fmt.Fprint(service.console.Out(), renderedOutput)
+	_, err = fmt.Fprint(s.console.Out(), renderedOutput)
 	return err
 }

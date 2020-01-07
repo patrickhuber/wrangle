@@ -1,11 +1,11 @@
 package commands
 
 import (
-	"github.com/patrickhuber/wrangle/config"
-	"github.com/patrickhuber/wrangle/filesystem"
 	"strings"
 
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filesystem"
+	"github.com/patrickhuber/wrangle/processes"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -13,7 +13,7 @@ import (
 // CreatePrintEnvCommand creates a print env command from the cli context
 func CreatePrintEnvCommand(
 	app *cli.App,
-	printService services.PrintService,
+	printService processes.PrintService,
 	fs filesystem.FileSystem) cli.Command {
 
 	command := cli.Command{
@@ -45,7 +45,7 @@ func CreatePrintEnvCommand(
 				return err
 			}
 
-			params := &services.PrintParams{
+			params := &processes.PrintParams{
 				Config:      cfg,
 				ProcessName: processName,
 				Format:      format}

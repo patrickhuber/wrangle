@@ -2,7 +2,10 @@ package processes_test
 
 import (
 	"github.com/patrickhuber/wrangle/config"
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/patrickhuber/wrangle/processes"
+	"github.com/patrickhuber/wrangle/store"
+	"github.com/patrickhuber/wrangle/store/file"
 	"github.com/patrickhuber/wrangle/ui"
 
 	. "github.com/onsi/ginkgo"
@@ -29,6 +32,14 @@ var _ = Describe("Processes", func() {
 				},
 			},
 		}
+
+		// create the filesystem
+		fileSystem := filesystem.NewMemory()
+
+		// create store manager
+		manager := store.NewManager()
+		manager.Register(file.NewFileStoreProvider(fileSystem, nil))
+
 		// create the service
 		service := processes.NewService(console)
 		Expect(service).ToNot(BeNil())

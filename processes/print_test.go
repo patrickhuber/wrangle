@@ -1,10 +1,10 @@
-package services_test
+package processes_test
 
 import (
 	"bytes"
 
 	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/processes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -55,11 +55,13 @@ var _ = Describe("Execute", func() {
 			includeProcessInfo bool
 		)
 		AfterEach(func() {
+			// create renderer factory
 			rendererFactory := renderers.NewFactory(collections.NewDictionary())
 
 			// create filesystem
 			fileSystem := filesystem.NewMemory()
 
+			// create config
 			cfg := &config.Config{
 				Stores: []config.Store{
 					config.Store{
@@ -87,12 +89,12 @@ var _ = Describe("Execute", func() {
 			console := ui.NewMemoryConsole()
 
 			// create and run command
-			service := services.NewPrintService(manager, fileSystem, console, rendererFactory)
-			params := &services.PrintParams{
+			service := processes.NewPrintService(console, manager, rendererFactory)
+			params := &processes.PrintParams{
 				Config:      cfg,
 				ProcessName: "echo",
 				Format:      "",
-				Include: services.PrintParamsInclude{
+				Include: processes.PrintParamsInclude{
 					ProcessAndArgs: includeProcessInfo,
 				}}
 			err := service.Print(params)
@@ -212,13 +214,15 @@ func RunPrintTest(
 	fileSystem := filesystem.NewMemory()
 	console := ui.NewMemoryConsole()
 
+	fileSystem.Write("/store1", []byte("key: value"), 0644)
+
 	// create and run command
-	service := services.NewPrintService(manager, fileSystem, console, rendererFactory)
-	params := &services.PrintParams{
+	service := processes.NewPrintService(console, manager, rendererFactory)
+	params := &processes.PrintParams{
 		Config:      cfg,
 		ProcessName: processName,
 		Format:      format,
-		Include: services.PrintParamsInclude{
+		Include: processes.PrintParamsInclude{
 			ProcessAndArgs: includeProcessInfo,
 		},
 	}

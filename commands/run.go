@@ -1,11 +1,12 @@
 package commands
 
-import (	
+import (
 	"github.com/patrickhuber/wrangle/config"
-	
-	"github.com/patrickhuber/wrangle/filesystem"
-	"github.com/patrickhuber/wrangle/services"
+	"github.com/patrickhuber/wrangle/processes"
+
 	"strings"
+
+	"github.com/patrickhuber/wrangle/filesystem"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -13,8 +14,8 @@ import (
 // CreateRunCommand creates a run command from the cli context
 func CreateRunCommand(
 	app *cli.App,
-	runService services.RunService,
-	fs filesystem.FileSystem) *cli.Command {		
+	runService processes.RunService,
+	fs filesystem.FileSystem) *cli.Command {
 
 	command := &cli.Command{
 		Name:      "run",
@@ -32,18 +33,18 @@ func CreateRunCommand(
 			configFile := context.GlobalString("config")
 
 			configProvider := config.NewFsProvider(fs, configFile)
-			
+
 			cfg, err := configProvider.Get()
-			if err != nil{
+			if err != nil {
 				return err
 			}
 
-			params := services.NewProcessParams(processName, cfg, additionalArguments...)			
+			params := processes.NewProcessParams(processName, cfg, additionalArguments...)
 
 			return runService.Run(params)
 		},
 	}
-	
-	setCommandCustomHelpTemplateWithGlobalOptions(app, command)	
+
+	setCommandCustomHelpTemplateWithGlobalOptions(app, command)
 	return command
 }

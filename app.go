@@ -14,7 +14,6 @@ import (
 	"github.com/patrickhuber/wrangle/processes"
 	"github.com/patrickhuber/wrangle/renderers"
 	"github.com/patrickhuber/wrangle/renderers/items"
-	"github.com/patrickhuber/wrangle/services"
 	"github.com/patrickhuber/wrangle/store"
 	"github.com/patrickhuber/wrangle/ui"
 	"github.com/urfave/cli"
@@ -56,8 +55,8 @@ func createApplication(
 	}
 
 	initService := initialize.NewService(fileSystem)
-	runService := services.NewRunService(manager, fileSystem, processFactory, console)
-	printService := services.NewPrintService(manager, fileSystem, console, rendererFactory)
+	runService := processes.NewRunService(manager, fileSystem, processFactory, console)
+	printService := processes.NewPrintService(console, manager, rendererFactory)
 	packagesServiceFactory := packages.NewServiceFactory(console)
 	feedServiceFactory := feed.NewFeedServiceFactory(fileSystem)
 	installService, err := packages.NewInstallService(platform, fileSystem, packagesManager)

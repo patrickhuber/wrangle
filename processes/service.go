@@ -15,19 +15,18 @@ type Service interface {
 
 // NewService creates a new processes service
 func NewService(console ui.Console) Service {
-	return &processesService{
+	return &service{
 		console: console,
 	}
 }
 
-type processesService struct {
+type service struct {
 	console ui.Console
-	loader  config.Loader
 }
 
-func (service *processesService) List(cfg *config.Config) error {
+func (s *service) List(cfg *config.Config) error {
 
-	w := tabwriter.NewWriter(service.console.Out(), 0, 0, 1, ' ', 0)
+	w := tabwriter.NewWriter(s.console.Out(), 0, 0, 1, ' ', 0)
 	fmt.Fprintln(w, "name")
 	fmt.Fprintln(w, "----")
 	for _, process := range cfg.Processes {
