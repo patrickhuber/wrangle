@@ -24,29 +24,29 @@ type Package struct {
 	Latest   string
 }
 
-// FeedListRequest contains the request for listing packages
-type FeedListRequest struct {
+// ListRequest contains the request for listing packages
+type ListRequest struct {
 }
 
-// FeedListResponse contains the response from listing packages
-type FeedListResponse struct {
+// ListResponse contains the response from listing packages
+type ListResponse struct {
 	Packages []*Package
 }
 
-// FeedGetRequest defines criteria for fetching a specific package
-type FeedGetRequest struct {
+// GetRequest defines criteria for fetching a specific package
+type GetRequest struct {
 	Name           string
 	Version        string
 	IncludeContent bool
 }
 
-// FeedGetResponse Contains the list of matching packages
-type FeedGetResponse struct {
+// GetResponse Contains the list of matching packages
+type GetResponse struct {
 	Package *Package
 }
 
-// FeedCreateRequest contains the list of packages to create
-type FeedCreateRequest struct {
+// CreateRequest contains the list of packages to create
+type CreateRequest struct {
 	Packages []*PackageCreate
 }
 
@@ -60,27 +60,37 @@ type PackageVersionCreate struct {
 	Contents string
 }
 
-// FeedCreateResponse creates a package and returns the created ID
-type FeedCreateResponse struct {
+// CreateResponse creates a package and returns the created ID
+type CreateResponse struct {
 	Packages []*Package
 }
 
-// FeedLatestRequest defines a query for the lastest version of a package
-type FeedLatestRequest struct {
+// LatestRequest defines a query for the lastest version of a package
+type LatestRequest struct {
 	Name string
 }
 
-// FeedLatestResponse defines a response for a FeedLastestRequest query
-type FeedLatestResponse struct {
+// LatestResponse defines a response for a FeedLastestRequest query
+type LatestResponse struct {
 	Package *Package
 }
 
-// FeedService defines a package feed service
-type FeedService interface {
-	List(request *FeedListRequest) (*FeedListResponse, error)
-	Get(request *FeedGetRequest) (*FeedGetResponse, error)
-	Create(request *FeedCreateRequest) (*FeedCreateResponse, error)
-	Latest(request *FeedLatestRequest) (*FeedLatestResponse, error)
+// InfoRequest requests feed information
+type InfoRequest struct {
+}
+
+// InfoResponse returns information for the feed
+type InfoResponse struct {
+	URI string
+}
+
+// Service defines a package feed service
+type Service interface {
+	List(request *ListRequest) (*ListResponse, error)
+	Get(request *GetRequest) (*GetResponse, error)
+	Create(request *CreateRequest) (*CreateResponse, error)
+	Latest(request *LatestRequest) (*LatestResponse, error)
+	Info(request *InfoRequest) (*InfoResponse, error)
 }
 
 type packageCriteria struct {

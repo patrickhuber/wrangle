@@ -7,6 +7,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Reader defines a settings reader
 type Reader interface {
 	Read() (*Settings, error)
 }
@@ -15,6 +16,7 @@ type reader struct {
 	rd io.Reader
 }
 
+// NewReader creates a new settings reader from the given io reader
 func NewReader(r io.Reader) Reader {
 	return &reader{
 		rd: r,

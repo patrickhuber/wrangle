@@ -8,7 +8,8 @@ import (
 
 // CreateInstallCommand creates the install command
 func CreateInstallCommand(
-	installService packages.InstallService) *cli.Command {
+	service packages.Service,
+	platform string) *cli.Command {
 	return &cli.Command{
 		Name:      "install",
 		Aliases:   []string{"i"},
@@ -42,22 +43,23 @@ func CreateInstallCommand(
 			},
 		},
 		Action: func(context *cli.Context) error {
-			installServiceRequest := &packages.InstallServiceRequest{
-				Directories: &packages.InstallServiceRequestDirectories{
+			installRequest := &packages.InstallRequest{
+				Directories: &packages.InstallRequestDirectories{
 					Root:     context.String("root"),
 					Bin:      context.String("bin"),
 					Packages: context.String("path"),
 				},
-				Package: &packages.InstallServiceRequestPackage{
+				Package: &packages.InstallRequestPackage{
 					Name:    context.Args().First(),
 					Version: context.String("version"),
 				},
-				Feed: &packages.InstallServiceRequestFeed{
+				Feed: &packages.InstallRequestFeed{
 					URL: context.String("url"),
 				},
+				Platform: platform,
 			}
 
-			return installService.Install(installServiceRequest)
+			return service.Install(installRequest)
 		},
 	}
 }

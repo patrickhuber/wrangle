@@ -1,12 +1,13 @@
 package feed
 
-type compositeFeedService struct {
-	gitSvc FeedService
-	fsSvc  FeedService
+type compositeService struct {
+	gitSvc Service
+	fsSvc  Service
 }
 
-func NewCompositeFeedService(gitSvc FeedService, fsSvc FeedService) FeedService {
-	return &compositeFeedService{
+// NewCompositeService creates a composite feed service with the given git and fs services
+func NewCompositeService(gitSvc Service, fsSvc Service) Service {
+	return &compositeService{
 		gitSvc: gitSvc,
 		fsSvc:  fsSvc,
 	}
@@ -17,7 +18,7 @@ type indexedPackage struct {
 	versions map[string]*PackageVersion
 }
 
-func (svc *compositeFeedService) List(request *FeedListRequest) (*FeedListResponse, error) {
+func (svc *compositeService) List(request *ListRequest) (*ListResponse, error) {
 	compositePackages := map[string]*indexedPackage{}
 
 	// get packages from the fs feed
@@ -73,19 +74,23 @@ func (svc *compositeFeedService) List(request *FeedListRequest) (*FeedListRespon
 	for _, pkg := range compositePackages {
 		packages = append(packages, pkg.pkg)
 	}
-	return &FeedListResponse{
+	return &ListResponse{
 		Packages: packages,
 	}, nil
 }
 
-func (svc *compositeFeedService) Get(request *FeedGetRequest) (*FeedGetResponse, error) {
+func (svc *compositeService) Get(request *GetRequest) (*GetResponse, error) {
 	return nil, nil
 }
 
-func (svc *compositeFeedService) Create(request *FeedCreateRequest) (*FeedCreateResponse, error) {
+func (svc *compositeService) Create(request *CreateRequest) (*CreateResponse, error) {
 	return nil, nil
 }
 
-func (svc *compositeFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
+func (svc *compositeService) Latest(request *LatestRequest) (*LatestResponse, error) {
+	return nil, nil
+}
+
+func (svc *compositeService) Info(request *InfoRequest) (*InfoResponse, error) {
 	return nil, nil
 }

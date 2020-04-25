@@ -65,7 +65,8 @@ func runPrintTest(command string, expected string) {
 		Bin:      "/opt/wrangle/bin",
 		Packages: "/opt/wrangle/packages",
 	}
-	feedService := feed.NewFsFeedService(fileSystem, paths.Packages)
+	feedService := feed.NewFsService(fileSystem, paths.Packages)
+	interfaceReader := packages.NewYamlInterfaceReader()
 	contextProvider := packages.NewFsContextProvider(fileSystem, paths)
 
 	console := ui.NewMemoryConsole()
@@ -75,7 +76,7 @@ func runPrintTest(command string, expected string) {
 	taskProviders.Register(tasks.NewLinkProvider(fileSystem, console))
 	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
 
-	packagesManager := packages.NewManager(fileSystem, feedService, contextProvider, taskProviders)
+	packageService := packages.NewService(feedService, interfaceReader, contextProvider, taskProviders)
 
 	// create config file
 	configFileContent := `
@@ -117,7 +118,7 @@ processes:
 		console,
 		platform,
 		collections.NewDictionary(),
-		packagesManager)
+		packageService)
 	Expect(err).To(BeNil())
 	Expect(app).ToNot(BeNil())
 

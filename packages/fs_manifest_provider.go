@@ -42,8 +42,8 @@ func (p *fsManifestProvider) loadInterface(manifestPath string) (interface{}, er
 	}
 	defer file.Close()
 
-	r := NewYamlInterfaceReader(file)
-	manifest, err := r.Read()
+	r := NewYamlInterfaceReader()
+	manifest, err := r.Read(file)
 	if err != nil {
 		return nil, err
 	}

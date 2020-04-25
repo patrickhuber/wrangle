@@ -1,19 +1,20 @@
 package packages
 
 import (
-	"github.com/patrickhuber/wrangle/tasks"
 	"fmt"
+
+	"github.com/patrickhuber/wrangle/tasks"
 
 	"github.com/patrickhuber/wrangle/filepath"
 	"github.com/patrickhuber/wrangle/settings"
 )
 
 type packageContext struct {
-	paths 					   *settings.Paths
+	paths                      *settings.Paths
 	packagePath                string
 	packageVersionPath         string
 	packageVersionManifestPath string
-	variables map[string]interface{}
+	variables                  map[string]interface{}
 }
 
 // PackageContext defines the context for the given package
@@ -24,7 +25,8 @@ type PackageContext interface {
 // NewContext creates a new package context with the given parameters
 func NewContext(paths *settings.Paths, packagePath, packageVersionPath, packageVersionManifestPath string) PackageContext {
 	return &packageContext{
-		paths: paths,
+		paths:                      paths,
+		packagePath:                packagePath,
 		packageVersionPath:         packageVersionPath,
 		packageVersionManifestPath: packageVersionManifestPath,
 	}
@@ -35,10 +37,10 @@ func NewDefaultContext(root, packageName, packageVersion string) PackageContext 
 	bin := filepath.Join(root, "bin")
 	packagesRoot := filepath.Join(root, "packages")
 	paths := &settings.Paths{
-		Root: root,
-		Bin: bin,
+		Root:     root,
+		Bin:      bin,
 		Packages: packagesRoot,
-	}	
+	}
 	packagePath := filepath.Join(packagesRoot, packageName)
 	packageVersionPath := filepath.Join(packagePath, packageVersion)
 	packageVersionManifestPath := filepath.Join(packageVersionPath, fmt.Sprintf("%s.%s.yml", packageName, packageVersion))

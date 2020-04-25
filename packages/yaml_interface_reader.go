@@ -8,17 +8,15 @@ import (
 )
 
 type yamlInterfaceReader struct {
-	reader io.Reader
 }
 
-func NewYamlInterfaceReader(reader io.Reader) InterfaceReader {
-	return &yamlInterfaceReader{
-		reader: reader,
-	}
+// NewYamlInterfaceReader creates a new InterfaceReader that decodes yaml to an interface
+func NewYamlInterfaceReader() InterfaceReader {
+	return &yamlInterfaceReader{}
 }
 
-func (r *yamlInterfaceReader) Read() (interface{}, error) {
-	content, err := ioutil.ReadAll(r.reader)
+func (r *yamlInterfaceReader) Read(reader io.Reader) (interface{}, error) {
+	content, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}

@@ -53,8 +53,9 @@ func main() {
 
 	paths := setting.Paths
 
+	feedService := feed.NewFsService(fileSystem, paths.Packages)
+	interfaceReader := packages.NewYamlInterfaceReader()
 	contextProvider := packages.NewFsContextProvider(fileSystem, paths)
-	feedService := feed.NewFsFeedService(fileSystem, paths.Packages)
 
 	// create task providers
 	taskProviders := tasks.NewProviderRegistry()
@@ -64,7 +65,7 @@ func main() {
 	taskProviders.Register(tasks.NewMoveProvider(fileSystem, console))
 
 	// create package manager
-	packagesManager := packages.NewManager(fileSystem, feedService, contextProvider, taskProviders)
+	packagesManager := packages.NewService(feedService, interfaceReader, contextProvider, taskProviders)
 
 	// creates the app
 	// see https://github.com/urfave/cli#customization-1 for template

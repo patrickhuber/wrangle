@@ -8,7 +8,7 @@ import (
 )
 
 type feedTest struct {
-	service feed.FeedService
+	service feed.Service
 }
 
 type FeedTest interface {
@@ -20,16 +20,17 @@ type FeedTest interface {
 	GetReturnsEmptyValueWhenNoPackageNameMatches(notFoundPackageName string)
 	GetReturnsEmptyValueWhenNoPackageVersionMatches(packageName string, notFoundVersionNumber string)
 	GetReturnsContentWhenRequested(packageName string, packageVersion string, expectedContent string)
+	InfoReturnsURI(URI string)
 }
 
-func NewFeedTest(feedService feed.FeedService) FeedTest {
+func NewFeedTest(feedService feed.Service) FeedTest {
 	return &feedTest{
 		service: feedService,
 	}
 }
 
 func (t *feedTest) ListsAllPackages(expectedPackageCount int) {
-	request := &feed.FeedListRequest{}
+	request := &feed.ListRequest{}
 	resp, err := t.service.List(request)
 	Expect(err).To(BeNil())
 	Expect(resp).ToNot(BeNil())
@@ -37,7 +38,7 @@ func (t *feedTest) ListsAllPackages(expectedPackageCount int) {
 }
 
 func (t *feedTest) ListsExactPackages(packages []feed.Package) {
-	request := &feed.FeedListRequest{}
+	request := &feed.ListRequest{}
 	resp, err := t.service.List(request)
 	Expect(err).To(BeNil())
 	Expect(resp).ToNot(BeNil())
@@ -71,7 +72,7 @@ func (t *feedTest) ListsExactPackages(packages []feed.Package) {
 }
 
 func (t *feedTest) GetReturnsEmptyValueWhenNoPackageNameMatches(notFoundPackageName string) {
-	request := &feed.FeedGetRequest{
+	request := &feed.GetRequest{
 		Name: notFoundPackageName,
 	}
 	resp, err := t.service.Get(request)
@@ -81,7 +82,7 @@ func (t *feedTest) GetReturnsEmptyValueWhenNoPackageNameMatches(notFoundPackageN
 }
 
 func (t *feedTest) GetReturnsEmptyValueWhenNoPackageVersionMatches(pacakgeName string, notFoundVersionNumber string) {
-	request := &feed.FeedGetRequest{
+	request := &feed.GetRequest{
 		Name:    pacakgeName,
 		Version: notFoundVersionNumber,
 	}
@@ -92,7 +93,7 @@ func (t *feedTest) GetReturnsEmptyValueWhenNoPackageVersionMatches(pacakgeName s
 }
 
 func (t *feedTest) GetsAllVersionsByName(packageName string, expectedVersions []string) {
-	request := &feed.FeedGetRequest{
+	request := &feed.GetRequest{
 		Name: packageName,
 	}
 	resp, err := t.service.Get(request)
@@ -119,7 +120,7 @@ func (t *feedTest) GetsAllVersionsByName(packageName string, expectedVersions []
 }
 
 func (t *feedTest) GetsSpecificVersionByNameAndVersion(packageName string, packageVersion string) {
-	request := &feed.FeedGetRequest{
+	request := &feed.GetRequest{
 		Name:    packageName,
 		Version: packageVersion,
 	}
@@ -136,7 +137,7 @@ func (t *feedTest) GetsSpecificVersionByNameAndVersion(packageName string, packa
 }
 
 func (t *feedTest) GetReturnsContentWhenRequested(packageName string, packageVersion string, expectedContent string) {
-	request := &feed.FeedGetRequest{
+	request := &feed.GetRequest{
 		Name:           packageName,
 		Version:        packageVersion,
 		IncludeContent: true,
@@ -157,7 +158,7 @@ func (t *feedTest) GetReturnsContentWhenRequested(packageName string, packageVer
 }
 
 func (t *feedTest) LastestReturnsLatestPackageVersion(packageName string, expectedVersion string) {
-	request := &feed.FeedLatestRequest{
+	request := &feed.LatestRequest{
 		Name: packageName,
 	}
 
@@ -170,4 +171,12 @@ func (t *feedTest) LastestReturnsLatestPackageVersion(packageName string, expect
 	Expect(pkg.Name).To(Equal(packageName))
 	Expect(len(pkg.Versions)).To(Equal(1))
 	Expect(pkg.Versions[0].Version).To(Equal(expectedVersion))
+}
+
+func (t *feedTest) InfoReturnsURI(URI string) {
+	request := &feed.InfoRequest{}
+	resp, err := t.service.Info(request)
+	Expect(err).To(BeNil())
+	Expect(resp).ToNot(BeNil())
+	Expect(resp.URI).To(Equal(URI))
 }

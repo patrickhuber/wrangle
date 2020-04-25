@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
 	"github.com/patrickhuber/wrangle/feed"
@@ -16,26 +17,34 @@ import (
 	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
-var _ = Describe("GitFeedService", func() {
+var _ = Describe("GitService", func() {
 	var (
-		svc    feed.FeedService
+		svc    feed.Service
 		tester FeedTest
+		remote string
 	)
 	BeforeEach(func() {
 		store := memory.NewStorage()
 		fs := memfs.New()
+		remote = "https://github.com/patrickhuber/wrangle-packages"
 
 		repository, err := git.Init(store, fs)
 		Expect(err).To(BeNil())
 
+		_, err = repository.CreateRemote(&config.RemoteConfig{
+			Name: "feed",
+			URLs: []string{remote},
+		})
+		Expect(err).To(BeNil())
+
 		packages := []feed.Package{
-			feed.Package{
+			{
 				Name: "bbr",
 				Versions: []*feed.PackageVersion{
-					&feed.PackageVersion{
+					{
 						Version: "1.2.8",
 					},
-					&feed.PackageVersion{
+					{
 						Version: "1.3.2",
 						Manifest: &feed.PackageVersionManifest{
 							Content: "Content",
@@ -44,17 +53,17 @@ var _ = Describe("GitFeedService", func() {
 					},
 				},
 			},
-			feed.Package{
+			{
 				Name:   "test",
 				Latest: "1.0.1",
 				Versions: []*feed.PackageVersion{
-					&feed.PackageVersion{
+					{
 						Version: "1.0.0",
 					},
-					&feed.PackageVersion{
+					{
 						Version: "1.0.1",
 					},
-					&feed.PackageVersion{
+					{
 						Version: "2.0.0",
 					},
 				},
@@ -62,7 +71,7 @@ var _ = Describe("GitFeedService", func() {
 		}
 		writePackagesToGitRepository(packages, repository)
 
-		svc = feed.NewGitFeedService(repository)
+		svc = feed.NewGitService(repository)
 		Expect(svc).ToNot(BeNil())
 		tester = NewFeedTest(svc)
 	})
@@ -101,6 +110,11 @@ var _ = Describe("GitFeedService", func() {
 			It("gets latest package version", func() {
 				tester.LastestReturnsLatestPackageVersion("test", "1.0.1")
 			})
+		})
+	})
+	Describe("Info", func() {
+		It("gets remote uri", func() {
+			tester.InfoReturnsURI(remote)
 		})
 	})
 })

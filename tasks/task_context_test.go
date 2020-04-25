@@ -14,6 +14,7 @@ type fakeTaskContext struct {
 	packagePath                string
 	packageVersionPath         string
 	packageVersionManifestPath string
+	platform                   string
 	variables                  map[string]interface{}
 }
 
@@ -32,6 +33,7 @@ func newFakeTaskContext(root, packageName, packageVersion string) tasks.TaskCont
 		packagePath:                packagePath,
 		packageVersionPath:         packageVersionPath,
 		packageVersionManifestPath: packageVersionManifestPath,
+		platform:                   "windows",
 		variables:                  variables,
 	}
 }
@@ -58,6 +60,10 @@ func (tc *fakeTaskContext) PackageVersionPath() string {
 
 func (tc *fakeTaskContext) PackageVersionManifestPath() string {
 	return tc.packageVersionManifestPath
+}
+
+func (tc *fakeTaskContext) Platform() string {
+	return tc.platform
 }
 
 func (tc *fakeTaskContext) Variables() map[string]interface{} {

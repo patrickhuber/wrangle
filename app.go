@@ -30,7 +30,7 @@ func createApplication(
 	console ui.Console,
 	platform string,
 	envDictionary collections.Dictionary,
-	packagesManager packages.Manager) (*cli.App, error) {
+	packageService packages.Service) (*cli.App, error) {
 
 	rendererFactory := renderers.NewFactory(env.NewDictionary())
 
@@ -57,9 +57,7 @@ func createApplication(
 	initService := initialize.NewService(fileSystem)
 	runService := processes.NewRunService(manager, fileSystem, processFactory, console)
 	printService := processes.NewPrintService(console, manager, rendererFactory)
-	packagesServiceFactory := packages.NewServiceFactory(console)
-	feedServiceFactory := feed.NewFeedServiceFactory(fileSystem)
-	installService, err := packages.NewInstallService(platform, fileSystem, packagesManager)
+	feedServiceFactory := feed.NewServiceFactory(fileSystem)
 	envService := env.NewService(console, envDictionary)
 	storesService := store.NewService(console)
 	processesService := processes.NewService(console)
@@ -72,7 +70,7 @@ func createApplication(
 
 	cliApp.Commands = []cli.Command{
 		commands.CreateListCommand(
-			commands.CreateListPackagesCommand(packagesServiceFactory, feedServiceFactory),
+			commands.CreateListPackagesCommand(console, feedServiceFactory),
 			commands.CreateListProcessesCommand(cliApp, processesService, fileSystem),
 			commands.CreateListStoresCommand(cliApp, storesService, fileSystem),
 			commands.CreateListSecretsCommand(cliApp, console, credentialServiceFactory, renderFactory),
@@ -84,7 +82,7 @@ func createApplication(
 		),
 		*commands.CreateInitCommand(cliApp, initService),
 		*commands.CreateRunCommand(cliApp, runService, fileSystem),
-		*commands.CreateInstallCommand(installService),
+		*commands.CreateInstallCommand(packageService, platform),
 		*commands.CreateEnvCommand(envService),
 		*commands.CreateMoveCommand(cliApp, credentialServiceFactory),
 		*commands.CreateCopyCommand(cliApp, credentialServiceFactory),

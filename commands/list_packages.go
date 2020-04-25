@@ -3,14 +3,14 @@ package commands
 import (
 	"github.com/patrickhuber/wrangle/feed"
 	"github.com/patrickhuber/wrangle/global"
-	"github.com/patrickhuber/wrangle/packages"
+	"github.com/patrickhuber/wrangle/ui"
 	"github.com/urfave/cli"
 )
 
 // CreateListPackagesCommand creates a packages command from the cli context
 func CreateListPackagesCommand(
-	packageServiceFactory packages.ServiceFactory,
-	feedServiceFactory feed.FeedServiceFactory) cli.Command {
+	console ui.Console,
+	feedServiceFactory feed.ServiceFactory) cli.Command {
 	return cli.Command{
 		Name:    "packages",
 		Aliases: []string{"k"},
@@ -37,9 +37,13 @@ func CreateListPackagesCommand(
 				return err
 			}
 
-			packagesService := packageServiceFactory.Get(feedService)
+			listResponse, err := feedService.List(&feed.ListRequest{})
+			if err != nil {
+				return err
+			}
 
-			return packagesService.List()
+			writer := feed.NewTableWriter(console.Out())
+			return writer.Write(listResponse.Packages)
 		},
 	}
 }

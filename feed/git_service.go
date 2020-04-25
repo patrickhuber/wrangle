@@ -1,6 +1,7 @@
 package feed
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -12,13 +13,13 @@ import (
 	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
-type gitFeedService struct {
+type gitService struct {
 	repository *git.Repository
 	name       string
 }
 
-// NewGitFeedServiceFromURL returns a FeedService instance by cloning from the given URL
-func NewGitFeedServiceFromURL(URL string) (FeedService, error) {
+// NewGitServiceFromURL returns a FeedService instance by cloning from the given URL
+func NewGitServiceFromURL(URL string) (Service, error) {
 	fs := memfs.New()
 	storer := memory.NewStorage()
 
@@ -29,37 +30,37 @@ func NewGitFeedServiceFromURL(URL string) (FeedService, error) {
 		return nil, err
 	}
 
-	return NewGitFeedService(repository), nil
+	return NewGitService(repository), nil
 }
 
-// NewGitFeedService creates a new FeedService from the given repositry
-func NewGitFeedService(repository *git.Repository) FeedService {
-	return &gitFeedService{
+// NewGitService creates a new FeedService from the given repositry
+func NewGitService(repository *git.Repository) Service {
+	return &gitService{
 		repository: repository,
 		name:       "remote",
 	}
 }
 
-func (svc *gitFeedService) List(request *FeedListRequest) (*FeedListResponse, error) {
+func (svc *gitService) List(request *ListRequest) (*ListResponse, error) {
 	packages, err := svc.find(nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &FeedListResponse{
+	return &ListResponse{
 		Packages: packages,
 	}, nil
 }
 
-func (svc *gitFeedService) Get(request *FeedGetRequest) (*FeedGetResponse, error) {
+func (svc *gitService) Get(request *GetRequest) (*GetResponse, error) {
 	versions := []string{}
 	if strings.TrimSpace(request.Version) != "" {
 		versions = append(versions, request.Version)
 	}
 	where := &packageCriteriaWhere{
 		Or: []*packageCriteriaAnd{
-			&packageCriteriaAnd{
+			{
 				And: []*packageCriteria{
-					&packageCriteria{
+					{
 						Name:     request.Name,
 						Versions: versions,
 					},
@@ -80,18 +81,18 @@ func (svc *gitFeedService) Get(request *FeedGetRequest) (*FeedGetResponse, error
 		pkg = packages[0]
 	}
 
-	return &FeedGetResponse{
+	return &GetResponse{
 		Package: pkg,
 	}, nil
 
 }
 
-func (svc *gitFeedService) Create(request *FeedCreateRequest) (*FeedCreateResponse, error) {
+func (svc *gitService) Create(request *CreateRequest) (*CreateResponse, error) {
 	return nil, nil
 }
 
-func (svc *gitFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
-	response, err := svc.Get(&FeedGetRequest{Name: request.Name})
+func (svc *gitService) Latest(request *LatestRequest) (*LatestResponse, error) {
+	response, err := svc.Get(&GetRequest{Name: request.Name})
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +105,27 @@ func (svc *gitFeedService) Latest(request *FeedLatestRequest) (*FeedLatestRespon
 	}
 
 	response.Package.Versions = []*PackageVersion{latestPackageVersion}
-	return &FeedLatestResponse{
+	return &LatestResponse{
 		Package: response.Package,
 	}, nil
 }
 
-func (svc *gitFeedService) find(where *packageCriteriaWhere, include *packageInclude) ([]*Package, error) {
+func (svc *gitService) Info(request *InfoRequest) (*InfoResponse, error) {
+	cfg, err := svc.repository.Config()
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range cfg.Remotes {
+		for _, u := range r.URLs {
+			return &InfoResponse{
+				URI: u,
+			}, nil
+		}
+	}
+	return nil, errors.New("Unable to find remote url for repository")
+}
+
+func (svc *gitService) find(where *packageCriteriaWhere, include *packageInclude) ([]*Package, error) {
 
 	ref, err := svc.repository.Head()
 	if err != nil {

@@ -34,7 +34,7 @@ var _ = Describe("Install", func() {
 			Bin:      "/opt/wrangle/bin",
 			Packages: "/opt/wrangle/packages",
 		}
-		feedService := feed.NewFsFeedService(fs, paths.Packages)
+		feedService := feed.NewFsService(fs, paths.Packages)
 
 		contextProvider := packages.NewFsContextProvider(fs, paths)
 
@@ -44,10 +44,9 @@ var _ = Describe("Install", func() {
 		taskProviders.Register(tasks.NewLinkProvider(fs, console))
 		taskProviders.Register(tasks.NewMoveProvider(fs, console))
 
-		packagesManager := packages.NewManager(fs, feedService, contextProvider, taskProviders)
+		interfaceReader := packages.NewYamlInterfaceReader()
 
-		installService, err := packages.NewInstallService("linux", fs, packagesManager)
-		Expect(err).To(BeNil())
+		service := packages.NewService(feedService, interfaceReader, contextProvider, taskProviders)
 
 		variables.Set(global.PackagePathKey, paths.Packages)
 		os.Setenv(global.PackagePathKey, paths.Packages)
@@ -74,7 +73,7 @@ targets:
 `
 		content = fmt.Sprintf(content, server.URL)
 
-		err = fs.Mkdir(paths.Packages+"/test/1.0.0", 0666)
+		err := fs.Mkdir(paths.Packages+"/test/1.0.0", 0666)
 		Expect(err).To(BeNil())
 
 		err = fs.Write(paths.Packages+"/test/1.0.0/test.1.0.0.yml", []byte(content), 0666)
@@ -90,7 +89,7 @@ targets:
 			},
 		}
 		app.Commands = []cli.Command{
-			*commands.CreateInstallCommand(installService),
+			*commands.CreateInstallCommand(service, "linux"),
 		}
 
 		err = app.Run([]string{

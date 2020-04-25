@@ -10,14 +10,14 @@ import (
 	"github.com/patrickhuber/wrangle/filesystem"
 )
 
-var _ = Describe("CompositeFeedService", func() {
+var _ = Describe("CompositeService", func() {
 	var (
 		fs                filesystem.FileSystem
-		firstFeedService  feed.FeedService
-		secondFeedService feed.FeedService
+		firstFeedService  feed.Service
+		secondFeedService feed.Service
 	)
 	BeforeEach(func() {
-		createService := func(list map[string][]string) (feed.FeedService, error) {
+		createService := func(list map[string][]string) (feed.Service, error) {
 			fs = filesystem.NewMemory()
 
 			for packageName, packageVersions := range list {
@@ -30,20 +30,20 @@ var _ = Describe("CompositeFeedService", func() {
 				}
 			}
 
-			return feed.NewFsFeedService(fs, "/wrangle/packages"), nil
+			return feed.NewFsService(fs, "/wrangle/packages"), nil
 		}
 
 		var err error
 
-		firstFeedService, err = createService(map[string][]string{"test": []string{"1.0.0", "1.0.1"}})
+		firstFeedService, err = createService(map[string][]string{"test": {"1.0.0", "1.0.1"}})
 		Expect(err).To(BeNil())
 
-		secondFeedService, err = createService(map[string][]string{"test": []string{"1.2.4", "1.0.1"}})
+		secondFeedService, err = createService(map[string][]string{"test": {"1.2.4", "1.0.1"}})
 		Expect(err).To(BeNil())
 	})
 	It("returns composite of both services", func() {
-		compositeFeedService := feed.NewCompositeFeedService(firstFeedService, secondFeedService)
-		resp, err := compositeFeedService.List(&feed.FeedListRequest{})
+		compositeFeedService := feed.NewCompositeService(firstFeedService, secondFeedService)
+		resp, err := compositeFeedService.List(&feed.ListRequest{})
 		Expect(err).To(BeNil())
 		Expect(resp).ToNot(BeNil())
 		Expect(resp.Packages).ToNot(BeNil())

@@ -9,41 +9,41 @@ import (
 	"github.com/patrickhuber/wrangle/filesystem"
 )
 
-type fsFeedService struct {
+type fsService struct {
 	fs   filesystem.FileSystem
 	path string
 	name string
 }
 
-// NewFsFeedService defines a feed service over the filesystem
-func NewFsFeedService(fs filesystem.FileSystem, path string) FeedService {
-	return &fsFeedService{
+// NewFsService defines a feed service over the filesystem
+func NewFsService(fs filesystem.FileSystem, path string) Service {
+	return &fsService{
 		fs:   fs,
 		path: path,
 		name: "local",
 	}
 }
 
-func (svc *fsFeedService) List(request *FeedListRequest) (*FeedListResponse, error) {
+func (svc *fsService) List(request *ListRequest) (*ListResponse, error) {
 	packages, err := svc.find(nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &FeedListResponse{
+	return &ListResponse{
 		Packages: packages,
 	}, nil
 }
 
-func (svc *fsFeedService) Get(request *FeedGetRequest) (*FeedGetResponse, error) {
+func (svc *fsService) Get(request *GetRequest) (*GetResponse, error) {
 	versions := []string{}
 	if strings.TrimSpace(request.Version) != "" {
 		versions = append(versions, request.Version)
 	}
 	where := &packageCriteriaWhere{
 		Or: []*packageCriteriaAnd{
-			&packageCriteriaAnd{
+			{
 				And: []*packageCriteria{
-					&packageCriteria{
+					{
 						Name:     request.Name,
 						Versions: versions,
 					},
@@ -64,12 +64,18 @@ func (svc *fsFeedService) Get(request *FeedGetRequest) (*FeedGetResponse, error)
 		pkg = packages[0]
 	}
 
-	return &FeedGetResponse{
+	return &GetResponse{
 		Package: pkg,
 	}, nil
 }
 
-func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageInclude) ([]*Package, error) {
+func (svc *fsService) Info(request *InfoRequest) (*InfoResponse, error) {
+	return &InfoResponse{
+		URI: svc.path,
+	}, nil
+}
+
+func (svc *fsService) find(where *packageCriteriaWhere, include *packageInclude) ([]*Package, error) {
 	packageFolders, err := svc.fs.ReadDir(svc.path)
 	if err != nil {
 		return nil, err
@@ -157,9 +163,7 @@ func (svc *fsFeedService) find(where *packageCriteriaWhere, include *packageIncl
 	return packages, nil
 }
 
-func (svc *fsFeedService) getLatestTag(packagePath string) (*semver.Version, error) {
-	var latest *semver.Version
-
+func (svc *fsService) getLatestTag(packagePath string) (*semver.Version, error) {
 	latestTagPath := filepath.Join(packagePath, "latest")
 	tagExists, err := svc.fs.Exists(latestTagPath)
 
@@ -167,25 +171,24 @@ func (svc *fsFeedService) getLatestTag(packagePath string) (*semver.Version, err
 		return nil, err
 	}
 
-	if tagExists {
-		version, err := svc.fs.Read(latestTagPath)
-		if err != nil {
-			return nil, err
-		}
-		latest, err = semver.NewVersion(string(version))
-		if err != nil {
-			return nil, err
-		}
+	if !tagExists {
+		return nil, nil
 	}
-	return latest, nil
+
+	version, err := svc.fs.Read(latestTagPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return semver.NewVersion(string(version))
 }
 
-func (svc *fsFeedService) Create(request *FeedCreateRequest) (*FeedCreateResponse, error) {
+func (svc *fsService) Create(request *CreateRequest) (*CreateResponse, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (svc *fsFeedService) Latest(request *FeedLatestRequest) (*FeedLatestResponse, error) {
-	response, err := svc.Get(&FeedGetRequest{Name: request.Name})
+func (svc *fsService) Latest(request *LatestRequest) (*LatestResponse, error) {
+	response, err := svc.Get(&GetRequest{Name: request.Name})
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +202,7 @@ func (svc *fsFeedService) Latest(request *FeedLatestRequest) (*FeedLatestRespons
 	}
 
 	response.Package.Versions = []*PackageVersion{latestPackageVersion}
-	return &FeedLatestResponse{
+	return &LatestResponse{
 		Package: response.Package,
 	}, nil
 }
