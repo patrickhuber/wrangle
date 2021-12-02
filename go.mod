@@ -6,6 +6,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/caarlos0/env/v6 v6.4.0
 	github.com/fatih/structs v1.1.0
+	github.com/go-git/go-billy/v5 v5.3.1 // indirect
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v33 v33.0.0
 	github.com/imdario/mergo v0.3.12
 	github.com/mitchellh/go-homedir v1.1.0

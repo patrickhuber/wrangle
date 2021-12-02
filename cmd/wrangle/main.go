@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/internal/commands"
-	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/wrangle/pkg/di"
 	"github.com/patrickhuber/wrangle/pkg/env"
-	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/global"
 	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/models"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
@@ -19,64 +19,60 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// set with -ldflags
+var version = ""
+
 func main() {
 
-	logger := ilog.Default()
-
-	o := operatingsystem.New()
-	environment := env.New()
-	fs := filesystem.FromAferoFS(afero.NewOsFs())
-
-	globalConfigProvider := config.NewDefaultReader(o, environment)
-	globalConfig, err := globalConfigProvider.Get()
-	handle(err)
-
-	feedService := feed.NewMemoryService()
-	feedManager := feed.NewManager(globalConfig)
+	var logger ilog.Logger = ilog.Default()
+	var o operatingsystem.OS = operatingsystem.New()
+	var environment env.Environment = env.New()
+	var fs filesystem.FileSystem = filesystem.FromAferoFS(afero.NewOsFs())
+	var console = console.NewOS()
 
 	appName := "wrangle"
 	if strings.EqualFold(o.Platform(), operatingsystem.PlatformWindows) {
 		appName = appName + ".exe"
 	}
 
-	console := console.NewOS()
+	container := di.NewContainer()
+	container.RegisterStatic(global.Logger, logger)
+	container.RegisterStatic(global.OperatingSystem, o)
+	container.RegisterStatic(global.Environment, environment)
+	container.RegisterStatic(global.FileSystem, fs)
+	container.RegisterStatic(global.Console, console)
 
 	app := &cli.App{
 		Metadata: map[string]interface{}{
-			"feedService": feedService,
-			"feedManager": feedManager,
-			"logger":      logger,
-			"fileSystem":  fs,
-			"os":          o,
-			"console":     console,
+			global.MetadataDependencyInjection: container,
 		},
-		Name: appName,
+		Name:        appName,
+		Version:     version,
+		Description: "A DevOps Environment Management CLI",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "bin",
+				Name:    global.FlagBin,
 				Aliases: []string{"b"},
-				Value:   globalConfig.BinPath,
-				EnvVars: []string{config.EnvironmentVariableBinPathKey},
+				EnvVars: []string{global.EnvBin},
 			},
 			&cli.StringFlag{
-				Name:    "root",
+				Name:    global.FlagRoot,
 				Aliases: []string{"r"},
-				Value:   globalConfig.RootPath,
-				EnvVars: []string{config.EnvironmentVariableRootPathKey},
+				EnvVars: []string{global.EnvRoot},
 			},
 			&cli.StringFlag{
-				Name:    "packages",
+				Name:    global.FlagPackages,
 				Aliases: []string{"p"},
-				Value:   globalConfig.PackagePath,
-				EnvVars: []string{config.EnvironmentVariablePackagesPathKey},
+				EnvVars: []string{global.EnvPackages},
 			},
 			&cli.StringFlag{
-				Name:    "global",
+				Name:    global.FlagConfig,
 				Aliases: []string{"g"},
 				Value:   crosspath.Join(o.Home(), ".wrangle", "config.yml"),
+				EnvVars: []string{global.EnvConfig},
 			},
 			&cli.GenericFlag{
-				Name:        "output",
+				Name:        global.FlagOutput,
 				Aliases:     []string{"o"},
 				Value:       models.NewFormatEnum(),
 				Required:    false,
@@ -101,7 +97,7 @@ func main() {
 			},
 			{
 				Name:   "feeds",
-				Action: commands.NewListFeeds(feedManager).Execute,
+				Action: commands.ListFeeds,
 			},
 		},
 	}
@@ -113,7 +109,8 @@ func main() {
 
 	// install subcommand
 	install := &cli.Command{
-		Name: "install",
+		Name:   "install",
+		Action: commands.Install,
 	}
 
 	// bootstrap subcommand
@@ -136,7 +133,7 @@ func main() {
 		get,
 		install,
 	}
-	err = app.Run(os.Args)
+	err := app.Run(os.Args)
 	handle(err)
 }
 

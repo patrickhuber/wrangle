@@ -1,17 +1,10 @@
 package config
 
-const (
-	EnvironmentVariableBinPathKey      = "WRANGLE_BIN"
-	EnvironmentVariableRootPathKey     = "WRANGLE_ROOT"
-	EnvironmentVariablePackagesPathKey = "WRANGLE_PACKAGES"
-	EnvironmentVariableGlobalPathKey   = "WRANGLE_GLOBAL_CONFIG"
-)
-
 // Config represents a configuration document for wrangle
 type Config struct {
-	PackagePath string `env:"WRANGLE_PACKAGES"`
-	BinPath     string `env:"WRANGLE_BIN"`
-	RootPath    string `env:"WRANGLE_ROOT"`
+	PackagePath string
+	BinPath     string
+	RootPath    string
 
 	Feeds     []*Feed             `yaml:"feeds"`
 	Stores    []*Store            `yaml:"stores"`

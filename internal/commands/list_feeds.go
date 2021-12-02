@@ -1,17 +1,20 @@
 package commands
 
 import (
-	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/urfave/cli/v2"
 )
 
-type listFeeds struct {
+type ListFeedsCommand struct {
+	Options *ListFeedsOptions
 }
 
-func NewListFeeds(feedManager feed.Manager) Command {
-	return &listFeeds{}
+type ListFeedsOptions struct {
 }
 
-func (c *listFeeds) Execute(ctx *cli.Context) error {
+func ListFeeds(cli *cli.Context) error {
+	return ListFeedsInternal(&ListFeedsCommand{})
+}
+
+func ListFeedsInternal(cmd *ListFeedsCommand) error {
 	return nil
 }

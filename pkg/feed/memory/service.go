@@ -1,27 +1,41 @@
-package feed
+package memory
 
 import (
+	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 )
 
 type memoryService struct {
-	items map[string]*Item
+	items       map[string]*feed.Item
+	readService feed.ReadService
 }
 
-func NewMemoryService(items ...*Item) Service {
-	itemMap := map[string]*Item{}
+func NewService(items ...*feed.Item) feed.Service {
+	itemMap := map[string]*feed.Item{}
 	for _, i := range items {
 		if i == nil || i.Package == nil || i.Package.Name == "" {
 			continue
 		}
 		itemMap[i.Package.Name] = i
 	}
-	return &memoryService{
+	itemRepo := &itemRepository{
 		items: itemMap,
 	}
+	packageVersionRepo := &packageVersionRepository{
+		items: itemMap,
+	}
+	return &memoryService{
+		items:       itemMap,
+		readService: feed.NewReadService(itemRepo, packageVersionRepo),
+	}
 }
-func (s *memoryService) Update(request *UpdateRequest) (*UpdateResponse, error) {
-	items := []*Item{}
+
+func (s *memoryService) Name() string {
+	return "memory"
+}
+
+func (s *memoryService) Update(request *feed.UpdateRequest) (*feed.UpdateResponse, error) {
+	items := []*feed.Item{}
 	for _, i := range request.Items {
 		item, ok := s.items[i.Name]
 		if !ok {
@@ -33,13 +47,13 @@ func (s *memoryService) Update(request *UpdateRequest) (*UpdateResponse, error) 
 		}
 		items = append(items, item)
 	}
-	response := &UpdateResponse{
+	response := &feed.UpdateResponse{
 		Items: items,
 	}
 	return response, nil
 }
 
-func (s *memoryService) updateItem(update *ItemUpdate, item *Item) error {
+func (s *memoryService) updateItem(update *feed.ItemUpdate, item *feed.Item) error {
 	if err := s.updateItemPackage(update.Package, item.Package); err != nil {
 		return err
 	}
@@ -55,7 +69,7 @@ func (s *memoryService) updateItem(update *ItemUpdate, item *Item) error {
 	return nil
 }
 
-func (s *memoryService) updateItemPackage(update *PackageUpdate, pkg *packages.Package) error {
+func (s *memoryService) updateItemPackage(update *feed.PackageUpdate, pkg *packages.Package) error {
 	if update == nil {
 		return nil
 	}
@@ -66,7 +80,7 @@ func (s *memoryService) updateItemPackage(update *PackageUpdate, pkg *packages.P
 	return s.updateItemPackageVersions(update.Versions, pkg)
 }
 
-func (s *memoryService) updateItemState(update *StateUpdate, state *State) error {
+func (s *memoryService) updateItemState(update *feed.StateUpdate, state *feed.State) error {
 	if update == nil {
 		return nil
 	}
@@ -76,9 +90,13 @@ func (s *memoryService) updateItemState(update *StateUpdate, state *State) error
 	return nil
 }
 
-func (s *memoryService) updateItemPlatforms(update *PlatformUpdate, item *Item) error {
+func (s *memoryService) updateItemPlatforms(update *feed.PlatformUpdate, item *feed.Item) error {
+	if update == nil {
+		return nil
+	}
 	platforms := item.Platforms
-	platformMap := map[string]*Platform{}
+	platformMap := map[string]*feed.Platform{}
+
 	for _, p := range platforms {
 		platformMap[p.Name] = p
 	}
@@ -115,7 +133,7 @@ func (s *memoryService) updateItemPlatforms(update *PlatformUpdate, item *Item) 
 		}
 	}
 
-	platforms = []*Platform{}
+	platforms = []*feed.Platform{}
 	for _, p := range platformMap {
 		platforms = append(platforms, p)
 	}
@@ -124,26 +142,29 @@ func (s *memoryService) updateItemPlatforms(update *PlatformUpdate, item *Item) 
 	return nil
 }
 
-func (s *memoryService) updateItemPlatformAdd(platformMap map[string]*Platform, platformAdd []*PlatformAdd) {
+func (s *memoryService) updateItemPlatformAdd(platformMap map[string]*feed.Platform, platformAdd []*feed.PlatformAdd) {
 	if platformAdd == nil {
 		return
 	}
 	for _, a := range platformAdd {
-		platformMap[a.Name] = &Platform{
+		platformMap[a.Name] = &feed.Platform{
 			Name:          a.Name,
 			Architectures: a.Architectures,
 		}
 	}
 }
-func (s *memoryService) updateItemPlatformUpdate(platformMap map[string]*Platform, platformAdd []*PlatformAdd) {
+
+func (s *memoryService) updateItemPlatformUpdate(platformMap map[string]*feed.Platform, platformAdd []*feed.PlatformAdd) {
 }
 
-func (s *memoryService) updateItemPackageVersions(update *VersionUpdate, pkg *packages.Package) error {
+func (s *memoryService) updateItemPackageVersions(update *feed.VersionUpdate, pkg *packages.Package) error {
 
 	versionMap := map[string]*packages.PackageVersion{}
 	for _, v := range pkg.Versions {
 		versionMap[v.Version] = v
 	}
+
+	// process additions
 	for _, a := range update.Add {
 		targets := []*packages.PackageTarget{}
 		for _, t := range a.Targets {
@@ -167,26 +188,33 @@ func (s *memoryService) updateItemPackageVersions(update *VersionUpdate, pkg *pa
 			Targets: targets,
 		}
 	}
+
+	// process updates
 	for _, m := range update.Modify {
 		version := versionMap[m.Version]
 		if m.NewVersion != nil {
 			version.Version = *m.NewVersion
 		}
 	}
+
+	// process removals
 	for _, r := range update.Remove {
 		delete(versionMap, r)
 	}
+
+	pkgs := []*packages.PackageVersion{}
+	for _, p := range versionMap {
+		pkgs = append(pkgs, p)
+	}
+	pkg.Versions = pkgs
+
 	return nil
 }
 
-func (m *memoryService) List(request *ListRequest) (*ListResponse, error) {
-	items := []*Item{}
-	for _, i := range m.items {
-		items = append(items, i)
-	}
-	return &ListResponse{Items: items}, nil
+func (m *memoryService) List(request *feed.ListRequest) (*feed.ListResponse, error) {
+	return m.readService.List(request)
 }
 
-func (m *memoryService) Generate(request *GenerateRequest) (*GenerateResponse, error) {
+func (m *memoryService) Generate(request *feed.GenerateRequest) (*feed.GenerateResponse, error) {
 	return nil, nil
 }

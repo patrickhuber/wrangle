@@ -21,19 +21,21 @@ func NewDefaultReader(os operatingsystem.OS, environment env.Environment) Reader
 }
 
 func (r *defaultReader) Get() (*Config, error) {
-	root := ""
+
+	root := "/opt/wrangle"
 	platform := r.os.Platform()
+
 	switch platform {
 	case operatingsystem.PlatformWindows:
-		root = "/opt/wrangle"
-	case operatingsystem.PlatformDarwin:
-		root = "/opt/wrangle"
-	case operatingsystem.PlatformLinux:
 		programData := r.environment.Get("PROGRAMDATA")
 		root = crosspath.Join(programData, "wrangle")
+	case operatingsystem.PlatformDarwin:
+	case operatingsystem.PlatformLinux:
+		break
 	default:
 		return nil, fmt.Errorf("%s is unsupported", platform)
 	}
+
 	return &Config{
 		RootPath:    root,
 		PackagePath: crosspath.Join(root, "packages"),

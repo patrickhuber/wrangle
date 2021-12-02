@@ -1,92 +1,108 @@
 package commands
 
 import (
-	"io"
-	"os"
+	"fmt"
 
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/wrangle/pkg/di"
 	"github.com/patrickhuber/wrangle/pkg/env"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/global"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/urfave/cli/v2"
 )
 
-type BootstrapOptions struct {
+type BootstrapCommand struct {
 	FileSystem      filesystem.FileSystem
 	OperatingSystem operatingsystem.OS
 	Environment     env.Environment
 	Config          *config.Config
-	ApplicationName string
-	GlobalPath      string
-	Force           bool
+	Options         *BootstrapCommandOptions
+}
+
+type BootstrapCommandOptions struct {
+	ApplicationName  string
+	GlobalConfigFile string
+	Force            bool
 }
 
 func Bootstrap(ctx *cli.Context) error {
-	return BootstrapInternal(&BootstrapOptions{
-		Config: &config.Config{
-			PackagePath: ctx.String("packages"),
-			BinPath:     ctx.String("bin"),
-			RootPath:    ctx.String("root"),
-		},
-		FileSystem:      ctx.App.Metadata["fileSystem"].(filesystem.FileSystem),
-		OperatingSystem: ctx.App.Metadata["os"].(operatingsystem.OS),
-		ApplicationName: ctx.App.Name,
-		GlobalPath:      ctx.String("global"),
-		Force:           ctx.Bool("force"),
-	})
+	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
+	cmd := CreateBootstrapCommand(resolver, ctx)
+	return BootstrapInternal(cmd)
 }
 
-func BootstrapInternal(opt *BootstrapOptions) error {
+func CreateBootstrapCommand(resolver di.Resolver, ctx *cli.Context) *BootstrapCommand {
+	cmd := &BootstrapCommand{
+		FileSystem:      resolver.Resolve(global.FileSystem).(filesystem.FileSystem),
+		OperatingSystem: resolver.Resolve(global.OperatingSystem).(operatingsystem.OS),
+		Environment:     resolver.Resolve(global.Environment).(env.Environment),
+		Options: &BootstrapCommandOptions{
+			ApplicationName:  ctx.App.Name,
+			Force:            ctx.Bool("force"),
+			GlobalConfigFile: ctx.String(global.FlagConfig),
+		},
+	}
 
-	binary := opt.ApplicationName
+	return cmd
+}
 
-	// get the current working directory from the operating system
-	workingDirectory, err := opt.OperatingSystem.WorkingDirectory()
+func BootstrapInternal(opt *BootstrapCommand) error {
+	err := ValidateBootstrapOptions(opt)
 	if err != nil {
 		return err
 	}
 
-	// TODO: install the required packages for wrangle
-	// copy the currently running cli to the bin path
-	targetFilePath := crosspath.Join(opt.Config.BinPath, opt.ApplicationName)
-	sourceFilePath := crosspath.Join(workingDirectory, binary)
-
-	// writer from target file
-	writer, err := opt.FileSystem.OpenFile(targetFilePath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0644)
+	err = BootstrapInternalCreateGlobalConfig(opt)
 	if err != nil {
 		return err
 	}
-	defer writer.Close()
+	return BootstrapInternalInstallPackages(opt)
+}
 
-	// reader from source file
-	reader, err := opt.FileSystem.Open(sourceFilePath)
-	if err != nil {
-		return err
+func ValidateBootstrapOptions(opt *BootstrapCommand) error {
+	if opt == nil {
+		return fmt.Errorf("BootstrapOptions must not be nil")
 	}
-	defer reader.Close()
-
-	// copy the reader to the writer
-	_, err = io.Copy(writer, reader)
-	if err != nil {
-		return err
+	if opt.FileSystem == nil {
+		return fmt.Errorf("BootstrapOptions.FileSystem must not be nil")
 	}
-
-	// get the home directory
-	globalPath := opt.GlobalPath
-	globalProvider := config.NewFileProvider(opt.FileSystem, globalPath)
-
-	// check that the global config exists
-	ok, err := opt.FileSystem.Exists(globalPath)
-	if err != nil {
-		return err
+	if opt.OperatingSystem == nil {
+		return fmt.Errorf("BootstrapOptions.OperatingSystem must not be nil")
 	}
+	return nil
+}
+
+func BootstrapInternalCreateGlobalConfig(opt *BootstrapCommand) error {
 
 	// if the file exists or force is disabled, return
-	if ok && !opt.Force {
+	if !opt.Options.Force {
 		return nil
 	}
 
+	// create the config provider from the global path option
+	configProvider := config.NewFileProvider(opt.FileSystem, opt.Options.GlobalConfigFile)
+
 	// set the global config
-	return globalProvider.Set(opt.Config)
+	return configProvider.Set(opt.Config)
+}
+
+func BootstrapInternalInstallPackages(opt *BootstrapCommand) error {
+	packageList := []string{"wrangle", "shim"}
+	for _, p := range packageList {
+		err := InstallInternal(
+			&InstallCommand{
+				Options: &InstallOptions{
+					Package: p,
+				},
+			})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func BootstrapInternalAddBinPathToProfile(opt *BootstrapCommand) error {
+	return nil
 }
