@@ -1,5 +1,25 @@
 package operatingsystem
 
+const (
+	MockAmd64Architecture = "amd64"
+	MockArm64Architecture = "arm64"
+
+	MockWindowsPlatform         = "windows"
+	MockWindowsWorkingDirectory = "c:\\working"
+	MockWindowsHomeDirectory    = "c:\\users\\fake"
+	MockWindowsExecutable       = "c:\\ProgramData\\wrangle\\wrangle.exe"
+
+	MockLinuxPlatform         = "linux"
+	MockLinuxWorkingDirectory = "/working"
+	MockLinuxHomeDirectory    = "/home/fake"
+	MockLinuxExecutable       = "/opt/wrangle/bin/wrangle"
+
+	MockDarwinPlatform         = "darwin"
+	MockDarwinHomeDirectory    = MockLinuxHomeDirectory
+	MockDarwinWorkingDirectory = MockLinuxWorkingDirectory
+	MockDarwinExecutable       = MockLinuxExecutable
+)
+
 type mockOS struct {
 	workingDirectory string
 	platform         string
@@ -24,6 +44,36 @@ func NewMock(o *NewMockOS) OS {
 		architecture:     o.Architecture,
 		platform:         o.Platform,
 		homeDirectory:    o.HomeDirectory,
+	}
+}
+
+func NewLinuxMock() OS {
+	return &mockOS{
+		executable:       MockLinuxExecutable,
+		workingDirectory: MockLinuxWorkingDirectory,
+		platform:         MockLinuxPlatform,
+		homeDirectory:    MockLinuxHomeDirectory,
+		architecture:     MockAmd64Architecture,
+	}
+}
+
+func NewDarwinMock() OS {
+	return &mockOS{
+		executable:       MockDarwinExecutable,
+		workingDirectory: MockDarwinWorkingDirectory,
+		platform:         MockDarwinPlatform,
+		homeDirectory:    MockDarwinHomeDirectory,
+		architecture:     MockAmd64Architecture,
+	}
+}
+
+func NewWindowsMock() OS {
+	return &mockOS{
+		executable:       MockWindowsExecutable,
+		workingDirectory: MockWindowsWorkingDirectory,
+		platform:         MockWindowsPlatform,
+		homeDirectory:    MockWindowsHomeDirectory,
+		architecture:     MockAmd64Architecture,
 	}
 }
 

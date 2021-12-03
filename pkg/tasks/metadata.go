@@ -1,14 +1,12 @@
 package tasks
 
 import (
-	"fmt"
-
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 )
 
-// Context defines the context for a package
-type Context struct {
+// Metadata defines the context for a package
+type Metadata struct {
 	Name                       string
 	Version                    string
 	PackagePath                string
@@ -16,14 +14,14 @@ type Context struct {
 	PackageVersionManifestPath string
 }
 
-// NewDefaultContext creates a new default context given the package parameters
-func NewDefaultContext(cfg *config.Config, name, version string) *Context {
+// NewDefaultMetadata creates a new default context given the package parameters
+func NewDefaultMetadata(cfg *config.Config, name, version string) *Metadata {
 
 	packagePath := crosspath.Join(cfg.PackagePath, name)
 	packageVersionPath := crosspath.Join(packagePath, version)
-	packageManifestName := fmt.Sprintf("%s.%s.yml", name, version)
+	packageManifestName := "package.yml"
 	packageVersionManifestPath := crosspath.Join(packageVersionPath, packageManifestName)
-	return &Context{
+	return &Metadata{
 		Name:                       name,
 		Version:                    version,
 		PackagePath:                packagePath,

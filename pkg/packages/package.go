@@ -58,7 +58,7 @@ func toPackage(data map[string]interface{}) (*Package, error) {
 		}
 		packageTargets = append(packageTargets, packageTarget)
 	}
-	p := &Package{
+	return &Package{
 		Name: data["name"].(string),
 		Versions: []*PackageVersion{
 			{
@@ -66,6 +66,5 @@ func toPackage(data map[string]interface{}) (*Package, error) {
 				Targets: packageTargets,
 			},
 		},
-	}
-	return p, nil
+	}, nil
 }

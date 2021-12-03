@@ -10,4 +10,7 @@ const (
 	Console             = "console"
 	Config              = "config"
 	DependencyInjection = "di"
+	InstallService      = "services.Install"
+	BootstrapService    = "services.Bootstrap"
+	DefaultConfigReader = "config.DefaultReader"
 )

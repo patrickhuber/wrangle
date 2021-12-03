@@ -10,7 +10,7 @@ type serviceFactory struct {
 	services []Service
 }
 
-func NewServiceFactory(services []Service) ServiceFactory {
+func NewServiceFactory(services ...Service) ServiceFactory {
 	return &serviceFactory{
 		services: services,
 	}

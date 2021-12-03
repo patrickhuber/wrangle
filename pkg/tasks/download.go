@@ -76,7 +76,7 @@ func (p *downloadProvider) Type() string {
 	return p.name
 }
 
-func (p *downloadProvider) Execute(t *Task, ctx *Context) error {
+func (p *downloadProvider) Execute(t *Task, ctx *Metadata) error {
 	download, err := p.Encode(t)
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func (p *downloadProvider) Execute(t *Task, ctx *Context) error {
 	return p.execute(download, ctx)
 }
 
-func (p *downloadProvider) execute(download *Download, ctx *Context) error {
+func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
 	out := crosspath.Join(ctx.PackageVersionPath, download.Details.Out)
 	url := download.Details.URL

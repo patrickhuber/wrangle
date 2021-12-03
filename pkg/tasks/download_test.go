@@ -41,7 +41,7 @@ var _ = Describe("Download", func() {
 					"out": "test-local",
 				},
 			}
-			err := provider.Execute(task, tasks.NewDefaultContext(cfg, "test", "1.0.0"))
+			err := provider.Execute(task, tasks.NewDefaultMetadata(cfg, "test", "1.0.0"))
 			Expect(err).To(BeNil())
 		})
 	})
