@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/di"
 	"github.com/patrickhuber/wrangle/pkg/global"
 
@@ -18,7 +19,7 @@ func Install(ctx *cli.Context) error {
 	}
 
 	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
-	service := resolver.Resolve(global.InstallService).(services.Install)
+	service := resolver.Resolve(types.InstallService).(services.Install)
 	request := &services.InstallRequest{
 		GlobalConfigFile: ctx.String(global.FlagConfig),
 		Package:          pkg,

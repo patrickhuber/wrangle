@@ -7,7 +7,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
-func NewService(repository *git.Repository) (feed.ReadService, error) {
+func NewService(name string, repository *git.Repository) (feed.Service, error) {
 	ref, err := repository.Head()
 	if err != nil {
 		return nil, err
@@ -36,10 +36,10 @@ func NewService(repository *git.Repository) (feed.ReadService, error) {
 		tree: feedTree,
 	}
 
-	return feed.NewReadService(items, packageVersions), nil
+	return feed.NewService(name, items, packageVersions), nil
 }
 
-func NewServiceFromURL(url string) (feed.ReadService, error) {
+func NewServiceFromURL(name, url string) (feed.Service, error) {
 
 	fs := memfs.New()
 	storer := memory.NewStorage()
@@ -49,5 +49,5 @@ func NewServiceFromURL(url string) (feed.ReadService, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewService(repository)
+	return NewService(name, repository)
 }

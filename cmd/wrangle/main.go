@@ -6,10 +6,14 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/internal/commands"
+	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/di"
 	"github.com/patrickhuber/wrangle/pkg/env"
+	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/pkg/feed/git"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/global"
 	"github.com/patrickhuber/wrangle/pkg/ilog"
@@ -24,23 +28,23 @@ var version = ""
 
 func main() {
 
-	var logger ilog.Logger = ilog.Default()
-	var o operatingsystem.OS = operatingsystem.New()
-	var environment env.Environment = env.New()
-	var fs filesystem.FileSystem = filesystem.FromAferoFS(afero.NewOsFs())
-	var console = console.NewOS()
+	container := di.NewContainer()
+	container.RegisterConstructor(ilog.Default)
+	container.RegisterConstructor(operatingsystem.New)
+	container.RegisterConstructor(env.New)
+	container.RegisterConstructor(afero.NewOsFs)
+	container.RegisterConstructor(filesystem.FromAferoFS)
+	container.RegisterConstructor(console.NewOS)
+	container.RegisterDynamic(types.FeedServiceFactory, func(r di.Resolver) interface{} {
+		return feed.NewServiceFactory(git.NewProvider())
+	})
+	container.RegisterConstructor(services.NewInstall)
 
+	o := container.Resolve(types.OS).(operatingsystem.OS)
 	appName := "wrangle"
 	if strings.EqualFold(o.Platform(), operatingsystem.PlatformWindows) {
 		appName = appName + ".exe"
 	}
-
-	container := di.NewContainer()
-	container.RegisterStatic(global.Logger, logger)
-	container.RegisterStatic(global.OperatingSystem, o)
-	container.RegisterStatic(global.Environment, environment)
-	container.RegisterStatic(global.FileSystem, fs)
-	container.RegisterStatic(global.Console, console)
 
 	app := &cli.App{
 		Metadata: map[string]interface{}{

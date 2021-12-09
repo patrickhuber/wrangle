@@ -1,4 +1,4 @@
-package git_test
+package di_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestGit(t *testing.T) {
+func TestDi(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Git Feed Suite")
+	RunSpecs(t, "Di Suite")
 }

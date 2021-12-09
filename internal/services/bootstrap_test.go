@@ -39,17 +39,16 @@ var _ = Describe("Bootstrap", func() {
 			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				if strings.HasSuffix(req.URL.Path, "/test") {
 					rw.Write([]byte("hello"))
-					rw.WriteHeader(200)
 				}
 				rw.Write([]byte("not found"))
-				rw.WriteHeader(404)
+				rw.WriteHeader(http.StatusNotFound)
 			}))
 
 			logger := ilog.Default()
-			taskProvider := tasks.NewDownloadProvider(cfg, logger)
+			taskProvider := tasks.NewDownloadProvider(cfg, logger, fs)
 			runner := tasks.NewRunner(taskProvider)
 			outFile := "test-1.0.0-linux-amd64"
-			feedsvc := memory.NewService(&feed.Item{
+			provider := memory.NewProvider(&feed.Item{
 				Package: &packages.Package{
 					Name: "test",
 					Versions: []*packages.PackageVersion{
@@ -74,7 +73,7 @@ var _ = Describe("Bootstrap", func() {
 					},
 				},
 			})
-			sf := feed.NewServiceFactory(feedsvc)
+			sf := feed.NewServiceFactory(provider)
 			install := services.NewInstall(fs, sf, runner, opsys)
 			bootstrap := services.NewBootstrap(install, fs, cfg)
 			req := &services.BootstrapRequest{}

@@ -1,12 +1,14 @@
 package di
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Container interface {
-	RegisterStaticWithType(t reflect.Type, instance interface{})
-	RegisterDynamicWithType(t reflect.Type, delegate func(Resolver) interface{})
-	RegisterStatic(key string, instance interface{})
-	RegisterDynamic(key string, delegate func(Resolver) interface{})
+	RegisterInstance(t reflect.Type, instance interface{})
+	RegisterDynamic(t reflect.Type, delegate func(Resolver) interface{})
+	RegisterConstructor(constructor interface{}) error
 	Resolver
 }
 
@@ -20,34 +22,56 @@ func NewContainer() Container {
 	}
 }
 
-func (c *container) RegisterDynamicWithType(t reflect.Type, delegate func(Resolver) interface{}) {
-	c.RegisterDynamic(t.Name(), delegate)
+func (c *container) RegisterConstructor(constructor interface{}) error {
+	t := reflect.TypeOf(constructor)
+	if t.Kind() != reflect.Func {
+		return fmt.Errorf("constructor '%s' must be a method", t.Elem())
+	}
+
+	outCount := t.NumOut()
+	if outCount != 1 {
+		return fmt.Errorf("constructor must return one argument")
+	}
+
+	inCount := t.NumIn()
+	parameterFunctions := []func(Resolver) interface{}{}
+	for i := 0; i < inCount; i++ {
+		parameterType := t.In(i)
+		parameterFunc := c.data[parameterType.String()]
+		parameterFunctions = append(parameterFunctions, parameterFunc)
+	}
+
+	delegate := func(r Resolver) interface{} {
+		values := []reflect.Value{}
+		for _, f := range parameterFunctions {
+			value := f(r)
+			rv := reflect.ValueOf(value)
+			values = append(values, rv)
+		}
+		result := reflect.ValueOf(constructor).Call(values)
+		for _, r := range result {
+			return r.Interface()
+		}
+		return nil
+	}
+
+	o := t.Out(0)
+	c.data[o.String()] = delegate
+	return nil
 }
 
-func (c *container) RegisterDynamic(key string, delegate func(Resolver) interface{}) {
-	c.data[key] = delegate
+func (c *container) RegisterDynamic(t reflect.Type, delegate func(Resolver) interface{}) {
+	c.data[t.String()] = delegate
 }
 
-func (c *container) RegisterStaticWithType(t reflect.Type, instance interface{}) {
-	c.RegisterStatic(t.Name(), instance)
-}
-
-func (c *container) RegisterStatic(key string, instance interface{}) {
-	c.RegisterDynamic(key, func(r Resolver) interface{} {
+func (c *container) RegisterInstance(t reflect.Type, instance interface{}) {
+	c.RegisterDynamic(t, func(r Resolver) interface{} {
 		return instance
 	})
 }
 
-func (c *container) ResolveByType(t reflect.Type) interface{} {
-	delegate, ok := c.data[t.Name()]
-	if !ok {
-		return nil
-	}
-	return delegate(c)
-}
-
-func (c *container) Resolve(key string) interface{} {
-	delegate, ok := c.data[key]
+func (c *container) Resolve(t reflect.Type) interface{} {
+	delegate, ok := c.data[t.String()]
 	if !ok {
 		return nil
 	}

@@ -20,15 +20,21 @@ type GeneratorService interface {
 }
 
 type service struct {
+	name                     string
 	itemRepository           ItemRepository
 	packageVersionRepository PackageVersionRepository
 }
 
-func NewReadService(items ItemRepository, packageVersions PackageVersionRepository) ReadService {
+func NewService(name string, items ItemRepository, packageVersions PackageVersionRepository) Service {
 	return &service{
+		name:                     name,
 		itemRepository:           items,
 		packageVersionRepository: packageVersions,
 	}
+}
+
+func (s *service) Name() string {
+	return s.name
 }
 
 func (s *service) List(request *ListRequest) (*ListResponse, error) {
@@ -54,4 +60,12 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 	return &ListResponse{
 		Items: items,
 	}, nil
+}
+
+func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
+	return nil, nil
+}
+
+func (s *service) Generate(request *GenerateRequest) (*GenerateResponse, error) {
+	return nil, nil
 }

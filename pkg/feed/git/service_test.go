@@ -92,7 +92,7 @@ var _ = Describe("GitService", func() {
 			err = writeItemsToGitRepo(items, repository)
 			Expect(err).To(BeNil())
 
-			svc, err := gitfeed.NewService(repository)
+			svc, err := gitfeed.NewService("test", repository)
 			Expect(err).To(BeNil())
 
 			response, err := svc.List(&feed.ListRequest{})

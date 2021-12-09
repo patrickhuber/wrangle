@@ -3,24 +3,24 @@ package feed
 import "github.com/patrickhuber/wrangle/pkg/config"
 
 type ServiceFactory interface {
-	Create(f *config.Feed) Service
+	Create(f *config.Feed) (Service, error)
 }
 
 type serviceFactory struct {
-	services []Service
+	providers []Provider
 }
 
-func NewServiceFactory(services ...Service) ServiceFactory {
+func NewServiceFactory(providers ...Provider) ServiceFactory {
 	return &serviceFactory{
-		services: services,
+		providers: providers,
 	}
 }
 
-func (factory *serviceFactory) Create(f *config.Feed) Service {
-	for _, s := range factory.services {
-		if s.Name() == f.Name {
-			return s
+func (factory *serviceFactory) Create(f *config.Feed) (Service, error) {
+	for _, p := range factory.providers {
+		if p.Type() == f.Name {
+			return p.Create(f)
 		}
 	}
-	return nil
+	return nil, nil
 }

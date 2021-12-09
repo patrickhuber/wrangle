@@ -9,5 +9,5 @@ import (
 
 func TestMemory(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Memory Suite")
+	RunSpecs(t, "Memory Feed Suite")
 }

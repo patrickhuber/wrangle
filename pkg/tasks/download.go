@@ -31,10 +31,12 @@ type downloadProvider struct {
 }
 
 // NewDownloadProvider creates a new download provider
-func NewDownloadProvider(cfg *config.Config, logger ilog.Logger) Provider {
+func NewDownloadProvider(cfg *config.Config, logger ilog.Logger, fs filesystem.FileSystem) Provider {
 	return &downloadProvider{
-		cfg:  cfg,
-		name: "download",
+		cfg:    cfg,
+		name:   "download",
+		logger: logger,
+		fs:     fs,
 	}
 }
 

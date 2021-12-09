@@ -8,8 +8,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/config"
+	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
+	"github.com/spf13/afero"
 )
 
 var _ = Describe("Download", func() {
@@ -20,10 +22,10 @@ var _ = Describe("Download", func() {
 			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				if strings.HasSuffix(req.URL.Path, "/test-remote") {
 					rw.Write([]byte("hello"))
-					rw.WriteHeader(200)
+					return
 				}
 				rw.Write([]byte("not found"))
-				rw.WriteHeader(404)
+				rw.WriteHeader(http.StatusNotFound)
 			}))
 
 			defer server.Close()
@@ -33,7 +35,8 @@ var _ = Describe("Download", func() {
 				BinPath:     "/wrangle/bin",
 				RootPath:    "/wrangle",
 			}
-			provider := tasks.NewDownloadProvider(cfg, ilog.Default())
+			fs := filesystem.FromAferoFS(afero.NewMemMapFs())
+			provider := tasks.NewDownloadProvider(cfg, ilog.Default(), fs)
 			task := &tasks.Task{
 				Type: "download",
 				Parameters: map[string]interface{}{

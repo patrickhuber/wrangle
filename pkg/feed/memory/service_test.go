@@ -11,36 +11,40 @@ import (
 var _ = Describe("Service", func() {
 	Describe("List", func() {
 		It("can list all packages", func() {
-			svc := memory.NewService(&feed.Item{
+			svc, err := memory.NewService("test", &feed.Item{
 				Package: &packages.Package{
 					Name: "test",
 				},
 			})
+			Expect(err).To(BeNil())
 			response, err := svc.List(&feed.ListRequest{})
 			Expect(err).To(BeNil())
 			Expect(response).ToNot(BeNil())
 			Expect(len(response.Items)).To(Equal(1))
 		})
 		It("can return latest version", func() {
-			svc := memory.NewService(&feed.Item{
-				State: &feed.State{
-					LatestVersion: "1.1.0",
-				},
-				Package: &packages.Package{
-					Name: "test",
-					Versions: []*packages.PackageVersion{
-						{
-							Version: "1.0.0",
-						},
-						{
-							Version: "1.1.0",
-						},
-						{
-							Version: "1.0.1",
+			svc, err := memory.NewService(
+				"test",
+				&feed.Item{
+					State: &feed.State{
+						LatestVersion: "1.1.0",
+					},
+					Package: &packages.Package{
+						Name: "test",
+						Versions: []*packages.PackageVersion{
+							{
+								Version: "1.0.0",
+							},
+							{
+								Version: "1.1.0",
+							},
+							{
+								Version: "1.0.1",
+							},
 						},
 					},
-				},
-			})
+				})
+			Expect(err).To(BeNil())
 			response, err := svc.List(&feed.ListRequest{
 				Where: []*feed.ItemReadAnyOf{
 					{
@@ -87,25 +91,28 @@ var _ = Describe("Service", func() {
 			Expect(version.Version).To(Equal("1.1.0"))
 		})
 		It("can return specific version", func() {
-			svc := memory.NewService(&feed.Item{
-				State: &feed.State{
-					LatestVersion: "1.1.0",
-				},
-				Package: &packages.Package{
-					Name: "test",
-					Versions: []*packages.PackageVersion{
-						{
-							Version: "1.0.0",
-						},
-						{
-							Version: "1.1.0",
-						},
-						{
-							Version: "1.0.1",
+			svc, err := memory.NewService(
+				"test",
+				&feed.Item{
+					State: &feed.State{
+						LatestVersion: "1.1.0",
+					},
+					Package: &packages.Package{
+						Name: "test",
+						Versions: []*packages.PackageVersion{
+							{
+								Version: "1.0.0",
+							},
+							{
+								Version: "1.1.0",
+							},
+							{
+								Version: "1.0.1",
+							},
 						},
 					},
-				},
-			})
+				})
+			Expect(err).To(BeNil())
 			response, err := svc.List(&feed.ListRequest{
 				Where: []*feed.ItemReadAnyOf{
 					{
@@ -161,7 +168,9 @@ var _ = Describe("Service", func() {
 					},
 				},
 			}
-			svc := memory.NewService(items...)
+			svc, err := memory.NewService("test", items...)
+			Expect(err).To(BeNil())
+
 			response, err := svc.Update(
 				&feed.UpdateRequest{
 					Items: []*feed.ItemUpdate{
@@ -203,7 +212,8 @@ var _ = Describe("Service", func() {
 		})
 		It("can update existing version", func() {
 			items := []*feed.Item{}
-			svc := memory.NewService(items...)
+			svc, err := memory.NewService("test", items...)
+			Expect(err).To(BeNil())
 
 			request := &feed.UpdateRequest{}
 			response, err := svc.Update(request)

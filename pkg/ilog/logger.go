@@ -1,6 +1,8 @@
 package ilog
 
-import "log"
+import (
+	"log"
+)
 
 // Logger defines a logging interface
 type Logger interface {
@@ -14,5 +16,5 @@ type Logger interface {
 
 // Default returns the default platform logger
 func Default() Logger {
-	return &log.Logger{}
+	return log.Default()
 }

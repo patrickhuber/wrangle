@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/di"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
@@ -11,9 +12,11 @@ import (
 
 func Bootstrap(ctx *cli.Context) error {
 	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
-	i := resolver.Resolve(global.InstallService).(services.Install)
-	fs := resolver.Resolve(global.FileSystem).(filesystem.FileSystem)
-	defaultReader := resolver.Resolve(global.DefaultConfigReader).(config.Reader)
+
+	i := resolver.Resolve(types.InstallService).(services.Install)
+	fs := resolver.Resolve(types.FileSystem).(filesystem.FileSystem)
+	defaultReader := resolver.Resolve(types.ConfigReader).(config.Reader)
+
 	cfg, err := defaultReader.Get()
 	if err != nil {
 		return err

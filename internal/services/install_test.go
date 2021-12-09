@@ -31,7 +31,7 @@ var _ = Describe("Install", func() {
 		cfg, err := config.NewDefaultReader(opsys, environment).Get()
 		Expect(err).To(BeNil())
 
-		taskProvider := tasks.NewDownloadProvider(cfg, logger)
+		taskProvider := tasks.NewDownloadProvider(cfg, logger, fs)
 		runner := tasks.NewRunner(taskProvider)
 
 		// start the local http server
@@ -45,22 +45,24 @@ var _ = Describe("Install", func() {
 		}))
 
 		outFile := "test-1.0.0-linux-amd64"
-		feedsvc := memory.NewService(&feed.Item{
-			Package: &packages.Package{
-				Name: "test",
-				Versions: []*packages.PackageVersion{
-					{
-						Version: "1.0.0",
-						Targets: []*packages.PackageTarget{
-							{
-								Platform:     "linux",
-								Architecture: "amd64",
-								Tasks: []*packages.PackageTargetTask{
-									{
-										Name: "download",
-										Properties: map[string]string{
-											"url": server.URL + "/test",
-											"out": outFile,
+		provider := memory.NewProvider(
+			&feed.Item{
+				Package: &packages.Package{
+					Name: "test",
+					Versions: []*packages.PackageVersion{
+						{
+							Version: "1.0.0",
+							Targets: []*packages.PackageTarget{
+								{
+									Platform:     "linux",
+									Architecture: "amd64",
+									Tasks: []*packages.PackageTargetTask{
+										{
+											Name: "download",
+											Properties: map[string]string{
+												"url": server.URL + "/test",
+												"out": outFile,
+											},
 										},
 									},
 								},
@@ -68,9 +70,9 @@ var _ = Describe("Install", func() {
 						},
 					},
 				},
-			},
-		})
-		sf := feed.NewServiceFactory(feedsvc)
+			})
+		Expect(err).To(BeNil())
+		sf := feed.NewServiceFactory(provider)
 
 		defer server.Close()
 

@@ -6,11 +6,11 @@ import (
 )
 
 type memoryService struct {
-	items       map[string]*feed.Item
-	readService feed.ReadService
+	items   map[string]*feed.Item
+	service feed.Service
 }
 
-func NewService(items ...*feed.Item) feed.Service {
+func NewService(name string, items ...*feed.Item) (feed.Service, error) {
 	itemMap := map[string]*feed.Item{}
 	for _, i := range items {
 		if i == nil || i.Package == nil || i.Package.Name == "" {
@@ -24,10 +24,11 @@ func NewService(items ...*feed.Item) feed.Service {
 	packageVersionRepo := &packageVersionRepository{
 		items: itemMap,
 	}
+
 	return &memoryService{
-		items:       itemMap,
-		readService: feed.NewReadService(itemRepo, packageVersionRepo),
-	}
+		items:   itemMap,
+		service: feed.NewService(name, itemRepo, packageVersionRepo),
+	}, nil
 }
 
 func (s *memoryService) Name() string {
@@ -212,7 +213,7 @@ func (s *memoryService) updateItemPackageVersions(update *feed.VersionUpdate, pk
 }
 
 func (m *memoryService) List(request *feed.ListRequest) (*feed.ListResponse, error) {
-	return m.readService.List(request)
+	return m.service.List(request)
 }
 
 func (m *memoryService) Generate(request *feed.GenerateRequest) (*feed.GenerateResponse, error) {

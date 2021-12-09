@@ -108,7 +108,10 @@ func (i *install) Execute(r *InstallRequest) error {
 func (i *install) getItems(name string, cfg *config.Config) ([]*feed.Item, error) {
 	items := []*feed.Item{}
 	for _, f := range cfg.Feeds {
-		svc := i.serviceFactory.Create(f)
+		svc, err := i.serviceFactory.Create(f)
+		if err != nil {
+			return nil, err
+		}
 		request := i.createListItemRequest(name, "", true)
 		response, err := svc.List(request)
 		if err != nil {
