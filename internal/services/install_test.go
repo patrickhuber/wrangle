@@ -19,6 +19,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
+	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("Install", func() {
@@ -29,9 +30,20 @@ var _ = Describe("Install", func() {
 		opsys := operatingsystem.NewLinuxMock()
 		environment := env.NewMemory()
 		cfg, err := config.NewDefaultReader(opsys, environment).Get()
+		cfg.Feeds = append(cfg.Feeds, &config.Feed{
+			Name: "memory",
+			Type: "memory",
+		})
 		Expect(err).To(BeNil())
 
-		taskProvider := tasks.NewDownloadProvider(cfg, logger, fs)
+		globalConfigPath := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
+		cfgBytes, err := yaml.Marshal(cfg)
+		Expect(err).To(BeNil())
+
+		err = fs.Write(globalConfigPath, cfgBytes, 0644)
+		Expect(err).To(BeNil())
+
+		taskProvider := tasks.NewDownloadProvider(logger, fs)
 		runner := tasks.NewRunner(taskProvider)
 
 		// start the local http server
@@ -79,7 +91,7 @@ var _ = Describe("Install", func() {
 		svc := services.NewInstall(fs, sf, runner, opsys)
 		req := &services.InstallRequest{
 			Package:          "test",
-			GlobalConfigFile: crosspath.Join(opsys.Home(), ".wrangle/config.yml"),
+			GlobalConfigFile: globalConfigPath,
 		}
 
 		err = svc.Execute(req)

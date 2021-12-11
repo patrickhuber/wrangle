@@ -5,6 +5,8 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
+const ProviderType = "memory"
+
 type provider struct {
 	items []*feed.Item
 }
@@ -16,7 +18,7 @@ func NewProvider(items ...*feed.Item) feed.Provider {
 }
 
 func (p *provider) Type() string {
-	return "memory"
+	return ProviderType
 }
 
 func (p *provider) Create(f *config.Feed) (feed.Service, error) {

@@ -103,16 +103,6 @@ var _ = Describe("GitService", func() {
 	})
 })
 
-type Manifest struct {
-	Package *ManifestPackage
-}
-
-type ManifestPackage struct {
-	Name    string
-	Version string
-	Targets []*packages.PackageTarget
-}
-
 func writeItemsToGitRepo(items []feed.Item, repository *git.Repository) error {
 	worktree, err := repository.Worktree()
 	if err != nil {
@@ -127,8 +117,8 @@ func writeItemsToGitRepo(items []feed.Item, repository *git.Repository) error {
 			return err
 		}
 		for _, v := range i.Package.Versions {
-			manifest := &Manifest{
-				Package: &ManifestPackage{
+			manifest := &packages.Manifest{
+				Package: &packages.ManifestPackage{
 					Name:    i.Package.Name,
 					Version: v.Version,
 					Targets: v.Targets,

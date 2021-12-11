@@ -6,6 +6,7 @@ import (
 )
 
 type memoryService struct {
+	name    string
 	items   map[string]*feed.Item
 	service feed.Service
 }
@@ -26,13 +27,14 @@ func NewService(name string, items ...*feed.Item) (feed.Service, error) {
 	}
 
 	return &memoryService{
+		name:    name,
 		items:   itemMap,
 		service: feed.NewService(name, itemRepo, packageVersionRepo),
 	}, nil
 }
 
 func (s *memoryService) Name() string {
-	return "memory"
+	return s.name
 }
 
 func (s *memoryService) Update(request *feed.UpdateRequest) (*feed.UpdateResponse, error) {

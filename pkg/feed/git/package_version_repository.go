@@ -13,10 +13,6 @@ type packageVersionRepository struct {
 	tree *object.Tree
 }
 
-type PackageVersionManifest struct {
-	Package *packages.PackageVersion `yaml: "package", json: "package"`
-}
-
 func (r *packageVersionRepository) Get(packageName string, version string) (*packages.PackageVersion, error) {
 	packageTree, err := r.tree.Tree(packageName)
 	if err != nil {
@@ -32,7 +28,7 @@ func (r *packageVersionRepository) get(packageTree *object.Tree, version string)
 		return nil, err
 	}
 
-	manifest := &PackageVersionManifest{}
+	manifest := &packages.Manifest{}
 	err = DecodeYamlFileFromGitTree(packageVersionTree, "package.yml", manifest)
 	if err != nil {
 		return nil, err

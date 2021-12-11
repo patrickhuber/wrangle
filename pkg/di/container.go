@@ -7,18 +7,19 @@ import (
 
 type Container interface {
 	RegisterInstance(t reflect.Type, instance interface{})
-	RegisterDynamic(t reflect.Type, delegate func(Resolver) interface{})
+	RegisterDynamic(t reflect.Type, delegate func(Resolver) (interface{}, error))
 	RegisterConstructor(constructor interface{}) error
 	Resolver
 }
 
 type container struct {
-	data map[string]func(Resolver) interface{}
+	data map[string]func(Resolver) (interface{}, error)
 }
 
 func NewContainer() Container {
+
 	return &container{
-		data: map[string]func(Resolver) interface{}{},
+		data: map[string]func(Resolver) (interface{}, error){},
 	}
 }
 
@@ -34,25 +35,32 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 	}
 
 	inCount := t.NumIn()
-	parameterFunctions := []func(Resolver) interface{}{}
+	parameterFunctions := map[string]func(Resolver) (interface{}, error){}
 	for i := 0; i < inCount; i++ {
 		parameterType := t.In(i)
 		parameterFunc := c.data[parameterType.String()]
-		parameterFunctions = append(parameterFunctions, parameterFunc)
+		parameterFunctions[parameterType.String()] = parameterFunc
 	}
 
-	delegate := func(r Resolver) interface{} {
+	delegate := func(r Resolver) (interface{}, error) {
 		values := []reflect.Value{}
-		for _, f := range parameterFunctions {
-			value := f(r)
+		for k, f := range parameterFunctions {
+			if f == nil {
+				return nil, fmt.Errorf("error resolving constructor %s missing parameter of type %s", t.String(), k)
+			}
+			value, err := f(r)
+			if err != nil {
+				return nil, err
+			}
 			rv := reflect.ValueOf(value)
 			values = append(values, rv)
 		}
-		result := reflect.ValueOf(constructor).Call(values)
+		constructorValue := reflect.ValueOf(constructor)
+		result := constructorValue.Call(values)
 		for _, r := range result {
-			return r.Interface()
+			return r.Interface(), nil
 		}
-		return nil
+		return nil, nil
 	}
 
 	o := t.Out(0)
@@ -60,20 +68,20 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 	return nil
 }
 
-func (c *container) RegisterDynamic(t reflect.Type, delegate func(Resolver) interface{}) {
+func (c *container) RegisterDynamic(t reflect.Type, delegate func(Resolver) (interface{}, error)) {
 	c.data[t.String()] = delegate
 }
 
 func (c *container) RegisterInstance(t reflect.Type, instance interface{}) {
-	c.RegisterDynamic(t, func(r Resolver) interface{} {
-		return instance
+	c.RegisterDynamic(t, func(r Resolver) (interface{}, error) {
+		return instance, nil
 	})
 }
 
-func (c *container) Resolve(t reflect.Type) interface{} {
+func (c *container) Resolve(t reflect.Type) (interface{}, error) {
 	delegate, ok := c.data[t.String()]
 	if !ok {
-		return nil
+		return nil, fmt.Errorf("type %s not found", t.String())
 	}
 	return delegate(c)
 }

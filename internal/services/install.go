@@ -68,6 +68,10 @@ func (i *install) Execute(r *InstallRequest) error {
 		return err
 	}
 
+	if len(cfg.Feeds) == 0 {
+		return fmt.Errorf("the global config file '%s' contains no feeds", r.GlobalConfigFile)
+	}
+
 	items, err := i.getItems(r.Package, cfg)
 	if err != nil {
 		return err

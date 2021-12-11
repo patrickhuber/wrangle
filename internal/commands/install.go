@@ -19,7 +19,11 @@ func Install(ctx *cli.Context) error {
 	}
 
 	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
-	service := resolver.Resolve(types.InstallService).(services.Install)
+	o, err := resolver.Resolve(types.InstallService)
+	if err != nil {
+		return err
+	}
+	service := o.(services.Install)
 	request := &services.InstallRequest{
 		GlobalConfigFile: ctx.String(global.FlagConfig),
 		Package:          pkg,

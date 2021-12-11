@@ -15,6 +15,7 @@ import (
 )
 
 var InstallService = reflect.TypeOf((*services.Install)(nil)).Elem()
+var BootstrapService = reflect.TypeOf((*services.Bootstrap)(nil)).Elem()
 var FileSystem = reflect.TypeOf((*filesystem.FileSystem)(nil)).Elem()
 var ConfigReader = reflect.TypeOf((*config.Reader)(nil)).Elem()
 var Console = reflect.TypeOf((*console.Console)(nil)).Elem()
@@ -23,3 +24,4 @@ var OS = reflect.TypeOf((*operatingsystem.OS)(nil)).Elem()
 var FeedServiceFactory = reflect.TypeOf((*feed.ServiceFactory)(nil)).Elem()
 var TaskRunner = reflect.TypeOf((*tasks.Runner)(nil)).Elem()
 var Logger = reflect.TypeOf((*ilog.Logger)(nil)).Elem()
+var FeedService = reflect.TypeOf((*feed.Service)(nil)).Elem()

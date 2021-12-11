@@ -8,6 +8,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/types"
+	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/di"
@@ -19,6 +20,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/models"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
+	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
 	"github.com/urfave/cli/v2"
 )
@@ -35,12 +37,30 @@ func main() {
 	container.RegisterConstructor(afero.NewOsFs)
 	container.RegisterConstructor(filesystem.FromAferoFS)
 	container.RegisterConstructor(console.NewOS)
-	container.RegisterDynamic(types.FeedServiceFactory, func(r di.Resolver) interface{} {
-		return feed.NewServiceFactory(git.NewProvider())
+	container.RegisterConstructor(config.NewDefaultReader)
+	container.RegisterDynamic(types.TaskRunner, func(r di.Resolver) (interface{}, error) {
+		fs, err := r.Resolve(types.FileSystem)
+		if err != nil {
+			return nil, err
+		}
+		logger, err := r.Resolve(types.Logger)
+		if err != nil {
+			return nil, err
+		}
+		providers := []tasks.Provider{
+			tasks.NewDownloadProvider(logger.(ilog.Logger), fs.(filesystem.FileSystem)),
+		}
+		return tasks.NewRunner(providers...), nil
+	})
+	container.RegisterDynamic(types.FeedServiceFactory, func(r di.Resolver) (interface{}, error) {
+		return feed.NewServiceFactory(git.NewProvider()), nil
 	})
 	container.RegisterConstructor(services.NewInstall)
 
-	o := container.Resolve(types.OS).(operatingsystem.OS)
+	obj, err := container.Resolve(types.OS)
+	handle(err)
+	o := obj.(operatingsystem.OS)
+
 	appName := "wrangle"
 	if strings.EqualFold(o.Platform(), operatingsystem.PlatformWindows) {
 		appName = appName + ".exe"
@@ -137,7 +157,7 @@ func main() {
 		get,
 		install,
 	}
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	handle(err)
 }
 

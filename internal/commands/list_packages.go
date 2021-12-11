@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"reflect"
-
 	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/di"
@@ -27,11 +25,27 @@ type ListPackagesOptions struct {
 
 func ListPackages(ctx *cli.Context) error {
 	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
+
+	feedService, err := resolver.Resolve(types.FeedService)
+	if err != nil {
+		return err
+	}
+
+	logger, err := resolver.Resolve(types.Logger)
+	if err != nil {
+		return err
+	}
+
+	con, err := resolver.Resolve(types.Console)
+	if err != nil {
+		return err
+	}
+
 	return ListPackagesInternal(
 		&ListPackagesCommand{
-			FeedService: resolver.Resolve(reflect.TypeOf((*feed.Service)(nil)).Elem()).(feed.Service),
-			Logger:      resolver.Resolve(types.Logger).(ilog.Logger),
-			Console:     resolver.Resolve(types.Console).(console.Console),
+			FeedService: feedService.(feed.Service),
+			Logger:      logger.(ilog.Logger),
+			Console:     con.(console.Console),
 			Options: &ListPackagesOptions{
 				Output: ctx.String("output"),
 			},

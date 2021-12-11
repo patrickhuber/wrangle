@@ -5,6 +5,8 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
+const ProviderType = "git"
+
 type provider struct {
 }
 
@@ -13,7 +15,7 @@ func NewProvider() feed.Provider {
 }
 
 func (p *provider) Type() string {
-	return "git"
+	return ProviderType
 }
 
 func (p *provider) Create(f *config.Feed) (feed.Service, error) {

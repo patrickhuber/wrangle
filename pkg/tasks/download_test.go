@@ -36,7 +36,7 @@ var _ = Describe("Download", func() {
 				RootPath:    "/wrangle",
 			}
 			fs := filesystem.FromAferoFS(afero.NewMemMapFs())
-			provider := tasks.NewDownloadProvider(cfg, ilog.Default(), fs)
+			provider := tasks.NewDownloadProvider(ilog.Default(), fs)
 			task := &tasks.Task{
 				Type: "download",
 				Parameters: map[string]interface{}{

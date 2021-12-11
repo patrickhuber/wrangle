@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/ilog"
@@ -25,15 +24,13 @@ type DownloadDetails struct {
 
 type downloadProvider struct {
 	name   string
-	cfg    *config.Config
 	logger ilog.Logger
 	fs     filesystem.FileSystem
 }
 
 // NewDownloadProvider creates a new download provider
-func NewDownloadProvider(cfg *config.Config, logger ilog.Logger, fs filesystem.FileSystem) Provider {
+func NewDownloadProvider(logger ilog.Logger, fs filesystem.FileSystem) Provider {
 	return &downloadProvider{
-		cfg:    cfg,
 		name:   "download",
 		logger: logger,
 		fs:     fs,

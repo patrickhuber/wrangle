@@ -45,7 +45,7 @@ var _ = Describe("Bootstrap", func() {
 			}))
 
 			logger := ilog.Default()
-			taskProvider := tasks.NewDownloadProvider(cfg, logger, fs)
+			taskProvider := tasks.NewDownloadProvider(logger, fs)
 			runner := tasks.NewRunner(taskProvider)
 			outFile := "test-1.0.0-linux-amd64"
 			provider := memory.NewProvider(&feed.Item{
@@ -76,7 +76,9 @@ var _ = Describe("Bootstrap", func() {
 			sf := feed.NewServiceFactory(provider)
 			install := services.NewInstall(fs, sf, runner, opsys)
 			bootstrap := services.NewBootstrap(install, fs, cfg)
-			req := &services.BootstrapRequest{}
+			req := &services.BootstrapRequest{
+				GlobalConfigFile: globalConfigFile,
+			}
 			bootstrap.Execute(req)
 			Expect(err).To(BeNil())
 

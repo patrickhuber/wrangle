@@ -1,6 +1,8 @@
 package packages
 
-import "gopkg.in/yaml.v2"
+import (
+	"gopkg.in/yaml.v2"
+)
 
 // Package defines a software package and how it is installed
 type Package struct {
@@ -28,42 +30,21 @@ type PackageTargetTask struct {
 }
 
 func FromYaml(manifest string) (*Package, error) {
-	var data map[string]interface{}
-	err := yaml.Unmarshal([]byte(manifest), data)
+	var manifestStruct Manifest
+	err := yaml.Unmarshal([]byte(manifest), &manifestStruct)
 	if err != nil {
 		return nil, err
 	}
-	return toPackage(data)
+	return toPackage(&manifestStruct)
 }
 
-func toPackage(data map[string]interface{}) (*Package, error) {
-	packageTargets := []*PackageTarget{}
-	targets := data["targets"].([]map[string]interface{})
-	for _, t := range targets {
-		packageTargetTasks := []*PackageTargetTask{}
-		tasks := t["tasks"].([]map[string]interface{})
-		for _, tsk := range tasks {
-			for name, value := range tsk {
-				packageTargetTask := &PackageTargetTask{
-					Name:       name,
-					Properties: value.(map[string]string),
-				}
-				packageTargetTasks = append(packageTargetTasks, packageTargetTask)
-			}
-		}
-		packageTarget := &PackageTarget{
-			Platform:     t["platform"].(string),
-			Architecture: t["architecture"].(string),
-			Tasks:        packageTargetTasks,
-		}
-		packageTargets = append(packageTargets, packageTarget)
-	}
+func toPackage(manifest *Manifest) (*Package, error) {
 	return &Package{
-		Name: data["name"].(string),
+		Name: manifest.Package.Name,
 		Versions: []*PackageVersion{
 			{
-				Version: data["version"].(string),
-				Targets: packageTargets,
+				Version: manifest.Package.Version,
+				Targets: manifest.Package.Targets,
 			},
 		},
 	}, nil
