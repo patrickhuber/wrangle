@@ -41,6 +41,10 @@ func (w *aferoWrapper) Mkdir(path string, permissions os.FileMode) error {
 	return w.fs.Mkdir(path, permissions)
 }
 
+func (w *aferoWrapper) MkdirAll(path string, permissions os.FileMode) error {
+	return w.fs.MkdirAll(path, permissions)
+}
+
 func (w *aferoWrapper) Stat(name string) (os.FileInfo, error) {
 	return w.fs.Stat(name)
 }

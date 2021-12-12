@@ -1,6 +1,8 @@
 package commands_test
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
@@ -39,7 +41,10 @@ var _ = Describe("Bootstrap", func() {
 			if err != nil {
 				return nil, err
 			}
-			reader := o.(config.Reader)
+			reader, ok := o.(config.Reader)
+			if !ok {
+				return nil, fmt.Errorf("unable to cast object to config.Reader")
+			}
 			cfg, err := reader.Get()
 			if err != nil {
 				return nil, err
@@ -49,20 +54,26 @@ var _ = Describe("Bootstrap", func() {
 			if err != nil {
 				return nil, err
 			}
-			fs := o.(filesystem.FileSystem)
+			fs, ok := o.(filesystem.FileSystem)
+			if !ok {
+				return nil, fmt.Errorf("unable to cast object to filesystem.FileSystem")
+			}
 
 			o, err = r.Resolve(types.InstallService)
 			if err != nil {
 				return nil, err
 			}
-			i := o.(services.Install)
-
-			return services.NewBootstrap(i, fs, cfg), nil
+			svc, ok := o.(services.Install)
+			if !ok {
+				return nil, fmt.Errorf("unable to cast object to services.InstallService")
+			}
+			return services.NewBootstrap(svc, fs, cfg), nil
 		})
 
 		result, err := container.Resolve(types.BootstrapService)
 		Expect(err).To(BeNil())
 		Expect(result).ToNot(BeNil())
-
+		_, ok := result.(services.Bootstrap)
+		Expect(ok).To(BeTrue())
 	})
 })

@@ -40,5 +40,12 @@ func (r *defaultReader) Get() (*Config, error) {
 		RootPath:    root,
 		PackagePath: crosspath.Join(root, "packages"),
 		BinPath:     crosspath.Join(root, "bin"),
+		Feeds: []*Feed{
+			{
+				Name: "default",
+				Type: "git",
+				URI:  "https://github.com/patrickhuber/wrangle-packges",
+			},
+		},
 	}, nil
 }

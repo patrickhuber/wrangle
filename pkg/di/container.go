@@ -35,32 +35,31 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 	}
 
 	inCount := t.NumIn()
-	parameterFunctions := map[string]func(Resolver) (interface{}, error){}
+	parameterFunctions := make([]func(Resolver) (interface{}, error), inCount)
 	for i := 0; i < inCount; i++ {
 		parameterType := t.In(i)
 		parameterFunc := c.data[parameterType.String()]
-		parameterFunctions[parameterType.String()] = parameterFunc
+		parameterFunctions[i] = parameterFunc
 	}
 
 	delegate := func(r Resolver) (interface{}, error) {
-		values := []reflect.Value{}
-		for k, f := range parameterFunctions {
+		values := make([]reflect.Value, len(parameterFunctions))
+		for i, f := range parameterFunctions {
 			if f == nil {
-				return nil, fmt.Errorf("error resolving constructor %s missing parameter of type %s", t.String(), k)
+				return nil, fmt.Errorf("error resolving constructor %s missing parameter of type %s", t.String(), t.In(i).String())
 			}
 			value, err := f(r)
 			if err != nil {
 				return nil, err
 			}
-			rv := reflect.ValueOf(value)
-			values = append(values, rv)
+			values[i] = reflect.ValueOf(value)
 		}
 		constructorValue := reflect.ValueOf(constructor)
 		result := constructorValue.Call(values)
 		for _, r := range result {
 			return r.Interface(), nil
 		}
-		return nil, nil
+		return nil, fmt.Errorf("no result while executing constructor '%s'", t.String())
 	}
 
 	o := t.Out(0)

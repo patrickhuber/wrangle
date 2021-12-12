@@ -1,6 +1,10 @@
 package feed
 
-import "github.com/patrickhuber/wrangle/pkg/config"
+import (
+	"fmt"
+
+	"github.com/patrickhuber/wrangle/pkg/config"
+)
 
 type ServiceFactory interface {
 	Create(f *config.Feed) (Service, error)
@@ -18,9 +22,9 @@ func NewServiceFactory(providers ...Provider) ServiceFactory {
 
 func (factory *serviceFactory) Create(f *config.Feed) (Service, error) {
 	for _, p := range factory.providers {
-		if p.Type() == f.Name {
+		if p.Type() == f.Type {
 			return p.Create(f)
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("there is no provider registered to create feed.Service of type '%s'", f.Type)
 }

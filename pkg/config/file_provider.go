@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"gopkg.in/yaml.v2"
@@ -54,6 +55,11 @@ func (p *fileProvider) Get() (*Config, error) {
 
 func (p *fileProvider) Set(config *Config) error {
 	data, err := yaml.Marshal(config)
+	if err != nil {
+		return err
+	}
+	dir := path.Dir(p.path)
+	err = p.fs.MkdirAll(dir, 0644)
 	if err != nil {
 		return err
 	}

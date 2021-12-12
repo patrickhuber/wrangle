@@ -30,10 +30,11 @@ var _ = Describe("Install", func() {
 		opsys := operatingsystem.NewLinuxMock()
 		environment := env.NewMemory()
 		cfg, err := config.NewDefaultReader(opsys, environment).Get()
-		cfg.Feeds = append(cfg.Feeds, &config.Feed{
-			Name: "memory",
-			Type: "memory",
-		})
+		cfg.Feeds = []*config.Feed{
+			{
+				Name: "memory",
+				Type: memory.ProviderType,
+			}}
 		Expect(err).To(BeNil())
 
 		globalConfigPath := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")

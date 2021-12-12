@@ -12,6 +12,9 @@ type provider struct {
 }
 
 func NewProvider(items ...*feed.Item) feed.Provider {
+	if items == nil {
+		items = []*feed.Item{}
+	}
 	return &provider{
 		items: items,
 	}

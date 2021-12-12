@@ -13,6 +13,7 @@ type FileSystem interface {
 	Exists(path string) (bool, error)
 	IsDir(path string) (bool, error)
 	Mkdir(path string, permissions os.FileMode) error
+	MkdirAll(path string, permissions os.FileMode) error
 	Stat(name string) (os.FileInfo, error)
 	Open(name string) (File, error)
 	OpenFile(name string, flag int, perm os.FileMode) (File, error)
