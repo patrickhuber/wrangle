@@ -94,7 +94,13 @@ func (r *itemRepository) getItemTemplate(tree *object.Tree) (string, error) {
 }
 
 func (r *itemRepository) getItemPlatforms(tree *object.Tree) ([]*feed.Platform, error) {
-	platforms := []*feed.Platform{}
+	platforms := map[string][]*feed.Platform{}
 	err := DecodeYamlFileFromGitTree(tree, "platforms.yml", platforms)
-	return platforms, err
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range platforms {
+		return v, nil
+	}
+	return nil, nil
 }
