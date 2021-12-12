@@ -17,7 +17,7 @@ type Metadata struct {
 // NewDefaultMetadata creates a new default context given the package parameters
 func NewDefaultMetadata(cfg *config.Config, name, version string) *Metadata {
 
-	packagePath := crosspath.Join(cfg.PackagePath, name)
+	packagePath := crosspath.Join(cfg.Paths.Packages, name)
 	packageVersionPath := crosspath.Join(packagePath, version)
 	packageManifestName := "package.yml"
 	packageVersionManifestPath := crosspath.Join(packageVersionPath, packageManifestName)

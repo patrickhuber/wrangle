@@ -31,9 +31,11 @@ var _ = Describe("Download", func() {
 			defer server.Close()
 
 			cfg := &config.Config{
-				PackagePath: "/wrangle/packages",
-				BinPath:     "/wrangle/bin",
-				RootPath:    "/wrangle",
+				Paths: &config.Paths{
+					Packages: "/wrangle/packages",
+					Bin:     "/wrangle/bin",
+					Root:    "/wrangle",
+				},
 			}
 			fs := filesystem.FromAferoFS(afero.NewMemMapFs())
 			provider := tasks.NewDownloadProvider(ilog.Default(), fs)

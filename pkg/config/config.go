@@ -2,14 +2,18 @@ package config
 
 // Config represents a configuration document for wrangle
 type Config struct {
-	PackagePath string
-	BinPath     string
-	RootPath    string
+	Paths      *Paths              `yaml:"paths,omitempty"`
+	Feeds      []*Feed             `yaml:"feeds,omitempty"`
+	Stores     []*Store            `yaml:"stores,omitempty"`
+	Processes  []*Process          `yaml:"processes,omitempty"`
+	References []*PackageReference `yaml:"references,omitempty"`
+}
 
-	Feeds     []*Feed             `yaml:"feeds"`
-	Stores    []*Store            `yaml:"stores"`
-	Processes []*Process          `yaml:"processes"`
-	Imports   []*PackageReference `yaml:"imports"`
+// Paths contains the defualt paths for the config
+type Paths struct {
+	Packages string `yaml:"packages"`
+	Bin     string `yaml:"bin"`
+	Root    string `yaml:"root"`
 }
 
 // Feed represents a pacakge feed

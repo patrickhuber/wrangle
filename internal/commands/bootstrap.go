@@ -40,6 +40,13 @@ func Bootstrap(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	cfg.Feeds = []*config.Feed{
+		{
+			Name: "default",
+			Type: "git",
+			URI:  "git://github.com/patrickhuber/wrangle-packages.git",
+		},
+	}
 	bootstrap := services.NewBootstrap(i, fs, cfg)
 	req := &services.BootstrapRequest{
 		Force:            ctx.Bool("force"),
