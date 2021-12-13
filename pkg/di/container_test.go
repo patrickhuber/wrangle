@@ -45,6 +45,16 @@ func NewVariadic(dependencies ...DependencyInterface) AggregateInterface {
 	}
 }
 
+func NewAggregate(dependencies []DependencyInterface) AggregateInterface {
+	names := []string{}
+	for _, d := range dependencies {
+		names = append(names, d.Name())
+	}
+	return &AggregateStruct{
+		names: names,
+	}
+}
+
 func NewWithNilError() (SampleInterface, error) {
 	return &SampleStruct{
 		name: "test",
@@ -94,6 +104,22 @@ var _ = Describe("Container", func() {
 		sample, ok := instance.(SampleInterface)
 		Expect(ok).To(BeTrue())
 		Expect(sample.Name()).To(Equal(name))
+	})
+	It("can register array parameter", func() {
+		container := di.NewContainer()
+		dependencies := []*SampleStruct{
+			{name: "sample 1"},
+			{name: "sample 2"},
+		}
+		container.RegisterInstance(DependencyInterfaceType, dependencies[0])
+		container.RegisterInstance(DependencyInterfaceType, dependencies[1])
+		err := container.RegisterConstructor(NewAggregate)
+		Expect(err).To(BeNil())
+		instance, err := container.Resolve(AggregateInterfaceType)
+		Expect(err).To(BeNil())
+		Expect(instance).ToNot(BeNil())
+		_, ok := instance.(AggregateInterface)
+		Expect(ok).To(BeTrue())
 	})
 	It("can register variadic parameter", func() {
 		container := di.NewContainer()

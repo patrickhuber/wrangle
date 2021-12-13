@@ -13,13 +13,13 @@ type Container interface {
 }
 
 type container struct {
-	data map[string]func(Resolver) (interface{}, error)
+	data map[string][]func(Resolver) (interface{}, error)
 }
 
 func NewContainer() Container {
 
 	return &container{
-		data: map[string]func(Resolver) (interface{}, error){},
+		data: map[string][]func(Resolver) (interface{}, error){},
 	}
 }
 
@@ -45,18 +45,33 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 
 	delegate := func(r Resolver) (interface{}, error) {
 		inCount := t.NumIn()
-		values := make([]reflect.Value, inCount)
+		values := []reflect.Value{}
 		for i := 0; i < inCount; i++ {
 			parameterType := t.In(i)
-			parameterFunc, ok := c.data[parameterType.String()]
-			if !ok || parameterFunc == nil {
-				return nil, fmt.Errorf("error resolving constructor %s missing parameter of type %s", t.String(), parameterType.String())
+			if parameterType.Kind() == reflect.Array || parameterType.Kind() == reflect.Slice {
+				valueArray, err := r.ResolveAll(parameterType.Elem())
+				if err != nil {
+					return nil, err
+				}
+				// is the function variadic and is this the last parameter?
+				if t.IsVariadic() && i == inCount-1 {
+					for _, v := range valueArray {
+						values = append(values, reflect.ValueOf(v))
+					}
+				} else {
+					slice := reflect.MakeSlice(parameterType, 0, 0)
+					for i := 0; i < len(valueArray); i++ {
+						slice = reflect.Append(slice, reflect.ValueOf(valueArray[i]))
+					}
+					values = append(values, slice)
+				}
+			} else {
+				value, err := r.Resolve(parameterType)
+				if err != nil {
+					return nil, err
+				}
+				values = append(values, reflect.ValueOf(value))
 			}
-			value, err := parameterFunc(r)
-			if err != nil {
-				return nil, err
-			}
-			values[i] = reflect.ValueOf(value)
 		}
 		constructorValue := reflect.ValueOf(constructor)
 		results := constructorValue.Call(values)
@@ -75,13 +90,17 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 		}
 		return instance, err
 	}
-
-	c.data[returnType.String()] = delegate
+	c.RegisterDynamic(returnType, delegate)
 	return nil
 }
 
 func (c *container) RegisterDynamic(t reflect.Type, delegate func(Resolver) (interface{}, error)) {
-	c.data[t.String()] = delegate
+	delegates, ok := c.data[t.String()]
+	if !ok {
+		delegates = []func(Resolver) (interface{}, error){}
+	}
+	delegates = append(delegates, delegate)
+	c.data[t.String()] = delegates
 }
 
 func (c *container) RegisterInstance(t reflect.Type, instance interface{}) {
@@ -91,13 +110,31 @@ func (c *container) RegisterInstance(t reflect.Type, instance interface{}) {
 }
 
 func (c *container) Resolve(t reflect.Type) (interface{}, error) {
-	delegate, ok := c.data[t.String()]
+	delegates, ok := c.data[t.String()]
 	if !ok {
 		return nil, fmt.Errorf("type %s not found", t.String())
 	}
-	return delegate(c)
+	if len(delegates) == 0 {
+		return nil, fmt.Errorf("type %s not found", t.String())
+	}
+	return delegates[0](c)
 }
 
 func (c *container) ResolveAll(t reflect.Type) ([]interface{}, error) {
-	return nil, nil
+	delegates, ok := c.data[t.String()]
+	if !ok {
+		return nil, fmt.Errorf("type %s not found", t.String())
+	}
+	if len(delegates) == 0 {
+		return nil, fmt.Errorf("type %s not found", t.String())
+	}
+	results := []interface{}{}
+	for _, d := range delegates {
+		result, err := d(c)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+	return results, nil
 }
