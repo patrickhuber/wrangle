@@ -55,6 +55,10 @@ func NewWithError() (SampleInterface, error) {
 	return nil, fmt.Errorf("this is an error")
 }
 
+func TwoReturnTypes() (SampleInterface, AggregateInterface) {
+	return nil, nil
+}
+
 func (s *SampleStruct) Name() string {
 	return s.name
 }
@@ -109,12 +113,30 @@ var _ = Describe("Container", func() {
 	})
 	It("can invoke constructor that returns error", func() {
 		container := di.NewContainer()
-		err := container.RegisterConstructor(NewWithNilError)
+		err := container.RegisterConstructor(NewWithError)
 		Expect(err).To(BeNil())
+		i, err := container.Resolve(SampleInterfaceType)
+		Expect(err).ToNot(BeNil())
+		Expect(i).To(BeNil())
 	})
 	It("can invoke constructor that returns value and nil error", func() {
 		container := di.NewContainer()
-		err := container.RegisterConstructor(NewWithError)
+		err := container.RegisterConstructor(NewWithNilError)
 		Expect(err).To(BeNil())
+		i, err := container.Resolve(SampleInterfaceType)
+		Expect(err).To(BeNil())
+		Expect(i).ToNot(BeNil())
+		_, ok := i.(SampleInterface)
+		Expect(ok).To(BeTrue())
+	})
+	It("throws error when second return type is not error", func() {
+		container := di.NewContainer()
+		err := container.RegisterConstructor(TwoReturnTypes)
+		Expect(err).ToNot(BeNil())
+	})
+	It("throws error when no return type", func() {
+		container := di.NewContainer()
+		err := container.RegisterConstructor(func() {})
+		Expect(err).ToNot(BeNil())
 	})
 })

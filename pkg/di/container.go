@@ -30,8 +30,17 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 	}
 
 	outCount := t.NumOut()
-	if outCount != 1 {
-		return fmt.Errorf("constructor must return one argument")
+	if outCount == 0 {
+		return fmt.Errorf("constructor must have a return value and optional error")
+	}
+	returnType := t.Out(0)
+	if outCount == 2 {
+		errorType := t.Out(1)
+		if !errorType.Implements(reflect.TypeOf((*error)(nil)).Elem()) {
+			return fmt.Errorf("if a constructor has two parameters, the second must implement error")
+		}
+	} else if outCount != 1 {
+		return fmt.Errorf("constructor must have a return value and optional error")
 	}
 
 	delegate := func(r Resolver) (interface{}, error) {
@@ -50,15 +59,24 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 			values[i] = reflect.ValueOf(value)
 		}
 		constructorValue := reflect.ValueOf(constructor)
-		result := constructorValue.Call(values)
-		for _, r := range result {
-			return r.Interface(), nil
+		results := constructorValue.Call(values)
+		if len(results) == 0 {
+			return nil, fmt.Errorf("no result while executing constructor '%s'", t.String())
 		}
-		return nil, fmt.Errorf("no result while executing constructor '%s'", t.String())
+		var instance interface{}
+		if !results[0].IsNil() {
+			instance = results[0].Interface()
+		}
+		var err error = nil
+		if len(results) == 2 {
+			if !results[1].IsNil() {
+				err = results[1].Interface().(error)
+			}
+		}
+		return instance, err
 	}
 
-	o := t.Out(0)
-	c.data[o.String()] = delegate
+	c.data[returnType.String()] = delegate
 	return nil
 }
 
@@ -78,4 +96,8 @@ func (c *container) Resolve(t reflect.Type) (interface{}, error) {
 		return nil, fmt.Errorf("type %s not found", t.String())
 	}
 	return delegate(c)
+}
+
+func (c *container) ResolveAll(t reflect.Type) ([]interface{}, error) {
+	return nil, nil
 }
