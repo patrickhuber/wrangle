@@ -34,21 +34,16 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 		return fmt.Errorf("constructor must return one argument")
 	}
 
-	inCount := t.NumIn()
-	parameterFunctions := make([]func(Resolver) (interface{}, error), inCount)
-	for i := 0; i < inCount; i++ {
-		parameterType := t.In(i)
-		parameterFunc := c.data[parameterType.String()]
-		parameterFunctions[i] = parameterFunc
-	}
-
 	delegate := func(r Resolver) (interface{}, error) {
-		values := make([]reflect.Value, len(parameterFunctions))
-		for i, f := range parameterFunctions {
-			if f == nil {
-				return nil, fmt.Errorf("error resolving constructor %s missing parameter of type %s", t.String(), t.In(i).String())
+		inCount := t.NumIn()
+		values := make([]reflect.Value, inCount)
+		for i := 0; i < inCount; i++ {
+			parameterType := t.In(i)
+			parameterFunc, ok := c.data[parameterType.String()]
+			if !ok || parameterFunc == nil {
+				return nil, fmt.Errorf("error resolving constructor %s missing parameter of type %s", t.String(), parameterType.String())
 			}
-			value, err := f(r)
+			value, err := parameterFunc(r)
 			if err != nil {
 				return nil, err
 			}
