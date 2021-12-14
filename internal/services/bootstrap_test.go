@@ -109,11 +109,11 @@ var _ = Describe("Bootstrap", func() {
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 
-			ok, err = afero.Exists(memfs, "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-linux-amd64.yml")
+			ok, err = afero.Exists(memfs, "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-linux-amd64")
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 
-			ok, err = afero.Exists(memfs, "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-linux-amd64.yml")
+			ok, err = afero.Exists(memfs, "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-linux-amd64")
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})
