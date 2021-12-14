@@ -38,23 +38,10 @@ func main() {
 	container.RegisterConstructor(filesystem.FromAferoFS)
 	container.RegisterConstructor(console.NewOS)
 	container.RegisterConstructor(config.NewDefaultReader)
-	container.RegisterDynamic(types.TaskRunner, func(r di.Resolver) (interface{}, error) {
-		fs, err := r.Resolve(types.FileSystem)
-		if err != nil {
-			return nil, err
-		}
-		logger, err := r.Resolve(types.Logger)
-		if err != nil {
-			return nil, err
-		}
-		providers := []tasks.Provider{
-			tasks.NewDownloadProvider(logger.(ilog.Logger), fs.(filesystem.FileSystem)),
-		}
-		return tasks.NewRunner(providers...), nil
-	})
-	container.RegisterDynamic(types.FeedServiceFactory, func(r di.Resolver) (interface{}, error) {
-		return feed.NewServiceFactory(git.NewProvider()), nil
-	})
+	container.RegisterConstructor(tasks.NewDownloadProvider)
+	container.RegisterConstructor(tasks.NewRunner)
+	container.RegisterConstructor(git.NewProvider)
+	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(services.NewInstall)
 
 	obj, err := container.Resolve(types.OS)

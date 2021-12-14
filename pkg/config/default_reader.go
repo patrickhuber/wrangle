@@ -11,12 +11,21 @@ import (
 type defaultReader struct {
 	os          operatingsystem.OS
 	environment env.Environment
+	test        bool
 }
 
+func NewDefaultReaderWithTestMode(os operatingsystem.OS, environment env.Environment) Reader {
+	return &defaultReader{
+		os:          os,
+		environment: environment,
+		test:        true,
+	}
+}
 func NewDefaultReader(os operatingsystem.OS, environment env.Environment) Reader {
 	return &defaultReader{
 		os:          os,
 		environment: environment,
+		test:        false,
 	}
 }
 
@@ -36,11 +45,28 @@ func (r *defaultReader) Get() (*Config, error) {
 		return nil, fmt.Errorf("%s is unsupported", platform)
 	}
 
-	return &Config{
+	cfg := &Config{
 		Paths: &Paths{
-			Root:    root,
+			Root:     root,
 			Packages: crosspath.Join(root, "packages"),
-			Bin:     crosspath.Join(root, "bin"),
+			Bin:      crosspath.Join(root, "bin"),
 		},
-	}, nil
+	}
+	if r.test {
+		cfg.Feeds = []*Feed{
+			{
+				Name: "default",
+				Type: "memory",
+			},
+		}
+	} else {
+		cfg.Feeds = []*Feed{
+			{
+				Name: "default",
+				Type: "git",
+				URI:  "git://github.com/patrickhuber/wrangle-packages.git",
+			},
+		}
+	}
+	return cfg, nil
 }

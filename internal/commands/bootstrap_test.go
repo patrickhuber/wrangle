@@ -34,7 +34,7 @@ var _ = Describe("Bootstrap", func() {
 		container.RegisterConstructor(operatingsystem.NewLinuxMock)
 		container.RegisterConstructor(env.NewMemory)
 		container.RegisterConstructor(services.NewInstall)
-		container.RegisterConstructor(config.NewDefaultReader)
+		container.RegisterConstructor(config.NewDefaultReaderWithTestMode)
 
 		container.RegisterDynamic(types.BootstrapService, func(r di.Resolver) (interface{}, error) {
 			o, err := r.Resolve(types.ConfigReader)
@@ -44,10 +44,6 @@ var _ = Describe("Bootstrap", func() {
 			reader, ok := o.(config.Reader)
 			if !ok {
 				return nil, fmt.Errorf("unable to cast object to config.Reader")
-			}
-			cfg, err := reader.Get()
-			if err != nil {
-				return nil, err
 			}
 
 			o, err = r.Resolve(types.FileSystem)
@@ -67,7 +63,7 @@ var _ = Describe("Bootstrap", func() {
 			if !ok {
 				return nil, fmt.Errorf("unable to cast object to services.InstallService")
 			}
-			return services.NewBootstrap(svc, fs, cfg), nil
+			return services.NewBootstrap(svc, fs, reader), nil
 		})
 
 		result, err := container.Resolve(types.BootstrapService)

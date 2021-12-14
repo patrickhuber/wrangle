@@ -29,7 +29,7 @@ var _ = Describe("Install", func() {
 
 		opsys := operatingsystem.NewLinuxMock()
 		environment := env.NewMemory()
-		cfg, err := config.NewDefaultReader(opsys, environment).Get()
+		cfg, err := config.NewDefaultReaderWithTestMode(opsys, environment).Get()
 		cfg.Feeds = []*config.Feed{
 			{
 				Name: "memory",

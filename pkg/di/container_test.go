@@ -118,8 +118,10 @@ var _ = Describe("Container", func() {
 		instance, err := container.Resolve(AggregateInterfaceType)
 		Expect(err).To(BeNil())
 		Expect(instance).ToNot(BeNil())
-		_, ok := instance.(AggregateInterface)
+		a, ok := instance.(AggregateInterface)
 		Expect(ok).To(BeTrue())
+		Expect(a).ToNot(BeNil())
+		Expect(len(a.Names())).To(Equal(2))
 	})
 	It("can register variadic parameter", func() {
 		container := di.NewContainer()

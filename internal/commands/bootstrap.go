@@ -36,18 +36,7 @@ func Bootstrap(ctx *cli.Context) error {
 	}
 	defaultReader := o.(config.Reader)
 
-	cfg, err := defaultReader.Get()
-	if err != nil {
-		return err
-	}
-	cfg.Feeds = []*config.Feed{
-		{
-			Name: "default",
-			Type: "git",
-			URI:  "git://github.com/patrickhuber/wrangle-packages.git",
-		},
-	}
-	bootstrap := services.NewBootstrap(i, fs, cfg)
+	bootstrap := services.NewBootstrap(i, fs, defaultReader)
 	req := &services.BootstrapRequest{
 		Force:            ctx.Bool("force"),
 		GlobalConfigFile: ctx.String(global.FlagConfig),

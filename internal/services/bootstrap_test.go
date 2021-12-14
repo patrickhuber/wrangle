@@ -25,15 +25,13 @@ var _ = Describe("Bootstrap", func() {
 	Context("when linux", func() {
 		It("can run", func() {
 			opsys := operatingsystem.NewLinuxMock()
+			e := env.NewMemory()
 			memfs := afero.NewMemMapFs()
 			fs := filesystem.FromAferoFS(memfs)
+			reader := config.NewDefaultReaderWithTestMode(opsys, e)
 			globalFolder := crosspath.Join(opsys.Home(), ".wrangle")
 			globalConfigFile := crosspath.Join(globalFolder, "config.yml")
 			afero.WriteFile(memfs, "/test/wrangle", []byte("this is not a binary, it is but a tribute"), 0644)
-
-			environment := env.NewMemory()
-			cfg, err := config.NewDefaultReader(opsys, environment).Get()
-			Expect(err).To(BeNil())
 
 			// start the local http server
 			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -75,11 +73,11 @@ var _ = Describe("Bootstrap", func() {
 			})
 			sf := feed.NewServiceFactory(provider)
 			install := services.NewInstall(fs, sf, runner, opsys)
-			bootstrap := services.NewBootstrap(install, fs, cfg)
+			bootstrap := services.NewBootstrap(install, fs, reader)
 			req := &services.BootstrapRequest{
 				GlobalConfigFile: globalConfigFile,
 			}
-			bootstrap.Execute(req)
+			err := bootstrap.Execute(req)
 			Expect(err).To(BeNil())
 
 			ok, err := afero.Exists(memfs, globalConfigFile)

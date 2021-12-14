@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path"
 
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
@@ -29,7 +30,7 @@ func (p *fileProvider) Get() (*Config, error) {
 		return nil, err
 	}
 	if !ok {
-		return nil, fmt.Errorf("file %s does not exist. run `wrangle bootstrap` to generate the configuration file", p.path)
+		return nil, os.ErrNotExist
 	}
 
 	// make sure the file is a file and not a directory

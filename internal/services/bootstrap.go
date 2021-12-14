@@ -8,7 +8,7 @@ import (
 type bootstrap struct {
 	install Install
 	fs      filesystem.FileSystem
-	cfg     *config.Config
+	reader  config.Reader
 }
 
 type BootstrapRequest struct {
@@ -21,11 +21,11 @@ type Bootstrap interface {
 	Execute(r *BootstrapRequest) error
 }
 
-func NewBootstrap(i Install, fs filesystem.FileSystem, cfg *config.Config) Bootstrap {
+func NewBootstrap(i Install, fs filesystem.FileSystem, defaultReader config.Reader) Bootstrap {
 	return &bootstrap{
 		install: i,
 		fs:      fs,
-		cfg:     cfg,
+		reader:  defaultReader,
 	}
 }
 
@@ -48,9 +48,14 @@ func (b *bootstrap) validate() error {
 }
 
 func (b *bootstrap) createGlobalConfig(req *BootstrapRequest) error {
+
+	cfg, err := b.reader.Get()
+	if err != nil {
+		return err
+	}
 	// TODO: req.Force?
 	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
-	return configProvider.Set(b.cfg)
+	return configProvider.Set(cfg)
 }
 
 func (b *bootstrap) installPackages(req *BootstrapRequest) error {
