@@ -45,23 +45,24 @@ var _ = Describe("Bootstrap", func() {
 			logger := ilog.Default()
 			taskProvider := tasks.NewDownloadProvider(logger, fs)
 			runner := tasks.NewRunner(taskProvider)
-			outFile := "test-1.0.0-linux-amd64"
-			provider := memory.NewProvider(&feed.Item{
-				Package: &packages.Package{
-					Name: "test",
-					Versions: []*packages.PackageVersion{
-						{
-							Version: "1.0.0",
-							Targets: []*packages.PackageTarget{
-								{
-									Platform:     "linux",
-									Architecture: "amd64",
-									Tasks: []*packages.PackageTargetTask{
-										{
-											Name: "download",
-											Properties: map[string]string{
-												"url": server.URL + "/test",
-												"out": outFile,
+			provider := memory.NewProvider(
+				&feed.Item{
+					Package: &packages.Package{
+						Name: "wrangle",
+						Versions: []*packages.PackageVersion{
+							{
+								Version: "1.0.0",
+								Targets: []*packages.PackageTarget{
+									{
+										Platform:     "linux",
+										Architecture: "amd64",
+										Tasks: []*packages.PackageTargetTask{
+											{
+												Name: "download",
+												Properties: map[string]string{
+													"url": server.URL + "/test",
+													"out": "wrangle-1.0.0-linux-amd64",
+												},
 											},
 										},
 									},
@@ -70,7 +71,31 @@ var _ = Describe("Bootstrap", func() {
 						},
 					},
 				},
-			})
+				&feed.Item{
+					Package: &packages.Package{
+						Name: "shim",
+						Versions: []*packages.PackageVersion{
+							{
+								Version: "1.0.0",
+								Targets: []*packages.PackageTarget{
+									{
+										Platform:     "linux",
+										Architecture: "amd64",
+										Tasks: []*packages.PackageTargetTask{
+											{
+												Name: "download",
+												Properties: map[string]string{
+													"url": server.URL + "/test",
+													"out": "shim-1.0.0-linux-amd64",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				})
 			sf := feed.NewServiceFactory(provider)
 			install := services.NewInstall(fs, sf, runner, opsys)
 			bootstrap := services.NewBootstrap(install, fs, reader)
@@ -81,6 +106,14 @@ var _ = Describe("Bootstrap", func() {
 			Expect(err).To(BeNil())
 
 			ok, err := afero.Exists(memfs, globalConfigFile)
+			Expect(err).To(BeNil())
+			Expect(ok).To(BeTrue())
+
+			ok, err = afero.Exists(memfs, "/opt/wrangle/packages/wrangle/1.0.0/")
+			Expect(err).To(BeNil())
+			Expect(ok).To(BeTrue())
+
+			ok, err = afero.Exists(memfs, "")
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})
