@@ -33,6 +33,7 @@ func New() Setup {
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(services.NewInstall)
+	container.RegisterConstructor(services.NewBootstrap)
 	return &runtime{
 		container: container,
 	}
