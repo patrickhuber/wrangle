@@ -5,10 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
-	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 )
 
 var _ = Describe("Bootstrap", func() {
@@ -21,13 +18,11 @@ var _ = Describe("Bootstrap", func() {
 		defer s.Close()
 		container := s.Container()
 
-		obj, err := container.Resolve(types.BootstrapService)
+		bootstrap, err := ResolveBootstrapService(container)
 		Expect(err).To(BeNil())
-		bootstrap := obj.(services.Bootstrap)
 
-		obj, err = container.Resolve(types.OS)
+		opsys, err := ResolveOperatingSystem(container)
 		Expect(err).To(BeNil())
-		opsys := obj.(operatingsystem.OS)
 
 		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
 		req := &services.BootstrapRequest{
@@ -36,9 +31,8 @@ var _ = Describe("Bootstrap", func() {
 		err = bootstrap.Execute(req)
 		Expect(err).To(BeNil())
 
-		obj, err = container.Resolve(types.FileSystem)
+		fs, err := ResolveFileSystem(container)
 		Expect(err).To(BeNil())
-		fs := obj.(filesystem.FileSystem)
 
 		ok, err := fs.Exists(globalConfigFile)
 		Expect(err).To(BeNil())

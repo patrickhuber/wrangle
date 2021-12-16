@@ -54,7 +54,19 @@ func ResolveInstallService(container di.Container) (services.Install, error) {
 	}
 	reader, ok := obj.(services.Install)
 	if !ok {
-		return nil, fmt.Errorf("Unable to cast config reader")
+		return nil, fmt.Errorf("Unable to cast install service")
 	}
 	return reader, nil
+}
+
+func ResolveBootstrapService(container di.Container) (services.Bootstrap, error) {
+	obj, err := container.Resolve(types.BootstrapService)
+	if err != nil {
+		return nil, err
+	}
+	bootstrap, ok := obj.(services.Bootstrap)
+	if !ok {
+		return nil, fmt.Errorf("Unable to cast bootstrap service")
+	}
+	return bootstrap, nil
 }
