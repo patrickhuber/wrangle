@@ -5,9 +5,7 @@ import (
 
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/types"
-	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/di"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/global"
 	"github.com/urfave/cli/v2"
 )
@@ -18,25 +16,11 @@ func Bootstrap(ctx *cli.Context) error {
 	}
 	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
 
-	o, err := resolver.Resolve(types.InstallService)
+	obj, err := resolver.Resolve(types.BootstrapService)
 	if err != nil {
 		return err
 	}
-	i := o.(services.Install)
-
-	o, err = resolver.Resolve(types.FileSystem)
-	if err != nil {
-		return err
-	}
-	fs := o.(filesystem.FileSystem)
-
-	o, err = resolver.Resolve(types.ConfigReader)
-	if err != nil {
-		return err
-	}
-	defaultReader := o.(config.Reader)
-
-	bootstrap := services.NewBootstrap(i, fs, defaultReader)
+	bootstrap := obj.(services.Bootstrap)
 	req := &services.BootstrapRequest{
 		Force:            ctx.Bool("force"),
 		GlobalConfigFile: ctx.String(global.FlagConfig),
