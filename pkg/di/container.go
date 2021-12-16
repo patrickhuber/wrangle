@@ -5,25 +5,46 @@ import (
 	"reflect"
 )
 
+type Lifetime int
+
+const (
+	LifetimeStatic     Lifetime = 0
+	LifetimePerRequest Lifetime = 1
+)
+
 type Container interface {
-	RegisterInstance(t reflect.Type, instance interface{})
-	RegisterDynamic(t reflect.Type, delegate func(Resolver) (interface{}, error))
-	RegisterConstructor(constructor interface{}) error
+	RegisterInstance(t reflect.Type, instance interface{}, options ...RegistrationOption)
+	RegisterDynamic(t reflect.Type, delegate FuncResolver, options ...RegistrationOption)
+	RegisterConstructor(constructor interface{}, options ...RegistrationOption) error
 	Resolver
 }
 
+type FuncResolver func(Resolver) (interface{}, error)
+
 type container struct {
-	data map[string][]func(Resolver) (interface{}, error)
+	data  map[string][]FuncResolver
+	cache map[string][]interface{}
+}
+
+type RegistrationOption func(*container, reflect.Type)
+
+func WithLifetime(lifetime Lifetime) RegistrationOption {
+	return func(c *container, t reflect.Type) {
+		if lifetime == LifetimeStatic {
+			c.cache[t.String()] = nil
+		}
+	}
 }
 
 func NewContainer() Container {
 
 	return &container{
-		data: map[string][]func(Resolver) (interface{}, error){},
+		data:  map[string][]FuncResolver{},
+		cache: map[string][]interface{}{},
 	}
 }
 
-func (c *container) RegisterConstructor(constructor interface{}) error {
+func (c *container) RegisterConstructor(constructor interface{}, options ...RegistrationOption) error {
 	t := reflect.TypeOf(constructor)
 	if t.Kind() != reflect.Func {
 		return fmt.Errorf("constructor '%s' must be a method", t.Elem())
@@ -90,37 +111,43 @@ func (c *container) RegisterConstructor(constructor interface{}) error {
 		}
 		return instance, err
 	}
-	c.RegisterDynamic(returnType, delegate)
+	c.RegisterDynamic(returnType, delegate, options...)
 	return nil
 }
 
-func (c *container) RegisterDynamic(t reflect.Type, delegate func(Resolver) (interface{}, error)) {
+func (c *container) RegisterDynamic(t reflect.Type, delegate FuncResolver, options ...RegistrationOption) {
 	delegates, ok := c.data[t.String()]
 	if !ok {
-		delegates = []func(Resolver) (interface{}, error){}
+		delegates = []FuncResolver{}
 	}
 	delegates = append(delegates, delegate)
 	c.data[t.String()] = delegates
+	for _, option := range options {
+		option(c, t)
+	}
 }
 
-func (c *container) RegisterInstance(t reflect.Type, instance interface{}) {
+func (c *container) RegisterInstance(t reflect.Type, instance interface{}, options ...RegistrationOption) {
 	c.RegisterDynamic(t, func(r Resolver) (interface{}, error) {
 		return instance, nil
-	})
+	}, options...)
 }
 
 func (c *container) Resolve(t reflect.Type) (interface{}, error) {
-	delegates, ok := c.data[t.String()]
-	if !ok {
-		return nil, fmt.Errorf("type %s not found", t.String())
+	results, err := c.ResolveAll(t)
+	if err != nil {
+		return nil, err
 	}
-	if len(delegates) == 0 {
-		return nil, fmt.Errorf("type %s not found", t.String())
-	}
-	return delegates[0](c)
+	return results[0], nil
 }
 
 func (c *container) ResolveAll(t reflect.Type) ([]interface{}, error) {
+	cached, shouldCache := c.cache[t.String()]
+	isCached := cached != nil
+	if shouldCache && isCached {
+		return cached, nil
+	}
+
 	delegates, ok := c.data[t.String()]
 	if !ok {
 		return nil, fmt.Errorf("type %s not found", t.String())
@@ -135,6 +162,9 @@ func (c *container) ResolveAll(t reflect.Type) ([]interface{}, error) {
 			return nil, err
 		}
 		results = append(results, result)
+	}
+	if shouldCache && !isCached {
+		c.cache[t.String()] = results
 	}
 	return results, nil
 }

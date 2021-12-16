@@ -1,40 +1,36 @@
 package services_test
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"strings"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/pkg/config"
+	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/env"
-	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/feed/memory"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
-	"github.com/patrickhuber/wrangle/pkg/packages"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
-	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("Install", func() {
-	It("installs package", func() {
-		fs := filesystem.FromAferoFS(afero.NewMemMapFs())
-		logger := ilog.Default()
+	var (
+		testFileLocation string
+		s                setup.Setup
+	)
+	AfterEach(func() {
+		defer s.Close()
+		container := s.Container()
 
-		opsys := operatingsystem.NewLinuxMock()
-		environment := env.NewMemory()
-		cfg, err := config.NewDefaultReaderWithTestMode(opsys, environment).Get()
-		cfg.Feeds = []*config.Feed{
-			{
-				Name: "memory",
-				Type: memory.ProviderType,
-			}}
+		fs, err := ResolveFileSystem(container)
+		Expect(err).To(BeNil())
+
+		install, err := ResolveInstallService(container)
+		Expect(err).To(BeNil())
+
+		opsys, err := ResolveOperatingSystem(container)
+		Expect(err).To(BeNil())
+
+		reader, err := ResolveConfigReader(container)
+		Expect(err).To(BeNil())
+
+		cfg, err := reader.Get()
 		Expect(err).To(BeNil())
 
 		globalConfigPath := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
@@ -44,65 +40,34 @@ var _ = Describe("Install", func() {
 		err = fs.Write(globalConfigPath, cfgBytes, 0644)
 		Expect(err).To(BeNil())
 
-		taskProvider := tasks.NewDownloadProvider(logger, fs)
-		runner := tasks.NewRunner(taskProvider)
-
-		// start the local http server
-		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			if strings.HasSuffix(req.URL.Path, "/test") {
-				rw.Write([]byte("hello"))
-				rw.WriteHeader(200)
-			}
-			rw.Write([]byte("not found"))
-			rw.WriteHeader(404)
-		}))
-
-		outFile := "test-1.0.0-linux-amd64"
-		provider := memory.NewProvider(
-			&feed.Item{
-				State: &feed.State{
-					LatestVersion: "1.0.0",
-				},
-				Package: &packages.Package{
-					Name: "test",
-					Versions: []*packages.PackageVersion{
-						{
-							Version: "1.0.0",
-							Targets: []*packages.PackageTarget{
-								{
-									Platform:     "linux",
-									Architecture: "amd64",
-									Tasks: []*packages.PackageTargetTask{
-										{
-											Name: "download",
-											Properties: map[string]string{
-												"url": server.URL + "/test",
-												"out": outFile,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			})
-		Expect(err).To(BeNil())
-		sf := feed.NewServiceFactory(provider)
-
-		defer server.Close()
-
-		svc := services.NewInstall(fs, sf, runner, opsys)
 		req := &services.InstallRequest{
 			Package:          "test",
 			GlobalConfigFile: globalConfigPath,
 		}
 
-		err = svc.Execute(req)
+		err = install.Execute(req)
 		Expect(err).To(BeNil())
 
-		ok, err := fs.Exists(crosspath.Join(cfg.Paths.Packages, "test", "1.0.0", outFile))
+		ok, err := fs.Exists(testFileLocation)
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
+	})
+	Context("linux", func() {
+		It("can install", func() {
+			s = setup.NewLinuxTest()
+			testFileLocation = "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
+		})
+	})
+	Context("darwin", func() {
+		It("can install", func() {
+			s = setup.NewDarwinTest()
+			testFileLocation = "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
+		})
+	})
+	Context("windows", func() {
+		It("can install", func() {
+			s = setup.NewWindowsTest()
+			testFileLocation = "C:/ProgramData/wrangle/packages/test/1.0.0/test-1.0.0-windows-amd64.exe"
+		})
 	})
 })

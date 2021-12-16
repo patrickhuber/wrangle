@@ -6,22 +6,12 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/internal/commands"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/internal/types"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/di"
-	"github.com/patrickhuber/wrangle/pkg/env"
-	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/feed/git"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/global"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/models"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
-	"github.com/spf13/afero"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,21 +19,8 @@ import (
 var version = ""
 
 func main() {
-
-	container := di.NewContainer()
-	container.RegisterConstructor(ilog.Default)
-	container.RegisterConstructor(operatingsystem.New)
-	container.RegisterConstructor(env.New)
-	container.RegisterConstructor(afero.NewOsFs)
-	container.RegisterConstructor(filesystem.FromAferoFS)
-	container.RegisterConstructor(console.NewOS)
-	container.RegisterConstructor(config.NewDefaultReader)
-	container.RegisterConstructor(tasks.NewDownloadProvider)
-	container.RegisterConstructor(tasks.NewRunner)
-	container.RegisterConstructor(git.NewProvider)
-	container.RegisterConstructor(feed.NewServiceFactory)
-	container.RegisterConstructor(services.NewInstall)
-
+	s := setup.New()
+	container := s.Container()
 	obj, err := container.Resolve(types.OS)
 	handle(err)
 	o := obj.(operatingsystem.OS)

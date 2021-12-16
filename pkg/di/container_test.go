@@ -13,12 +13,26 @@ type SampleStruct struct {
 	name string
 }
 
+func (s *SampleStruct) Name() string {
+	return s.name
+}
+
 type AggregateStruct struct {
 	names []string
 }
 
+func (a *AggregateStruct) Names() []string {
+	return a.names
+}
+
 type SampleInterface interface {
 	Name() string
+}
+
+func NewSample(name string) SampleInterface {
+	return &SampleStruct{
+		name: name,
+	}
 }
 
 type DependencyInterface interface {
@@ -27,12 +41,6 @@ type DependencyInterface interface {
 
 type AggregateInterface interface {
 	Names() []string
-}
-
-func NewSample(name string) SampleInterface {
-	return &SampleStruct{
-		name: name,
-	}
 }
 
 func NewVariadic(dependencies ...DependencyInterface) AggregateInterface {
@@ -69,18 +77,38 @@ func TwoReturnTypes() (SampleInterface, AggregateInterface) {
 	return nil, nil
 }
 
-func (s *SampleStruct) Name() string {
-	return s.name
+type Storage interface {
+	Get(id int) string
+	Set(id int, value string)
 }
 
-func (a *AggregateStruct) Names() []string {
-	return a.names
+type storage struct {
+	data map[int]string
+}
+
+func NewStorage() Storage {
+	return &storage{
+		data: map[int]string{},
+	}
+}
+
+func (s *storage) Get(id int) string {
+	value, ok := s.data[id]
+	if !ok {
+		return ""
+	}
+	return value
+}
+
+func (s *storage) Set(id int, value string) {
+	s.data[id] = value
 }
 
 var StringType = reflect.TypeOf((*string)(nil)).Elem()
 var SampleInterfaceType = reflect.TypeOf((*SampleInterface)(nil)).Elem()
 var DependencyInterfaceType = reflect.TypeOf((*DependencyInterface)(nil)).Elem()
 var AggregateInterfaceType = reflect.TypeOf((*AggregateInterface)(nil)).Elem()
+var StorageType = reflect.TypeOf((*Storage)(nil)).Elem()
 
 var _ = Describe("Container", func() {
 	It("can resolve type", func() {
@@ -166,5 +194,21 @@ var _ = Describe("Container", func() {
 		container := di.NewContainer()
 		err := container.RegisterConstructor(func() {})
 		Expect(err).ToNot(BeNil())
+	})
+	It("can register static lifetime", func() {
+		container := di.NewContainer()
+		err := container.RegisterConstructor(NewStorage, di.WithLifetime(di.LifetimeStatic))
+		Expect(err).To(BeNil())
+		obj, err := container.Resolve(StorageType)
+		Expect(err).To(BeNil())
+		storage, ok := obj.(Storage)
+		Expect(ok).To(BeTrue())
+		storage.Set(1, "test")
+		obj, err = container.Resolve(StorageType)
+		Expect(err).To(BeNil())
+		storage, ok = obj.(Storage)
+		Expect(ok).To(BeTrue())
+		value := storage.Get(1)
+		Expect(value).To(Equal("test"))
 	})
 })
