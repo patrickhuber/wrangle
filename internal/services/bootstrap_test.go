@@ -47,6 +47,9 @@ var _ = Describe("Bootstrap", func() {
 			runner := tasks.NewRunner(taskProvider)
 			provider := memory.NewProvider(
 				&feed.Item{
+					State: &feed.State{
+						LatestVersion: "1.0.0",
+					},
 					Package: &packages.Package{
 						Name: "wrangle",
 						Versions: []*packages.PackageVersion{
@@ -72,6 +75,9 @@ var _ = Describe("Bootstrap", func() {
 					},
 				},
 				&feed.Item{
+					State: &feed.State{
+						LatestVersion: "1.0.0",
+					},
 					Package: &packages.Package{
 						Name: "shim",
 						Versions: []*packages.PackageVersion{

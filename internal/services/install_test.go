@@ -60,6 +60,9 @@ var _ = Describe("Install", func() {
 		outFile := "test-1.0.0-linux-amd64"
 		provider := memory.NewProvider(
 			&feed.Item{
+				State: &feed.State{
+					LatestVersion: "1.0.0",
+				},
 				Package: &packages.Package{
 					Name: "test",
 					Versions: []*packages.PackageVersion{
@@ -97,5 +100,9 @@ var _ = Describe("Install", func() {
 
 		err = svc.Execute(req)
 		Expect(err).To(BeNil())
+
+		ok, err := fs.Exists(crosspath.Join(cfg.Paths.Packages, "test", "1.0.0", outFile))
+		Expect(err).To(BeNil())
+		Expect(ok).To(BeTrue())
 	})
 })

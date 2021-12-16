@@ -81,9 +81,11 @@ func (i *install) Execute(r *InstallRequest) error {
 		return fmt.Errorf("package %s not found", r.Package)
 	}
 
+	oneVersionMatched := false
 	for _, item := range items {
 		for _, v := range item.Package.Versions {
 
+			oneVersionMatched = true
 			// create a metadata object for the task runs so the task knows to which package it belongs
 			meta := tasks.NewDefaultMetadata(cfg, r.Package, v.Version)
 
@@ -105,6 +107,9 @@ func (i *install) Execute(r *InstallRequest) error {
 				}
 			}
 		}
+	}
+	if !oneVersionMatched {
+		return fmt.Errorf("no packges were installed because no versions were matched to the criteria")
 	}
 	return nil
 }
