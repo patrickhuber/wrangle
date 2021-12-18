@@ -1,9 +1,7 @@
 package tasks
 
-import "fmt"
-
 type runner struct {
-	providers map[string]Provider
+	factory Factory
 }
 
 // Runner defines a task runner
@@ -12,20 +10,16 @@ type Runner interface {
 }
 
 // NewRunner creates a new task runner
-func NewRunner(providers ...Provider) Runner {
-	providerMap := map[string]Provider{}
-	for _, p := range providers {
-		providerMap[p.Type()] = p
-	}
+func NewRunner(factory Factory) Runner {
 	return &runner{
-		providers: providerMap,
+		factory: factory,
 	}
 }
 
 func (r *runner) Run(tsk *Task, ctx *Metadata) error {
-	p, ok := r.providers[tsk.Type]
-	if !ok {
-		return fmt.Errorf("unable to find task provider for %s", tsk.Type)
+	provider, err := r.factory.Create(tsk.Type)
+	if err != nil {
+		return err
 	}
-	return p.Execute(tsk, ctx)
+	return provider.Execute(tsk, ctx)
 }

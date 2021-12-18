@@ -2,6 +2,7 @@ package setup
 
 import (
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/di"
@@ -28,7 +29,10 @@ func New() Setup {
 	container.RegisterConstructor(filesystem.FromAferoFS)
 	container.RegisterConstructor(console.NewOS)
 	container.RegisterConstructor(config.NewDefaultReader)
+	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(tasks.NewDownloadProvider)
+	container.RegisterConstructor(tasks.NewExtractProvider)
+	container.RegisterConstructor(tasks.NewFactory)
 	container.RegisterConstructor(tasks.NewRunner)
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
