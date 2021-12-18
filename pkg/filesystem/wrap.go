@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/afero"
 )
 
+func NewMemory() FileSystem {
+	return FromAferoFS(afero.NewMemMapFs())
+}
+
 func FromAferoFS(fs afero.Fs) FileSystem {
 	return &aferoWrapper{
 		fs: fs,
