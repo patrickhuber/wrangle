@@ -6,6 +6,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
+// https://github.com/mholt/archiver/blob/master/targz.go
 type tgz struct {
 	fs filesystem.FileSystem
 }
