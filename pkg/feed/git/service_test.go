@@ -101,6 +101,9 @@ var _ = Describe("GitService", func() {
 			Expect(len(response.Items)).To(Equal(3))
 		})
 	})
+	Describe("Update", func() {
+		It("can update single version", func() {})
+	})
 })
 
 func writeItemsToGitRepo(items []feed.Item, repository *git.Repository) error {

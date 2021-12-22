@@ -20,16 +20,16 @@ type GeneratorService interface {
 }
 
 type service struct {
-	name                     string
-	itemRepository           ItemRepository
-	packageVersionRepository PackageVersionRepository
+	name              string
+	itemRepository    ItemRepository
+	versionRepository VersionRepository
 }
 
-func NewService(name string, items ItemRepository, packageVersions PackageVersionRepository) Service {
+func NewService(name string, items ItemRepository, versions VersionRepository) Service {
 	return &service{
-		name:                     name,
-		itemRepository:           items,
-		packageVersionRepository: packageVersions,
+		name:              name,
+		itemRepository:    items,
+		versionRepository: versions,
 	}
 }
 
@@ -47,11 +47,7 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 		if request.Expand != nil && request.Expand.Package != nil {
 			packageExpand = request.Expand.Package
 		}
-		latestVersion := ""
-		if item.State != nil {
-			latestVersion = item.State.LatestVersion
-		}
-		versions, err := s.packageVersionRepository.List(item.Package.Name, latestVersion, packageExpand)
+		versions, err := s.versionRepository.List(item.Package.Name, packageExpand)
 		if err != nil {
 			return nil, err
 		}
@@ -63,7 +59,29 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 }
 
 func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
-	return nil, nil
+	if request == nil {
+		return &UpdateResponse{}, nil
+	}
+
+	items := []*Item{}
+
+	for _, i := range request.Items {
+		updated, err := s.versionRepository.Update(i.Name, i.Package.Versions)
+		if err != nil {
+			return nil, err
+		}
+		if len(updated) == 0 {
+			continue
+		}
+		item, err := s.itemRepository.Get(i.Name)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return &UpdateResponse{
+		Items: items,
+	}, nil
 }
 
 func (s *service) Generate(request *GenerateRequest) (*GenerateResponse, error) {

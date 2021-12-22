@@ -11,11 +11,10 @@ type UpdateResponse struct {
 
 // ItemUpdate updates an item for the given package name
 type ItemUpdate struct {
-	Name      string
-	State     *StateUpdate
-	Template  *string
-	Platforms *PlatformUpdate
-	Package   *PackageUpdate
+	Name     string
+	State    *StateUpdate
+	Template *string
+	Package  *PackageUpdate
 }
 
 // StateUpdate updates the state for a given item
@@ -55,11 +54,10 @@ type TargetUpdate struct {
 }
 
 type TargetModify struct {
-	Platform        string
+	Criteria        *PlatformArchitectureCriteria
 	NewPlatform     *string
-	Architecture    string
 	NewArchitecture *string
-	Tasks           *TaskUpdate
+	Tasks           []*TaskPatch
 }
 
 type PlatformArchitectureCriteria struct {
@@ -73,16 +71,18 @@ type TargetAdd struct {
 	Tasks        []*TaskAdd
 }
 
-type TaskUpdate struct {
-	Add    []*TaskAdd
-	Remove []string
-	Modify []*TaskModify
-}
+type PatchOperation int
 
-type TaskModify struct {
-	Name       string
-	NewName    *string
-	Properties *StringMapUpdate
+const (
+	PatchAdd     PatchOperation = 0
+	PatchRemove  PatchOperation = 1
+	PatchReplace PatchOperation = 2
+)
+
+type TaskPatch struct {
+	Index     *int
+	Operation PatchOperation
+	Value     *TaskAdd
 }
 
 type TaskAdd struct {

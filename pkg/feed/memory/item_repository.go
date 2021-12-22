@@ -6,6 +6,12 @@ type itemRepository struct {
 	items map[string]*feed.Item
 }
 
+func NewItemRepository(items map[string]*feed.Item) feed.ItemRepository {
+	return &itemRepository{
+		items: items,
+	}
+}
+
 func (r *itemRepository) Get(name string) (*feed.Item, error) {
 	item, ok := r.items[name]
 	if !ok {
