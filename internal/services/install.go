@@ -135,11 +135,11 @@ func (i *install) getItems(name string, cfg *config.Config) ([]*feed.Item, error
 	return items, nil
 }
 
-func (i *install) targetIsMatch(target *packages.PackageTarget) bool {
+func (i *install) targetIsMatch(target *packages.Target) bool {
 	return i.opsys.Architecture() == target.Architecture && i.opsys.Platform() == target.Platform
 }
 
-func (i *install) packageTargetTaskToTask(task *packages.PackageTargetTask) *tasks.Task {
+func (i *install) packageTargetTaskToTask(task *packages.Task) *tasks.Task {
 	parameters := map[string]interface{}{}
 	for k, p := range task.Properties {
 		parameters[k] = p

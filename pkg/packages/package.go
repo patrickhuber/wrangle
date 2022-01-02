@@ -7,24 +7,24 @@ import (
 // Package defines a software package and how it is installed
 type Package struct {
 	Name     string
-	Versions []*PackageVersion
+	Versions []*Version
 }
 
-// PackageVersion returns the version of a package
-type PackageVersion struct {
+// Version returns the version of a package
+type Version struct {
 	Version string
-	Targets []*PackageTarget
+	Targets []*Target
 }
 
-// PackageTarget defines a target architecture and platform for the series of tasks to run
-type PackageTarget struct {
+// Target defines a target architecture and platform for the series of tasks to run
+type Target struct {
 	Platform     string
 	Architecture string
-	Tasks        []*PackageTargetTask
+	Tasks        []*Task
 }
 
-// PackageTargetTask defines a target task to run for the given target
-type PackageTargetTask struct {
+// Task defines a target task to run for the given target
+type Task struct {
 	Name       string
 	Properties map[string]string
 }
@@ -41,7 +41,7 @@ func FromYaml(manifest string) (*Package, error) {
 func toPackage(manifest *Manifest) (*Package, error) {
 	return &Package{
 		Name: manifest.Package.Name,
-		Versions: []*PackageVersion{
+		Versions: []*Version{
 			{
 				Version: manifest.Package.Version,
 				Targets: manifest.Package.Targets,

@@ -1,7 +1,19 @@
 package feed
 
-// ItemRepository provides a repository for items
+type ItemGetInclude struct {
+	Platforms bool
+	State     bool
+	Template  bool
+}
+
+type ItemSaveOption struct {
+	Platforms bool
+	State     bool
+	Template  bool
+}
+
 type ItemRepository interface {
-	Get(name string) (*Item, error)
-	List(where []*ItemReadAnyOf) ([]*Item, error)
+	List(include *ItemGetInclude) ([]*Item, error)
+	Get(name string, include *ItemGetInclude) (*Item, error)
+	Save(item *Item, option *ItemSaveOption) error
 }

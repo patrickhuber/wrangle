@@ -10,6 +10,7 @@ type ServiceTester interface {
 	CanReturnLatestVersion(packageName string, expectedVersion string)
 	CanReturnSpecificVersion(packageName string, expectedVersion string)
 	CanAddVersion(packageName string, newVersion string)
+	CanUpdateExistingVersion(packageName string, version string, newVersion string)
 }
 
 type serviceTester struct {
@@ -168,4 +169,29 @@ func (t *serviceTester) CanAddVersion(packageName string, newVersion string) {
 	}
 	Expect(matched).To(BeTrue(), "unable to find version %s in list of versions", newVersion)
 
+}
+
+func (t *serviceTester) CanUpdateExistingVersion(packageName string, version string, newVersion string) {
+	request := &feed.UpdateRequest{
+		Items: []*feed.ItemUpdate{
+			{
+				Name: packageName,
+				Package: &feed.PackageUpdate{
+					Name: packageName,
+					Versions: &feed.VersionUpdate{
+						Modify: []*feed.VersionModify{
+							{
+								Version:    version,
+								NewVersion: &newVersion,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	response, err := t.service.Update(request)
+	Expect(err).To(BeNil())
+	Expect(response).ToNot(BeNil())
+	Expect(len(response.Items)).To(Equal(1))
 }

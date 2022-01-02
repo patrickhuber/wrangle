@@ -92,14 +92,14 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS
 			},
 			Package: &packages.Package{
 				Name: pkg,
-				Versions: []*packages.PackageVersion{
+				Versions: []*packages.Version{
 					{
 						Version: version,
-						Targets: []*packages.PackageTarget{
+						Targets: []*packages.Target{
 							{
 								Platform:     opsys.Platform(),
 								Architecture: opsys.Architecture(),
-								Tasks: []*packages.PackageTargetTask{
+								Tasks: []*packages.Task{
 									{
 										Name: "download",
 										Properties: map[string]string{

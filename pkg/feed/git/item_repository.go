@@ -1,106 +1,151 @@
 package git
 
 import (
-	"io"
-
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-billy/v5"
+	"github.com/go-git/go-billy/v5/util"
+	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/packages"
+	"gopkg.in/yaml.v2"
 )
 
 type itemRepository struct {
-	tree *object.Tree
+	fs               billy.Filesystem
+	workingDirectory string
 }
 
-func (r *itemRepository) Get(name string) (*feed.Item, error) {
-
-	itemTree, err := r.tree.Tree(name)
-	if err != nil {
-		return nil, err
+func NewItemRepository(fs billy.Filesystem, workingDirectory string) feed.ItemRepository {
+	return &itemRepository{
+		fs:               fs,
+		workingDirectory: workingDirectory,
 	}
-
-	platforms, err := r.getItemPlatforms(itemTree)
-	if err != nil {
-		return nil, err
-	}
-
-	state, err := r.getItemState(itemTree)
-	if err != nil {
-		return nil, err
-	}
-
-	template, err := r.getItemTemplate(itemTree)
-	if err != nil {
-		return nil, err
-	}
-
-	return &feed.Item{
-		State:     state,
-		Template:  template,
-		Platforms: platforms,
-		Package: &packages.Package{
-			Name: name,
-		},
-	}, nil
 }
 
-func (r *itemRepository) List(where []*feed.ItemReadAnyOf) ([]*feed.Item, error) {
-	seen := map[plumbing.Hash]bool{}
-	walker := object.NewTreeWalker(r.tree, false, seen)
+func (s *itemRepository) List(include *feed.ItemGetInclude) ([]*feed.Item, error) {
+	files, err := s.fs.ReadDir(s.workingDirectory)
+	if err != nil {
+		return nil, err
+	}
 	items := []*feed.Item{}
-
-	for {
-		name, entry, err := walker.Next()
-		if err == io.EOF {
-			break
-		}
-
-		// only interested in folders for this pass
-		if entry.Mode.IsFile() {
+	for _, f := range files {
+		if !f.IsDir() {
 			continue
 		}
-
-		// filter out any folders that don't match the search criteria
-		isMatch := feed.IsMatch(where, name)
-		if !isMatch {
-			continue
-		}
-		item, err := r.Get(name)
+		item, err := s.Get(f.Name(), include)
 		if err != nil {
 			return nil, err
 		}
 		items = append(items, item)
 	}
-	walker.Close()
 	return items, nil
 }
 
-func (r *itemRepository) getItemState(tree *object.Tree) (*feed.State, error) {
-	state := &feed.State{}
-	err := DecodeYamlFileFromGitTree(tree, "state.yml", state)
-	return state, err
-}
-
-func (r *itemRepository) getItemTemplate(tree *object.Tree) (string, error) {
-	file, err := tree.File("template.yml")
-	if err != nil {
-		if err == object.ErrFileNotFound {
-			return "", nil
-		}
-		return "", err
-	}
-	return file.Contents()
-}
-
-func (r *itemRepository) getItemPlatforms(tree *object.Tree) ([]*feed.Platform, error) {
-	platforms := map[string][]*feed.Platform{}
-	err := DecodeYamlFileFromGitTree(tree, "platforms.yml", platforms)
+func (s *itemRepository) Get(name string, include *feed.ItemGetInclude) (*feed.Item, error) {
+	packagePath := crosspath.Join(s.workingDirectory, name)
+	_, err := s.fs.Stat(packagePath)
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range platforms {
-		return v, nil
+	item := &feed.Item{
+		Package: &packages.Package{
+			Name: name,
+		},
+	}
+	if include == nil {
+		return item, nil
+	}
+	if include.Platforms {
+		platforms, err := s.GetPlatforms(name)
+		if err != nil {
+			return nil, err
+		}
+		item.Platforms = platforms
+	}
+	if include.State {
+		state, err := s.GetState(name)
+		if err != nil {
+			return nil, err
+		}
+		item.State = state
 	}
 	return nil, nil
+}
+
+func (s *itemRepository) GetPlatforms(packageName string) ([]*feed.Platform, error) {
+	var platforms []*feed.Platform
+	err := s.GetObject(packageName, "platforms.yml", platforms)
+	return platforms, err
+}
+
+func (s *itemRepository) GetState(packageName string) (*feed.State, error) {
+	var state *feed.State
+	err := s.GetObject(packageName, "state.yml", state)
+	return state, err
+}
+
+func (s *itemRepository) GetObject(packageName, fileName string, out interface{}) error {
+	filePath := crosspath.Join(s.workingDirectory, packageName, fileName)
+	content, err := util.ReadFile(s.fs, filePath)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(content, out)
+}
+
+func (s *itemRepository) Save(item *feed.Item, option *feed.ItemSaveOption) error {
+	packageDirectory := crosspath.Join(s.workingDirectory, item.Package.Name)
+	err := s.fs.MkdirAll(packageDirectory, 0600)
+	if err != nil {
+		return err
+	}
+	if option == nil {
+		return nil
+	}
+
+	if option.Platforms {
+		err = s.SavePlatforms(item.Package.Name, item.Platforms)
+		if err != nil {
+			return err
+		}
+	}
+
+	if option.State {
+		err = s.SaveState(item.Package.Name, item.State)
+		if err != nil {
+			return err
+		}
+	}
+
+	if !option.Template {
+		return nil
+	}
+	return s.SaveTemplate(item.Package.Name, item.Template)
+}
+
+func (s *itemRepository) SaveObject(packageName string, fileName string, object interface{}) error {
+	content, err := yaml.Marshal(object)
+	if err != nil {
+		return err
+	}
+	filePath := crosspath.Join(s.workingDirectory, packageName, "platforms.yml")
+	return util.WriteFile(s.fs, filePath, content, 0644)
+
+}
+
+func (s *itemRepository) SavePlatforms(packageName string, platforms []*feed.Platform) error {
+	if len(platforms) == 0 {
+		return nil
+	}
+	return s.SaveObject(packageName, "platforms.yml", platforms)
+}
+
+func (s *itemRepository) SaveState(packageName string, state *feed.State) error {
+	if state == nil {
+		return nil
+	}
+	return s.SaveObject(packageName, "state.yml", state)
+}
+
+func (s *itemRepository) SaveTemplate(packageName string, template string) error {
+	return s.SaveObject(packageName, "template.yml", template)
 }

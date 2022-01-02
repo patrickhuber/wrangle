@@ -1,11 +1,11 @@
-package memory_test
+package fs_test
 
 import (
 	. "github.com/onsi/ginkgo"
 
-	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
-	"github.com/patrickhuber/wrangle/pkg/feed/memory"
+	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
+	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 var _ = Describe("ItemRepository", func() {
@@ -13,21 +13,19 @@ var _ = Describe("ItemRepository", func() {
 		tester conformance.ItemRepositoryTester
 	)
 	BeforeEach(func() {
-		items := map[string]*feed.Item{}
-		for _, i := range conformance.GetItemList() {
-			items[i.Package.Name] = i
-		}
-		repo := memory.NewItemRepository(items)
+		workingDirectory := "/opt/wrangle/feed"
+		fs := filesystem.NewMemory()
+		repo := feedfs.NewItemRepository(fs, workingDirectory)
 		tester = conformance.NewItemRepositoryTester(repo)
 	})
 	Describe("List", func() {
 		It("can list all items", func() {
-			tester.CanListAllItems(2)
+			tester.CanListAllItems(1)
 		})
 	})
 	Describe("Get", func() {
-		It("can get single item", func() {
-			tester.CanGetPackage("other")
+		It("can get package", func() {
+			tester.CanGetPackage("test")
 		})
 	})
 })

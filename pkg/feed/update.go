@@ -1,12 +1,14 @@
 package feed
 
+import "github.com/patrickhuber/wrangle/pkg/packages"
+
 // UpdateRequest contains all update operations for a item and entities in its hierarchy
 type UpdateRequest struct {
 	Items []*ItemUpdate
 }
 
 type UpdateResponse struct {
-	Items []*Item
+	Changed int
 }
 
 // ItemUpdate updates an item for the given package name
@@ -63,6 +65,10 @@ type TargetModify struct {
 type PlatformArchitectureCriteria struct {
 	Platform     string
 	Architecture string
+}
+
+func (c *PlatformArchitectureCriteria) IsMatch(target *packages.Target) bool {
+	return c.Architecture == target.Architecture && c.Platform == target.Architecture
 }
 
 type TargetAdd struct {

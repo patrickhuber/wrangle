@@ -53,7 +53,7 @@ func Generate(request *GenerateRequest) (*GenerateResponse, error) {
 			return nil, err
 		}
 
-		versionList := []*packages.PackageVersion{}
+		versionList := []*packages.Version{}
 		for _, v := range i.Package.Versions {
 
 			writer := &bytes.Buffer{}
@@ -65,7 +65,7 @@ func Generate(request *GenerateRequest) (*GenerateResponse, error) {
 			if err != nil {
 				return nil, err
 			}
-			version := &packages.PackageVersion{}
+			version := &packages.Version{}
 			versionList = append(versionList, version)
 		}
 

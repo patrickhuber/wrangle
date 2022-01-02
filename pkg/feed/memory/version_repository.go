@@ -15,7 +15,7 @@ func NewVersionRepository(items map[string]*feed.Item) feed.VersionRepository {
 	}
 }
 
-func (r *versionRepository) Get(packageName string, version string) (*packages.PackageVersion, error) {
+func (r *versionRepository) Get(packageName string, version string) (*packages.Version, error) {
 	item, ok := r.items[packageName]
 	if !ok {
 		return nil, nil
@@ -28,9 +28,9 @@ func (r *versionRepository) Get(packageName string, version string) (*packages.P
 	return nil, nil
 }
 
-func (r *versionRepository) List(packageName string, query *feed.ItemReadExpandPackage) ([]*packages.PackageVersion, error) {
+func (r *versionRepository) List(packageName string, query *feed.ItemReadExpandPackage) ([]*packages.Version, error) {
 	item, ok := r.items[packageName]
-	versions := []*packages.PackageVersion{}
+	versions := []*packages.Version{}
 
 	if !ok {
 		return versions, nil
@@ -49,21 +49,21 @@ func (r *versionRepository) List(packageName string, query *feed.ItemReadExpandP
 }
 
 type state struct {
-	modified map[string]*packages.PackageVersion
+	modified map[string]*packages.Version
 	removed  map[string]bool
-	added    map[string]*packages.PackageVersion
+	added    map[string]*packages.Version
 }
 
 func newState() *state {
 	return &state{
-		modified: make(map[string]*packages.PackageVersion),
+		modified: make(map[string]*packages.Version),
 		removed:  make(map[string]bool),
-		added:    make(map[string]*packages.PackageVersion),
+		added:    make(map[string]*packages.Version),
 	}
 }
 
-func (r *versionRepository) Update(packageName string, command *feed.VersionUpdate) ([]*packages.PackageVersion, error) {
-	updated := []*packages.PackageVersion{}
+func (r *versionRepository) Update(packageName string, command *feed.VersionUpdate) ([]*packages.Version, error) {
+	updated := []*packages.Version{}
 	item, ok := r.items[packageName]
 	if !ok || item.Package == nil || command == nil {
 		return updated, nil
@@ -79,10 +79,10 @@ func (r *versionRepository) Update(packageName string, command *feed.VersionUpda
 	return updated, nil
 }
 
-func ToVersion(add *feed.VersionAdd) *packages.PackageVersion {
-	version := &packages.PackageVersion{
+func ToVersion(add *feed.VersionAdd) *packages.Version {
+	version := &packages.Version{
 		Version: add.Version,
-		Targets: []*packages.PackageTarget{},
+		Targets: []*packages.Target{},
 	}
 	for _, target := range add.Targets {
 		version.Targets = append(version.Targets, ToTarget(target))
@@ -90,14 +90,14 @@ func ToVersion(add *feed.VersionAdd) *packages.PackageVersion {
 	return version
 }
 
-func updateVersions(update *feed.VersionUpdate, state *state, versions []*packages.PackageVersion) []*packages.PackageVersion {
+func updateVersions(update *feed.VersionUpdate, state *state, versions []*packages.Version) []*packages.Version {
 	versions = FilterVersions(update.Remove, state, versions)
 	versions = ModifyVersions(update.Modify, state, versions)
 	versions = AddVersions(update.Add, state, versions)
 	return versions
 }
 
-func FilterVersions(remove []string, state *state, versions []*packages.PackageVersion) []*packages.PackageVersion {
+func FilterVersions(remove []string, state *state, versions []*packages.Version) []*packages.Version {
 	if len(remove) == 0 {
 		return versions
 	}
@@ -119,7 +119,7 @@ func FilterVersions(remove []string, state *state, versions []*packages.PackageV
 	return versions[:n]
 }
 
-func ModifyVersions(modify []*feed.VersionModify, state *state, versions []*packages.PackageVersion) []*packages.PackageVersion {
+func ModifyVersions(modify []*feed.VersionModify, state *state, versions []*packages.Version) []*packages.Version {
 	if len(modify) == 0 {
 		return versions
 	}
@@ -134,7 +134,7 @@ func ModifyVersions(modify []*feed.VersionModify, state *state, versions []*pack
 	return versions
 }
 
-func AddVersions(add []*feed.VersionAdd, state *state, versions []*packages.PackageVersion) []*packages.PackageVersion {
+func AddVersions(add []*feed.VersionAdd, state *state, versions []*packages.Version) []*packages.Version {
 	for _, a := range add {
 		version := ToVersion(a)
 		versions = append(versions, version)
@@ -143,7 +143,7 @@ func AddVersions(add []*feed.VersionAdd, state *state, versions []*packages.Pack
 	return versions
 }
 
-func ModifyVersion(modify *feed.VersionModify, state *state, version *packages.PackageVersion) {
+func ModifyVersion(modify *feed.VersionModify, state *state, version *packages.Version) {
 	if modify.NewVersion != nil {
 		version.Version = *modify.NewVersion
 		state.modified[version.Version] = version
@@ -155,11 +155,11 @@ func ModifyVersion(modify *feed.VersionModify, state *state, version *packages.P
 	}
 }
 
-func ToTarget(add *feed.TargetAdd) *packages.PackageTarget {
-	target := &packages.PackageTarget{
+func ToTarget(add *feed.TargetAdd) *packages.Target {
+	target := &packages.Target{
 		Platform:     add.Platform,
 		Architecture: add.Architecture,
-		Tasks:        []*packages.PackageTargetTask{},
+		Tasks:        []*packages.Task{},
 	}
 	for _, task := range add.Tasks {
 		target.Tasks = append(target.Tasks, ToTask(task))
@@ -167,14 +167,14 @@ func ToTarget(add *feed.TargetAdd) *packages.PackageTarget {
 	return target
 }
 
-func ToTask(add *feed.TaskAdd) *packages.PackageTargetTask {
-	return &packages.PackageTargetTask{
+func ToTask(add *feed.TaskAdd) *packages.Task {
+	return &packages.Task{
 		Name:       add.Name,
 		Properties: add.Properties,
 	}
 }
 
-func UpdateTargets(update *feed.TargetUpdate, targets []*packages.PackageTarget) ([]*packages.PackageTarget, bool) {
+func UpdateTargets(update *feed.TargetUpdate, targets []*packages.Target) ([]*packages.Target, bool) {
 	if update == nil {
 		return targets, false
 	}
@@ -186,13 +186,13 @@ func UpdateTargets(update *feed.TargetUpdate, targets []*packages.PackageTarget)
 	return targets, removed || modified || len(update.Add) > 0
 }
 
-func TargetIsMatch(criteria *feed.PlatformArchitectureCriteria, target *packages.PackageTarget) bool {
+func TargetIsMatch(criteria *feed.PlatformArchitectureCriteria, target *packages.Target) bool {
 	return criteria.Platform == target.Platform &&
 		(criteria.Architecture == target.Architecture ||
 			criteria.Architecture == "")
 }
 
-func FilterTargets(remove []*feed.PlatformArchitectureCriteria, targets []*packages.PackageTarget) ([]*packages.PackageTarget, bool) {
+func FilterTargets(remove []*feed.PlatformArchitectureCriteria, targets []*packages.Target) ([]*packages.Target, bool) {
 	if len(remove) == 0 {
 		return targets, false
 	}
@@ -217,7 +217,7 @@ func FilterTargets(remove []*feed.PlatformArchitectureCriteria, targets []*packa
 	return targets[:n], modified
 }
 
-func ModifyTargets(modify []*feed.TargetModify, targets []*packages.PackageTarget) ([]*packages.PackageTarget, bool) {
+func ModifyTargets(modify []*feed.TargetModify, targets []*packages.Target) ([]*packages.Target, bool) {
 	if len(modify) == 0 {
 		return targets, false
 	}
@@ -233,7 +233,7 @@ func ModifyTargets(modify []*feed.TargetModify, targets []*packages.PackageTarge
 	return targets, modified
 }
 
-func AddTargets(add []*feed.TargetAdd, targets []*packages.PackageTarget) []*packages.PackageTarget {
+func AddTargets(add []*feed.TargetAdd, targets []*packages.Target) []*packages.Target {
 	for _, a := range add {
 		target := ToTarget(a)
 		targets = append(targets, target)
@@ -241,7 +241,7 @@ func AddTargets(add []*feed.TargetAdd, targets []*packages.PackageTarget) []*pac
 	return targets
 }
 
-func ModifyTarget(modify *feed.TargetModify, target *packages.PackageTarget) bool {
+func ModifyTarget(modify *feed.TargetModify, target *packages.Target) bool {
 	modified := false
 	if modify.NewArchitecture != nil {
 		target.Architecture = *modify.NewArchitecture
@@ -254,7 +254,7 @@ func ModifyTarget(modify *feed.TargetModify, target *packages.PackageTarget) boo
 	return modified || PatchTasks(modify.Tasks, target.Tasks)
 }
 
-func PatchTasks(patches []*feed.TaskPatch, tasks []*packages.PackageTargetTask) bool {
+func PatchTasks(patches []*feed.TaskPatch, tasks []*packages.Task) bool {
 	modified := false
 	for _, p := range patches {
 		switch p.Operation {
@@ -274,7 +274,7 @@ func PatchTasks(patches []*feed.TaskPatch, tasks []*packages.PackageTargetTask) 
 	return modified
 }
 
-func AddTask(patch *feed.TaskPatch, tasks []*packages.PackageTargetTask) []*packages.PackageTargetTask {
+func AddTask(patch *feed.TaskPatch, tasks []*packages.Task) []*packages.Task {
 	if patch.Operation != feed.PatchAdd {
 		return tasks
 	}
@@ -292,7 +292,7 @@ func AddTask(patch *feed.TaskPatch, tasks []*packages.PackageTargetTask) []*pack
 	return tasks
 }
 
-func RemoveTask(patch *feed.TaskPatch, tasks []*packages.PackageTargetTask) ([]*packages.PackageTargetTask, bool) {
+func RemoveTask(patch *feed.TaskPatch, tasks []*packages.Task) ([]*packages.Task, bool) {
 	if patch.Operation != feed.PatchRemove || patch.Index == nil {
 		return tasks, false
 	}
@@ -301,7 +301,7 @@ func RemoveTask(patch *feed.TaskPatch, tasks []*packages.PackageTargetTask) ([]*
 	return tasks, true
 }
 
-func ReplaceTask(patch *feed.TaskPatch, tasks []*packages.PackageTargetTask) bool {
+func ReplaceTask(patch *feed.TaskPatch, tasks []*packages.Task) bool {
 	if patch.Operation != feed.PatchReplace {
 		return false
 	}

@@ -3,7 +3,8 @@ package feed
 import "github.com/patrickhuber/wrangle/pkg/packages"
 
 type VersionRepository interface {
-	Get(packageName string, version string) (*packages.PackageVersion, error)
-	List(packageName string, query *ItemReadExpandPackage) ([]*packages.PackageVersion, error)
-	Update(packageName string, command *VersionUpdate) ([]*packages.PackageVersion, error)
+	Save(name string, version *packages.Version) error
+	Get(name string, version string) (*packages.Version, error)
+	List(name string) ([]*packages.Version, error)
+	Remove(name string, version string) error
 }

@@ -7,5 +7,5 @@ type Manifest struct {
 type ManifestPackage struct {
 	Name    string
 	Version string
-	Targets []*PackageTarget
+	Targets []*Target
 }

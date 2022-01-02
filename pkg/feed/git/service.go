@@ -1,42 +1,25 @@
 package git
 
 import (
+	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
-func NewService(name string, repository *git.Repository) (feed.Service, error) {
-	ref, err := repository.Head()
-	if err != nil {
-		return nil, err
-	}
+func NewService(name string, fs billy.Filesystem, repository *git.Repository) (feed.Service, error) {
 
-	commit, err := repository.CommitObject(ref.Hash())
-	if err != nil {
-		return nil, err
-	}
+	workingDirectory := "/feed"
 
-	tree, err := commit.Tree()
-	if err != nil {
-		return nil, err
-	}
+	items := NewItemRepository(fs, workingDirectory)
+	versions := NewVersionRepository(fs, workingDirectory)
 
-	feedTree, err := tree.Tree("feed")
-	if err != nil {
-		return nil, err
-	}
-
-	items := &itemRepository{
-		tree: feedTree,
-	}
-
-	packageVersions := &packageVersionRepository{
-		tree: feedTree,
-	}
-
-	return feed.NewService(name, items, packageVersions), nil
+	svc := feed.NewService(name, items, versions)
+	return &service{
+		internal: svc,
+		repo:     repository,
+	}, nil
 }
 
 func NewServiceFromURL(name, url string) (feed.Service, error) {
@@ -49,5 +32,26 @@ func NewServiceFromURL(name, url string) (feed.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewService(name, repository)
+	return NewService(name, fs, repository)
+}
+
+type service struct {
+	internal feed.Service
+	repo     *git.Repository
+}
+
+func (s *service) Name() string {
+	return s.internal.Name()
+}
+
+func (s *service) List(request *feed.ListRequest) (*feed.ListResponse, error) {
+	return s.internal.List(request)
+}
+
+func (s *service) Update(request *feed.UpdateRequest) (*feed.UpdateResponse, error) {
+	return s.internal.Update(request)
+}
+
+func (s *service) Generate(request *feed.GenerateRequest) (*feed.GenerateResponse, error) {
+	return nil, nil
 }

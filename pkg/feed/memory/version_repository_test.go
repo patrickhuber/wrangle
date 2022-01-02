@@ -5,7 +5,6 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
-	"github.com/patrickhuber/wrangle/pkg/packages"
 )
 
 var _ = Describe("PackageVersionRepository", func() {
@@ -13,41 +12,9 @@ var _ = Describe("PackageVersionRepository", func() {
 		tester conformance.VersionRepositoryTester
 	)
 	BeforeEach(func() {
-		items := map[string]*feed.Item{
-			"test": {
-				Package: &packages.Package{
-					Name: "test",
-					Versions: []*packages.PackageVersion{
-						{
-							Version: "1.0.0",
-							Targets: []*packages.PackageTarget{
-								{
-									Platform:     "linux",
-									Architecture: "amd64",
-								},
-							},
-						},
-						{
-							Version: "1.0.1",
-							Targets: []*packages.PackageTarget{
-								{
-									Platform:     "linux",
-									Architecture: "amd64",
-								},
-							},
-						},
-						{
-							Version: "1.1.0",
-							Targets: []*packages.PackageTarget{
-								{
-									Platform:     "linux",
-									Architecture: "amd64",
-								},
-							},
-						},
-					},
-				},
-			},
+		items := map[string]*feed.Item{}
+		for _, i := range conformance.GetItemList() {
+			items[i.Package.Name] = i
 		}
 		repo := memory.NewVersionRepository(items)
 		tester = conformance.NewVersionRepositoryTester(repo)

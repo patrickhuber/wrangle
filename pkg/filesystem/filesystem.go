@@ -7,7 +7,7 @@ import (
 
 // FileSystem provides an abstract interface for file system operations
 type FileSystem interface {
-	Rename(oldname, newname string) error
+	Rename(oldname, newName string) error
 	Create(path string) (File, error)
 	Write(path string, data []byte, permissions os.FileMode) error
 	Exists(path string) (bool, error)

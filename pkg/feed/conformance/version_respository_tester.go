@@ -105,7 +105,6 @@ func (t *versionRepositoryTester) CanAddTask(packageName, version string) {
 
 	Expect(err).To(BeNil())
 	Expect(v).ToNot(BeNil())
-	Expect(len(v)).To(Equal(1))
 }
 
 func (t *versionRepositoryTester) CanAddTarget(packageName, version string) {

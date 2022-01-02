@@ -22,7 +22,7 @@ var _ = Describe("Service", func() {
 				},
 				Package: &packages.Package{
 					Name: "test",
-					Versions: []*packages.PackageVersion{
+					Versions: []*packages.Version{
 						{
 							Version: "1.0.0",
 						},
@@ -54,14 +54,7 @@ var _ = Describe("Service", func() {
 			tester.CanAddVersion("test", "2.0.0")
 		})
 		It("can update existing version", func() {
-			items := []*feed.Item{}
-			svc, err := memory.NewService("test", items...)
-			Expect(err).To(BeNil())
-
-			request := &feed.UpdateRequest{}
-			response, err := svc.Update(request)
-			Expect(err).To(BeNil())
-			Expect(response).ToNot(BeNil())
+			tester.CanUpdateExistingVersion("test", "1.0.0", "2.0.0")
 		})
 	})
 })
