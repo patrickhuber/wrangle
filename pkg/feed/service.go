@@ -1,6 +1,11 @@
 package feed
 
-import "github.com/patrickhuber/wrangle/pkg/packages"
+import (
+	"reflect"
+
+	"github.com/patrickhuber/wrangle/pkg/packages"
+	"github.com/patrickhuber/wrangle/pkg/patch"
+)
 
 type Service interface {
 	Name() string
@@ -201,7 +206,7 @@ func (s *service) ModifyItem(item *Item, update *ItemUpdate) (bool, error) {
 
 func (s *service) UpdateVersions(name string, update *VersionUpdate) (bool, error) {
 
-	added, err := s.AddVersions(name, update.Add)
+	added, err := s.CreateVersions(name, update.Add)
 	if err != nil {
 		return false, err
 	}
@@ -219,10 +224,11 @@ func (s *service) UpdateVersions(name string, update *VersionUpdate) (bool, erro
 	return added || modified || removed, nil
 }
 
-func (s *service) AddVersions(name string, adds []*VersionAdd) (bool, error) {
+func (s *service) CreateVersions(name string, additions []*VersionAdd) (bool, error) {
 	any := false
-	for _, a := range adds {
-		err := s.AddVersion(name, a)
+	for _, a := range additions {
+		v := s.ToVersion(a)
+		err := s.versionRepository.Save(name, v)
 		if err != nil {
 			return false, err
 		}
@@ -231,178 +237,136 @@ func (s *service) AddVersions(name string, adds []*VersionAdd) (bool, error) {
 	return any, nil
 }
 
-func (s *service) AddVersion(name string, add *VersionAdd) error {
-	v := s.ToVersion(add)
-	return s.versionRepository.Save(name, v)
-}
-
 func (s *service) ModifyVersions(name string, modifications []*VersionModify) (bool, error) {
-	any := false
-	for _, modify := range modifications {
-		modified, err := s.ModifyVersion(name, modify)
+	changed := false
+	for _, m := range modifications {
+		v, err := s.versionRepository.Get(name, m.Version)
 		if err != nil {
 			return false, err
 		}
-		any = any || modified
-	}
-	return any, nil
-}
-
-func (s *service) ModifyVersion(name string, modify *VersionModify) (bool, error) {
-	newVersion := false
-	// get the item
-	version, err := s.versionRepository.Get(name, modify.Version)
-	if err != nil {
-		return false, err
-	}
-	if modify.NewVersion != nil {
-		version.Version = modify.Version
-		newVersion = true
-	}
-
-	updated, err := s.UpdateTargets(name, version, modify.Targets)
-	if err != nil {
-		return false, err
-	}
-
-	// if there is a new version, remove the old one
-	if newVersion {
-		err = s.versionRepository.Remove(name, modify.Version)
-		if err != nil {
-			return false, err
-		}
-	}
-
-	if updated || newVersion {
-		err = s.versionRepository.Save(name, version)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func (s *service) UpdateTargets(name string, version *packages.Version, update *TargetUpdate) (bool, error) {
-
-	added := s.CreateTargets(update.Add)
-	modified := s.ModifyTargets(version.Targets, update.Modify)
-	removed := s.RemoveTargets(version, update.Remove)
-
-	return len(added) > 0 || modified || removed, nil
-}
-
-func (s *service) CreateTargets(adds []*TargetAdd) []*packages.Target {
-	tasks := []*packages.Target{}
-	for _, a := range adds {
-		t := s.CreateTarget(a)
-		tasks = append(tasks, t)
-	}
-	return tasks
-}
-
-func (s *service) CreateTarget(add *TargetAdd) *packages.Target {
-
-	target := &packages.Target{
-		Platform:     add.Platform,
-		Architecture: add.Architecture,
-		Tasks:        s.CreateTasks(add.Tasks),
-	}
-	return target
-}
-
-func (s *service) CreateTasks(adds []*TaskAdd) []*packages.Task {
-	tasks := []*packages.Task{}
-	for _, a := range adds {
-		task := s.CreateTask(a)
-		tasks = append(tasks, task)
-	}
-	return tasks
-}
-
-func (s *service) CreateTask(add *TaskAdd) *packages.Task {
-
-	return &packages.Task{
-		Name:       add.Name,
-		Properties: add.Properties,
-	}
-}
-
-func (s *service) ModifyTargets(targets []*packages.Target, modify []*TargetModify) bool {
-	any := false
-	for _, t := range targets {
-		modified := s.ModifyTarget(t, modify)
-		any = any || modified
-	}
-	return any
-}
-
-func (s *service) ModifyTarget(target *packages.Target, modify []*TargetModify) bool {
-	any := false
-	for _, m := range modify {
-		if !m.Criteria.IsMatch(target) {
+		mod := s.VersionModify(m)
+		applied, updated := mod.Apply(reflect.ValueOf(v))
+		if !updated {
 			continue
 		}
-		if m.NewArchitecture != nil && target.Architecture != *m.NewArchitecture {
-			target.Architecture = *m.NewArchitecture
-			any = true
+		changed = true
+		v, ok := applied.Interface().(*packages.Version)
+		if !ok {
+			continue
 		}
-		if m.NewPlatform != nil && target.Platform != *m.NewPlatform {
-			target.Platform = *m.NewPlatform
-			any = true
-		}
-		any = any || s.PatchTasks(target, m.Tasks)
+		s.versionRepository.Save(name, v)
 	}
-	return any
+	return changed, nil
 }
 
-func (s *service) PatchTasks(target *packages.Target, patches []*TaskPatch) bool {
-	any := false
-	for _, patch := range patches {
-		switch patch.Operation {
-		case PatchAdd:
-			task := s.CreateTask(patch.Value)
-			target.Tasks = append(target.Tasks, task)
-			any = true
-		case PatchReplace:
-			for index, task := range target.Tasks {
-				if index != *patch.Index {
-					continue
-				}
-				if task.Name != patch.Value.Name {
-					task.Name = patch.Value.Name
-					any = true
-				}
-				properties := map[string]string{}
-				for k, v := range task.Properties {
-					_, ok := patch.Value.Properties[k]
-					if !ok {
-						any = true
-						continue
-					}
-				}
-				for k, v := range patch.Value.Properties {
-					_, ok := task.Properties[k]
-					if !ok{
-						any = true
-						properties[k] = 
-					}
-				}
-			}
-		case PatchRemove:
-			tasks := []*packages.Task{}
-			for index, task := range target.Tasks {
-				if index == *patch.Index {
-					continue
-				}
-				tasks = append(tasks, task)
-				any = true
-			}
-			target.Tasks = tasks
-		}
+func (s *service) VersionModify(m *VersionModify) patch.Applicable {
+	properties := map[string]interface{}{
+		"Targets": s.TargetUpdate(m.Targets),
 	}
-	return any
+	if m.NewVersion != nil {
+		properties["Version"] = patch.NewString(*m.NewVersion)
+	}
+	return &patch.ObjectUpdate{
+		Value: properties,
+	}
+}
+
+func (s *service) TargetUpdate(u *TargetUpdate) patch.Applicable {
+	options := []patch.SliceOption{}
+	for _, a := range u.Add {
+		o := patch.SliceAppend(s.ToTarget(a))
+		options = append(options, o)
+	}
+	for _, m := range u.Modify {
+		o := patch.SliceModify(func(v reflect.Value) bool {
+			target, ok := v.Interface().(*packages.Target)
+			if !ok {
+				return false
+			}
+			return m.Criteria.IsMatch(target)
+		}, s.TargetModify(m))
+		options = append(options, o)
+	}
+	for _, r := range u.Remove {
+		o := patch.SliceRemove(func(v reflect.Value) bool {
+			target, ok := v.Interface().(*packages.Target)
+			if !ok {
+				return false
+			}
+			return r.IsMatch(target)
+		})
+		options = append(options, o)
+	}
+	return patch.NewSlice(options...)
+}
+
+func (s *service) TargetModify(m *TargetModify) patch.Applicable {
+	options := []patch.SliceOption{}
+	for _, t := range m.Tasks {
+		o := s.TaskPatch(t)
+		options = append(options, o)
+	}
+
+	fields := map[string]interface{}{
+		"Tasks": patch.NewSlice(options...),
+	}
+	if m.NewArchitecture != nil {
+		fields["Architecture"] = patch.NewString(*m.NewArchitecture)
+	}
+	if m.NewPlatform != nil {
+		fields["Platform"] = patch.NewString(*m.NewPlatform)
+	}
+	return &patch.ObjectUpdate{
+		Value: fields,
+	}
+}
+
+func (s *service) TaskPatch(p *TaskPatch) patch.SliceOption {
+	switch p.Operation {
+	case PatchAdd:
+		return patch.SliceAppend(s.ToTask(p.Value))
+	case PatchRemove:
+		return patch.SliceRemoveAt(p.Index)
+	case PatchReplace:
+		return patch.SliceModifyAt(p.Index, s.ToTask(p.Value))
+	}
+	return nil
+}
+
+func (s *service) ToVersion(versionAdd *VersionAdd) *packages.Version {
+	targets := []*packages.Target{}
+	for _, target := range versionAdd.Targets {
+		targets = append(targets, s.ToTarget(target))
+	}
+	return &packages.Version{
+		Version: versionAdd.Version,
+		Targets: targets,
+	}
+}
+
+func (s *service) ToTarget(targetAdd *TargetAdd) *packages.Target {
+
+	tasks := []*packages.Task{}
+	for _, t := range targetAdd.Tasks {
+		task := s.ToTask(t)
+		tasks = append(tasks, task)
+	}
+	return &packages.Target{
+		Platform:     targetAdd.Platform,
+		Architecture: targetAdd.Architecture,
+		Tasks:        tasks,
+	}
+}
+
+func (s *service) ToTask(taskAdd *TaskAdd) *packages.Task {
+	properties := map[string]string{}
+	for k, v := range taskAdd.Properties {
+		properties[k] = v
+	}
+	return &packages.Task{
+		Name:       taskAdd.Name,
+		Properties: properties,
+	}
 }
 
 func (s *service) RemoveTargets(version *packages.Version, remove []*PlatformArchitectureCriteria) bool {
@@ -411,10 +375,6 @@ func (s *service) RemoveTargets(version *packages.Version, remove []*PlatformArc
 
 func (s *service) RemoveVersions(name string, removals []string) (bool, error) {
 	return false, nil
-}
-
-func (s *service) ToVersion(a *VersionAdd) *packages.Version {
-	return &packages.Version{}
 }
 
 func (s *service) Generate(request *GenerateRequest) (*GenerateResponse, error) {

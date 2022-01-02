@@ -27,7 +27,11 @@ func (t *itemRepositoryTester) CanListAllItems(expectedCount int) {
 	Expect(len(result)).ToNot(Equal(0))
 }
 func (t *itemRepositoryTester) CanGetPackage(name string) {
-	result, err := t.repo.Get(name)
+	result, err := t.repo.Get(name, &feed.ItemGetInclude{
+		Platforms: true,
+		State:     true,
+		Template:  true,
+	})
 	Expect(err).To(BeNil())
 	Expect(result).ToNot(BeNil())
 	Expect(result.Package).ToNot(BeNil())

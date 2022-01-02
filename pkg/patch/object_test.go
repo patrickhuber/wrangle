@@ -31,11 +31,9 @@ var _ = Describe("Object", func() {
 			Model: "F150",
 			Year:  2000,
 		}
-		update := &patch.ObjectUpdate{
-			Value: map[string]interface{}{
-				"Make": "Tesla",
-			},
-		}
+		update := patch.NewObject(
+			patch.ObjectSetField("Make", "Tesla"))
+
 		_, ok := update.Apply(reflect.ValueOf(car))
 		Expect(ok).To(BeTrue())
 		Expect(car.Make).To(Equal("Tesla"))
@@ -47,15 +45,11 @@ var _ = Describe("Object", func() {
 				Name: "child",
 			},
 		}
-		update := &patch.ObjectUpdate{
-			Value: map[string]interface{}{
-				"Child": &patch.ObjectUpdate{
-					Value: map[string]interface{}{
-						"Name": "test",
-					},
-				},
-			},
-		}
+		update := patch.NewObject(
+			patch.ObjectSetField("Child",
+				patch.NewObject(
+					patch.ObjectSetField("Name", "test"))))
+
 		_, ok := update.Apply(reflect.ValueOf(parent))
 		Expect(ok).To(BeTrue())
 		Expect(parent.Child.Name).To(Equal("test"))
@@ -64,15 +58,11 @@ var _ = Describe("Object", func() {
 		parent := &Parent{
 			Name: "parent",
 		}
-		update := &patch.ObjectUpdate{
-			Value: map[string]interface{}{
-				"ChildPtr": &patch.ObjectUpdate{
-					Value: map[string]interface{}{
-						"Name": "test",
-					},
-				},
-			},
-		}
+		update := patch.NewObject(
+			patch.ObjectSetField("ChildPtr",
+				patch.NewObject(
+					patch.ObjectSetField("Name", "test"))))
+
 		_, ok := update.Apply(reflect.ValueOf(parent))
 		Expect(ok).To(BeTrue())
 		Expect(parent.ChildPtr).ToNot(BeNil())

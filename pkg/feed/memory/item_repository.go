@@ -12,7 +12,7 @@ func NewItemRepository(items map[string]*feed.Item) feed.ItemRepository {
 	}
 }
 
-func (r *itemRepository) Get(name string) (*feed.Item, error) {
+func (r *itemRepository) Get(name string, include *feed.ItemGetInclude) (*feed.Item, error) {
 	item, ok := r.items[name]
 	if !ok {
 		return nil, nil
@@ -20,12 +20,11 @@ func (r *itemRepository) Get(name string) (*feed.Item, error) {
 	return item, nil
 }
 
-func (r *itemRepository) List(where []*feed.ItemReadAnyOf) ([]*feed.Item, error) {
+func (r *itemRepository) List(include *feed.ItemGetInclude) ([]*feed.Item, error) {
 	items := []*feed.Item{}
-	for name, item := range r.items {
-		if feed.IsMatch(where, name) {
-			items = append(items, item)
-		}
-	}
 	return items, nil
+}
+
+func (r *itemRepository) Save(item *feed.Item, option *feed.ItemSaveOption) error {
+	return nil
 }

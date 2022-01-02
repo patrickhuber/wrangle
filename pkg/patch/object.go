@@ -6,8 +6,22 @@ type ObjectUpdate struct {
 	Value map[string]interface{}
 }
 
-func NewObject(instance interface{}) *ObjectUpdate {
-	return &ObjectUpdate{}
+type ObjectOption func(*ObjectUpdate)
+
+func ObjectSetField(name string, value interface{}) ObjectOption {
+	return func(u *ObjectUpdate) {
+		u.Value[name] = value
+	}
+}
+
+func NewObject(options ...ObjectOption) *ObjectUpdate {
+	update := &ObjectUpdate{
+		Value: make(map[string]interface{}),
+	}
+	for _, option := range options {
+		option(update)
+	}
+	return update
 }
 
 func (u *ObjectUpdate) Apply(val reflect.Value) (reflect.Value, bool) {

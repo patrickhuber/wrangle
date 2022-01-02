@@ -159,15 +159,7 @@ func (t *serviceTester) CanAddVersion(packageName string, newVersion string) {
 		})
 	Expect(err).To(BeNil())
 	Expect(response).ToNot(BeNil())
-	Expect(len(response.Items)).To(Equal(1))
-	Expect(response.Items[0].Package).ToNot(BeNil())
-	matched := false
-	for _, v := range response.Items[0].Package.Versions {
-		if v.Version == newVersion {
-			matched = true
-		}
-	}
-	Expect(matched).To(BeTrue(), "unable to find version %s in list of versions", newVersion)
+	Expect(response.Changed).To(Equal(1))
 
 }
 
@@ -193,5 +185,5 @@ func (t *serviceTester) CanUpdateExistingVersion(packageName string, version str
 	response, err := t.service.Update(request)
 	Expect(err).To(BeNil())
 	Expect(response).ToNot(BeNil())
-	Expect(len(response.Items)).To(Equal(1))
+	Expect(response.Changed).To(Equal(1))
 }

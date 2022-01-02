@@ -34,9 +34,6 @@ var _ = Describe("VersionRespository", func() {
 		It("can update ", func() {
 			tester.CanUpdateVersionNumber("test", "1.0.0", "2.0.0")
 		})
-		It("can add target", func() {
-			tester.CanAddTarget("test", "1.0.0")
-		})
 		It("can add task", func() {
 			tester.CanAddTask("test", "1.0.0")
 		})

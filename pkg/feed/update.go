@@ -86,7 +86,7 @@ const (
 )
 
 type TaskPatch struct {
-	Index     *int
+	Index     int
 	Operation PatchOperation
 	Value     *TaskAdd
 }
@@ -94,30 +94,4 @@ type TaskPatch struct {
 type TaskAdd struct {
 	Name       string
 	Properties map[string]string
-}
-
-type PlatformUpdate struct {
-	Add    []*PlatformAdd
-	Remove []string
-	Modify []*PlatformModify
-}
-
-type PlatformModify struct {
-	Name          string
-	Architectures *UniqueStringListUpdate
-}
-
-type PlatformAdd struct {
-	Name          string
-	Architectures []string
-}
-
-type StringMapUpdate struct {
-	Modify map[string]string
-	Remove []string
-}
-
-type UniqueStringListUpdate struct {
-	Add    []string
-	Remove []string
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/wrangle/pkg/enums"
 	"github.com/patrickhuber/wrangle/pkg/global"
-	"github.com/patrickhuber/wrangle/pkg/models"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/urfave/cli/v2"
 )
@@ -62,7 +62,7 @@ func main() {
 			&cli.GenericFlag{
 				Name:        global.FlagOutput,
 				Aliases:     []string{"o"},
-				Value:       models.NewFormatEnum(),
+				Value:       enums.NewFormatEnum(),
 				Required:    false,
 				DefaultText: "table",
 			},

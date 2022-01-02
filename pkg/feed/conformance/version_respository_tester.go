@@ -3,6 +3,7 @@ package conformance
 import (
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/pkg/packages"
 )
 
 type VersionRepositoryTester interface {
@@ -11,7 +12,6 @@ type VersionRepositoryTester interface {
 	CanAddVersion(packageName, version string)
 	CanUpdateVersionNumber(packageName string, version string, newVersion string)
 	CanAddTask(packageName, version string)
-	CanAddTarget(packageName, version string)
 }
 
 type versionRepositoryTester struct {
@@ -31,102 +31,53 @@ func (t *versionRepositoryTester) CanGetSingleVersion(packageName, version strin
 }
 
 func (t *versionRepositoryTester) CanListAllVersions(packageName string, expectedCount int) {
-	query := &feed.ItemReadExpandPackage{
-		Where: []*feed.ItemReadExpandPackageAnyOf{},
-	}
-	v, err := t.repo.List(packageName, query)
+	v, err := t.repo.List(packageName)
 	Expect(err).To(BeNil())
 	Expect(v).ToNot(BeNil())
 	Expect(len(v)).To(Equal(expectedCount))
 }
 
 func (t *versionRepositoryTester) CanAddVersion(packageName, version string) {
-	command := &feed.VersionUpdate{
-		Add: []*feed.VersionAdd{
-			{
-				Version: version,
-			},
-		},
+	v := &packages.Version{
+		Version: version,
 	}
-	v, err := t.repo.Update(packageName, command)
-
+	err := t.repo.Save(packageName, v)
 	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
-	Expect(len(v)).To(Equal(1))
+	v, err = t.repo.Get(packageName, version)
+	Expect(err).To(BeNil())
+	Expect(v.Version).To(Equal(version))
 }
 
 func (t *versionRepositoryTester) CanUpdateVersionNumber(packageName string, version string, newVersion string) {
-	command := &feed.VersionUpdate{
-		Modify: []*feed.VersionModify{
-			{
-				Version:    version,
-				NewVersion: &newVersion,
-			},
-		},
-	}
-	v, err := t.repo.Update(packageName, command)
 
+	v, err := t.repo.Get(packageName, version)
+	Expect(err).ToNot(BeNil())
+
+	v.Version = newVersion
+
+	err = t.repo.Save(packageName, v)
 	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
-	Expect(len(v)).To(Equal(1))
-	v0 := v[0]
-	Expect(v0.Version).To(Equal(newVersion))
+
+	v, err = t.repo.Get(packageName, newVersion)
+	Expect(err).To(BeNil())
+	Expect(v.Version).To(Equal(newVersion))
 }
 
 func (t *versionRepositoryTester) CanAddTask(packageName, version string) {
-	command := &feed.VersionUpdate{
-		Modify: []*feed.VersionModify{
-			{
-				Version: version,
-				Targets: &feed.TargetUpdate{
-					Modify: []*feed.TargetModify{
-						{
-							Criteria: &feed.PlatformArchitectureCriteria{
-								Platform:     "linux",
-								Architecture: "amd64",
-							},
-							Tasks: []*feed.TaskPatch{
-								{
-									Operation: feed.PatchAdd,
-									Value: &feed.TaskAdd{
-
-										Name:       "test",
-										Properties: map[string]string{},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	v, err := t.repo.Update(packageName, command)
-
+	v, err := t.repo.Get(packageName, version)
 	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
-}
 
-func (t *versionRepositoryTester) CanAddTarget(packageName, version string) {
-	command := &feed.VersionUpdate{
-		Modify: []*feed.VersionModify{
-			{
-				Version: version,
-				Targets: &feed.TargetUpdate{
-					Add: []*feed.TargetAdd{
-						{
-							Platform:     "darwin",
-							Architecture: "arm64",
-							Tasks:        []*feed.TaskAdd{},
-						},
-					},
-				},
-			},
-		},
+	task := &packages.Task{
+		Name:       "test",
+		Properties: map[string]string{},
 	}
-	v, err := t.repo.Update(packageName, command)
+	v.Targets[0].Tasks = append(v.Targets[0].Tasks, task)
 
+	err = t.repo.Save(packageName, v)
 	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
-	Expect(len(v)).To(Equal(1))
+
+	v, err = t.repo.Get(packageName, version)
+	Expect(err).ToNot(BeNil())
+	Expect(len(v.Targets)).To(Equal(1))
+	Expect(len(v.Targets[0].Tasks)).To(Equal(2))
 }
