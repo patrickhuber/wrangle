@@ -51,7 +51,8 @@ func (t *versionRepositoryTester) CanAddVersion(packageName, version string) {
 func (t *versionRepositoryTester) CanUpdateVersionNumber(packageName string, version string, newVersion string) {
 
 	v, err := t.repo.Get(packageName, version)
-	Expect(err).ToNot(BeNil())
+	Expect(err).To(BeNil())
+	Expect(v).ToNot(BeNil())
 
 	v.Version = newVersion
 

@@ -22,9 +22,13 @@ func (r *itemRepository) Get(name string, include *feed.ItemGetInclude) (*feed.I
 
 func (r *itemRepository) List(include *feed.ItemGetInclude) ([]*feed.Item, error) {
 	items := []*feed.Item{}
+	for _, item := range r.items {
+		items = append(items, item)
+	}
 	return items, nil
 }
 
 func (r *itemRepository) Save(item *feed.Item, option *feed.ItemSaveOption) error {
+	r.items[item.Package.Name] = item
 	return nil
 }
