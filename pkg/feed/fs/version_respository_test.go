@@ -3,10 +3,10 @@ package fs_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/packages"
 )
 
 var _ = Describe("VersionRespository", func() {
@@ -16,8 +16,30 @@ var _ = Describe("VersionRespository", func() {
 	BeforeEach(func() {
 		fs := filesystem.NewMemory()
 		workingDirectory := "/opt/wrangle/feed"
-		Expect(fs.Write(crosspath.Join(workingDirectory, "test", "state.yml"), []byte(""), 0644)).To(BeNil())
 		repo := feedfs.NewVersionRepository(fs, workingDirectory)
+		versions := []*packages.Version{
+			{
+				Version: "1.0.0",
+				Targets: []*packages.Target{
+					{
+						Platform:     "linux",
+						Architecture: "amd64",
+						Tasks: []*packages.Task{
+							{
+								Name: "download",
+								Properties: map[string]string{
+									"url": "https://www.google.com",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		for _, version := range versions {
+			err := repo.Save("test", version)
+			Expect(err).To(BeNil())
+		}
 		tester = conformance.NewVersionRepositoryTester(repo)
 	})
 	Describe("List", func() {

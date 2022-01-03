@@ -72,6 +72,8 @@ func (t *versionRepositoryTester) CanAddTask(packageName, version string) {
 		Name:       "test",
 		Properties: map[string]string{},
 	}
+	Expect(v).ToNot(BeNil())
+	Expect(len(v.Targets)).ToNot(Equal(0))
 	v.Targets[0].Tasks = append(v.Targets[0].Tasks, task)
 
 	err = t.repo.Save(packageName, v)

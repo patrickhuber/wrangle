@@ -21,12 +21,12 @@ func NewVersionRepository(fs filesystem.FileSystem, workingDirectory string) fee
 }
 
 func (r *versionRepository) Save(name string, version *packages.Version) error {
-	versionPath := crosspath.Join(r.workingDirectory, name, version.Version)
+	versionPath := r.GetVersionFolderPath(name, version.Version)
 	err := r.fs.MkdirAll(versionPath, 0644)
 	if err != nil {
 		return err
 	}
-	versionFile := crosspath.Join(versionPath, "package.yml")
+	versionFile := r.GetVersionFilePath(name,version.Version)
 	manifest := &packages.Manifest{
 		Package: &packages.ManifestPackage{
 			Name:    name,
@@ -42,7 +42,7 @@ func (r *versionRepository) Save(name string, version *packages.Version) error {
 }
 
 func (r *versionRepository) Get(name string, version string) (*packages.Version, error) {
-	versionFile := crosspath.Join(r.workingDirectory, name, version, "package.yml")
+	versionFile := r.GetVersionFilePath(name, version)
 	data, err := r.fs.Read(versionFile)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (r *versionRepository) Get(name string, version string) (*packages.Version,
 }
 
 func (r *versionRepository) List(name string) ([]*packages.Version, error) {
-	packagePath := crosspath.Join(r.workingDirectory, name)
+	packagePath := r.GetPackageFolderPath(name)
 	files, err := r.fs.ReadDir(packagePath)
 	if err != nil {
 		return nil, err
@@ -76,4 +76,16 @@ func (r *versionRepository) List(name string) ([]*packages.Version, error) {
 func (r *versionRepository) Remove(name string, version string) error {
 	versionPath := crosspath.Join(r.workingDirectory, name, version)
 	return r.fs.RemoveAll(versionPath)
+}
+
+func (r *versionRepository) GetPackageFolderPath(name string) string {
+	return crosspath.Join(r.workingDirectory, name)
+}
+
+func (r *versionRepository) GetVersionFilePath(name, version string) string {
+	return crosspath.Join(r.GetVersionFolderPath(name, version), "package.yml")
+}
+
+func (r *versionRepository) GetVersionFolderPath(name, version string) string {
+	return crosspath.Join(r.GetPackageFolderPath(name), version)
 }
