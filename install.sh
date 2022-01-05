@@ -17,7 +17,7 @@ esac
 
 # variables
 export VERSION=0.10.0
-export ARCHIVE=wrangle-${PLATFORM}-${ARCHITECTURE}.tgz
+export ARCHIVE=wrangle-${PLATFORM}-${ARCH}.tgz
 
 # download the cli
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
