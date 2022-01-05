@@ -1,11 +1,11 @@
-package fs_test
+package git_test
 
 import (
+	"github.com/go-git/go-billy/v5/memfs"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
-	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/feed/git"
 )
 
 var _ = Describe("VersionRespository", func() {
@@ -13,9 +13,9 @@ var _ = Describe("VersionRespository", func() {
 		tester conformance.VersionRepositoryTester
 	)
 	BeforeEach(func() {
-		fs := filesystem.NewMemory()
+		fs := memfs.New()
 		workingDirectory := "/opt/wrangle/feed"
-		repo := feedfs.NewVersionRepository(fs, workingDirectory)
+		repo := git.NewVersionRepository(fs, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {
 			for _, version := range item.Package.Versions {

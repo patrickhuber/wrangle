@@ -22,12 +22,12 @@ var _ = Describe("ItemRepository", func() {
 	})
 	Describe("List", func() {
 		It("can list all items", func() {
-			tester.CanListAllItems(2)
+			tester.CanListAllItems()
 		})
 	})
 	Describe("Get", func() {
 		It("can get single item", func() {
-			tester.CanGetPackage("other")
+			tester.CanGetItem()
 		})
 	})
 })

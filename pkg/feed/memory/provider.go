@@ -26,7 +26,7 @@ func (p *provider) Type() string {
 
 func (p *provider) Create(f *config.Feed) (feed.Service, error) {
 	if f.Type == p.Type() {
-		return NewService(f.Name, p.items...)
+		return NewService(f.Name, p.items...), nil
 	}
 	return nil, nil
 }

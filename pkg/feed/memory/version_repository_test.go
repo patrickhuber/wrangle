@@ -7,7 +7,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
 )
 
-var _ = Describe("PackageVersionRepository", func() {
+var _ = Describe("VersionRepository", func() {
 	var (
 		tester conformance.VersionRepositoryTester
 	)
@@ -21,12 +21,12 @@ var _ = Describe("PackageVersionRepository", func() {
 	})
 	Describe("Get", func() {
 		It("can get single version", func() {
-			tester.CanGetSingleVersion("test", "1.0.0")
+			tester.CanGetSingleVersion()
 		})
 	})
 	Describe("List", func() {
 		It("can list all versions", func() {
-			tester.CanListAllVersions("test", 3)
+			tester.CanListAllVersions()
 		})
 	})
 	Describe("Update", func() {
@@ -37,7 +37,7 @@ var _ = Describe("PackageVersionRepository", func() {
 			tester.CanUpdateVersionNumber("test", "1.0.0", "2.0.0")
 		})
 		It("can add task", func() {
-			tester.CanAddTask("test", "1.0.0")
+			tester.CanAddTask()
 		})
 	})
 })

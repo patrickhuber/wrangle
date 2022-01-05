@@ -26,7 +26,7 @@ func (r *versionRepository) Save(name string, version *packages.Version) error {
 	if err != nil {
 		return err
 	}
-	versionFile := r.GetVersionFilePath(name,version.Version)
+	versionFile := r.GetVersionFilePath(name, version.Version)
 	manifest := &packages.Manifest{
 		Package: &packages.ManifestPackage{
 			Name:    name,
@@ -47,9 +47,12 @@ func (r *versionRepository) Get(name string, version string) (*packages.Version,
 	if err != nil {
 		return nil, err
 	}
-	v := &packages.Version{}
-	err = yaml.Unmarshal(data, v)
-
+	manifest := &packages.Manifest{}
+	err = yaml.Unmarshal(data, manifest)
+	v := &packages.Version{
+		Version: manifest.Package.Version,
+		Targets: manifest.Package.Targets,
+	}
 	return v, err
 }
 

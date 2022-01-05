@@ -5,12 +5,16 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
+const (
+	TotalItemCount = 4
+)
+
 type ServiceTester interface {
-	CanListAllPackages(expectedCount int)
-	CanReturnLatestVersion(packageName string, expectedVersion string)
-	CanReturnSpecificVersion(packageName string, expectedVersion string)
-	CanAddVersion(packageName string, newVersion string)
-	CanUpdateExistingVersion(packageName string, version string, newVersion string)
+	CanListAllPackages()
+	CanReturnLatestVersion()
+	CanReturnSpecificVersion()
+	CanAddVersion()
+	CanUpdateExistingVersion()
 }
 
 type serviceTester struct {
@@ -23,14 +27,16 @@ func NewServiceTester(service feed.Service) ServiceTester {
 	}
 }
 
-func (t *serviceTester) CanListAllPackages(expectedCount int) {
+func (t *serviceTester) CanListAllPackages() {
 	response, err := t.service.List(&feed.ListRequest{})
 	Expect(err).To(BeNil())
 	Expect(response).ToNot(BeNil())
-	Expect(len(response.Items)).To(Equal(expectedCount))
+	Expect(len(response.Items)).To(Equal(TotalItemCount))
 }
 
-func (t *serviceTester) CanReturnLatestVersion(packageName string, expectedVersion string) {
+func (t *serviceTester) CanReturnLatestVersion() {
+	packageName := "test"
+	expectedVersion := "1.0.0"
 	response, err := t.service.List(&feed.ListRequest{
 		Where: []*feed.ItemReadAnyOf{
 			{
@@ -77,7 +83,9 @@ func (t *serviceTester) CanReturnLatestVersion(packageName string, expectedVersi
 	Expect(version.Version).To(Equal(expectedVersion))
 }
 
-func (t *serviceTester) CanReturnSpecificVersion(packageName string, expectedVersion string) {
+func (t *serviceTester) CanReturnSpecificVersion() {
+	packageName := "test"
+	expectedVersion := "1.0.1"
 	response, err := t.service.List(&feed.ListRequest{
 		Where: []*feed.ItemReadAnyOf{
 			{
@@ -124,27 +132,31 @@ func (t *serviceTester) CanReturnSpecificVersion(packageName string, expectedVer
 	Expect(version.Version).To(Equal(expectedVersion))
 }
 
-func (t *serviceTester) CanAddVersion(packageName string, newVersion string) {
+func (t *serviceTester) CanAddVersion() {
+	packageName := "test"
+	newVersion := "2.0.0"
 	response, err := t.service.Update(
 		&feed.UpdateRequest{
-			Items: []*feed.ItemUpdate{
-				{
-					Name: packageName,
-					Package: &feed.PackageUpdate{
+			Items: &feed.ItemUpdate{
+				Modify: []*feed.ItemModify{
+					{
 						Name: packageName,
-						Versions: &feed.VersionUpdate{
-							Add: []*feed.VersionAdd{
-								{
-									Version: newVersion,
-									Targets: []*feed.TargetAdd{
-										{
-											Platform:     "linux",
-											Architecture: "amd64",
-											Tasks: []*feed.TaskAdd{
-												{
-													Name: "download",
-													Properties: map[string]string{
-														"url": "https://www.google.com",
+						Package: &feed.PackageModify{
+							Name: packageName,
+							Versions: &feed.VersionUpdate{
+								Add: []*feed.VersionAdd{
+									{
+										Version: newVersion,
+										Targets: []*feed.TargetAdd{
+											{
+												Platform:     "linux",
+												Architecture: "amd64",
+												Tasks: []*feed.TaskAdd{
+													{
+														Name: "download",
+														Properties: map[string]string{
+															"url": "https://www.google.com",
+														},
 													},
 												},
 											},
@@ -163,18 +175,23 @@ func (t *serviceTester) CanAddVersion(packageName string, newVersion string) {
 
 }
 
-func (t *serviceTester) CanUpdateExistingVersion(packageName string, version string, newVersion string) {
+func (t *serviceTester) CanUpdateExistingVersion() {
+	packageName := "test"
+	version := "1.0.0"
+	newVersion := "2.0.0"
 	request := &feed.UpdateRequest{
-		Items: []*feed.ItemUpdate{
-			{
-				Name: packageName,
-				Package: &feed.PackageUpdate{
+		Items: &feed.ItemUpdate{
+			Modify: []*feed.ItemModify{
+				{
 					Name: packageName,
-					Versions: &feed.VersionUpdate{
-						Modify: []*feed.VersionModify{
-							{
-								Version:    version,
-								NewVersion: &newVersion,
+					Package: &feed.PackageModify{
+						Name: packageName,
+						Versions: &feed.VersionUpdate{
+							Modify: []*feed.VersionModify{
+								{
+									Version:    version,
+									NewVersion: &newVersion,
+								},
 							},
 						},
 					},

@@ -6,8 +6,8 @@ import (
 )
 
 type ItemRepositoryTester interface {
-	CanListAllItems(expectedCount int)
-	CanGetPackage(name string)
+	CanListAllItems()
+	CanGetItem()
 }
 
 type itemRepositoryTester struct {
@@ -20,18 +20,16 @@ func NewItemRepositoryTester(repo feed.ItemRepository) ItemRepositoryTester {
 	}
 }
 
-func (t *itemRepositoryTester) CanListAllItems(expectedCount int) {
-	result, err := t.repo.List(nil)
+func (t *itemRepositoryTester) CanListAllItems() {
+	result, err := t.repo.List()
 	Expect(err).To(BeNil())
 	Expect(result).ToNot(BeNil())
 	Expect(len(result)).ToNot(Equal(0))
 }
-func (t *itemRepositoryTester) CanGetPackage(name string) {
-	result, err := t.repo.Get(name, &feed.ItemGetInclude{
-		Platforms: true,
-		State:     true,
-		Template:  true,
-	})
+
+func (t *itemRepositoryTester) CanGetItem() {
+	name := "test"
+	result, err := t.repo.Get(name)
 	Expect(err).To(BeNil())
 	Expect(result).ToNot(BeNil())
 	Expect(result.Package).ToNot(BeNil())

@@ -1,12 +1,11 @@
-package fs_test
+package git_test
 
 import (
+	"github.com/go-git/go-billy/v5/memfs"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
-	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/feed/git"
 )
 
 var _ = Describe("ItemRepository", func() {
@@ -15,13 +14,11 @@ var _ = Describe("ItemRepository", func() {
 	)
 	BeforeEach(func() {
 		workingDirectory := "/opt/wrangle/feed"
-		fs := filesystem.NewMemory()
-		repo := feedfs.NewItemRepository(fs, workingDirectory)
-
+		fs := memfs.New()
+		repo := git.NewItemRepository(fs, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {
-			err := repo.Save(item)
-			Expect(err).To(BeNil())
+			Expect(repo.Save(item)).To(BeNil())
 		}
 		tester = conformance.NewItemRepositoryTester(repo)
 	})

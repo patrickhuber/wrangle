@@ -13,12 +13,57 @@ func GetItemList() []*feed.Item {
 				Versions: []*packages.Version{
 					{
 						Version: "1.0.1",
+						Targets: []*packages.Target{
+							{
+								Platform:     "linux",
+								Architecture: "amd64",
+								Tasks: []*packages.Task{
+									{
+										Name: "download",
+										Properties: map[string]string{
+											"url": "https://www.google.com",
+											"out": "test",
+										},
+									},
+								},
+							},
+						},
 					},
 					{
 						Version: "1.0.0",
+						Targets: []*packages.Target{
+							{
+								Platform:     "linux",
+								Architecture: "amd64",
+								Tasks: []*packages.Task{
+									{
+										Name: "download",
+										Properties: map[string]string{
+											"url": "https://www.google.com",
+											"out": "test",
+										},
+									},
+								},
+							},
+						},
 					},
 					{
 						Version: "1.1.0",
+						Targets: []*packages.Target{
+							{
+								Platform:     "linux",
+								Architecture: "amd64",
+								Tasks: []*packages.Task{
+									{
+										Name: "download",
+										Properties: map[string]string{
+											"url": "https://www.google.com",
+											"out": "test",
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -28,7 +73,7 @@ func GetItemList() []*feed.Item {
 			Template: "",
 			Platforms: []*feed.Platform{
 				{
-					Name:          "windows",
+					Name:          "linux",
 					Architectures: []string{"amd64", "386"},
 				},
 			},

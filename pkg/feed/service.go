@@ -2,6 +2,7 @@ package feed
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/patch"
@@ -56,11 +57,20 @@ func (s *service) GetNames(request *ListRequest) []string {
 	return names
 }
 
-func (s *service) GetVersions(request *ItemReadExpand) []string {
+func (s *service) GetVersions(latestVersion string, request *ItemReadExpand) []string {
 	versions := []string{}
+	if strings.TrimSpace(latestVersion) != "" {
+		versions = append(versions, latestVersion)
+	}
+	if request == nil || request.Package == nil {
+		return versions
+	}
 	for _, any := range request.Package.Where {
 		for _, all := range any.AnyOf {
 			for _, predicate := range all.AllOf {
+				if strings.TrimSpace(predicate.Version) == "" {
+					continue
+				}
 				versions = append(versions, predicate.Version)
 			}
 		}
@@ -92,13 +102,8 @@ func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
 	var items []*Item
 	var err error
 
-	include := &ItemGetInclude{
-		Platforms: true,
-		State:     true,
-		Template:  true,
-	}
 	if len(names) == 0 {
-		items, err = s.itemRepository.List(include)
+		items, err = s.itemRepository.List()
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +112,7 @@ func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
 			if !IsMatch(request.Where, name) {
 				continue
 			}
-			item, err := s.itemRepository.Get(name, include)
+			item, err := s.itemRepository.Get(name)
 			if err != nil {
 				return nil, err
 			}
@@ -118,46 +123,75 @@ func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
 }
 
 func (s *service) ExpandPackage(item *Item, expand *ItemReadExpand) ([]*packages.Version, error) {
-	filter := s.GetVersions(expand)
+
+	latestVersion := ""
+	if item.State != nil {
+		latestVersion = item.State.LatestVersion
+	}
+
+	filter := s.GetVersions(latestVersion, expand)
+	if len(filter) == 0 {
+		return s.versionRepository.List(item.Package.Name)
+	}
+
 	versions := []*packages.Version{}
-	if len(filter) > 0 {
-		for _, version := range filter {
-			v, err := s.versionRepository.Get(item.Package.Name, version)
-			if err != nil {
-				return nil, err
-			}
-			versions = append(versions, v)
+	for _, version := range filter {
+		if expand == nil || expand.Package == nil {
+			continue
 		}
-	} else {
-		var err error
-		versions, err = s.versionRepository.List(item.Package.Name)
+		if !expand.Package.IsMatch(version, latestVersion) {
+			continue
+		}
+		v, err := s.versionRepository.Get(item.Package.Name, version)
 		if err != nil {
 			return nil, err
 		}
+		versions = append(versions, v)
 	}
 	return versions, nil
 }
 
 func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 	if request == nil {
-		return &UpdateResponse{}, nil
+		return &UpdateResponse{
+			Changed: 0,
+		}, nil
 	}
 
 	updateCount := 0
+	addCount := 0
 
-	for _, i := range request.Items {
-		include := &ItemGetInclude{
-			Platforms: true,
-			State:     true,
-			Template:  true,
+	for _, add := range request.Items.Add {
+		err := s.itemRepository.Save(add)
+		if err != nil {
+			return nil, err
+		}
+		addCount++
+
+		if add.Package == nil {
+			continue
 		}
 
-		item, err := s.itemRepository.Get(i.Name, include)
+		for _, version := range add.Package.Versions {
+			err = s.versionRepository.Save(add.Package.Name, version)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	for _, modify := range request.Items.Modify {
+
+		item, err := s.itemRepository.Get(modify.Name)
 		if err != nil {
 			return nil, err
 		}
 
-		changed, err := s.ModifyItem(item, i)
+		if item == nil {
+			continue
+		}
+
+		changed, err := s.ModifyItem(item, modify)
 		if err != nil {
 			return nil, err
 		}
@@ -167,36 +201,39 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 	}
 
 	return &UpdateResponse{
-		Changed: updateCount,
+		Changed: updateCount + addCount,
 	}, nil
 }
 
-func (s *service) ModifyItem(item *Item, update *ItemUpdate) (bool, error) {
+func (s *service) ModifyItem(item *Item, modify *ItemModify) (bool, error) {
+	if modify == nil {
+		return false, nil
+	}
 	modified := false
-	if update.State != nil &&
-		update.State.LatestVersion != nil &&
-		item.State.LatestVersion != *update.State.LatestVersion {
-		item.State.LatestVersion = *update.State.LatestVersion
+	if modify.State != nil &&
+		modify.State.LatestVersion != nil &&
+		item.State.LatestVersion != *modify.State.LatestVersion {
+		item.State.LatestVersion = *modify.State.LatestVersion
 		modified = true
 	}
 
-	if update.Template != nil &&
-		item.Template != *update.Template {
-		item.Template = *update.Template
+	if modify.Template != nil &&
+		item.Template != *modify.Template {
+		item.Template = *modify.Template
 		modified = true
 	}
 
-	if update.Package == nil {
+	if modify.Package == nil {
 		return modified, nil
 	}
 
-	if update.Package.NewName != nil &&
-		*update.Package.NewName != item.Package.Name {
-		item.Package.Name = *update.Package.NewName
+	if modify.Package.NewName != nil &&
+		*modify.Package.NewName != item.Package.Name {
+		item.Package.Name = *modify.Package.NewName
 		modified = true
 	}
 
-	versionModified, err := s.UpdateVersions(item.Package.Name, update.Package.Versions)
+	versionModified, err := s.UpdateVersions(item.Package.Name, modify.Package.Versions)
 	if err != nil {
 		return false, err
 	}
@@ -205,6 +242,10 @@ func (s *service) ModifyItem(item *Item, update *ItemUpdate) (bool, error) {
 }
 
 func (s *service) UpdateVersions(name string, update *VersionUpdate) (bool, error) {
+
+	if update == nil {
+		return false, nil
+	}
 
 	added, err := s.CreateVersions(name, update.Add)
 	if err != nil {
@@ -260,8 +301,9 @@ func (s *service) ModifyVersions(name string, modifications []*VersionModify) (b
 }
 
 func (s *service) VersionModify(m *VersionModify) patch.Applicable {
-	properties := map[string]interface{}{
-		"Targets": s.TargetUpdate(m.Targets),
+	properties := map[string]interface{}{}
+	if m.Targets != nil {
+		properties["Targets"] = s.TargetUpdate(m.Targets)
 	}
 	if m.NewVersion != nil {
 		properties["Version"] = patch.NewString(*m.NewVersion)

@@ -4,7 +4,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
-func NewService(name string, items ...*feed.Item) (feed.Service, error) {
+func NewService(name string, items ...*feed.Item) feed.Service {
 	itemMap := map[string]*feed.Item{}
 	for _, i := range items {
 		if i == nil || i.Package == nil || i.Package.Name == "" {
@@ -19,5 +19,5 @@ func NewService(name string, items ...*feed.Item) (feed.Service, error) {
 		items: itemMap,
 	}
 
-	return feed.NewService(name, itemRepo, versionRepo), nil
+	return feed.NewService(name, itemRepo, versionRepo)
 }

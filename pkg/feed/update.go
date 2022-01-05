@@ -4,7 +4,7 @@ import "github.com/patrickhuber/wrangle/pkg/packages"
 
 // UpdateRequest contains all update operations for a item and entities in its hierarchy
 type UpdateRequest struct {
-	Items []*ItemUpdate
+	Items *ItemUpdate
 }
 
 type UpdateResponse struct {
@@ -13,19 +13,24 @@ type UpdateResponse struct {
 
 // ItemUpdate updates an item for the given package name
 type ItemUpdate struct {
-	Name     string
-	State    *StateUpdate
-	Template *string
-	Package  *PackageUpdate
+	Add    []*Item
+	Modify []*ItemModify
 }
 
-// StateUpdate updates the state for a given item
-type StateUpdate struct {
+type ItemModify struct {
+	Name     string
+	State    *StateModify
+	Template *string
+	Package  *PackageModify
+}
+
+// StateModify updates the state for a given item
+type StateModify struct {
 	LatestVersion *string
 }
 
-// PackageUpdate updates the given package
-type PackageUpdate struct {
+// PackageModify updates the given package
+type PackageModify struct {
 	Name     string
 	NewName  *string // for rename
 	Versions *VersionUpdate

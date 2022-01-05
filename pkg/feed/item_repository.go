@@ -6,14 +6,60 @@ type ItemGetInclude struct {
 	Template  bool
 }
 
-type ItemSaveOption struct {
+type ItemGetOption func(*ItemGetInclude)
+
+func ItemGetAll(load bool) ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.Platforms = load
+		o.State = load
+		o.Template = load
+	}
+}
+
+func ItemGetPlatforms(load bool) ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.Platforms = load
+	}
+}
+
+func ItemGetState(load bool) ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.State = load
+	}
+}
+
+func ItemGetTemplate(load bool) ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.Template = load
+	}
+}
+
+type ItemSaveInclude struct {
 	Platforms bool
 	State     bool
 	Template  bool
 }
 
+type ItemSaveOption func(*ItemSaveInclude)
+
+func ItemSavePlatforms(save bool) ItemSaveOption {
+	return func(i *ItemSaveInclude) {
+		i.Platforms = true
+	}
+}
+func ItemSaveState(save bool) ItemSaveOption {
+	return func(i *ItemSaveInclude) {
+		i.Platforms = true
+	}
+}
+func ItemSaveTemplate(save bool) ItemSaveOption {
+	return func(i *ItemSaveInclude) {
+		i.Template = true
+	}
+}
+
 type ItemRepository interface {
-	List(include *ItemGetInclude) ([]*Item, error)
-	Get(name string, include *ItemGetInclude) (*Item, error)
-	Save(item *Item, option *ItemSaveOption) error
+	List(options ...ItemGetOption) ([]*Item, error)
+	Get(name string, options ...ItemGetOption) (*Item, error)
+	Save(item *Item, options ...ItemSaveOption) error
 }

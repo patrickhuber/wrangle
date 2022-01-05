@@ -1,9 +1,12 @@
 package git
 
 import (
+	"time"
+
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
@@ -49,7 +52,27 @@ func (s *service) List(request *feed.ListRequest) (*feed.ListResponse, error) {
 }
 
 func (s *service) Update(request *feed.UpdateRequest) (*feed.UpdateResponse, error) {
-	return s.internal.Update(request)
+	response, err := s.internal.Update(request)
+	if err != nil {
+		return nil, err
+	}
+
+	worktree, err := s.repo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = worktree.Commit("initial revision", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "John Doe",
+			Email: "john@doe.org",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 func (s *service) Generate(request *feed.GenerateRequest) (*feed.GenerateResponse, error) {

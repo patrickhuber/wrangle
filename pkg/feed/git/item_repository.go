@@ -9,6 +9,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	PlatformsFile = "platforms.yml"
+	StateFile     = "state.yml"
+	TemplateFile  = "template.yml"
+)
+
 type itemRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
@@ -21,8 +27,8 @@ func NewItemRepository(fs billy.Filesystem, workingDirectory string) feed.ItemRe
 	}
 }
 
-func (s *itemRepository) List(include *feed.ItemGetInclude) ([]*feed.Item, error) {
-	files, err := s.fs.ReadDir(s.workingDirectory)
+func (r *itemRepository) List(options ...feed.ItemGetOption) ([]*feed.Item, error) {
+	files, err := r.fs.ReadDir(r.workingDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +37,7 @@ func (s *itemRepository) List(include *feed.ItemGetInclude) ([]*feed.Item, error
 		if !f.IsDir() {
 			continue
 		}
-		item, err := s.Get(f.Name(), include)
+		item, err := r.Get(f.Name(), options...)
 		if err != nil {
 			return nil, err
 		}
@@ -40,9 +46,9 @@ func (s *itemRepository) List(include *feed.ItemGetInclude) ([]*feed.Item, error
 	return items, nil
 }
 
-func (s *itemRepository) Get(name string, include *feed.ItemGetInclude) (*feed.Item, error) {
-	packagePath := crosspath.Join(s.workingDirectory, name)
-	_, err := s.fs.Stat(packagePath)
+func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.Item, error) {
+	packagePath := crosspath.Join(r.workingDirectory, name)
+	_, err := r.fs.Stat(packagePath)
 	if err != nil {
 		return nil, err
 	}
@@ -51,101 +57,136 @@ func (s *itemRepository) Get(name string, include *feed.ItemGetInclude) (*feed.I
 			Name: name,
 		},
 	}
-	if include == nil {
-		return item, nil
+	include := &feed.ItemGetInclude{
+		Platforms: true,
+		State:     true,
+		Template:  true,
+	}
+	for _, option := range options {
+		option(include)
 	}
 	if include.Platforms {
-		platforms, err := s.GetPlatforms(name)
+		platforms, err := r.GetPlatforms(name)
 		if err != nil {
 			return nil, err
 		}
 		item.Platforms = platforms
 	}
 	if include.State {
-		state, err := s.GetState(name)
+		state, err := r.GetState(name)
 		if err != nil {
 			return nil, err
 		}
 		item.State = state
 	}
-	return nil, nil
+	if include.Template {
+		template, err := r.GetTemplate(name)
+		if err != nil {
+			return nil, err
+		}
+		item.Template = template
+	}
+	return item, nil
 }
 
-func (s *itemRepository) GetPlatforms(packageName string) ([]*feed.Platform, error) {
-	var platforms []*feed.Platform
-	err := s.GetObject(packageName, "platforms.yml", platforms)
+func (r *itemRepository) GetPlatforms(packageName string) ([]*feed.Platform, error) {
+	platforms := []*feed.Platform{}
+	err := r.GetObject(packageName, PlatformsFile, &platforms)
 	return platforms, err
 }
 
-func (s *itemRepository) GetState(packageName string) (*feed.State, error) {
-	var state *feed.State
-	err := s.GetObject(packageName, "state.yml", state)
+func (r *itemRepository) GetState(packageName string) (*feed.State, error) {
+	state := &feed.State{}
+	err := r.GetObject(packageName, StateFile, state)
 	return state, err
 }
 
-func (s *itemRepository) GetObject(packageName, fileName string, out interface{}) error {
-	filePath := crosspath.Join(s.workingDirectory, packageName, fileName)
-	content, err := util.ReadFile(s.fs, filePath)
+func (r *itemRepository) GetTemplate(packageName string) (string, error) {
+	content, err := r.ReadFile(packageName, TemplateFile)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
+}
+
+func (r *itemRepository) GetObject(packageName, fileName string, out interface{}) error {
+	content, err := r.ReadFile(packageName, fileName)
 	if err != nil {
 		return err
 	}
 	return yaml.Unmarshal(content, out)
 }
 
-func (s *itemRepository) Save(item *feed.Item, option *feed.ItemSaveOption) error {
-	packageDirectory := crosspath.Join(s.workingDirectory, item.Package.Name)
-	err := s.fs.MkdirAll(packageDirectory, 0600)
+func (r *itemRepository) GetItemPath(name string) string {
+	return crosspath.Join(r.workingDirectory, name)
+}
+
+func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
+	itemPath := r.GetItemPath(name)
+	filePath := crosspath.Join(itemPath, fileName)
+	return util.ReadFile(r.fs, filePath)
+}
+
+func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {
+	err := r.fs.MkdirAll(r.GetItemPath(item.Package.Name), 0600)
 	if err != nil {
 		return err
 	}
-	if option == nil {
-		return nil
+	include := &feed.ItemSaveInclude{
+		Platforms: true,
+		State:     true,
+		Template:  true,
+	}
+	for _, option := range options {
+		option(include)
 	}
 
-	if option.Platforms {
-		err = s.SavePlatforms(item.Package.Name, item.Platforms)
+	if include.Platforms {
+		err = r.SavePlatforms(item.Package.Name, item.Platforms)
 		if err != nil {
 			return err
 		}
 	}
 
-	if option.State {
-		err = s.SaveState(item.Package.Name, item.State)
+	if include.State {
+		err = r.SaveState(item.Package.Name, item.State)
 		if err != nil {
 			return err
 		}
 	}
 
-	if !option.Template {
-		return nil
+	if !include.Template {
+		err = r.SaveTemplate(item.Package.Name, item.Template)
+		if err != nil {
+			return err
+		}
 	}
-	return s.SaveTemplate(item.Package.Name, item.Template)
+	return r.SaveTemplate(item.Package.Name, item.Template)
 }
 
-func (s *itemRepository) SaveObject(packageName string, fileName string, object interface{}) error {
+func (r *itemRepository) SavePlatforms(packageName string, platforms []*feed.Platform) error {
+	return r.SaveObject(packageName, PlatformsFile, platforms)
+}
+
+func (r *itemRepository) SaveState(packageName string, state *feed.State) error {
+	return r.SaveObject(packageName, StateFile, state)
+}
+
+func (r *itemRepository) SaveTemplate(packageName string, template string) error {
+	return r.WriteFile(packageName, TemplateFile, []byte(template))
+}
+
+func (r *itemRepository) SaveObject(packageName string, fileName string, object interface{}) error {
 	content, err := yaml.Marshal(object)
 	if err != nil {
 		return err
 	}
-	filePath := crosspath.Join(s.workingDirectory, packageName, "platforms.yml")
-	return util.WriteFile(s.fs, filePath, content, 0644)
-
+	return r.WriteFile(packageName, fileName, content)
 }
 
-func (s *itemRepository) SavePlatforms(packageName string, platforms []*feed.Platform) error {
-	if len(platforms) == 0 {
-		return nil
-	}
-	return s.SaveObject(packageName, "platforms.yml", platforms)
-}
+func (r *itemRepository) WriteFile(name string, fileName string, content []byte) error {
+	itemPath := r.GetItemPath(name)
+	filePath := crosspath.Join(itemPath, fileName)
 
-func (s *itemRepository) SaveState(packageName string, state *feed.State) error {
-	if state == nil {
-		return nil
-	}
-	return s.SaveObject(packageName, "state.yml", state)
-}
-
-func (s *itemRepository) SaveTemplate(packageName string, template string) error {
-	return s.SaveObject(packageName, "template.yml", template)
+	return util.WriteFile(r.fs, filePath, content, 0644)
 }

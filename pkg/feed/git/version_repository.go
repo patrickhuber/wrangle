@@ -58,8 +58,8 @@ func (s *versionRepository) GetManifest(name string, version string) (*packages.
 	if err != nil {
 		return nil, err
 	}
-	var manifest *packages.Manifest
-	err = yaml.Unmarshal(content, manifest)
+	manifest := &packages.Manifest{}
+	err = yaml.Unmarshal(content, &manifest)
 	return manifest, err
 }
 
