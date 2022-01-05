@@ -1,0 +1,10 @@
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/servercore:ltsc2022
+ARG LOCAL
+SHELL ["powershell", "-command"]
+COPY install.ps1 install.ps1
+RUN if ($env:LOCAL -eq \"true\") { \
+    ./install.ps1 ; \
+} \
+else { \
+    Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/patrickhuber/wrangle/main/install.ps1' | iex ; \
+}
