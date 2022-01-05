@@ -11,7 +11,7 @@ Darwin) export PLATFORM=darwin;;
 *) echo "expected OSTYPE 'linux-gnu' or 'darwin'. found $OSTYPE. no installer is available for this OSTYPE"; exit 1 ;;
 esac
 
-echo "platform: '$PLATFROM'"
+echo "platform: '$PLATFORM'"
 
 # determine the architecture
 ARCH=$(uname -m)
