@@ -24,8 +24,8 @@ var _ = Describe("Download", func() {
 					rw.Write([]byte("hello"))
 					return
 				}
-				rw.Write([]byte("not found"))
 				rw.WriteHeader(http.StatusNotFound)
+				rw.Write([]byte("not found"))
 			}))
 
 			defer server.Close()
@@ -33,8 +33,8 @@ var _ = Describe("Download", func() {
 			cfg := &config.Config{
 				Paths: &config.Paths{
 					Packages: "/wrangle/packages",
-					Bin:     "/wrangle/bin",
-					Root:    "/wrangle",
+					Bin:      "/wrangle/bin",
+					Root:     "/wrangle",
 				},
 			}
 			fs := filesystem.FromAferoFS(afero.NewMemMapFs())

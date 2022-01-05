@@ -53,9 +53,10 @@ func newBaselineTest() Setup {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.URL.Path, "/test") {
 			rw.Write([]byte("hello"))
+			return
 		}
-		rw.Write([]byte("not found"))
 		rw.WriteHeader(http.StatusNotFound)
+		rw.Write([]byte("not found"))
 	}))
 	container := di.NewContainer()
 	t := &test{
@@ -68,7 +69,7 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(afero.NewMemMapFs, di.WithLifetime(di.LifetimeStatic))
 	container.RegisterConstructor(filesystem.FromAferoFS)
 	container.RegisterConstructor(config.NewDefaultReaderWithTestMode)
-	container.RegisterConstructor(ilog.Default)
+	container.RegisterConstructor(ilog.Memory)
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(tasks.NewDownloadProvider)
 	container.RegisterConstructor(tasks.NewExtractProvider)
