@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # determine if linux or darwin
 OS=$(uname -s)
