@@ -51,6 +51,16 @@ func (r *defaultReader) Get() (*Config, error) {
 			Packages: crosspath.Join(root, "packages"),
 			Bin:      crosspath.Join(root, "bin"),
 		},
+		References: []*Reference{
+			{
+				Name:    "wrangle",
+				Version: "latest",
+			},
+			{
+				Name:    "shim",
+				Version: "latest",
+			},
+		},
 	}
 	if r.test {
 		cfg.Feeds = []*Feed{

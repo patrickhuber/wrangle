@@ -30,12 +30,8 @@ func NewBootstrap(i Install, fs filesystem.FileSystem, defaultReader config.Read
 }
 
 func (b *bootstrap) Execute(r *BootstrapRequest) error {
-	err := b.validate()
-	if err != nil {
-		return err
-	}
 
-	err = b.createGlobalConfig(r)
+	err := b.ensureGlobalConfig(r)
 	if err != nil {
 		return err
 	}
@@ -43,26 +39,47 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 	return b.installPackages(r)
 }
 
-func (b *bootstrap) validate() error {
-	return nil
-}
+func (b *bootstrap) ensureGlobalConfig(req *BootstrapRequest) error {
 
-func (b *bootstrap) createGlobalConfig(req *BootstrapRequest) error {
+	// does the global config exist?
+	exists, err := b.fs.Exists(req.GlobalConfigFile)
+	if err != nil {
+		return err
+	}
+
+	if exists && !req.Force {
+		return nil
+	}
 
 	cfg, err := b.reader.Get()
 	if err != nil {
 		return err
 	}
-	// TODO: req.Force?
+
 	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
 	return configProvider.Set(cfg)
 }
 
+// getPackageReferences loads the packages references from the global configuration
+func (b *bootstrap) getPackageReferences(req *BootstrapRequest) ([]*config.Reference, error) {
+	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
+	cfg, err := configProvider.Get()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.References, nil
+}
+
 func (b *bootstrap) installPackages(req *BootstrapRequest) error {
-	packageList := []string{"wrangle", "shim"}
-	for _, p := range packageList {
+
+	references, err := b.getPackageReferences(req)
+	if err != nil {
+		return err
+	}
+	for _, reference := range references {
 		request := &InstallRequest{
-			Package:          p,
+			Package:          reference.Name,
+			Version:          reference.Version,
 			GlobalConfigFile: req.GlobalConfigFile,
 		}
 		err := b.install.Execute(request)

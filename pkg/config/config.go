@@ -1,19 +1,23 @@
 package config
 
+const (
+	TagLatest = "latest"
+)
+
 // Config represents a configuration document for wrangle
 type Config struct {
-	Paths      *Paths              `yaml:"paths,omitempty"`
-	Feeds      []*Feed             `yaml:"feeds,omitempty"`
-	Stores     []*Store            `yaml:"stores,omitempty"`
-	Processes  []*Process          `yaml:"processes,omitempty"`
-	References []*PackageReference `yaml:"references,omitempty"`
+	Paths      *Paths       `yaml:"paths,omitempty"`
+	Feeds      []*Feed      `yaml:"feeds,omitempty"`
+	Stores     []*Store     `yaml:"stores,omitempty"`
+	Processes  []*Process   `yaml:"processes,omitempty"`
+	References []*Reference `yaml:"references,omitempty"`
 }
 
 // Paths contains the defualt paths for the config
 type Paths struct {
 	Packages string `yaml:"packages"`
-	Bin     string `yaml:"bin"`
-	Root    string `yaml:"root"`
+	Bin      string `yaml:"bin"`
+	Root     string `yaml:"root"`
 }
 
 // Feed represents a pacakge feed
@@ -32,8 +36,8 @@ type Store struct {
 	Params map[string]string `yaml:"params"`
 }
 
-// PackageReference represents a reference to a package
-type PackageReference struct {
+// Reference represents a reference to a package
+type Reference struct {
 	Name    string `yaml:"name"`
 	Version string `yaml:"version"`
 }

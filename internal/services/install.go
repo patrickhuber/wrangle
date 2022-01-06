@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
@@ -21,6 +22,7 @@ type install struct {
 type InstallRequest struct {
 	GlobalConfigFile string
 	Package          string
+	Version          string
 }
 
 type Install interface {
@@ -72,7 +74,7 @@ func (i *install) Execute(r *InstallRequest) error {
 		return fmt.Errorf("the global config file '%s' contains no feeds", r.GlobalConfigFile)
 	}
 
-	items, err := i.getItems(r.Package, cfg)
+	items, err := i.getItems(r.Package, r.Version, cfg)
 	if err != nil {
 		return err
 	}
@@ -109,19 +111,19 @@ func (i *install) Execute(r *InstallRequest) error {
 		}
 	}
 	if !oneVersionMatched {
-		return fmt.Errorf("no packges were installed because no versions were matched to the criteria")
+		return fmt.Errorf("no packages were installed because no versions were matched to the criteria")
 	}
 	return nil
 }
 
-func (i *install) getItems(name string, cfg *config.Config) ([]*feed.Item, error) {
+func (i *install) getItems(name string, version string, cfg *config.Config) ([]*feed.Item, error) {
 	items := []*feed.Item{}
 	for _, f := range cfg.Feeds {
 		svc, err := i.serviceFactory.Create(f)
 		if err != nil {
 			return nil, err
 		}
-		request := i.createListItemRequest(name, "", true)
+		request := i.createListItemRequest(name, version)
 		response, err := svc.List(request)
 		if err != nil {
 			return nil, err
@@ -150,7 +152,13 @@ func (i *install) packageTargetTaskToTask(task *packages.Task) *tasks.Task {
 	}
 }
 
-func (i *install) createListItemRequest(name, version string, latest bool) *feed.ListRequest {
+func (i *install) createListItemRequest(name, version string) *feed.ListRequest {
+	predicate := &feed.ItemReadExpandPackagePredicate{}
+	if strings.EqualFold(version, config.TagLatest) || strings.EqualFold(strings.TrimSpace(version), "") {
+		predicate.Latest = true
+	} else {
+		predicate.Version = version
+	}
 	return &feed.ListRequest{
 		Where: []*feed.ItemReadAnyOf{
 			{
@@ -172,10 +180,7 @@ func (i *install) createListItemRequest(name, version string, latest bool) *feed
 						AnyOf: []*feed.ItemReadExpandPackageAllOf{
 							{
 								AllOf: []*feed.ItemReadExpandPackagePredicate{
-									{
-										Latest:  latest,
-										Version: version,
-									},
+									predicate,
 								},
 							},
 						},
