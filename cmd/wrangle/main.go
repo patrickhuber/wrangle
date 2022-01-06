@@ -101,6 +101,20 @@ func main() {
 		Action: commands.Install,
 	}
 
+	// initialize subcommand
+	initialize := &cli.Command{
+		Name:    "initialize",
+		Aliases: []string{"init"},
+		Action:  commands.Initialize,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Value:   false,
+			},
+		},
+	}
+
 	// bootstrap subcommand
 	bootstrap := &cli.Command{
 		Name:   "bootstrap",
@@ -120,6 +134,7 @@ func main() {
 		list,
 		get,
 		install,
+		initialize,
 	}
 	err = app.Run(os.Args)
 	handle(err)

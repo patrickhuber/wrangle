@@ -6,9 +6,9 @@ import (
 )
 
 type bootstrap struct {
-	install Install
-	fs      filesystem.FileSystem
-	reader  config.Reader
+	install    Install
+	initialize Initialize
+	fs         filesystem.FileSystem
 }
 
 type BootstrapRequest struct {
@@ -21,53 +21,25 @@ type Bootstrap interface {
 	Execute(r *BootstrapRequest) error
 }
 
-func NewBootstrap(i Install, fs filesystem.FileSystem, defaultReader config.Reader) Bootstrap {
+func NewBootstrap(install Install, initialize Initialize, fs filesystem.FileSystem) Bootstrap {
 	return &bootstrap{
-		install: i,
-		fs:      fs,
-		reader:  defaultReader,
+		install:    install,
+		initialize: initialize,
+		fs:         fs,
 	}
 }
 
 func (b *bootstrap) Execute(r *BootstrapRequest) error {
 
-	err := b.ensureGlobalConfig(r)
-	if err != nil {
+	if err := b.initialize.Execute(&InitializeRequest{
+		ApplicationName:  r.ApplicationName,
+		GlobalConfigFile: r.GlobalConfigFile,
+		Force:            r.Force,
+	}); err != nil {
 		return err
 	}
 
 	return b.installPackages(r)
-}
-
-func (b *bootstrap) ensureGlobalConfig(req *BootstrapRequest) error {
-
-	// does the global config exist?
-	exists, err := b.fs.Exists(req.GlobalConfigFile)
-	if err != nil {
-		return err
-	}
-
-	if exists && !req.Force {
-		return nil
-	}
-
-	cfg, err := b.reader.Get()
-	if err != nil {
-		return err
-	}
-
-	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
-	return configProvider.Set(cfg)
-}
-
-// getPackageReferences loads the packages references from the global configuration
-func (b *bootstrap) getPackageReferences(req *BootstrapRequest) ([]*config.Reference, error) {
-	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
-	cfg, err := configProvider.Get()
-	if err != nil {
-		return nil, err
-	}
-	return cfg.References, nil
 }
 
 func (b *bootstrap) installPackages(req *BootstrapRequest) error {
@@ -88,4 +60,14 @@ func (b *bootstrap) installPackages(req *BootstrapRequest) error {
 		}
 	}
 	return nil
+}
+
+// getPackageReferences loads the packages references from the global configuration
+func (b *bootstrap) getPackageReferences(req *BootstrapRequest) ([]*config.Reference, error) {
+	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
+	cfg, err := configProvider.Get()
+	if err != nil {
+		return nil, err
+	}
+	return cfg.References, nil
 }

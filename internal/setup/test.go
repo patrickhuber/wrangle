@@ -77,6 +77,7 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(tasks.NewRunner)
 	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(services.NewInstall)
+	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewBootstrap)
 	return t
 }

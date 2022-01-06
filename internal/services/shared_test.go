@@ -59,6 +59,18 @@ func ResolveInstallService(container di.Container) (services.Install, error) {
 	return reader, nil
 }
 
+func ResolveInitializeService(container di.Container) (services.Initialize, error) {
+	obj, err := container.Resolve(types.InitializeService)
+	if err != nil {
+		return nil, err
+	}
+	reader, ok := obj.(services.Initialize)
+	if !ok {
+		return nil, fmt.Errorf("Unable to cast initialize service")
+	}
+	return reader, nil
+}
+
 func ResolveBootstrapService(container di.Container) (services.Bootstrap, error) {
 	obj, err := container.Resolve(types.BootstrapService)
 	if err != nil {

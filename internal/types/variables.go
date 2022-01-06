@@ -14,6 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 )
 
+var InitializeService = reflect.TypeOf((*services.Initialize)(nil)).Elem()
 var InstallService = reflect.TypeOf((*services.Install)(nil)).Elem()
 var BootstrapService = reflect.TypeOf((*services.Bootstrap)(nil)).Elem()
 var FileSystem = reflect.TypeOf((*filesystem.FileSystem)(nil)).Elem()
