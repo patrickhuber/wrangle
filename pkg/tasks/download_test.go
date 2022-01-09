@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/config"
+	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
@@ -46,8 +47,14 @@ var _ = Describe("Download", func() {
 					"out": "test-local",
 				},
 			}
-			err := provider.Execute(task, tasks.NewDefaultMetadata(cfg, "test", "1.0.0"))
+			metadata := tasks.NewDefaultMetadata(cfg, "test", "1.0.0")
+			err := provider.Execute(task, metadata)
 			Expect(err).To(BeNil())
+
+			// verify the file was downloaded
+			ok, err := fs.Exists(crosspath.Join(metadata.PackageVersionPath, "test-local"))
+			Expect(err).To(BeNil())
+			Expect(ok).To(BeTrue())
 		})
 	})
 })
