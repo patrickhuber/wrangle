@@ -2,7 +2,7 @@ package githubrelease_test
 
 import (
 	"github.com/google/go-github/v33/github"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/resource/githubrelease"
 )

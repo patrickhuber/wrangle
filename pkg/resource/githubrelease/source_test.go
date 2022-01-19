@@ -3,7 +3,7 @@ package githubrelease_test
 import (
 	"regexp"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/resource/githubrelease"
 )

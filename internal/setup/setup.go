@@ -3,7 +3,7 @@ package setup
 import (
 	"io"
 
-	"github.com/patrickhuber/wrangle/pkg/di"
+	"github.com/patrickhuber/di"
 )
 
 type Setup interface {

@@ -2,7 +2,7 @@ package git_test
 
 import (
 	"github.com/go-git/go-billy/v5/memfs"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"

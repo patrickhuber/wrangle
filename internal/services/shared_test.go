@@ -3,10 +3,10 @@ package services_test
 import (
 	"fmt"
 
+	"github.com/patrickhuber/di"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/di"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 )
