@@ -3,7 +3,7 @@ package setup
 import (
 	"io"
 
-	"github.com/patrickhuber/di"
+	"github.com/patrickhuber/go-di"
 )
 
 type Setup interface {
