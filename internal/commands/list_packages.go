@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/patrickhuber/di"
+	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/feed"

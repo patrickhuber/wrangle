@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/patrickhuber/di"
+	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/global"

@@ -14,7 +14,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.0
 	github.com/onsi/ginkgo/v2 v2.0.0
 	github.com/onsi/gomega v1.17.0
-	github.com/patrickhuber/di v0.1.0
 	github.com/patrickhuber/go-di v0.3.2
 	github.com/spf13/afero v1.6.0
 	github.com/urfave/cli/v2 v2.3.0
