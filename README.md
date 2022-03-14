@@ -72,16 +72,11 @@ Remove-Item wrangle.exe
 
 ## Package Management
 
-Concepts
+Wrangle is a simple package manager much like [arkade](https://github.com/alexellis/arkade). Arkade tends to focus on the lastest package version while Wrangle is fully package aware. Arkade also embeds its package feed into the execuable while Wrangle utilizes external package feeds.
 
-* Feeds
-* Packages
-* Versions
+Wrangle can find packages in one or more feeds. The default feed is https://github.com/patrickhuber/wrangle-packages.
 
-Commands
-
-* Install
-* Upgrade
+When wrangle bootstrap is called, wrangle will go to default feed (or the overrided feed) and install itself, a shim execuable and 
 
 ### Feeds
 

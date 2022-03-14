@@ -41,8 +41,7 @@ var _ = Describe("Install", func() {
 		Expect(err).To(BeNil())
 
 		req := &services.InstallRequest{
-			Package:          "test",
-			GlobalConfigFile: globalConfigPath,
+			Package: "test",
 		}
 
 		err = install.Execute(req)

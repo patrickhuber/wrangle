@@ -36,7 +36,7 @@ func ResolveOperatingSystem(container di.Container) (operatingsystem.OS, error) 
 }
 
 func ResolveConfigReader(container di.Container) (config.Reader, error) {
-	obj, err := container.Resolve(types.ConfigReader)
+	obj, err := container.Resolve(types.ConfigProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -81,4 +81,16 @@ func ResolveBootstrapService(container di.Container) (services.Bootstrap, error)
 		return nil, fmt.Errorf("Unable to cast bootstrap service")
 	}
 	return bootstrap, nil
+}
+
+func ResolveProperties(container di.Container) (config.Properties, error) {
+	obj, err := container.Resolve(types.Properties)
+	if err != nil {
+		return nil, err
+	}
+	properties, ok := obj.(config.Properties)
+	if !ok {
+		return nil, fmt.Errorf("unable to cast properties")
+	}
+	return properties, nil
 }

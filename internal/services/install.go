@@ -13,6 +13,7 @@ import (
 )
 
 type install struct {
+	configProvider config.Provider
 	fs             filesystem.FileSystem
 	serviceFactory feed.ServiceFactory
 	runner         tasks.Runner
@@ -20,9 +21,8 @@ type install struct {
 }
 
 type InstallRequest struct {
-	GlobalConfigFile string
-	Package          string
-	Version          string
+	Package string
+	Version string
 }
 
 type Install interface {
@@ -33,12 +33,14 @@ func NewInstall(
 	fs filesystem.FileSystem,
 	serviceFactory feed.ServiceFactory,
 	runner tasks.Runner,
-	o operatingsystem.OS) Install {
+	o operatingsystem.OS,
+	configProvider config.Provider) Install {
 	return &install{
 		fs:             fs,
 		serviceFactory: serviceFactory,
 		runner:         runner,
 		opsys:          o,
+		configProvider: configProvider,
 	}
 }
 
@@ -64,14 +66,13 @@ func (i *install) Execute(r *InstallRequest) error {
 		return err
 	}
 
-	configProvider := config.NewFileProvider(i.fs, r.GlobalConfigFile)
-	cfg, err := configProvider.Get()
+	cfg, err := i.configProvider.Get()
 	if err != nil {
 		return err
 	}
 
 	if len(cfg.Feeds) == 0 {
-		return fmt.Errorf("the global config file '%s' contains no feeds", r.GlobalConfigFile)
+		return fmt.Errorf("the global config file contains no feeds")
 	}
 
 	items, err := i.getItems(r.Package, r.Version, cfg)

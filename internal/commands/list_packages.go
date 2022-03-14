@@ -2,10 +2,9 @@ package commands
 
 import (
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/internal/types"
+	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/global"
 	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/structio"
@@ -13,9 +12,9 @@ import (
 )
 
 type ListPackagesCommand struct {
-	FeedService feed.Service
-	Logger      ilog.Logger
-	Console     console.Console
+	FeedService feed.Service    `inject:""`
+	Logger      ilog.Logger     `inject:""`
+	Console     console.Console `inject:""`
 	Options     *ListPackagesOptions
 }
 
@@ -24,32 +23,14 @@ type ListPackagesOptions struct {
 }
 
 func ListPackages(ctx *cli.Context) error {
-	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
-
-	feedService, err := resolver.Resolve(types.FeedService)
-	if err != nil {
-		return err
+	resolver := app.GetResolver(ctx)
+	listPackagesCommand := &ListPackagesCommand{
+		Options: &ListPackagesOptions{
+			Output: ctx.String("output"),
+		},
 	}
-
-	logger, err := resolver.Resolve(types.Logger)
-	if err != nil {
-		return err
-	}
-
-	con, err := resolver.Resolve(types.Console)
-	if err != nil {
-		return err
-	}
-
-	return ListPackagesInternal(
-		&ListPackagesCommand{
-			FeedService: feedService.(feed.Service),
-			Logger:      logger.(ilog.Logger),
-			Console:     con.(console.Console),
-			Options: &ListPackagesOptions{
-				Output: ctx.String("output"),
-			},
-		})
+	di.Inject(resolver, listPackagesCommand)
+	return ListPackagesInternal(listPackagesCommand)
 }
 
 func ListPackagesInternal(cmd *ListPackagesCommand) error {

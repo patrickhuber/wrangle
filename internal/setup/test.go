@@ -8,9 +8,13 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/go-di"
+	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/types"
+
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
+	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/env"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
@@ -68,7 +72,45 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(env.New)
 	container.RegisterConstructor(afero.NewMemMapFs, di.WithLifetime(di.LifetimeStatic))
 	container.RegisterConstructor(filesystem.FromAferoFS)
-	container.RegisterConstructor(config.NewDefaultReaderWithTestMode)
+	container.RegisterDynamic(types.Properties, func(r di.Resolver) (interface{}, error) {
+		obj, err := r.Resolve(types.OS)
+		if err != nil {
+			return nil, err
+		}
+		opsys, ok := obj.(operatingsystem.OS)
+		if !ok {
+			return nil, fmt.Errorf("unable to resolve operating system")
+		}
+		properties := config.NewProperties()
+		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
+		properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
+		return properties, nil
+	})
+	container.RegisterConstructor(internal_config.NewTest)
+	container.RegisterDynamic(types.ConfigProvider, func(r di.Resolver) (interface{}, error) {
+		fs, err := r.Resolve(types.FileSystem)
+		if err != nil {
+			return nil, err
+		}
+		prop, err := r.Resolve(types.Properties)
+		if err != nil {
+			return nil, err
+		}
+		provider := config.NewFileProvider(fs.(filesystem.FileSystem), prop.(config.Properties))
+		o, err := r.Resolve(types.OS)
+		if err != nil {
+			return nil, err
+		}
+		e, err := r.Resolve(types.Environment)
+		if err != nil {
+			return nil, err
+		}
+		cfg, err := internal_config.NewTest(o.(operatingsystem.OS), e.(env.Environment))
+		if err != nil {
+			return nil, err
+		}
+		return config.NewDefaultableProvider(provider, cfg), nil
+	})
 	container.RegisterConstructor(ilog.Memory)
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(tasks.NewDownloadProvider)

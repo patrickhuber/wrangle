@@ -11,25 +11,31 @@ import (
 var _ = Describe("Initialize", func() {
 
 	Context("when linux", func() {
-		s := setup.NewLinuxTest()
-		t := &initializeTester{
-			s: s,
-		}
-		t.Run()
+		It("can initialize", func() {
+			s := setup.NewLinuxTest()
+			t := &initializeTester{
+				s: s,
+			}
+			t.Run()
+		})
 	})
 	Context("when darwin", func() {
-		s := setup.NewLinuxTest()
-		t := &initializeTester{
-			s: s,
-		}
-		t.Run()
+		It("can initialize", func() {
+			s := setup.NewLinuxTest()
+			t := &initializeTester{
+				s: s,
+			}
+			t.Run()
+		})
 	})
 	Context("when windows", func() {
-		s := setup.NewLinuxTest()
-		t := &initializeTester{
-			s: s,
-		}
-		t.Run()
+		It("can initialize", func() {
+			s := setup.NewLinuxTest()
+			t := &initializeTester{
+				s: s,
+			}
+			t.Run()
+		})
 	})
 })
 
@@ -50,8 +56,7 @@ func (t *initializeTester) Run() {
 	Expect(err).To(BeNil())
 
 	req := &services.InitializeRequest{
-		GlobalConfigFile: globalConfigFile,
-		ApplicationName:  "",
+		ApplicationName: "",
 	}
 	err = initialize.Execute(req)
 	Expect(err).To(BeNil())

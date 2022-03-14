@@ -10,6 +10,10 @@ type FileSystem interface {
 	Rename(oldname, newName string) error
 	Create(path string) (File, error)
 	Write(path string, data []byte, permissions os.FileMode) error
+	// Exists will return the following:
+	// If the file doesn't exist, this function will return (false, nil).
+	// If there is some other error, this function will return (false, err).
+	// If the file exists, this function will return (true, nil).
 	Exists(path string) (bool, error)
 	IsDir(path string) (bool, error)
 	Mkdir(path string, permissions os.FileMode) error

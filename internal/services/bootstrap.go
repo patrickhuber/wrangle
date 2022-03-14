@@ -6,9 +6,10 @@ import (
 )
 
 type bootstrap struct {
-	install    Install
-	initialize Initialize
-	fs         filesystem.FileSystem
+	install        Install
+	initialize     Initialize
+	fs             filesystem.FileSystem
+	configProvider config.Provider
 }
 
 type BootstrapRequest struct {
@@ -21,21 +22,22 @@ type Bootstrap interface {
 	Execute(r *BootstrapRequest) error
 }
 
-func NewBootstrap(install Install, initialize Initialize, fs filesystem.FileSystem) Bootstrap {
+func NewBootstrap(install Install, initialize Initialize, fs filesystem.FileSystem, configProvider config.Provider) Bootstrap {
 	return &bootstrap{
-		install:    install,
-		initialize: initialize,
-		fs:         fs,
+		install:        install,
+		initialize:     initialize,
+		fs:             fs,
+		configProvider: configProvider,
 	}
 }
 
 func (b *bootstrap) Execute(r *BootstrapRequest) error {
 
-	if err := b.initialize.Execute(&InitializeRequest{
-		ApplicationName:  r.ApplicationName,
-		GlobalConfigFile: r.GlobalConfigFile,
-		Force:            r.Force,
-	}); err != nil {
+	err := b.initialize.Execute(&InitializeRequest{
+		ApplicationName: r.ApplicationName,
+		Force:           r.Force,
+	})
+	if err != nil {
 		return err
 	}
 
@@ -50,9 +52,8 @@ func (b *bootstrap) installPackages(req *BootstrapRequest) error {
 	}
 	for _, reference := range references {
 		request := &InstallRequest{
-			Package:          reference.Name,
-			Version:          reference.Version,
-			GlobalConfigFile: req.GlobalConfigFile,
+			Package: reference.Name,
+			Version: reference.Version,
 		}
 		err := b.install.Execute(request)
 		if err != nil {
@@ -64,8 +65,8 @@ func (b *bootstrap) installPackages(req *BootstrapRequest) error {
 
 // getPackageReferences loads the packages references from the global configuration
 func (b *bootstrap) getPackageReferences(req *BootstrapRequest) ([]*config.Reference, error) {
-	configProvider := config.NewFileProvider(b.fs, req.GlobalConfigFile)
-	cfg, err := configProvider.Get()
+	// maybe properties are passed into the get function?
+	cfg, err := b.configProvider.Get()
 	if err != nil {
 		return nil, err
 	}

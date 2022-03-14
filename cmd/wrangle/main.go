@@ -5,9 +5,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/internal/types"
+	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/enums"
 	"github.com/patrickhuber/wrangle/pkg/global"
@@ -66,6 +68,17 @@ func main() {
 				Required:    false,
 				DefaultText: "table",
 			},
+		},
+		Before: func(ctx *cli.Context) error {
+			globalConfigFile := ctx.String(global.FlagConfig)
+			resolver := app.GetResolver(ctx)
+			o, err := resolver.Resolve(types.Properties)
+			if err != nil {
+				return err
+			}
+			properties := o.(config.Properties)
+			properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
+			return nil
 		},
 	}
 

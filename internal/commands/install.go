@@ -3,10 +3,9 @@ package commands
 import (
 	"fmt"
 
-	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/types"
-	"github.com/patrickhuber/wrangle/pkg/global"
 
 	"github.com/urfave/cli/v2"
 )
@@ -18,15 +17,14 @@ func Install(ctx *cli.Context) error {
 		return fmt.Errorf("package name is required")
 	}
 
-	resolver := ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver)
+	resolver := app.GetResolver(ctx)
 	o, err := resolver.Resolve(types.InstallService)
 	if err != nil {
 		return err
 	}
 	service := o.(services.Install)
 	request := &services.InstallRequest{
-		GlobalConfigFile: ctx.String(global.FlagConfig),
-		Package:          pkg,
+		Package: pkg,
 	}
 	return service.Execute(request)
 }
