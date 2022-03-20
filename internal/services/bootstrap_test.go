@@ -26,7 +26,7 @@ var _ = Describe("Bootstrap", func() {
 
 		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
 		req := &services.BootstrapRequest{
-			GlobalConfigFile: globalConfigFile,
+			ApplicationName: "wrangle",
 		}
 		err = bootstrap.Execute(req)
 		Expect(err).To(BeNil())

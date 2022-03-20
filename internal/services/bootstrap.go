@@ -13,9 +13,8 @@ type bootstrap struct {
 }
 
 type BootstrapRequest struct {
-	ApplicationName  string
-	GlobalConfigFile string
-	Force            bool
+	ApplicationName string
+	Force           bool
 }
 
 type Bootstrap interface {

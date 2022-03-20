@@ -10,7 +10,6 @@ import (
 	"github.com/patrickhuber/go-di"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/types"
 
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
@@ -72,43 +71,15 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(env.New)
 	container.RegisterConstructor(afero.NewMemMapFs, di.WithLifetime(di.LifetimeStatic))
 	container.RegisterConstructor(filesystem.FromAferoFS)
-	container.RegisterDynamic(types.Properties, func(r di.Resolver) (interface{}, error) {
-		obj, err := r.Resolve(types.OS)
-		if err != nil {
-			return nil, err
-		}
-		opsys, ok := obj.(operatingsystem.OS)
-		if !ok {
-			return nil, fmt.Errorf("unable to resolve operating system")
-		}
+	container.RegisterConstructor(func(opsys operatingsystem.OS) config.Properties {
 		properties := config.NewProperties()
 		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
 		properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
-		return properties, nil
+		return properties
 	})
 	container.RegisterConstructor(internal_config.NewTest)
-	container.RegisterDynamic(types.ConfigProvider, func(r di.Resolver) (interface{}, error) {
-		fs, err := r.Resolve(types.FileSystem)
-		if err != nil {
-			return nil, err
-		}
-		prop, err := r.Resolve(types.Properties)
-		if err != nil {
-			return nil, err
-		}
-		provider := config.NewFileProvider(fs.(filesystem.FileSystem), prop.(config.Properties))
-		o, err := r.Resolve(types.OS)
-		if err != nil {
-			return nil, err
-		}
-		e, err := r.Resolve(types.Environment)
-		if err != nil {
-			return nil, err
-		}
-		cfg, err := internal_config.NewTest(o.(operatingsystem.OS), e.(env.Environment))
-		if err != nil {
-			return nil, err
-		}
+	container.RegisterConstructor(func(fs filesystem.FileSystem, props config.Properties, cfg *config.Config) (config.Provider, error) {
+		provider := config.NewFileProvider(fs, props)
 		return config.NewDefaultableProvider(provider, cfg), nil
 	})
 	container.RegisterConstructor(ilog.Memory)
