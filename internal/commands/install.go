@@ -3,9 +3,9 @@ package commands
 import (
 	"fmt"
 
+	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/types"
 
 	"github.com/urfave/cli/v2"
 )
@@ -18,11 +18,10 @@ func Install(ctx *cli.Context) error {
 	}
 
 	resolver := app.GetResolver(ctx)
-	o, err := resolver.Resolve(types.InstallService)
+	service, err := di.Resolve[services.Install](resolver)
 	if err != nil {
 		return err
 	}
-	service := o.(services.Install)
 	request := &services.InstallRequest{
 		Package: pkg,
 	}

@@ -3,9 +3,13 @@ package services_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
+	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,16 +22,16 @@ var _ = Describe("Install", func() {
 		defer s.Close()
 		container := s.Container()
 
-		fs, err := ResolveFileSystem(container)
+		fs, err := di.Resolve[filesystem.FileSystem](container)
 		Expect(err).To(BeNil())
 
-		install, err := ResolveInstallService(container)
+		install, err := di.Resolve[services.Install](container)
 		Expect(err).To(BeNil())
 
-		opsys, err := ResolveOperatingSystem(container)
+		opsys, err := di.Resolve[operatingsystem.OS](container)
 		Expect(err).To(BeNil())
 
-		reader, err := ResolveConfigReader(container)
+		reader, err := di.Resolve[config.Provider](container)
 		Expect(err).To(BeNil())
 
 		cfg, err := reader.Get()

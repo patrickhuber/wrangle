@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/setup"
-	"github.com/patrickhuber/wrangle/internal/types"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/enums"
@@ -23,9 +23,8 @@ var version = ""
 func main() {
 	s := setup.New()
 	container := s.Container()
-	obj, err := container.Resolve(types.OS)
+	o, err := di.Resolve[operatingsystem.OS](container)
 	handle(err)
-	o := obj.(operatingsystem.OS)
 
 	appName := "wrangle"
 	if strings.EqualFold(o.Platform(), operatingsystem.PlatformWindows) {
@@ -72,11 +71,10 @@ func main() {
 		Before: func(ctx *cli.Context) error {
 			globalConfigFile := ctx.String(global.FlagConfig)
 			resolver := app.GetResolver(ctx)
-			o, err := resolver.Resolve(types.Properties)
+			properties, err := di.Resolve[config.Properties](resolver)
 			if err != nil {
 				return err
 			}
-			properties := o.(config.Properties)
 			properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
 			return nil
 		},

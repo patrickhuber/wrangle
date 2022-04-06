@@ -3,9 +3,12 @@ package services_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 )
 
 var _ = Describe("Bootstrap", func() {
@@ -18,10 +21,10 @@ var _ = Describe("Bootstrap", func() {
 		defer s.Close()
 		container := s.Container()
 
-		bootstrap, err := ResolveBootstrapService(container)
+		bootstrap, err := di.Resolve[services.Bootstrap](container)
 		Expect(err).To(BeNil())
 
-		opsys, err := ResolveOperatingSystem(container)
+		opsys, err := di.Resolve[operatingsystem.OS](container)
 		Expect(err).To(BeNil())
 
 		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
@@ -31,7 +34,7 @@ var _ = Describe("Bootstrap", func() {
 		err = bootstrap.Execute(req)
 		Expect(err).To(BeNil())
 
-		fs, err := ResolveFileSystem(container)
+		fs, err := di.Resolve[filesystem.FileSystem](container)
 		Expect(err).To(BeNil())
 
 		ok, err := fs.Exists(globalConfigFile)
