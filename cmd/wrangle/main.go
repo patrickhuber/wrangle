@@ -70,7 +70,10 @@ func main() {
 		},
 		Before: func(ctx *cli.Context) error {
 			globalConfigFile := ctx.String(global.FlagConfig)
-			resolver := app.GetResolver(ctx)
+			resolver, err := app.GetResolver(ctx)
+			if err != nil {
+				return err
+			}
 			properties, err := di.Resolve[config.Properties](resolver)
 			if err != nil {
 				return err
@@ -80,72 +83,13 @@ func main() {
 		},
 	}
 
-	// list subcommand
-	list := &cli.Command{
-		Name: "list",
-		Subcommands: []*cli.Command{
-			{
-				Name:   "packages",
-				Action: commands.ListPackages,
-			},
-			{
-				Name: "processes",
-			},
-			{
-				Name: "stores",
-			},
-			{
-				Name:   "feeds",
-				Action: commands.ListFeeds,
-			},
-		},
-	}
-
-	// get subcommand
-	get := &cli.Command{
-		Name: "get",
-	}
-
-	// install subcommand
-	install := &cli.Command{
-		Name:   "install",
-		Action: commands.Install,
-	}
-
-	// initialize subcommand
-	initialize := &cli.Command{
-		Name:    "initialize",
-		Aliases: []string{"init"},
-		Action:  commands.Initialize,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "force",
-				Aliases: []string{"f"},
-				Value:   false,
-			},
-		},
-	}
-
-	// bootstrap subcommand
-	bootstrap := &cli.Command{
-		Name:   "bootstrap",
-		Action: commands.Bootstrap,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "force",
-				Aliases: []string{"f"},
-				Value:   false,
-			},
-		},
-	}
-
 	// register
 	app.Commands = []*cli.Command{
-		bootstrap,
-		list,
-		get,
-		install,
-		initialize,
+		commands.Bootstrap,
+		commands.List,
+		commands.Get,
+		commands.List,
+		commands.Initialize,
 	}
 	err = app.Run(os.Args)
 	handle(err)

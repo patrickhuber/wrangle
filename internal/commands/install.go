@@ -10,20 +10,51 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Install(ctx *cli.Context) error {
+// install subcommand
+var Install = &cli.Command{
+	Name:   "install",
+	Action: InstallAction,
+}
+
+type InstallCommand struct {
+	Install services.Install `inject:""`
+	Options InstallOptions   `options:""`
+}
+
+type InstallOptions struct {
+	Package string `position:"0"`
+}
+
+func (cmd *InstallCommand) Execute() error {
+
+	request := &services.InstallRequest{
+		Package: cmd.Options.Package,
+	}
+	return cmd.Install.Execute(request)
+}
+
+func InstallAction(ctx *cli.Context) error {
 
 	pkg := ctx.Args().First()
 	if len(pkg) == 0 {
 		return fmt.Errorf("package name is required")
 	}
 
-	resolver := app.GetResolver(ctx)
-	service, err := di.Resolve[services.Install](resolver)
+	resolver, err := app.GetResolver(ctx)
+	if err != nil {
+		return fmt.Errorf("invalid install configuration. %w", err)
+	}
+
+	cmd := &InstallCommand{
+		Options: InstallOptions{
+			Package: pkg,
+		},
+	}
+
+	err = di.Inject(resolver, cmd)
 	if err != nil {
 		return err
 	}
-	request := &services.InstallRequest{
-		Package: pkg,
-	}
-	return service.Execute(request)
+
+	return cmd.Execute()
 }

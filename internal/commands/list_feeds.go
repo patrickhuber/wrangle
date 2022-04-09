@@ -4,6 +4,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var ListFeeds = &cli.Command{
+	Name:   "feeds",
+	Action: ListFeedsAction,
+}
+
 type ListFeedsCommand struct {
 	Options *ListFeedsOptions
 }
@@ -11,10 +16,11 @@ type ListFeedsCommand struct {
 type ListFeedsOptions struct {
 }
 
-func ListFeeds(cli *cli.Context) error {
-	return ListFeedsInternal(&ListFeedsCommand{})
+func ListFeedsAction(cli *cli.Context) error {
+	cmd := &ListFeedsCommand{}
+	return (cmd).Execute()
 }
 
-func ListFeedsInternal(cmd *ListFeedsCommand) error {
+func (cmd *ListFeedsCommand) Execute() error {
 	return nil
 }

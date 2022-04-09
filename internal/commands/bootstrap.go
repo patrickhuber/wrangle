@@ -9,17 +9,48 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Bootstrap(ctx *cli.Context) error {
-	if ctx == nil || ctx.App == nil || ctx.App.Metadata == nil {
-		return fmt.Errorf("invalid bootstrap command configuration. Application Context, Application or Metadata is null")
+// bootstrap subcommand
+var Bootstrap = &cli.Command{
+	Name:   "bootstrap",
+	Action: BootstrapAction,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "force",
+			Aliases: []string{"f"},
+			Value:   false,
+		},
+	},
+}
+
+type BootstrapCommand struct {
+	Bootstrap services.Bootstrap `inject:""`
+	Options   BootstarapOptions  `options:""`
+}
+
+type BootstarapOptions struct {
+	Force bool `flag:"force"`
+}
+
+func (cmd *BootstrapCommand) Execute() error {
+	req := &services.BootstrapRequest{
+		Force: cmd.Options.Force,
 	}
-	resolver := app.GetResolver(ctx)
-	bootstrap, err := di.Resolve[services.Bootstrap](resolver)
+	return cmd.Bootstrap.Execute(req)
+}
+
+func BootstrapAction(ctx *cli.Context) error {
+	resolver, err := app.GetResolver(ctx)
+	if err != nil {
+		return fmt.Errorf("invalid bootstrap command configuration. %w", err)
+	}
+	cmd := &BootstrapCommand{
+		Options: BootstarapOptions{
+			Force: ctx.Bool("force"),
+		},
+	}
+	err = di.Inject(resolver, cmd)
 	if err != nil {
 		return err
 	}
-	req := &services.BootstrapRequest{
-		Force: ctx.Bool("force"),
-	}
-	return bootstrap.Execute(req)
+	return cmd.Execute()
 }

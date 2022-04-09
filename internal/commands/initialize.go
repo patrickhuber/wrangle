@@ -9,19 +9,50 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Initialize(ctx *cli.Context) error {
-	if ctx == nil || ctx.App == nil || ctx.App.Metadata == nil {
-		return fmt.Errorf("invalid bootstrap command configuration. Application Context, Application or Metadata is null")
-	}
-	resolver := app.GetResolver(ctx)
+// initialize subcommand
+var Initialize = &cli.Command{
+	Name:    "initialize",
+	Aliases: []string{"init"},
+	Action:  InitializeAction,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "force",
+			Aliases: []string{"f"},
+			Value:   false,
+		},
+	},
+}
 
-	bootstrap, err := di.Resolve[services.Bootstrap](resolver)
+type InitializeCommand struct {
+	Initialize services.Initialize `inject:""`
+	Options    InitializeOptions
+}
+
+type InitializeOptions struct {
+	Force bool `flag:"force"`
+}
+
+func InitializeAction(ctx *cli.Context) error {
+	resolver, err := app.GetResolver(ctx)
+	if err != nil {
+		return fmt.Errorf("invalid initialize command configuration. %w", err)
+	}
+
+	cmd := &InitializeCommand{
+		Options: InitializeOptions{
+			Force: ctx.Bool("force"),
+		},
+	}
+	err = di.Inject(resolver, cmd)
 	if err != nil {
 		return err
 	}
+	return cmd.Execute()
+}
 
-	req := &services.BootstrapRequest{
-		Force: ctx.Bool("force"),
+func (cmd *InitializeCommand) Execute() error {
+	req := &services.InitializeRequest{
+		Force: cmd.Options.Force,
 	}
-	return bootstrap.Execute(req)
+	return cmd.Initialize.Execute(req)
 }

@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/pkg/console"
@@ -8,26 +10,34 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var ListVariables = &cli.Command{
+	Name:   "variables",
+	Action: ListVariablesAction,
+}
+
 type ListVariablesCommand struct {
-	Logger  ilog.Logger     `inject:""`
-	Console console.Console `inject:""`
-	Options ListVariablesOptions
+	Logger  ilog.Logger          `inject:""`
+	Console console.Console      `inject:""`
+	Options ListVariablesOptions `options:""`
 }
 
 type ListVariablesOptions struct {
-	Output string
+	Output string `flag:"output"`
 }
 
-func ListVariables(ctx *cli.Context) error {
-	resolver := app.GetResolver(ctx)
+func ListVariablesAction(ctx *cli.Context) error {
+	resolver, err := app.GetResolver(ctx)
+	if err != nil {
+		return fmt.Errorf("invalid list variable command. %w", err)
+	}
 	listVariablesCommand := &ListVariablesCommand{}
-	err := di.Inject(resolver, listVariablesCommand)
+	err = di.Inject(resolver, listVariablesCommand)
 	if err != nil {
 		return err
 	}
-	return ListVariablesInternal(listVariablesCommand)
+	return listVariablesCommand.Execute()
 }
 
-func ListVariablesInternal(cmd *ListVariablesCommand) error {
+func (cmd *ListVariablesCommand) Execute() error {
 	return nil
 }

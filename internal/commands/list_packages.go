@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/pkg/console"
@@ -11,29 +13,41 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var ListPackages = &cli.Command{
+	Name: "packages",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name: "output",
+		},
+	},
+}
+
 type ListPackagesCommand struct {
-	FeedService feed.Service    `inject:""`
-	Logger      ilog.Logger     `inject:""`
-	Console     console.Console `inject:""`
-	Options     *ListPackagesOptions
+	FeedService feed.Service         `inject:""`
+	Logger      ilog.Logger          `inject:""`
+	Console     console.Console      `inject:""`
+	Options     *ListPackagesOptions `options:""`
 }
 
 type ListPackagesOptions struct {
-	Output string
+	Output string `flag:"output"`
 }
 
-func ListPackages(ctx *cli.Context) error {
-	resolver := app.GetResolver(ctx)
+func ListPackagesAction(ctx *cli.Context) error {
+	resolver, err := app.GetResolver(ctx)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
 	listPackagesCommand := &ListPackagesCommand{
 		Options: &ListPackagesOptions{
 			Output: ctx.String("output"),
 		},
 	}
 	di.Inject(resolver, listPackagesCommand)
-	return ListPackagesInternal(listPackagesCommand)
+	return listPackagesCommand.Execute()
 }
 
-func ListPackagesInternal(cmd *ListPackagesCommand) error {
+func (cmd *ListPackagesCommand) Execute() error {
 	request := &feed.ListRequest{}
 	response, err := cmd.FeedService.List(request)
 	if err != nil {
