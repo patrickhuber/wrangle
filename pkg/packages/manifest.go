@@ -7,5 +7,11 @@ type Manifest struct {
 type ManifestPackage struct {
 	Name    string
 	Version string
-	Targets []*Target
+	Targets []*ManifestTarget
+}
+
+type ManifestTarget struct {
+	Platform     string
+	Architecture string
+	Tasks        []map[string]map[string]string
 }

@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("VersionRespository", func() {
@@ -15,7 +16,8 @@ var _ = Describe("VersionRespository", func() {
 	BeforeEach(func() {
 		fs := memfs.New()
 		workingDirectory := "/opt/wrangle/feed"
-		repo := git.NewVersionRepository(fs, workingDirectory)
+		logger := ilog.Memory()
+		repo := git.NewVersionRepository(fs, logger, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {
 			for _, version := range item.Package.Versions {

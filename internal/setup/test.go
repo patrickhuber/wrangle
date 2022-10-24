@@ -82,7 +82,7 @@ func newBaselineTest() Setup {
 		provider := config.NewFileProvider(fs, props)
 		return config.NewDefaultableProvider(provider, cfg), nil
 	})
-	container.RegisterConstructor(ilog.Memory)
+	container.RegisterConstructor(func() ilog.Logger { return ilog.Memory() })
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(tasks.NewDownloadProvider)
 	container.RegisterConstructor(tasks.NewExtractProvider)
@@ -95,7 +95,7 @@ func newBaselineTest() Setup {
 	return t
 }
 
-func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS) feed.Provider {
+func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS, logger ilog.Logger) feed.Provider {
 	createItem := func(pkg, version string) *feed.Item {
 		extension := ""
 		if opsys.Platform() == operatingsystem.MockWindowsPlatform {
@@ -131,6 +131,7 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS
 		}
 	}
 	return memory.NewProvider(
+		logger,
 		createItem("wrangle", "1.0.0"),
 		createItem("shim", "1.0.0"),
 		createItem("test", "1.0.0"))

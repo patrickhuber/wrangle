@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-git/go-billy/v5"
@@ -9,33 +10,35 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
-func NewService(name string, fs billy.Filesystem, repository *git.Repository) (feed.Service, error) {
+func NewService(name string, fs billy.Filesystem, repository *git.Repository, logger ilog.Logger) (feed.Service, error) {
 
 	workingDirectory := "/feed"
 
-	items := NewItemRepository(fs, workingDirectory)
-	versions := NewVersionRepository(fs, workingDirectory)
+	items := NewItemRepository(fs, logger, workingDirectory)
+	versions := NewVersionRepository(fs, logger, workingDirectory)
 
-	svc := feed.NewService(name, items, versions)
+	svc := feed.NewService(name, items, versions, logger)
 	return &service{
 		internal: svc,
 		repo:     repository,
 	}, nil
 }
 
-func NewServiceFromURL(name, url string) (feed.Service, error) {
+func NewServiceFromURL(name, url string, logger ilog.Logger) (feed.Service, error) {
 
 	fs := memfs.New()
 	storer := memory.NewStorage()
+	logger.Tracef("cloning '%s'", url)
 	repository, err := git.Clone(storer, fs, &git.CloneOptions{
 		URL: url,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error cloning packages repo '%s': %w", url, err)
 	}
-	return NewService(name, fs, repository)
+	return NewService(name, fs, repository, logger)
 }
 
 type service struct {

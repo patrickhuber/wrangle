@@ -21,3 +21,15 @@ func (t *Task) GetStringParameter(name string) (string, error) {
 	}
 	return value, nil
 }
+
+func (t *Task) GetOptionalStringParameter(name string) (string, bool, error) {
+	inter, ok := t.Parameters[name]
+	if !ok {
+		return "", false, nil
+	}
+	value, ok := inter.(string)
+	if !ok {
+		return "", false, fmt.Errorf("parameter %s is not a string", name)
+	}
+	return value, true, nil
+}

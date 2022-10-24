@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("Service", func() {
@@ -12,7 +13,8 @@ var _ = Describe("Service", func() {
 	)
 	BeforeEach(func() {
 		items := conformance.GetItemList()
-		service := memory.NewService("test", items...)
+		logger := ilog.Memory()
+		service := memory.NewService("test", logger, items...)
 		tester = conformance.NewServiceTester(service)
 	})
 	Describe("List", func() {

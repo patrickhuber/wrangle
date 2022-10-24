@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
@@ -89,13 +90,12 @@ func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 	url := download.Details.URL
 
 	p.logger.Printf("downloading '%s' to '%s'", url, out)
-	p.logger.Println()
 
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer checkClose(resp.Body, &err)
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("error downloading '%s'. http status code: '%d'. http status: '%s'",
@@ -104,15 +104,39 @@ func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 			resp.Status)
 	}
 
+	directory := path.Dir(out)
+	p.logger.Debugf("creating %s", directory)
+	err = p.fs.MkdirAll(directory, 0755)
+	if err != nil {
+		return err
+	}
+
 	// create the file
 	file, err := p.fs.Create(out)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	defer checkClose(file, &err)
 
 	// Write the body to file
-	_, err = io.Copy(file, resp.Body)
-
+	var written int64
+	written, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return err
+	}
+	if written == 0 {
+		return fmt.Errorf("zero bytes written to %s", out)
+	}
+	p.logger.Debugf("%d bytes written to %s", written, out)
 	return err
+}
+
+// checkClose is used to check the return from Close in a defer
+// statement.
+func checkClose(c io.Closer, err *error) {
+	cerr := c.Close()
+	if *err == nil {
+		*err = cerr
+	}
 }

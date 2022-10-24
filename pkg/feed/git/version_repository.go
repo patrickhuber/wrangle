@@ -1,27 +1,33 @@
 package git
 
 import (
+	"fmt"
+
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type versionRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
+	logger           ilog.Logger
 }
 
-func NewVersionRepository(fs billy.Filesystem, workingDirectory string) feed.VersionRepository {
+func NewVersionRepository(fs billy.Filesystem, logger ilog.Logger, workingDirectory string) feed.VersionRepository {
 	return &versionRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,
+		logger:           logger,
 	}
 }
 
 func (s *versionRepository) List(name string) ([]*packages.Version, error) {
+	s.logger.Tracef("versionRepository.List %s", name)
 	packageDirectory := crosspath.Join(s.workingDirectory, name)
 	files, err := s.fs.ReadDir(packageDirectory)
 	if err != nil {
@@ -42,21 +48,20 @@ func (s *versionRepository) List(name string) ([]*packages.Version, error) {
 }
 
 func (s *versionRepository) Get(name string, version string) (*packages.Version, error) {
+	s.logger.Tracef("versionRepository.Get %s@%s", name, version)
 	manifest, err := s.GetManifest(name, version)
 	if err != nil {
 		return nil, err
 	}
-	return &packages.Version{
-		Version: manifest.Package.Version,
-		Targets: manifest.Package.Targets,
-	}, nil
+	return packages.ManifestToPackageVersion(manifest), nil
 }
 
 func (s *versionRepository) GetManifest(name string, version string) (*packages.Manifest, error) {
+	s.logger.Tracef("versionRepository.GetManifest %s@%s", name, version)
 	manifestPath := crosspath.Join(s.workingDirectory, name, version, "package.yml")
 	content, err := util.ReadFile(s.fs, manifestPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w %s", err, manifestPath)
 	}
 	manifest := &packages.Manifest{}
 	err = yaml.Unmarshal(content, &manifest)
@@ -64,13 +69,7 @@ func (s *versionRepository) GetManifest(name string, version string) (*packages.
 }
 
 func (s *versionRepository) Save(name string, version *packages.Version) error {
-	manifest := &packages.Manifest{
-		Package: &packages.ManifestPackage{
-			Name:    name,
-			Version: version.Version,
-			Targets: version.Targets,
-		},
-	}
+	manifest := packages.PackageVersionToManifest(name, version)
 
 	versionPath := crosspath.Join(s.workingDirectory, name, version.Version)
 	err := s.fs.MkdirAll(versionPath, 0600)

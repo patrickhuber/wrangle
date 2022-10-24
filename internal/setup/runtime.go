@@ -24,9 +24,20 @@ type runtime struct {
 
 func New() Setup {
 	container := di.NewContainer()
-	container.RegisterConstructor(ilog.Default)
-	container.RegisterConstructor(operatingsystem.New)
 	container.RegisterConstructor(env.New)
+	container.RegisterConstructor(func(e env.Environment) ilog.Logger {
+		level, ok := e.Lookup("WRANGLE_LOG_LEVEL")
+		if !ok {
+			return ilog.Default()
+		}
+		options := []ilog.LogOption{}
+		logLevel, err := ilog.ParseLevel(level)
+		if err == nil {
+			options = append(options, ilog.SetLevel(logLevel))
+		}
+		return ilog.Default(options...)
+	})
+	container.RegisterConstructor(operatingsystem.New)
 	container.RegisterConstructor(afero.NewOsFs)
 	container.RegisterConstructor(filesystem.FromAferoFS)
 	container.RegisterConstructor(console.NewOS)

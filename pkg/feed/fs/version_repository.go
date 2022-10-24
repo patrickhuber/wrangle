@@ -5,7 +5,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type versionRepository struct {
@@ -27,13 +27,8 @@ func (r *versionRepository) Save(name string, version *packages.Version) error {
 		return err
 	}
 	versionFile := r.GetVersionFilePath(name, version.Version)
-	manifest := &packages.Manifest{
-		Package: &packages.ManifestPackage{
-			Name:    name,
-			Version: version.Version,
-			Targets: version.Targets,
-		},
-	}
+	manifest := packages.PackageVersionToManifest(name, version)
+
 	data, err := yaml.Marshal(manifest)
 	if err != nil {
 		return err
@@ -49,11 +44,10 @@ func (r *versionRepository) Get(name string, version string) (*packages.Version,
 	}
 	manifest := &packages.Manifest{}
 	err = yaml.Unmarshal(data, manifest)
-	v := &packages.Version{
-		Version: manifest.Package.Version,
-		Targets: manifest.Package.Targets,
+	if err != nil {
+		return nil, err
 	}
-	return v, err
+	return packages.ManifestToPackageVersion(manifest), nil
 }
 
 func (r *versionRepository) List(name string) ([]*packages.Version, error) {

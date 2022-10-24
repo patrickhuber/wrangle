@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/patch"
 )
@@ -31,13 +32,15 @@ type service struct {
 	name              string
 	itemRepository    ItemRepository
 	versionRepository VersionRepository
+	logger            ilog.Logger
 }
 
-func NewService(name string, items ItemRepository, versions VersionRepository) Service {
+func NewService(name string, items ItemRepository, versions VersionRepository, logger ilog.Logger) Service {
 	return &service{
 		name:              name,
 		itemRepository:    items,
 		versionRepository: versions,
+		logger:            logger,
 	}
 }
 
@@ -46,6 +49,7 @@ func (s *service) Name() string {
 }
 
 func (s *service) GetNames(request *ListRequest) []string {
+	s.logger.Debug("feedService.GetNames")
 	names := []string{}
 	for _, any := range request.Where {
 		for _, all := range any.AnyOf {
@@ -58,6 +62,7 @@ func (s *service) GetNames(request *ListRequest) []string {
 }
 
 func (s *service) GetVersions(latestVersion string, request *ItemReadExpand) []string {
+	s.logger.Tracef("feedService.GetVersions %s", latestVersion)
 	versions := []string{}
 	if strings.TrimSpace(latestVersion) != "" {
 		versions = append(versions, latestVersion)
@@ -79,6 +84,7 @@ func (s *service) GetVersions(latestVersion string, request *ItemReadExpand) []s
 }
 
 func (s *service) List(request *ListRequest) (*ListResponse, error) {
+	s.logger.Tracef("feedService.List")
 	items, err := s.GetItems(request)
 	if err != nil {
 		return nil, err
@@ -98,6 +104,7 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 }
 
 func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
+	s.logger.Tracef("feedService.GetItems")
 	names := s.GetNames(request)
 	var items []*Item
 	var err error
@@ -123,7 +130,7 @@ func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
 }
 
 func (s *service) ExpandPackage(item *Item, expand *ItemReadExpand) ([]*packages.Version, error) {
-
+	s.logger.Tracef("feedService.ExpandPackage")
 	latestVersion := ""
 	if item.State != nil {
 		latestVersion = item.State.LatestVersion
@@ -152,6 +159,7 @@ func (s *service) ExpandPackage(item *Item, expand *ItemReadExpand) ([]*packages
 }
 
 func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
+	s.logger.Tracef("feedService.Update")
 	if request == nil {
 		return &UpdateResponse{
 			Changed: 0,
@@ -206,6 +214,7 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 }
 
 func (s *service) ModifyItem(item *Item, modify *ItemModify) (bool, error) {
+	s.logger.Tracef("feedService.ModifyItem")
 	if modify == nil {
 		return false, nil
 	}

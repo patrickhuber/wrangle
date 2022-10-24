@@ -7,11 +7,13 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("ServiceFactory", func() {
 	It("creates service", func() {
-		provider := memory.NewProvider()
+		logger := ilog.Memory()
+		provider := memory.NewProvider(logger)
 		factory := feed.NewServiceFactory(provider)
 		svc, err := factory.Create(&config.Feed{
 			Name: "test",

@@ -4,7 +4,6 @@ import (
 	stdtar "archive/tar"
 	"fmt"
 	"io"
-	"regexp"
 
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
@@ -44,21 +43,6 @@ func (a *tar) ExtractReader(reader io.Reader, destination string, files ...strin
 			break
 		} else if err != nil {
 			return err
-		}
-
-		matched := false
-		for _, file := range files {
-			matched, err = regexp.MatchString(file, header.Name)
-			if err != nil {
-				return err
-			}
-			if matched {
-				break
-			}
-		}
-
-		if !matched {
-			continue
 		}
 		err = a.untar(tarReader, header, destination)
 		if err != nil {

@@ -17,15 +17,15 @@ There are two methods to getting wrangle on a PC. You can do manual download and
 These snippets will run the scripts directly from the internet. You can also download the scripts and run them by hand. 
 
 ```bash
-curl https://raw.githubusercontent.com/patrickhuber/wrangle/main/install.sh | bash
+curl https://raw.githubusercontent.com/patrickhuber/wrangle/main/scripts/install.sh | bash
 ```
 
 ```powershell
 # verbose expression
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/patrickhuber/wrangle/main/install.ps1')
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/patrickhuber/wrangle/main/scripts/install.ps1')
 
 # or short expression
-iwr -useb 'https://raw.githubusercontent.com/patrickhuber/wrangle/main/install.ps1' | iex
+iwr -useb 'https://raw.githubusercontent.com/patrickhuber/wrangle/main/scripts/install.ps1' | iex
 ```
 
 ### Manual Install

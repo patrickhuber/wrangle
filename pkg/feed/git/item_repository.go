@@ -5,8 +5,9 @@ import (
 	"github.com/go-git/go-billy/v5/util"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -18,12 +19,14 @@ const (
 type itemRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
+	logger           ilog.Logger
 }
 
-func NewItemRepository(fs billy.Filesystem, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs billy.Filesystem, logger ilog.Logger, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,
+		logger:           logger,
 	}
 }
 
@@ -47,6 +50,7 @@ func (r *itemRepository) List(options ...feed.ItemGetOption) ([]*feed.Item, erro
 }
 
 func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.Item, error) {
+	r.logger.Tracef("itemRepository.Get %s", name)
 	packagePath := crosspath.Join(r.workingDirectory, name)
 	_, err := r.fs.Stat(packagePath)
 	if err != nil {
@@ -90,9 +94,11 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 }
 
 func (r *itemRepository) GetPlatforms(packageName string) ([]*feed.Platform, error) {
-	platforms := []*feed.Platform{}
+	platforms := &feed.Platforms{
+		Platforms: []*feed.Platform{},
+	}
 	err := r.GetObject(packageName, PlatformsFile, &platforms)
-	return platforms, err
+	return platforms.Platforms, err
 }
 
 func (r *itemRepository) GetState(packageName string) (*feed.State, error) {
@@ -165,7 +171,10 @@ func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) e
 }
 
 func (r *itemRepository) SavePlatforms(packageName string, platforms []*feed.Platform) error {
-	return r.SaveObject(packageName, PlatformsFile, platforms)
+	p := &feed.Platforms{
+		Platforms: platforms,
+	}
+	return r.SaveObject(packageName, PlatformsFile, p)
 }
 
 func (r *itemRepository) SaveState(packageName string, state *feed.State) error {

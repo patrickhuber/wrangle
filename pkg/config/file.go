@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type fileProvider struct {
@@ -55,7 +55,7 @@ func (p *fileProvider) Get() (*Config, error) {
 
 	// write the config
 	config := &Config{}
-	err = yaml.UnmarshalStrict(data, config)
+	err = yaml.Unmarshal(data, config)
 	return config, err
 }
 
@@ -92,7 +92,7 @@ func (p *fileProvider) Lookup() (*Config, bool, error) {
 
 	// write the config
 	config := &Config{}
-	err = yaml.UnmarshalStrict(data, config)
+	err = yaml.Unmarshal(data, config)
 	return config, false, err
 }
 

@@ -5,10 +5,13 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/wrangle/pkg/archive"
+	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 type extractProvider struct {
 	factory archive.Factory
+	logger  ilog.Logger
 }
 
 type Extract struct {
@@ -20,9 +23,10 @@ type ExtractDetails struct {
 	Out     string `yaml:"out"`
 }
 
-func NewExtractProvider(factory archive.Factory) Provider {
+func NewExtractProvider(factory archive.Factory, logger ilog.Logger) Provider {
 	return &extractProvider{
 		factory: factory,
+		logger:  logger,
 	}
 }
 
@@ -30,16 +34,20 @@ func (p *extractProvider) Type() string {
 	return "extract"
 }
 
-func (p *extractProvider) Execute(t *Task, m *Metadata) error {
+func (p *extractProvider) Execute(t *Task, ctx *Metadata) error {
 	extract, err := p.Encode(t)
 	if err != nil {
 		return err
 	}
+
+	archive := crosspath.Join(ctx.PackageVersionPath, extract.Details.Archive)
+	p.logger.Debugf("extracting %s to %s", archive, ctx.PackageVersionPath)
+
 	provider, err := p.factory.Select(extract.Details.Archive)
 	if err != nil {
 		return err
 	}
-	return provider.Extract(extract.Details.Archive, "", extract.Details.Out)
+	return provider.Extract(archive, ctx.PackageVersionPath, extract.Details.Out)
 }
 
 func (p *extractProvider) Encode(t *Task) (*Extract, error) {
@@ -53,9 +61,13 @@ func (p *extractProvider) Encode(t *Task) (*Extract, error) {
 	if err != nil {
 		return nil, err
 	}
-	out, err := t.GetStringParameter("out")
+
+	out, ok, err := t.GetOptionalStringParameter("out")
 	if err != nil {
 		return nil, err
+	}
+	if !ok {
+		out = "."
 	}
 
 	return &Extract{

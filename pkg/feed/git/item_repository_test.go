@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("ItemRepository", func() {
@@ -15,7 +16,8 @@ var _ = Describe("ItemRepository", func() {
 	BeforeEach(func() {
 		workingDirectory := "/opt/wrangle/feed"
 		fs := memfs.New()
-		repo := git.NewItemRepository(fs, workingDirectory)
+		logger := ilog.Memory()
+		repo := git.NewItemRepository(fs, logger, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {
 			Expect(repo.Save(item)).To(BeNil())

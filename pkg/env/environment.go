@@ -5,6 +5,7 @@ import "os"
 type Environment interface {
 	Get(key string) string
 	Set(key string, value string) error
+	Lookup(key string) (string, bool)
 }
 
 type env struct {

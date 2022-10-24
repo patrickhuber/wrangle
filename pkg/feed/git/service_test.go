@@ -9,6 +9,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	gitfeed "github.com/patrickhuber/wrangle/pkg/feed/git"
+	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("GitService", func() {
@@ -16,13 +17,14 @@ var _ = Describe("GitService", func() {
 		tester conformance.ServiceTester
 	)
 	BeforeEach(func() {
+		logger := ilog.Memory()
 		store := memory.NewStorage()
 		fs := memfs.New()
 
 		repository, err := git.Init(store, fs)
 		Expect(err).To(BeNil())
 
-		svc, err := gitfeed.NewService("test", fs, repository)
+		svc, err := gitfeed.NewService("test", fs, repository, logger)
 		Expect(err).To(BeNil())
 
 		items := conformance.GetItemList()

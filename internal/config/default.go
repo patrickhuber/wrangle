@@ -44,7 +44,7 @@ func NewDefault(os operatingsystem.OS, environment env.Environment) (*config.Con
 			{
 				Name: "default",
 				Type: "git",
-				URI:  "git://github.com/patrickhuber/wrangle-packages.git",
+				URI:  "https://github.com/patrickhuber/wrangle-packages",
 			},
 		},
 	}
