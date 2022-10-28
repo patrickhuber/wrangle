@@ -15,7 +15,8 @@ require (
 	github.com/patrickhuber/go-di v0.5.2
 	github.com/spf13/afero v1.9.2
 	github.com/urfave/cli/v2 v2.20.2
-	gopkg.in/yaml.v3 v3.0.1
+	gopkg.in/yaml.v3 v3.0.1	
+	github.com/google/go-cmp v0.5.9
 )
 
 require (
@@ -26,7 +27,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
