@@ -9,6 +9,6 @@ type File interface {
 	io.ReaderAt
 	io.Seeker
 	io.Writer
-	io.WriterAt
+	//io.WriterAt
 	io.StringWriter
 }
