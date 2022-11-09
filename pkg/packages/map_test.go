@@ -19,9 +19,10 @@ var manifest = &packages.Manifest{
 			{
 				Platform:     "linux",
 				Architecture: "amd64",
-				Tasks: []map[string]map[string]string{
+				Steps: []packages.ManifestStep{
 					{
-						"download": map[string]string{
+						Action: "download",
+						With: map[string]any{
 							"url": "https://www.google.com",
 							"out": "index.html",
 						},
@@ -40,7 +41,7 @@ var version = &packages.Version{
 			Tasks: []*packages.Task{
 				{
 					Name: "download",
-					Properties: map[string]string{
+					Properties: map[string]any{
 						"url": "https://www.google.com",
 						"out": "index.html",
 					},

@@ -4,7 +4,8 @@ package:
   targets:
     - platform: linux
       architecture: amd64
-      tasks:
-        - download:
+      steps:
+        - action: download
+          with:
             out: index.html
             url: https://www.google.com

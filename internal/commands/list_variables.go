@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/pkg/console"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,7 +16,7 @@ var ListVariables = &cli.Command{
 }
 
 type ListVariablesCommand struct {
-	Logger  ilog.Logger          `inject:""`
+	Logger  log.Logger           `inject:""`
 	Console console.Console      `inject:""`
 	Options ListVariablesOptions `options:""`
 }

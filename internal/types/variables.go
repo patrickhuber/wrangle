@@ -1,6 +1,7 @@
 package types
 
 import (
+	"log"
 	"reflect"
 
 	"github.com/patrickhuber/wrangle/internal/services"
@@ -9,7 +10,6 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/env"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 )
@@ -25,6 +25,6 @@ var Environment = reflect.TypeOf((*env.Environment)(nil)).Elem()
 var OS = reflect.TypeOf((*operatingsystem.OS)(nil)).Elem()
 var FeedServiceFactory = reflect.TypeOf((*feed.ServiceFactory)(nil)).Elem()
 var TaskRunner = reflect.TypeOf((*tasks.Runner)(nil)).Elem()
-var Logger = reflect.TypeOf((*ilog.Logger)(nil)).Elem()
+var Logger = reflect.TypeOf((*log.Logger)(nil)).Elem()
 var FeedService = reflect.TypeOf((*feed.Service)(nil)).Elem()
 var Properties = reflect.TypeOf((*config.Properties)(nil)).Elem()

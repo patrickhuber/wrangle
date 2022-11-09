@@ -3,19 +3,14 @@ package packages
 func ManifestToPackageVersion(manifest *Manifest) *Version {
 	targets := []*Target{}
 	for _, tar := range manifest.Package.Targets {
-		tasks := []*Task{}
-		for _, tsk := range tar.Tasks {
-			for k, v := range tsk {
-				tasks = append(tasks, &Task{
-					Name:       k,
-					Properties: v,
-				})
-			}
+		steps := []*Task{}
+		for _, step := range tar.Steps {
+			steps = append(steps, &Task{Name: step.Action, Properties: step.With})
 		}
 		targets = append(targets, &Target{
 			Platform:     tar.Platform,
 			Architecture: tar.Architecture,
-			Tasks:        tasks,
+			Tasks:        steps,
 		})
 	}
 	return &Version{
@@ -27,16 +22,18 @@ func ManifestToPackageVersion(manifest *Manifest) *Version {
 func PackageVersionToManifest(name string, version *Version) *Manifest {
 	targets := []*ManifestTarget{}
 	for _, tar := range version.Targets {
-		tasks := []map[string]map[string]string{}
+		steps := []ManifestStep{}
 		for _, tsk := range tar.Tasks {
-			task := map[string]map[string]string{}
-			task[tsk.Name] = tsk.Properties
-			tasks = append(tasks, task)
+			step := ManifestStep{
+				Action: tsk.Name,
+				With:   tsk.Properties,
+			}
+			steps = append(steps, step)
 		}
 		targets = append(targets, &ManifestTarget{
 			Platform:     tar.Platform,
 			Architecture: tar.Architecture,
-			Tasks:        tasks,
+			Steps:        steps,
 		})
 	}
 	return &Manifest{

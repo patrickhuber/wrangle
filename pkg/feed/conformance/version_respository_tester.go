@@ -80,7 +80,7 @@ func (t *versionRepositoryTester) CanAddTask() {
 
 	task := &packages.Task{
 		Name:       "test",
-		Properties: map[string]string{},
+		Properties: map[string]any{},
 	}
 	target := v.Targets[0]
 	target.Tasks = append(v.Targets[0].Tasks, task)

@@ -5,9 +5,9 @@ import (
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"gopkg.in/yaml.v3"
 )
@@ -15,10 +15,10 @@ import (
 type versionRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
-	logger           ilog.Logger
+	logger           log.Logger
 }
 
-func NewVersionRepository(fs billy.Filesystem, logger ilog.Logger, workingDirectory string) feed.VersionRepository {
+func NewVersionRepository(fs billy.Filesystem, logger log.Logger, workingDirectory string) feed.VersionRepository {
 	return &versionRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,

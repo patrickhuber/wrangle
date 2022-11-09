@@ -5,12 +5,13 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	"github.com/patrickhuber/go-log"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
 )
@@ -39,7 +40,7 @@ var _ = Describe("Download", func() {
 				},
 			}
 			fs := filesystem.FromAferoFS(afero.NewMemMapFs())
-			provider := tasks.NewDownloadProvider(ilog.Default(), fs)
+			provider := tasks.NewDownloadProvider(log.Default(), fs)
 			task := &tasks.Task{
 				Type: "download",
 				Parameters: map[string]interface{}{

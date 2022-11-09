@@ -1,9 +1,9 @@
 package services
 
 import (
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 type bootstrap struct {
@@ -11,7 +11,7 @@ type bootstrap struct {
 	initialize     Initialize
 	fs             filesystem.FileSystem
 	configProvider config.Provider
-	logger         ilog.Logger
+	logger         log.Logger
 }
 
 type BootstrapRequest struct {
@@ -28,7 +28,7 @@ func NewBootstrap(
 	initialize Initialize,
 	fs filesystem.FileSystem,
 	configProvider config.Provider,
-	logger ilog.Logger) Bootstrap {
+	logger log.Logger) Bootstrap {
 	return &bootstrap{
 		install:        install,
 		initialize:     initialize,

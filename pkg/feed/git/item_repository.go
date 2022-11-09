@@ -3,9 +3,9 @@ package git
 import (
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"gopkg.in/yaml.v3"
 )
@@ -19,10 +19,10 @@ const (
 type itemRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
-	logger           ilog.Logger
+	logger           log.Logger
 }
 
-func NewItemRepository(fs billy.Filesystem, logger ilog.Logger, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs billy.Filesystem, logger log.Logger, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,

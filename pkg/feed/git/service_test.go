@@ -6,10 +6,10 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	gitfeed "github.com/patrickhuber/wrangle/pkg/feed/git"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("GitService", func() {
@@ -17,7 +17,7 @@ var _ = Describe("GitService", func() {
 		tester conformance.ServiceTester
 	)
 	BeforeEach(func() {
-		logger := ilog.Memory()
+		logger := log.Memory()
 		store := memory.NewStorage()
 		fs := memfs.New()
 

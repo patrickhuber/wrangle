@@ -1,18 +1,18 @@
 package git
 
 import (
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 const ProviderType = "git"
 
 type provider struct {
-	logger ilog.Logger
+	logger log.Logger
 }
 
-func NewProvider(logger ilog.Logger) feed.Provider {
+func NewProvider(logger log.Logger) feed.Provider {
 	return &provider{
 		logger: logger,
 	}

@@ -7,9 +7,9 @@ import (
 	"path"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 // Download defines the outer structure for a download task
@@ -25,12 +25,12 @@ type DownloadDetails struct {
 
 type downloadProvider struct {
 	name   string
-	logger ilog.Logger
+	logger log.Logger
 	fs     filesystem.FileSystem
 }
 
 // NewDownloadProvider creates a new download provider
-func NewDownloadProvider(logger ilog.Logger, fs filesystem.FileSystem) Provider {
+func NewDownloadProvider(logger log.Logger, fs filesystem.FileSystem) Provider {
 	return &downloadProvider{
 		name:   "download",
 		logger: logger,

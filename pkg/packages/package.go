@@ -22,5 +22,5 @@ type Target struct {
 // Task defines a target task to run for the given target
 type Task struct {
 	Name       string
-	Properties map[string]string
+	Properties map[string]any
 }

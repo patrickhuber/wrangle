@@ -2,6 +2,7 @@ package setup
 
 import (
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/services"
 
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
@@ -12,7 +13,6 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
@@ -25,17 +25,17 @@ type runtime struct {
 func New() Setup {
 	container := di.NewContainer()
 	container.RegisterConstructor(env.New)
-	container.RegisterConstructor(func(e env.Environment) ilog.Logger {
+	container.RegisterConstructor(func(e env.Environment) log.Logger {
 		level, ok := e.Lookup("WRANGLE_LOG_LEVEL")
 		if !ok {
-			return ilog.Default()
+			return log.Default()
 		}
-		options := []ilog.LogOption{}
-		logLevel, err := ilog.ParseLevel(level)
+		options := []log.LogOption{}
+		logLevel, err := log.ParseLevel(level)
 		if err == nil {
-			options = append(options, ilog.SetLevel(logLevel))
+			options = append(options, log.SetLevel(logLevel))
 		}
-		return ilog.Default(options...)
+		return log.Default(options...)
 	})
 	container.RegisterConstructor(operatingsystem.New)
 	container.RegisterConstructor(afero.NewOsFs)

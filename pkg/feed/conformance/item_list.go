@@ -20,7 +20,7 @@ func GetItemList() []*feed.Item {
 								Tasks: []*packages.Task{
 									{
 										Name: "download",
-										Properties: map[string]string{
+										Properties: map[string]any{
 											"url": "https://www.google.com",
 											"out": "test",
 										},
@@ -38,7 +38,7 @@ func GetItemList() []*feed.Item {
 								Tasks: []*packages.Task{
 									{
 										Name: "download",
-										Properties: map[string]string{
+										Properties: map[string]any{
 											"url": "https://www.google.com",
 											"out": "test",
 										},
@@ -56,7 +56,7 @@ func GetItemList() []*feed.Item {
 								Tasks: []*packages.Task{
 									{
 										Name: "download",
-										Properties: map[string]string{
+										Properties: map[string]any{
 											"url": "https://www.google.com",
 											"out": "test",
 										},

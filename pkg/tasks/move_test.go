@@ -4,15 +4,15 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 )
 
 var _ = Describe("Move", func() {
 	It("can move file", func() {
 		fs := filesystem.NewMemory()
-		logger := ilog.Memory()
+		logger := log.Memory()
 		provider := tasks.NewMoveProvider(fs, logger)
 
 		err := fs.Write("/folder/file.txt", []byte("this is a test"), 0644)

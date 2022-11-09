@@ -13,5 +13,10 @@ type ManifestPackage struct {
 type ManifestTarget struct {
 	Platform     string
 	Architecture string
-	Tasks        []map[string]map[string]string
+	Steps        []ManifestStep
+}
+
+type ManifestStep struct {
+	Action string
+	With   map[string]any
 }

@@ -1,19 +1,19 @@
 package memory
 
 import (
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 const ProviderType = "memory"
 
 type provider struct {
 	items  []*feed.Item
-	logger ilog.Logger
+	logger log.Logger
 }
 
-func NewProvider(logger ilog.Logger, items ...*feed.Item) feed.Provider {
+func NewProvider(logger log.Logger, items ...*feed.Item) feed.Provider {
 	if items == nil {
 		items = []*feed.Item{}
 	}

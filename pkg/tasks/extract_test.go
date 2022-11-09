@@ -3,10 +3,10 @@ package tasks_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
 )
@@ -99,7 +99,7 @@ var _ = Describe("Extract", func() {
 		}
 
 		// setup
-		logger := ilog.Memory()
+		logger := log.Memory()
 		factory := archive.NewFactory(fs)
 		provider, err := factory.Select(archiveName)
 		Expect(err).To(BeNil())

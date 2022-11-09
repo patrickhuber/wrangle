@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/structio"
 	"github.com/urfave/cli/v2"
@@ -24,7 +24,7 @@ var ListPackages = &cli.Command{
 
 type ListPackagesCommand struct {
 	FeedService feed.Service         `inject:""`
-	Logger      ilog.Logger          `inject:""`
+	Logger      log.Logger           `inject:""`
 	Console     console.Console      `inject:""`
 	Options     *ListPackagesOptions `options:""`
 }

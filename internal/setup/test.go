@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-log"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/tasks"
@@ -82,7 +82,7 @@ func newBaselineTest() Setup {
 		provider := config.NewFileProvider(fs, props)
 		return config.NewDefaultableProvider(provider, cfg), nil
 	})
-	container.RegisterConstructor(func() ilog.Logger { return ilog.Memory() })
+	container.RegisterConstructor(func() log.Logger { return log.Memory() })
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(tasks.NewDownloadProvider)
 	container.RegisterConstructor(tasks.NewExtractProvider)
@@ -95,7 +95,7 @@ func newBaselineTest() Setup {
 	return t
 }
 
-func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS, logger ilog.Logger) feed.Provider {
+func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS, logger log.Logger) feed.Provider {
 	createItem := func(pkg, version string) *feed.Item {
 		extension := ""
 		if opsys.Platform() == operatingsystem.MockWindowsPlatform {
@@ -117,7 +117,7 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS
 								Tasks: []*packages.Task{
 									{
 										Name: "download",
-										Properties: map[string]string{
+										Properties: map[string]any{
 											"url": server.URL + "/test",
 											"out": fmt.Sprintf("%s-%s-%s-%s%s", pkg, version, opsys.Platform(), opsys.Architecture(), extension),
 										},

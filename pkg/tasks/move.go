@@ -1,9 +1,9 @@
 package tasks
 
 import (
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 type Move struct {
@@ -16,7 +16,7 @@ type MoveDetails struct {
 }
 
 type moveProvider struct {
-	logger ilog.Logger
+	logger log.Logger
 	fs     filesystem.FileSystem
 }
 
@@ -41,7 +41,7 @@ func (*moveProvider) Type() string {
 	return "move"
 }
 
-func NewMoveProvider(fs filesystem.FileSystem, logger ilog.Logger) Provider {
+func NewMoveProvider(fs filesystem.FileSystem, logger log.Logger) Provider {
 	return &moveProvider{
 		logger: logger,
 		fs:     fs,

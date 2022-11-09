@@ -1,10 +1,11 @@
 package feed
 
 import (
+
 	"reflect"
 	"strings"
 
-	"github.com/patrickhuber/wrangle/pkg/ilog"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"github.com/patrickhuber/wrangle/pkg/patch"
 )
@@ -32,10 +33,10 @@ type service struct {
 	name              string
 	itemRepository    ItemRepository
 	versionRepository VersionRepository
-	logger            ilog.Logger
+	logger            log.Logger
 }
 
-func NewService(name string, items ItemRepository, versions VersionRepository, logger ilog.Logger) Service {
+func NewService(name string, items ItemRepository, versions VersionRepository, logger log.Logger) Service {
 	return &service{
 		name:              name,
 		itemRepository:    items,
@@ -410,7 +411,7 @@ func (s *service) ToTarget(targetAdd *TargetAdd) *packages.Target {
 }
 
 func (s *service) ToTask(taskAdd *TaskAdd) *packages.Task {
-	properties := map[string]string{}
+	properties := map[string]any{}
 	for k, v := range taskAdd.Properties {
 		properties[k] = v
 	}

@@ -1,15 +1,15 @@
 package services
 
 import (
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 type initialize struct {
 	fs             filesystem.FileSystem
 	configProvider config.Provider
-	logger         ilog.Logger
+	logger         log.Logger
 }
 
 type InitializeRequest struct {
@@ -21,7 +21,7 @@ type Initialize interface {
 	Execute(r *InitializeRequest) error
 }
 
-func NewInitialize(fs filesystem.FileSystem, provider config.Provider, logger ilog.Logger) Initialize {
+func NewInitialize(fs filesystem.FileSystem, provider config.Provider, logger log.Logger) Initialize {
 	return &initialize{
 		fs:             fs,
 		configProvider: provider,

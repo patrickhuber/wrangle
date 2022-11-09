@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 type extractProvider struct {
 	factory archive.Factory
-	logger  ilog.Logger
+	logger  log.Logger
 }
 
 type Extract struct {
@@ -23,7 +23,7 @@ type ExtractDetails struct {
 	Out     string `yaml:"out"`
 }
 
-func NewExtractProvider(factory archive.Factory, logger ilog.Logger) Provider {
+func NewExtractProvider(factory archive.Factory, logger log.Logger) Provider {
 	return &extractProvider{
 		factory: factory,
 		logger:  logger,

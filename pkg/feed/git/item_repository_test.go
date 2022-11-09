@@ -4,9 +4,9 @@ import (
 	"github.com/go-git/go-billy/v5/memfs"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("ItemRepository", func() {
@@ -16,7 +16,7 @@ var _ = Describe("ItemRepository", func() {
 	BeforeEach(func() {
 		workingDirectory := "/opt/wrangle/feed"
 		fs := memfs.New()
-		logger := ilog.Memory()
+		logger := log.Memory()
 		repo := git.NewItemRepository(fs, logger, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {

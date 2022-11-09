@@ -9,11 +9,11 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
-func NewService(name string, fs billy.Filesystem, repository *git.Repository, logger ilog.Logger) (feed.Service, error) {
+func NewService(name string, fs billy.Filesystem, repository *git.Repository, logger log.Logger) (feed.Service, error) {
 
 	workingDirectory := "/feed"
 
@@ -27,7 +27,7 @@ func NewService(name string, fs billy.Filesystem, repository *git.Repository, lo
 	}, nil
 }
 
-func NewServiceFromURL(name, url string, logger ilog.Logger) (feed.Service, error) {
+func NewServiceFromURL(name, url string, logger log.Logger) (feed.Service, error) {
 
 	fs := memfs.New()
 	storer := memory.NewStorage()

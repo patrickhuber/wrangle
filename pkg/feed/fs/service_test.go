@@ -4,10 +4,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
@@ -18,7 +18,7 @@ var _ = Describe("Service", func() {
 	)
 	BeforeEach(func() {
 		fs := filesystem.NewMemory()
-		logger := ilog.Memory()
+		logger := log.Memory()
 		svc := feedfs.NewService("test", fs, "/opt/wrangle/feed", logger)
 		items := conformance.GetItemList()
 

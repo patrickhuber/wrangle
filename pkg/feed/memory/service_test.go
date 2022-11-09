@@ -2,9 +2,9 @@ package memory_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
-	"github.com/patrickhuber/wrangle/pkg/ilog"
 )
 
 var _ = Describe("Service", func() {
@@ -13,7 +13,7 @@ var _ = Describe("Service", func() {
 	)
 	BeforeEach(func() {
 		items := conformance.GetItemList()
-		logger := ilog.Memory()
+		logger := log.Memory()
 		service := memory.NewService("test", logger, items...)
 		tester = conformance.NewServiceTester(service)
 	})
