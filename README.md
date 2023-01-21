@@ -70,15 +70,29 @@ Remove-Item $archive
 Remove-Item wrangle.exe
 ```
 
+### Usage
+
+Once wrangle is installed you can install a package with the install command.
+
+```bash
+wrangle install yq
+```
+
 ## Package Management
 
-Wrangle is a simple package manager much like [arkade](https://github.com/alexellis/arkade). Arkade tends to focus on the lastest package version while Wrangle is fully package aware. Arkade also embeds its package feed into the execuable while Wrangle utilizes external package feeds.
+Wrangle is a simple package manager much like [arkade](https://github.com/alexellis/arkade). Arkade tends to focus on the lastest package version while Wrangle is fully version aware. Arkade also embeds its package feed into the execuable while Wrangle utilizes external package feeds.
 
 Wrangle can find packages in one or more feeds. The default feed is https://github.com/patrickhuber/wrangle-packages.
 
-When wrangle bootstrap is called, wrangle will go to default feed (or the overrided feed) and install itself, a shim execuable and 
+When wrangle bootstrap is called, wrangle will go to default feed (or the overrided feed) and install itself and a shim execuable.
 
 ### Feeds
+
+The default feed is located at https://github.com/patrickhuber/wrangle-packages. A feed is a git repository with a top level `/feed` folder. 
+
+In the feed folder, each package is created as a folder under /feed. For example, wrangle itself is located under `/feed/wrangle`. 
+
+Under the package folder, each version has its own folder as well. For example, wrangle version 0.9.0 is located under `/feed/wrangle/0.9.0`.
 
 ### Packages
 

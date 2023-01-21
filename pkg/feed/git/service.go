@@ -64,7 +64,13 @@ func (s *service) Update(request *feed.UpdateRequest) (*feed.UpdateResponse, err
 	if err != nil {
 		return nil, err
 	}
-
+	status, err := worktree.Status()
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range status {
+		worktree.Add(file.Extra)
+	}
 	_, err = worktree.Commit("initial revision", &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "John Doe",
