@@ -65,7 +65,9 @@ func Generate(request *GenerateRequest) (*GenerateResponse, error) {
 			if err != nil {
 				return nil, err
 			}
-			version := &packages.Version{}
+			version := &packages.Version{
+				Version: v,
+			}
 			versionList = append(versionList, version)
 		}
 
