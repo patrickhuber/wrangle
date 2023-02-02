@@ -1,4 +1,4 @@
-package tasks_test
+package actions_test
 
 import (
 	"net/http"
@@ -9,10 +9,10 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
 )
 
@@ -40,15 +40,15 @@ var _ = Describe("Download", func() {
 				},
 			}
 			fs := filesystem.FromAferoFS(afero.NewMemMapFs())
-			provider := tasks.NewDownloadProvider(log.Default(), fs)
-			task := &tasks.Task{
+			provider := actions.NewDownloadProvider(log.Default(), fs)
+			task := &actions.Action{
 				Type: "download",
 				Parameters: map[string]interface{}{
 					"url": server.URL + "/test-remote",
 					"out": "test-local",
 				},
 			}
-			metadata := tasks.NewDefaultMetadata(cfg, "test", "1.0.0")
+			metadata := actions.NewDefaultMetadata(cfg, "test", "1.0.0")
 			err := provider.Execute(task, metadata)
 			Expect(err).To(BeNil())
 

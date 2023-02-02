@@ -1,13 +1,13 @@
-package tasks_test
+package actions_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
 )
 
@@ -22,7 +22,7 @@ var _ = Describe("Extract", func() {
 		archiveName string
 		fs          filesystem.FileSystem
 		files       []*TestFile
-		task        *tasks.Task
+		task        *actions.Action
 	)
 	BeforeEach(func() {
 		fs = filesystem.FromAferoFS(afero.NewMemMapFs())
@@ -38,7 +38,7 @@ var _ = Describe("Extract", func() {
 	})
 	It("can extract zip", func() {
 		archiveName = "archive.zip"
-		task = &tasks.Task{
+		task = &actions.Action{
 			Type: "extract",
 			Parameters: map[string]interface{}{
 				"archive": archiveName,
@@ -48,7 +48,7 @@ var _ = Describe("Extract", func() {
 	})
 	It("can extract tgz", func() {
 		archiveName = "archive.tgz"
-		task = &tasks.Task{
+		task = &actions.Action{
 			Type: "extract",
 			Parameters: map[string]interface{}{
 				"archive": archiveName,
@@ -58,7 +58,7 @@ var _ = Describe("Extract", func() {
 	})
 	It("can extract tar.gz", func() {
 		archiveName = "archive.tar.gz"
-		task = &tasks.Task{
+		task = &actions.Action{
 			Type: "extract",
 			Parameters: map[string]interface{}{
 				"archive": archiveName,
@@ -68,7 +68,7 @@ var _ = Describe("Extract", func() {
 	})
 	It("can extract tar", func() {
 		archiveName = "archive.tar"
-		task = &tasks.Task{
+		task = &actions.Action{
 			Type: "extract",
 			Parameters: map[string]interface{}{
 				"archive": archiveName,
@@ -79,7 +79,7 @@ var _ = Describe("Extract", func() {
 	When("no out specified", func() {
 		It("can extract tar", func() {
 			archiveName = "archive.tar"
-			task = &tasks.Task{
+			task = &actions.Action{
 				Type: "extract",
 				Parameters: map[string]interface{}{
 					"archive": archiveName,
@@ -113,10 +113,10 @@ var _ = Describe("Extract", func() {
 			Expect(fs.Remove(f)).To(BeNil())
 		}
 
-		extract := tasks.NewExtractProvider(factory, logger)
+		extract := actions.NewExtractProvider(factory, logger)
 		Expect(provider).ToNot(BeNil())
 
-		metadata := &tasks.Metadata{}
+		metadata := &actions.Metadata{}
 		err = extract.Execute(task, metadata)
 		Expect(err).To(BeNil(), errorStringOrDefault(err))
 

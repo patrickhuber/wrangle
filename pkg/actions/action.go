@@ -1,16 +1,16 @@
-package tasks
+package actions
 
 import "fmt"
 
-// Task defines a unit of work for a package
-type Task struct {
+// Action defines a unit of work for a package
+type Action struct {
 	Type       string
 	Parameters map[string]interface{}
 	Outputs    map[string]interface{}
 }
 
 // GetStringParameter casts the given parameter as a string and returns the value
-func (t *Task) GetStringParameter(name string) (string, error) {
+func (t *Action) GetStringParameter(name string) (string, error) {
 	inter, ok := t.Parameters[name]
 	if !ok {
 		return "", fmt.Errorf("parameter %s was not found in the task", name)
@@ -22,7 +22,7 @@ func (t *Task) GetStringParameter(name string) (string, error) {
 	return value, nil
 }
 
-func (t *Task) GetOptionalStringParameter(name string) (string, bool, error) {
+func (t *Action) GetOptionalStringParameter(name string) (string, bool, error) {
 	inter, ok := t.Parameters[name]
 	if !ok {
 		return "", false, nil

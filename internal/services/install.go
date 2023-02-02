@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
 )
 
 type install struct {
 	configProvider config.Provider
 	fs             filesystem.FileSystem
 	serviceFactory feed.ServiceFactory
-	runner         tasks.Runner
+	runner         actions.Runner
 	opsys          operatingsystem.OS
 }
 
@@ -32,7 +32,7 @@ type Install interface {
 func NewInstall(
 	fs filesystem.FileSystem,
 	serviceFactory feed.ServiceFactory,
-	runner tasks.Runner,
+	runner actions.Runner,
 	o operatingsystem.OS,
 	configProvider config.Provider) Install {
 	return &install{
@@ -90,18 +90,18 @@ func (i *install) Execute(r *InstallRequest) error {
 
 			oneVersionMatched = true
 			// create a metadata object for the task runs so the task knows to which package it belongs
-			meta := tasks.NewDefaultMetadata(cfg, r.Package, v.Version)
+			meta := actions.NewDefaultMetadata(cfg, r.Package, v.Version)
 
-			for _, target := range v.Targets {
+			for _, target := range v.Manifest.Package.Targets {
 
 				// check if target matches, architecture and platform
-				// we don't want to run windows tasks on linux
+				// we don't want to run windows actions on linux
 				if !i.targetIsMatch(target) {
 					continue
 				}
 
-				// run the tasks
-				for _, task := range target.Tasks {
+				// run the steps
+				for _, task := range target.Steps {
 					tsk := i.packageTargetTaskToTask(task)
 					err = i.runner.Run(tsk, meta)
 					if err != nil {
@@ -138,17 +138,17 @@ func (i *install) getItems(name string, version string, cfg *config.Config) ([]*
 	return items, nil
 }
 
-func (i *install) targetIsMatch(target *packages.Target) bool {
+func (i *install) targetIsMatch(target *packages.ManifestTarget) bool {
 	return i.opsys.Architecture() == target.Architecture && i.opsys.Platform() == target.Platform
 }
 
-func (i *install) packageTargetTaskToTask(task *packages.Task) *tasks.Task {
+func (i *install) packageTargetTaskToTask(action *packages.ManifestStep) *actions.Action {
 	parameters := map[string]interface{}{}
-	for k, p := range task.Properties {
+	for k, p := range action.With {
 		parameters[k] = p
 	}
-	return &tasks.Task{
-		Type:       task.Name,
+	return &actions.Action{
+		Type:       action.Action,
 		Parameters: parameters,
 	}
 }

@@ -53,7 +53,11 @@ func (s *versionRepository) Get(name string, version string) (*packages.Version,
 	if err != nil {
 		return nil, err
 	}
-	return packages.ManifestToPackageVersion(manifest), nil
+	v := &packages.Version{
+		Version:  manifest.Package.Version,
+		Manifest: manifest,
+	}
+	return v, nil
 }
 
 func (s *versionRepository) GetManifest(name string, version string) (*packages.Manifest, error) {
@@ -69,7 +73,7 @@ func (s *versionRepository) GetManifest(name string, version string) (*packages.
 }
 
 func (s *versionRepository) Save(name string, version *packages.Version) error {
-	manifest := packages.PackageVersionToManifest(name, version)
+	manifest := version.Manifest
 
 	versionPath := crosspath.Join(s.workingDirectory, name, version.Version)
 	err := s.fs.MkdirAll(versionPath, 0600)

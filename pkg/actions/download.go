@@ -1,4 +1,4 @@
-package tasks
+package actions
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func NewDownloadProvider(logger log.Logger, fs filesystem.FileSystem) Provider {
 	}
 }
 
-func (p *downloadProvider) Decode(object interface{}) (*Task, error) {
+func (p *downloadProvider) Decode(object interface{}) (*Action, error) {
 	// map structure to Download
 	var download = &Download{}
 	err := mapstructure.Decode(object, download)
@@ -46,7 +46,7 @@ func (p *downloadProvider) Decode(object interface{}) (*Task, error) {
 		return nil, err
 	}
 	// map Download to Task
-	return &Task{
+	return &Action{
 		Type: p.name,
 		Parameters: map[string]interface{}{
 			"url": download.Details.URL,
@@ -55,7 +55,7 @@ func (p *downloadProvider) Decode(object interface{}) (*Task, error) {
 	}, nil
 }
 
-func (p *downloadProvider) Encode(tsk *Task) (*Download, error) {
+func (p *downloadProvider) Encode(tsk *Action) (*Download, error) {
 	var download = &Download{}
 	url, err := tsk.GetStringParameter("url")
 	if err != nil {
@@ -76,7 +76,7 @@ func (p *downloadProvider) Type() string {
 	return p.name
 }
 
-func (p *downloadProvider) Execute(t *Task, ctx *Metadata) error {
+func (p *downloadProvider) Execute(t *Action, ctx *Metadata) error {
 	download, err := p.Encode(t)
 	if err != nil {
 		return err

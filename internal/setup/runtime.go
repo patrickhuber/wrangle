@@ -14,7 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
+	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/spf13/afero"
 )
 
@@ -48,10 +48,10 @@ func New() Setup {
 		return config.NewDefaultableProvider(provider, cfg), nil
 	})
 	container.RegisterConstructor(archive.NewFactory)
-	container.RegisterConstructor(tasks.NewDownloadProvider)
-	container.RegisterConstructor(tasks.NewExtractProvider)
-	container.RegisterConstructor(tasks.NewFactory)
-	container.RegisterConstructor(tasks.NewRunner)
+	container.RegisterConstructor(actions.NewDownloadProvider)
+	container.RegisterConstructor(actions.NewExtractProvider)
+	container.RegisterConstructor(actions.NewFactory)
+	container.RegisterConstructor(actions.NewRunner)
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(services.NewInitialize)

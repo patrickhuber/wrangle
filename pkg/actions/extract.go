@@ -1,4 +1,4 @@
-package tasks
+package actions
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ func (p *extractProvider) Type() string {
 	return "extract"
 }
 
-func (p *extractProvider) Execute(t *Task, ctx *Metadata) error {
+func (p *extractProvider) Execute(t *Action, ctx *Metadata) error {
 	extract, err := p.Encode(t)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (p *extractProvider) Execute(t *Task, ctx *Metadata) error {
 	return provider.Extract(archive, ctx.PackageVersionPath, extract.Details.Out)
 }
 
-func (p *extractProvider) Encode(t *Task) (*Extract, error) {
+func (p *extractProvider) Encode(t *Action) (*Extract, error) {
 	if strings.TrimSpace(t.Type) == "" {
 		return nil, fmt.Errorf("task Type is empty")
 	}

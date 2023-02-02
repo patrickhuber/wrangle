@@ -147,15 +147,21 @@ func (t *serviceTester) CanAddVersion() {
 								Add: []*feed.VersionAdd{
 									{
 										Version: newVersion,
-										Targets: []*feed.TargetAdd{
-											{
-												Platform:     "linux",
-												Architecture: "amd64",
-												Tasks: []*feed.TaskAdd{
+										Manifest: &feed.ManifestAdd{
+											Package: &feed.ManifestPackageAdd{
+												Name:    packageName,
+												Version: newVersion,
+												Targets: []*feed.ManifestTargetAdd{
 													{
-														Name: "download",
-														Properties: map[string]string{
-															"url": "https://www.google.com",
+														Platform:     "linux",
+														Architecture: "amd64",
+														Steps: []*feed.ManifestStepAdd{
+															{
+																Action: "download",
+																With: map[string]string{
+																	"url": "https://www.google.com",
+																},
+															},
 														},
 													},
 												},

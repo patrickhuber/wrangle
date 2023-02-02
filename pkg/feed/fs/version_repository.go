@@ -1,6 +1,8 @@
 package fs
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
@@ -27,7 +29,7 @@ func (r *versionRepository) Save(name string, version *packages.Version) error {
 		return err
 	}
 	versionFile := r.GetVersionFilePath(name, version.Version)
-	manifest := packages.PackageVersionToManifest(name, version)
+	manifest := version.Manifest
 
 	data, err := yaml.Marshal(manifest)
 	if err != nil {
@@ -47,7 +49,14 @@ func (r *versionRepository) Get(name string, version string) (*packages.Version,
 	if err != nil {
 		return nil, err
 	}
-	return packages.ManifestToPackageVersion(manifest), nil
+	if manifest.Package == nil {
+		return nil, fmt.Errorf("invalid package %s. manifest.Package is nil", versionFile)
+	}
+	v := &packages.Version{
+		Version:  manifest.Package.Version,
+		Manifest: manifest,
+	}
+	return v, nil
 }
 
 func (r *versionRepository) List(name string) ([]*packages.Version, error) {

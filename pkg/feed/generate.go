@@ -57,9 +57,9 @@ func Generate(request *GenerateRequest) (*GenerateResponse, error) {
 		for _, v := range i.Package.Versions {
 
 			writer := &bytes.Buffer{}
-			data := &GenerateVersion{
-				Version:   v,
-				Platforms: i.Platforms,
+			data := map[string]any{
+				"version":   v,
+				"platforms": i.Platforms,
 			}
 			err := tmpl.Execute(writer, data)
 			if err != nil {

@@ -12,6 +12,7 @@ import (
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
+	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
@@ -21,7 +22,6 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
-	"github.com/patrickhuber/wrangle/pkg/tasks"
 	"github.com/spf13/afero"
 )
 
@@ -84,10 +84,10 @@ func newBaselineTest() Setup {
 	})
 	container.RegisterConstructor(func() log.Logger { return log.Memory() })
 	container.RegisterConstructor(archive.NewFactory)
-	container.RegisterConstructor(tasks.NewDownloadProvider)
-	container.RegisterConstructor(tasks.NewExtractProvider)
-	container.RegisterConstructor(tasks.NewFactory)
-	container.RegisterConstructor(tasks.NewRunner)
+	container.RegisterConstructor(actions.NewDownloadProvider)
+	container.RegisterConstructor(actions.NewExtractProvider)
+	container.RegisterConstructor(actions.NewFactory)
+	container.RegisterConstructor(actions.NewRunner)
 	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewInitialize)
@@ -110,16 +110,22 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS
 				Versions: []*packages.Version{
 					{
 						Version: version,
-						Targets: []*packages.Target{
-							{
-								Platform:     opsys.Platform(),
-								Architecture: opsys.Architecture(),
-								Tasks: []*packages.Task{
+						Manifest: &packages.Manifest{
+							Package: &packages.ManifestPackage{
+								Name:    pkg,
+								Version: version,
+								Targets: []*packages.ManifestTarget{
 									{
-										Name: "download",
-										Properties: map[string]any{
-											"url": server.URL + "/test",
-											"out": fmt.Sprintf("%s-%s-%s-%s%s", pkg, version, opsys.Platform(), opsys.Architecture(), extension),
+										Platform:     opsys.Platform(),
+										Architecture: opsys.Architecture(),
+										Steps: []*packages.ManifestStep{
+											{
+												Action: "download",
+												With: map[string]any{
+													"url": server.URL + "/test",
+													"out": fmt.Sprintf("%s-%s-%s-%s%s", pkg, version, opsys.Platform(), opsys.Architecture(), extension),
+												},
+											},
 										},
 									},
 								},
@@ -130,6 +136,7 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS
 			},
 		}
 	}
+
 	return memory.NewProvider(
 		logger,
 		createItem("wrangle", "1.0.0"),

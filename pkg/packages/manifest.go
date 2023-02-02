@@ -13,7 +13,7 @@ type ManifestPackage struct {
 type ManifestTarget struct {
 	Platform     string
 	Architecture string
-	Steps        []ManifestStep
+	Steps        []*ManifestStep
 }
 
 type ManifestStep struct {

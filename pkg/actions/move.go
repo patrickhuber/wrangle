@@ -1,4 +1,4 @@
-package tasks
+package actions
 
 import (
 	"github.com/patrickhuber/go-log"
@@ -21,7 +21,7 @@ type moveProvider struct {
 }
 
 // Execute implements Provider
-func (m *moveProvider) Execute(task *Task, ctx *Metadata) error {
+func (m *moveProvider) Execute(task *Action, ctx *Metadata) error {
 	source, err := task.GetStringParameter("source")
 	if err != nil {
 		return err

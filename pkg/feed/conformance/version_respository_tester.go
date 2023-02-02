@@ -44,6 +44,19 @@ func (t *versionRepositoryTester) CanListAllVersions() {
 func (t *versionRepositoryTester) CanAddVersion(packageName, version string) {
 	v := &packages.Version{
 		Version: version,
+		Manifest: &packages.Manifest{
+			Package: &packages.ManifestPackage{
+				Name:    packageName,
+				Version: version,
+				Targets: []*packages.ManifestTarget{
+					{
+						Platform:     "linux",
+						Architecture: "amd64",
+						Steps:        []*packages.ManifestStep{},
+					},
+				},
+			},
+		},
 	}
 	err := t.repo.Save(packageName, v)
 	Expect(err).To(BeNil())
@@ -59,6 +72,7 @@ func (t *versionRepositoryTester) CanUpdateVersionNumber(packageName string, ver
 	Expect(v).ToNot(BeNil())
 
 	v.Version = newVersion
+	v.Manifest.Package.Version = newVersion
 
 	err = t.repo.Save(packageName, v)
 	Expect(err).To(BeNil())
@@ -76,20 +90,20 @@ func (t *versionRepositoryTester) CanAddTask() {
 	Expect(err).To(BeNil())
 
 	Expect(v).ToNot(BeNil())
-	Expect(len(v.Targets)).ToNot(Equal(0))
+	Expect(len(v.Manifest.Package.Targets)).ToNot(Equal(0))
 
-	task := &packages.Task{
-		Name:       "test",
-		Properties: map[string]any{},
+	task := &packages.ManifestStep{
+		Action: "test",
+		With:   map[string]any{},
 	}
-	target := v.Targets[0]
-	target.Tasks = append(v.Targets[0].Tasks, task)
+	target := v.Manifest.Package.Targets[0]
+	target.Steps = append(v.Manifest.Package.Targets[0].Steps, task)
 
 	err = t.repo.Save(packageName, v)
 	Expect(err).To(BeNil())
 
 	v, err = t.repo.Get(packageName, version)
 	Expect(err).To(BeNil())
-	Expect(len(v.Targets)).To(Equal(1))
-	Expect(len(v.Targets[0].Tasks)).To(Equal(2))
+	Expect(len(v.Manifest.Package.Targets)).To(Equal(3))
+	Expect(len(v.Manifest.Package.Targets[0].Steps)).To(Equal(2))
 }

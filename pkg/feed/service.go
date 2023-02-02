@@ -1,7 +1,6 @@
 package feed
 
 import (
-
 	"reflect"
 	"strings"
 
@@ -279,6 +278,7 @@ func (s *service) CreateVersions(name string, additions []*VersionAdd) (bool, er
 	any := false
 	for _, a := range additions {
 		v := s.ToVersion(a)
+		v.Manifest.Package.Name = name
 		err := s.versionRepository.Save(name, v)
 		if err != nil {
 			return false, err
@@ -312,18 +312,44 @@ func (s *service) ModifyVersions(name string, modifications []*VersionModify) (b
 
 func (s *service) VersionModify(m *VersionModify) patch.Applicable {
 	properties := map[string]interface{}{}
-	if m.Targets != nil {
-		properties["Targets"] = s.TargetUpdate(m.Targets)
-	}
 	if m.NewVersion != nil {
 		properties["Version"] = patch.NewString(*m.NewVersion)
+	}
+	if m.Manifest != nil {
+		properties["Manifest"] = s.ManifestModify(m.Manifest)
 	}
 	return &patch.ObjectUpdate{
 		Value: properties,
 	}
 }
 
-func (s *service) TargetUpdate(u *TargetUpdate) patch.Applicable {
+func (s *service) ManifestModify(m *ManifestModify) patch.Applicable {
+	properties := map[string]any{}
+	if m.Package != nil {
+		properties["Package"] = s.ManifestPackageModify(m.Package)
+	}
+	return &patch.ObjectUpdate{
+		Value: properties,
+	}
+}
+
+func (s *service) ManifestPackageModify(m *ManifestPackageModify) patch.Applicable {
+	properties := map[string]any{}
+	if m.NewName != nil {
+		properties["Name"] = *m.NewName
+	}
+	if m.NewVersion != nil {
+		properties["Version"] = *m.NewVersion
+	}
+	if m.Targets != nil {
+		properties["Targets"] = nil
+	}
+	return &patch.ObjectUpdate{
+		Value: properties,
+	}
+}
+
+func (s *service) ManifestTargetUpdate(u *ManifestTargetUpdate) patch.Applicable {
 	options := []patch.SliceOption{}
 	for _, a := range u.Add {
 		o := patch.SliceAppend(s.ToTarget(a))
@@ -331,7 +357,7 @@ func (s *service) TargetUpdate(u *TargetUpdate) patch.Applicable {
 	}
 	for _, m := range u.Modify {
 		o := patch.SliceModify(func(v reflect.Value) bool {
-			target, ok := v.Interface().(*packages.Target)
+			target, ok := v.Interface().(*packages.ManifestTarget)
 			if !ok {
 				return false
 			}
@@ -341,7 +367,7 @@ func (s *service) TargetUpdate(u *TargetUpdate) patch.Applicable {
 	}
 	for _, r := range u.Remove {
 		o := patch.SliceRemove(func(v reflect.Value) bool {
-			target, ok := v.Interface().(*packages.Target)
+			target, ok := v.Interface().(*packages.ManifestTarget)
 			if !ok {
 				return false
 			}
@@ -352,10 +378,10 @@ func (s *service) TargetUpdate(u *TargetUpdate) patch.Applicable {
 	return patch.NewSlice(options...)
 }
 
-func (s *service) TargetModify(m *TargetModify) patch.Applicable {
+func (s *service) TargetModify(m *ManifestTargetModify) patch.Applicable {
 	options := []patch.SliceOption{}
-	for _, t := range m.Tasks {
-		o := s.TaskPatch(t)
+	for _, t := range m.Steps {
+		o := s.StepPatch(t)
 		options = append(options, o)
 	}
 
@@ -373,51 +399,65 @@ func (s *service) TargetModify(m *TargetModify) patch.Applicable {
 	}
 }
 
-func (s *service) TaskPatch(p *TaskPatch) patch.SliceOption {
+func (s *service) StepPatch(p *ManifestStepPatch) patch.SliceOption {
 	switch p.Operation {
 	case PatchAdd:
-		return patch.SliceAppend(s.ToTask(p.Value))
+		return patch.SliceAppend(s.ToStep(p.Value))
 	case PatchRemove:
 		return patch.SliceRemoveAt(p.Index)
 	case PatchReplace:
-		return patch.SliceModifyAt(p.Index, s.ToTask(p.Value))
+		return patch.SliceModifyAt(p.Index, s.ToStep(p.Value))
 	}
 	return nil
 }
 
 func (s *service) ToVersion(versionAdd *VersionAdd) *packages.Version {
-	targets := []*packages.Target{}
-	for _, target := range versionAdd.Targets {
-		targets = append(targets, s.ToTarget(target))
-	}
+
 	return &packages.Version{
-		Version: versionAdd.Version,
+		Version:  versionAdd.Version,
+		Manifest: s.ToManifest(versionAdd.Manifest),
+	}
+}
+
+func (s *service) ToManifest(manifestAdd *ManifestAdd) *packages.Manifest {
+	return &packages.Manifest{
+		Package: s.ToManfiestPackage(manifestAdd.Package),
+	}
+}
+
+func (s *service) ToManfiestPackage(manifestPackageAdd *ManifestPackageAdd) *packages.ManifestPackage {
+	targets := []*packages.ManifestTarget{}
+	for _, t := range manifestPackageAdd.Targets {
+		targets = append(targets, s.ToTarget(t))
+	}
+	return &packages.ManifestPackage{
+		Name:    manifestPackageAdd.Name,
+		Version: manifestPackageAdd.Version,
 		Targets: targets,
 	}
 }
 
-func (s *service) ToTarget(targetAdd *TargetAdd) *packages.Target {
+func (s *service) ToTarget(targetAdd *ManifestTargetAdd) *packages.ManifestTarget {
 
-	tasks := []*packages.Task{}
-	for _, t := range targetAdd.Tasks {
-		task := s.ToTask(t)
-		tasks = append(tasks, task)
+	steps := []*packages.ManifestStep{}
+	for _, t := range targetAdd.Steps {
+		steps = append(steps, s.ToStep(t))
 	}
-	return &packages.Target{
+	return &packages.ManifestTarget{
 		Platform:     targetAdd.Platform,
 		Architecture: targetAdd.Architecture,
-		Tasks:        tasks,
+		Steps:        steps,
 	}
 }
 
-func (s *service) ToTask(taskAdd *TaskAdd) *packages.Task {
-	properties := map[string]any{}
-	for k, v := range taskAdd.Properties {
-		properties[k] = v
+func (s *service) ToStep(stepAdd *ManifestStepAdd) *packages.ManifestStep {
+	with := map[string]any{}
+	for k, v := range stepAdd.With {
+		with[k] = v
 	}
-	return &packages.Task{
-		Name:       taskAdd.Name,
-		Properties: properties,
+	return &packages.ManifestStep{
+		Action: stepAdd.Action,
+		With:   with,
 	}
 }
 
