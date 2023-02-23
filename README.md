@@ -34,7 +34,7 @@ The scripts above download the latest version of wrangle and then run a `wrangle
 
 Linux
 
-```
+```bash
 export VERSION=0.10.0
 export ARCHIVE=wrangle-darwin-amd64.tgz
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
@@ -47,7 +47,7 @@ rm wrangle
 
 Darwin
 
-```
+```bash
 export VERSION=0.10.0
 export ARCHIVE=wrangle-darwin-amd64.tgz
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
@@ -60,22 +60,42 @@ rm wrangle
 
 Windows (Powershell)
 
-```
+```powershell
 $version = "0.10.0"
 $archive = "wrangle-windows-amd64.zip"
-iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/$VERSION/$archive" -OutFile $archive
+iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/$version/$archive" -OutFile $archive
 Extract-Archive $archive
 Remove-Item $archive
 .\wrangle.exe bootstrap
 Remove-Item wrangle.exe
 ```
 
-### Usage
+## Usage
 
 Once wrangle is installed you can install a package with the install command.
 
 ```bash
 wrangle install yq
+```
+
+## Shell Integration
+
+Wrangle can integrate into your shell to enable environment variable injection. 
+
+> bash
+
+add the following to the ~/.bashrc file
+
+```bash
+eval "$(wrangle hook bash)"
+```
+
+> powershell
+
+add the following to end of the $PROFILE file
+
+```powershell
+iex $(wrangle hook powershell | Out-String)
 ```
 
 ## Package Management
