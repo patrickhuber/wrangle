@@ -72,10 +72,38 @@ Remove-Item wrangle.exe
 
 ## Usage
 
-Once wrangle is installed you can install a package with the install command.
+Once wrangle is installed you can install the latest package with the install command.
 
 ```bash
 wrangle install yq
+```
+
+or a specific version
+
+```
+wrangle install yq@4.31.1
+```
+
+You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle restore` command.
+
+> .wrangle.yml
+
+```yaml
+packages:
+- jq@4.31.1
+
+```
+
+> .wrangle.json
+
+```json
+"packages": [
+    "jq@4.31.1"
+]
+```
+
+```bash
+wrangle restore
 ```
 
 ## Shell Integration
