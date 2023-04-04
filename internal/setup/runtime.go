@@ -3,9 +3,11 @@ package setup
 import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/wrangle/internal/services"
 
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/console"
@@ -14,7 +16,6 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
 	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
-	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/spf13/afero"
 )
 
@@ -57,6 +58,10 @@ func New() Setup {
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewBootstrap)
+	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
+	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
+	container.RegisterConstructor(services.NewExport)
+	container.RegisterConstructor(services.NewHook)
 	return &runtime{
 		container: container,
 	}

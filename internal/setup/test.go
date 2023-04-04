@@ -9,12 +9,14 @@ import (
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-shellhook"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
+	"github.com/patrickhuber/wrangle/pkg/console"
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/env"
 	"github.com/patrickhuber/wrangle/pkg/feed"
@@ -70,6 +72,7 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(t.newFeedProvider)
 	container.RegisterConstructor(env.New)
 	container.RegisterConstructor(afero.NewMemMapFs, di.WithLifetime(di.LifetimeStatic))
+	container.RegisterConstructor(console.NewMemory)
 	container.RegisterConstructor(filesystem.FromAferoFS)
 	container.RegisterConstructor(func(opsys operatingsystem.OS) config.Properties {
 		properties := config.NewProperties()
@@ -92,6 +95,10 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewBootstrap)
+	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
+	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
+	container.RegisterConstructor(services.NewExport)
+	container.RegisterConstructor(services.NewHook)
 	return t
 }
 

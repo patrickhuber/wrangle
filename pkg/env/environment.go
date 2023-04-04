@@ -1,11 +1,15 @@
 package env
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 type Environment interface {
 	Get(key string) string
 	Set(key string, value string) error
 	Lookup(key string) (string, bool)
+	Export() map[string]string
 }
 
 type env struct {
@@ -29,4 +33,21 @@ func (e *env) Lookup(key string) (string, bool) {
 
 func (e *env) Delete(key string) error {
 	return os.Unsetenv(key)
+}
+
+func (e *env) Export() map[string]string {
+	clone := make(map[string]string)
+	for _, item := range os.Environ() {
+
+		split := strings.Split(item, "=")
+		if len(split) != 2 {
+			continue
+		}
+
+		key := split[0]
+		value := split[1]
+
+		clone[key] = value
+	}
+	return clone
 }

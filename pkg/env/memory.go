@@ -32,3 +32,11 @@ func (e *memory) Delete(key string) error {
 	delete(e.data, key)
 	return nil
 }
+
+func (e *memory) Export() map[string]string {
+	clone := make(map[string]string)
+	for key, value := range e.data {
+		clone[key] = value
+	}
+	return clone
+}
