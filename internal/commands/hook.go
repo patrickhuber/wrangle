@@ -2,11 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/urfave/cli/v2"
 )
 
@@ -18,7 +18,8 @@ var Hook = &cli.Command{
 }
 
 type HookCommand struct {
-	Hook    services.Hook `inject:""`
+	Hook    services.Hook      `inject:""`
+	OS      operatingsystem.OS `inject:""`
 	Options HookOptions
 }
 
@@ -47,7 +48,7 @@ func HookAction(ctx *cli.Context) error {
 }
 
 func (cmd *HookCommand) Execute() error {
-	executable, err := os.Executable()
+	executable, err := cmd.OS.Executable()
 	if err != nil {
 		return err
 	}
