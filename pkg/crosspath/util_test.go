@@ -7,30 +7,14 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/crosspath"
 )
 
-var _ = Describe("Util", func() {
-	It("preserves prefix slash", func() {
-		segments := []string{"/test", "/sub"}
-		result := crosspath.Join(segments...)
-		Expect(result).To(Equal("/test/sub"))
-	})
-	It("converts backslash to forward slash", func() {
-		segments := []string{"\\test", "\\sub"}
-		result := crosspath.Join(segments...)
-		Expect(result).To(Equal("/test/sub"))
-	})
-	It("adds slashes between elements", func() {
-		segments := []string{"/test", "sub"}
-		result := crosspath.Join(segments...)
-		Expect(result).To(Equal("/test/sub"))
-	})
-	It("removes right slash from segments", func() {
-		segments := []string{"/test/", "sub/"}
-		result := crosspath.Join(segments...)
-		Expect(result).To(Equal("/test/sub"))
-	})
-	It("removes duplicate slashes", func() {
-		segments := []string{"/test/", "/sub/"}
-		result := crosspath.Join(segments...)
-		Expect(result).To(Equal("/test/sub"))
-	})
-})
+var _ = DescribeTable("Util", func(segments []string) {
+
+	result := crosspath.Join(segments...)
+	Expect(result).To(Equal("/test/sub"))
+},
+	Entry("preserves prefix slash", []string{"/test", "/sub"}),
+	Entry("converts backslash to forward slash", []string{"\\test", "\\sub"}),
+	Entry("adds slashes between elements", []string{"/test", "sub"}),
+	Entry("removes right slash from segments", []string{"/test/", "sub/"}),
+	Entry("removes duplicate slashes", []string{"/test/", "/sub/"}),
+)
