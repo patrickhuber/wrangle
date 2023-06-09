@@ -10,15 +10,16 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
-func NewService(name string, fs billy.Filesystem, repository *git.Repository, logger log.Logger) (feed.Service, error) {
+func NewService(name string, fs billy.Filesystem, repository *git.Repository, path filepath.Processor, logger log.Logger) (feed.Service, error) {
 
 	workingDirectory := "/feed"
 
 	items := NewItemRepository(fs, logger, workingDirectory)
-	versions := NewVersionRepository(fs, logger, workingDirectory)
+	versions := NewVersionRepository(fs, logger, path, workingDirectory)
 
 	svc := feed.NewService(name, items, versions, logger)
 	return &service{
@@ -27,7 +28,7 @@ func NewService(name string, fs billy.Filesystem, repository *git.Repository, lo
 	}, nil
 }
 
-func NewServiceFromURL(name, url string, logger log.Logger) (feed.Service, error) {
+func NewServiceFromURL(name, url string, path filepath.Processor, logger log.Logger) (feed.Service, error) {
 
 	fs := memfs.New()
 	storer := memory.NewStorage()
@@ -38,7 +39,7 @@ func NewServiceFromURL(name, url string, logger log.Logger) (feed.Service, error
 	if err != nil {
 		return nil, fmt.Errorf("error cloning packages repo '%s': %w", url, err)
 	}
-	return NewService(name, fs, repository, logger)
+	return NewService(name, fs, repository, path, logger)
 }
 
 type service struct {

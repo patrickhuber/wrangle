@@ -1,8 +1,8 @@
 package actions
 
 import (
+	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
 )
 
 // Metadata defines the context for a package
@@ -14,13 +14,25 @@ type Metadata struct {
 	PackageVersionManifestPath string
 }
 
-// NewDefaultMetadata creates a new default context given the package parameters
-func NewDefaultMetadata(cfg *config.Config, name, version string) *Metadata {
+type metadataProvider struct {
+	path filepath.Processor
+}
 
-	packagePath := crosspath.Join(cfg.Paths.Packages, name)
-	packageVersionPath := crosspath.Join(packagePath, version)
+type MetadataProvider interface {
+	Get(cfg *config.Config, name, version string) *Metadata
+}
+
+func NewMetadataProvider(path filepath.Processor) MetadataProvider {
+	return &metadataProvider{
+		path: path,
+	}
+}
+
+func (p *metadataProvider) Get(cfg *config.Config, name, version string) *Metadata {
+	packagePath := p.path.Join(cfg.Paths.Packages, name)
+	packageVersionPath := p.path.Join(packagePath, version)
 	packageManifestName := "package.yml"
-	packageVersionManifestPath := crosspath.Join(packageVersionPath, packageManifestName)
+	packageVersionManifestPath := p.path.Join(packageVersionPath, packageManifestName)
 	return &Metadata{
 		Name:                       name,
 		Version:                    version,

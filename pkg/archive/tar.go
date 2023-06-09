@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
 )
 
 type TarProvider interface {
@@ -16,12 +16,14 @@ type TarProvider interface {
 }
 
 type tar struct {
-	fs filesystem.FileSystem
+	fs       fs.FS
+	filepath filepath.Processor
 }
 
-func NewTar(fs filesystem.FileSystem) TarProvider {
+func NewTar(fs fs.FS, fp filepath.Processor) TarProvider {
 	return &tar{
-		fs: fs,
+		fs:       fs,
+		filepath: fp,
 	}
 }
 
@@ -57,9 +59,13 @@ func (a *tar) untar(reader *stdtar.Reader, header *stdtar.Header, destination st
 	case stdtar.TypeDir:
 		return a.fs.Mkdir(destination, 0666)
 	case stdtar.TypeReg, stdtar.TypeRegA, stdtar.TypeChar, stdtar.TypeBlock, stdtar.TypeFifo:
-		target := crosspath.Join(destination, header.Name)
-		target = crosspath.ToSlash(target)
-		return a.fs.WriteReader(target, reader)
+		target := a.filepath.Join(destination, header.Name)
+		writer, err := a.fs.Create(target)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(writer, reader)
+		return err
 	case stdtar.TypeSymlink:
 		return fmt.Errorf("TypeSymlink not implemented")
 	case stdtar.TypeLink:
@@ -86,7 +92,7 @@ func (a *tar) ArchiveWriter(writer io.Writer, paths ...string) error {
 		if err != nil {
 			return err
 		}
-		content, err := a.fs.Read(path)
+		content, err := a.fs.ReadFile(path)
 		if err != nil {
 			return err
 		}

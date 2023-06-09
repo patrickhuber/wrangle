@@ -3,9 +3,11 @@ package fs_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 var _ = Describe("VersionRespository", func() {
@@ -13,9 +15,10 @@ var _ = Describe("VersionRespository", func() {
 		tester conformance.VersionRepositoryTester
 	)
 	BeforeEach(func() {
-		fs := filesystem.NewMemory()
+		fs := fs.NewMemory()
+		path := filepath.NewProcessorWithPlatform(platform.Linux)
 		workingDirectory := "/opt/wrangle/feed"
-		repo := feedfs.NewVersionRepository(fs, workingDirectory)
+		repo := feedfs.NewVersionRepository(fs, path, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {
 			for _, version := range item.Package.Versions {

@@ -1,76 +1,76 @@
 package services_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
-var _ = Describe("Install", func() {
-	var (
-		testFileLocation string
-		s                setup.Setup
-	)
-	AfterEach(func() {
-		defer s.Close()
-		container := s.Container()
+func TestWindowsInstall(t *testing.T) {
+	s := setup.NewWindowsTest()
+	testFileLocation := `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`
+	RunInstallTest(t, testFileLocation, s)
+}
 
-		fs, err := di.Resolve[filesystem.FileSystem](container)
-		Expect(err).To(BeNil())
+func TestLinuxInstall(t *testing.T) {
+	s := setup.NewLinuxTest()
+	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
+	RunInstallTest(t, testFileLocation, s)
+}
 
-		install, err := di.Resolve[services.Install](container)
-		Expect(err).To(BeNil())
+func TestDarwinInstall(t *testing.T) {
+	s := setup.NewDarwinTest()
+	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
+	RunInstallTest(t, testFileLocation, s)
+}
 
-		opsys, err := di.Resolve[operatingsystem.OS](container)
-		Expect(err).To(BeNil())
+func RunInstallTest(t *testing.T,
+	testFileLocation string,
+	s setup.Setup) {
+	defer s.Close()
+	container := s.Container()
 
-		reader, err := di.Resolve[config.Provider](container)
-		Expect(err).To(BeNil())
+	fs, err := di.Resolve[fs.FS](container)
+	require.Nil(t, err)
 
-		cfg, err := reader.Get()
-		Expect(err).To(BeNil())
+	install, err := di.Resolve[services.Install](container)
+	require.Nil(t, err)
 
-		globalConfigPath := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
-		cfgBytes, err := yaml.Marshal(cfg)
-		Expect(err).To(BeNil())
+	path, err := di.Resolve[filepath.Processor](container)
+	require.Nil(t, err)
 
-		err = fs.Write(globalConfigPath, cfgBytes, 0644)
-		Expect(err).To(BeNil())
+	opsys, err := di.Resolve[os.OS](container)
+	require.Nil(t, err)
 
-		req := &services.InstallRequest{
-			Package: "test",
-		}
+	reader, err := di.Resolve[config.Provider](container)
+	require.Nil(t, err)
 
-		err = install.Execute(req)
-		Expect(err).To(BeNil())
+	cfg, err := reader.Get()
+	require.Nil(t, err)
 
-		ok, err := fs.Exists(testFileLocation)
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
-	})
-	Context("linux", func() {
-		It("can install", func() {
-			s = setup.NewLinuxTest()
-			testFileLocation = "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
-		})
-	})
-	Context("darwin", func() {
-		It("can install", func() {
-			s = setup.NewDarwinTest()
-			testFileLocation = "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
-		})
-	})
-	Context("windows", func() {
-		It("can install", func() {
-			s = setup.NewWindowsTest()
-			testFileLocation = "C:/ProgramData/wrangle/packages/test/1.0.0/test-1.0.0-windows-amd64.exe"
-		})
-	})
-})
+	globalConfigPath := path.Join(opsys.Home(), ".wrangle", "config.yml")
+	cfgBytes, err := yaml.Marshal(cfg)
+	require.Nil(t, err)
+
+	err = fs.WriteFile(globalConfigPath, cfgBytes, 0644)
+	require.Nil(t, err)
+
+	req := &services.InstallRequest{
+		Package: "test",
+	}
+
+	err = install.Execute(req)
+	require.Nil(t, err)
+
+	ok, err := fs.Exists(testFileLocation)
+	require.Nil(t, err)
+	require.True(t, ok, "file '%s' not found", testFileLocation)
+}

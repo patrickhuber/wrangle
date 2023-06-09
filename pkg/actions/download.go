@@ -8,8 +8,8 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
 )
 
 // Download defines the outer structure for a download task
@@ -26,15 +26,17 @@ type DownloadDetails struct {
 type downloadProvider struct {
 	name   string
 	logger log.Logger
-	fs     filesystem.FileSystem
+	fs     fs.FS
+	path   filepath.Processor
 }
 
 // NewDownloadProvider creates a new download provider
-func NewDownloadProvider(logger log.Logger, fs filesystem.FileSystem) Provider {
+func NewDownloadProvider(logger log.Logger, fs fs.FS, path filepath.Processor) Provider {
 	return &downloadProvider{
 		name:   "download",
 		logger: logger,
 		fs:     fs,
+		path:   path,
 	}
 }
 
@@ -86,7 +88,7 @@ func (p *downloadProvider) Execute(t *Action, ctx *Metadata) error {
 
 func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
-	out := crosspath.Join(ctx.PackageVersionPath, download.Details.Out)
+	out := p.path.Join(ctx.PackageVersionPath, download.Details.Out)
 	url := download.Details.URL
 
 	p.logger.Printf("downloading '%s' to '%s'", url, out)

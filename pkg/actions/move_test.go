@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/go-log"
+	filesystem "github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/pkg/actions"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 var _ = Describe("Move", func() {
@@ -15,7 +15,7 @@ var _ = Describe("Move", func() {
 		logger := log.Memory()
 		provider := actions.NewMoveProvider(fs, logger)
 
-		err := fs.Write("/folder/file.txt", []byte("this is a test"), 0644)
+		err := fs.WriteFile("/folder/file.txt", []byte("this is a test"), 0644)
 		Expect(err).To(BeNil())
 
 		t := &actions.Action{

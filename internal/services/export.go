@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/wrangle/pkg/console"
-	"github.com/patrickhuber/wrangle/pkg/env"
+	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/env"
 )
 
 type ExportRequest struct {

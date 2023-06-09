@@ -2,14 +2,14 @@ package services
 
 import (
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 type bootstrap struct {
 	install        Install
 	initialize     Initialize
-	fs             filesystem.FileSystem
+	fs             fs.FS
 	configProvider config.Provider
 	logger         log.Logger
 }
@@ -26,7 +26,7 @@ type Bootstrap interface {
 func NewBootstrap(
 	install Install,
 	initialize Initialize,
-	fs filesystem.FileSystem,
+	fs fs.FS,
 	configProvider config.Provider,
 	logger log.Logger) Bootstrap {
 	return &bootstrap{

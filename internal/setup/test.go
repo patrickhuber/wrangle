@@ -10,21 +10,21 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
+	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/console"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/env"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
-	"github.com/spf13/afero"
 )
 
 type test struct {
@@ -35,21 +35,24 @@ type test struct {
 func NewDarwinTest() Setup {
 	t := newBaselineTest()
 	container := t.Container()
-	container.RegisterConstructor(operatingsystem.NewDarwinMock)
+	container.RegisterConstructor(func() os.OS { return os.NewDarwinMock() })
+	container.RegisterConstructor(func() filepath.Processor { return filepath.NewProcessorWithPlatform(platform.Darwin) })
 	return t
 }
 
 func NewLinuxTest() Setup {
 	t := newBaselineTest()
 	container := t.Container()
-	container.RegisterConstructor(operatingsystem.NewLinuxMock)
+	container.RegisterConstructor(func() os.OS { return os.NewLinuxMock() })
+	container.RegisterConstructor(func() filepath.Processor { return filepath.NewProcessorWithPlatform(platform.Linux) })
 	return t
 }
 
 func NewWindowsTest() Setup {
 	t := newBaselineTest()
 	container := t.Container()
-	container.RegisterConstructor(operatingsystem.NewWindowsMock)
+	container.RegisterConstructor(func() os.OS { return os.NewWindowsMock() })
+	container.RegisterConstructor(func() filepath.Processor { return filepath.NewProcessorWithPlatform(platform.Windows) })
 	return t
 }
 
@@ -70,18 +73,19 @@ func newBaselineTest() Setup {
 	}
 	container.RegisterInstance(reflect.TypeOf(server), server)
 	container.RegisterConstructor(t.newFeedProvider)
-	container.RegisterConstructor(env.New)
-	container.RegisterConstructor(afero.NewMemMapFs, di.WithLifetime(di.LifetimeStatic))
-	container.RegisterConstructor(console.NewMemory)
-	container.RegisterConstructor(filesystem.FromAferoFS)
-	container.RegisterConstructor(func(opsys operatingsystem.OS) config.Properties {
+	container.RegisterConstructor(env.NewOS)
+	container.RegisterConstructor(func(processor filepath.Processor) fs.FS {
+		return fs.NewMemory(fs.WithProcessor(processor))
+	}, di.WithLifetime(di.LifetimeStatic))
+	container.RegisterConstructor(func() console.Console { return console.NewMemory() })
+	container.RegisterConstructor(func(opsys os.OS, path filepath.Processor) config.Properties {
 		properties := config.NewProperties()
-		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
+		globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
 		properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
 		return properties
 	})
 	container.RegisterConstructor(internal_config.NewTest)
-	container.RegisterConstructor(func(fs filesystem.FileSystem, props config.Properties, cfg *config.Config) (config.Provider, error) {
+	container.RegisterConstructor(func(fs fs.FS, props config.Properties, cfg *config.Config) (config.Provider, error) {
 		provider := config.NewFileProvider(fs, props)
 		return config.NewDefaultableProvider(provider, cfg), nil
 	})
@@ -91,6 +95,7 @@ func newBaselineTest() Setup {
 	container.RegisterConstructor(actions.NewExtractProvider)
 	container.RegisterConstructor(actions.NewFactory)
 	container.RegisterConstructor(actions.NewRunner)
+	container.RegisterConstructor(actions.NewMetadataProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewInitialize)
@@ -102,10 +107,10 @@ func newBaselineTest() Setup {
 	return t
 }
 
-func (t *test) newFeedProvider(server *httptest.Server, opsys operatingsystem.OS, logger log.Logger) feed.Provider {
+func (t *test) newFeedProvider(server *httptest.Server, opsys os.OS, logger log.Logger) feed.Provider {
 	createItem := func(pkg, version string) *feed.Item {
 		extension := ""
-		if opsys.Platform() == operatingsystem.MockWindowsPlatform {
+		if opsys.Platform() == os.MockWindowsPlatform {
 			extension = ".exe"
 		}
 		return &feed.Item{

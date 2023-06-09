@@ -1,9 +1,10 @@
 package fs
 
 import (
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/go-xplat/filepath"
+
+	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"gopkg.in/yaml.v3"
 )
@@ -15,13 +16,15 @@ const (
 )
 
 type itemRepository struct {
-	fs               filesystem.FileSystem
+	fs               fs.FS
+	path             filepath.Processor
 	workingDirectory string
 }
 
-func NewItemRepository(fs filesystem.FileSystem, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs fs.FS, path filepath.Processor, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
+		path:             path,
 		workingDirectory: workingDirectory,
 	}
 }
@@ -106,12 +109,12 @@ func (r *itemRepository) GetTemplate(name string) (string, error) {
 }
 
 func (r *itemRepository) GetItemPath(name string) string {
-	return crosspath.Join(r.workingDirectory, name)
+	return r.path.Join(r.workingDirectory, name)
 }
 
 func (r *itemRepository) GetObject(name string, file string, out interface{}) error {
 	itemPath := r.GetItemPath(name)
-	data, err := r.fs.Read(crosspath.Join(itemPath, file))
+	data, err := r.fs.ReadFile(r.path.Join(itemPath, file))
 	if err != nil {
 		return err
 	}
@@ -120,7 +123,7 @@ func (r *itemRepository) GetObject(name string, file string, out interface{}) er
 
 func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
-	return r.fs.Read(crosspath.Join(itemPath, fileName))
+	return r.fs.ReadFile(r.path.Join(itemPath, fileName))
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {
@@ -176,5 +179,5 @@ func (r *itemRepository) SaveObject(name string, file string, in interface{}) er
 
 func (r *itemRepository) WriteFile(name string, file string, data []byte) error {
 	itemPath := r.GetItemPath(name)
-	return r.fs.Write(crosspath.Join(itemPath, file), data, 0644)
+	return r.fs.WriteFile(r.path.Join(itemPath, file), data, 0644)
 }
