@@ -5,11 +5,12 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
-
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 var _ = Describe("Service", func() {
@@ -17,9 +18,10 @@ var _ = Describe("Service", func() {
 		tester conformance.ServiceTester
 	)
 	BeforeEach(func() {
-		fs := filesystem.NewMemory()
+		fs := fs.NewMemory()
+		path := filepath.NewProcessorWithPlatform(platform.Linux)
 		logger := log.Memory()
-		svc := feedfs.NewService("test", fs, "/opt/wrangle/feed", logger)
+		svc := feedfs.NewService("test", fs, path, "/opt/wrangle/feed", logger)
 		items := conformance.GetItemList()
 
 		response, err := svc.Update(&feed.UpdateRequest{

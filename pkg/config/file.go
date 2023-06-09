@@ -1,21 +1,22 @@
 package config
 
 import (
+	"errors"
 	"fmt"
-	"os"
+	iofs "io/fs"
 	"path"
 
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/go-xplat/fs"
 	"gopkg.in/yaml.v3"
 )
 
 type fileProvider struct {
-	fs         filesystem.FileSystem
+	fs         fs.FS
 	properties Properties
 }
 
 // NewFileProvider creates a new file Provider with the given filesystem and file path
-func NewFileProvider(fs filesystem.FileSystem, properties Properties) Provider {
+func NewFileProvider(fs fs.FS, properties Properties) Provider {
 	return &fileProvider{
 		fs:         fs,
 		properties: properties,
@@ -29,34 +30,14 @@ func (p *fileProvider) Get() (*Config, error) {
 		return nil, err
 	}
 
-	// make sure the path exists
-	ok, err := p.fs.Exists(globalConfigFilePath)
+	cfg, ok, err := p.Lookup()
 	if err != nil {
 		return nil, err
 	}
 	if !ok {
-		return nil, os.ErrNotExist
+		return nil, fmt.Errorf("unable to find file %s", globalConfigFilePath)
 	}
-
-	// make sure the file is a file and not a directory
-	ok, err = p.fs.IsDir(globalConfigFilePath)
-	if err != nil {
-		return nil, err
-	}
-	if ok {
-		return nil, fmt.Errorf("the configuration path (%s) must be a file", globalConfigFilePath)
-	}
-
-	// read the data
-	data, err := p.fs.Read(globalConfigFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	// write the config
-	config := &Config{}
-	err = yaml.Unmarshal(data, config)
-	return config, err
+	return cfg, nil
 }
 
 func (p *fileProvider) Lookup() (*Config, bool, error) {
@@ -66,26 +47,21 @@ func (p *fileProvider) Lookup() (*Config, bool, error) {
 		return nil, false, err
 	}
 
-	// make sure the path exists
-	ok, err := p.fs.Exists(globalConfigFilePath)
+	// check if the file exists
+	fi, err := p.fs.Stat(globalConfigFilePath)
 	if err != nil {
+		if errors.Is(err, iofs.ErrNotExist) {
+			return nil, false, nil
+		}
 		return nil, false, err
-	}
-	if !ok {
-		return nil, false, nil
 	}
 
-	// make sure the file is a file and not a directory
-	ok, err = p.fs.IsDir(globalConfigFilePath)
-	if err != nil {
-		return nil, false, err
-	}
-	if ok {
+	if fi.IsDir() {
 		return nil, false, fmt.Errorf("the configuration path (%s) must be a file", globalConfigFilePath)
 	}
 
 	// read the data
-	data, err := p.fs.Read(globalConfigFilePath)
+	data, err := p.fs.ReadFile(globalConfigFilePath)
 	if err != nil {
 		return nil, false, err
 	}
@@ -110,7 +86,7 @@ func (p *fileProvider) Set(config *Config) error {
 	if err != nil {
 		return err
 	}
-	return p.fs.Write(globalConfigFilePath, data, 0644)
+	return p.fs.WriteFile(globalConfigFilePath, data, 0644)
 }
 
 func (p *fileProvider) globalConfigFilePath() (string, error) {

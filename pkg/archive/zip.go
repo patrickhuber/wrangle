@@ -3,16 +3,18 @@ package archive
 import (
 	stdzip "archive/zip"
 	"io"
+	"os"
 
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
 )
 
 type zip struct {
-	fs filesystem.FileSystem
+	fs   fs.FS
+	path filepath.Processor
 }
 
-func NewZip(fs filesystem.FileSystem) Provider {
+func NewZip(fs fs.FS) Provider {
 	return &zip{
 		fs: fs,
 	}
@@ -53,7 +55,7 @@ func (p *zip) Archive(archive string, files ...string) error {
 }
 
 func (p *zip) Extract(archive string, destination string, files ...string) error {
-	archiveFile, err := p.fs.Open(archive)
+	archiveFile, err := p.fs.OpenFile(archive, os.O_RDONLY, 0666)
 	if err != nil {
 		return err
 	}
@@ -71,8 +73,7 @@ func (p *zip) Extract(archive string, destination string, files ...string) error
 
 	// loop over each zipfile and extract to the destination
 	for _, zipFile := range r.File {
-		targetFile := crosspath.Join(destination, zipFile.Name)
-		targetFile = crosspath.ToSlash(targetFile)
+		targetFile := p.path.Join(destination, zipFile.Name)
 
 		// open destination
 		destination, err := p.fs.Create(targetFile)

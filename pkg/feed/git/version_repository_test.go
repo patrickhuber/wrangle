@@ -5,6 +5,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
 )
@@ -17,7 +19,8 @@ var _ = Describe("VersionRespository", func() {
 		fs := memfs.New()
 		workingDirectory := "/opt/wrangle/feed"
 		logger := log.Memory()
-		repo := git.NewVersionRepository(fs, logger, workingDirectory)
+		path := filepath.NewProcessorWithPlatform(platform.Linux)
+		repo := git.NewVersionRepository(fs, logger, path, workingDirectory)
 		items := conformance.GetItemList()
 		for _, item := range items {
 			for _, version := range item.Package.Versions {

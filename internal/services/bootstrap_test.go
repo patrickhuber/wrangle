@@ -1,73 +1,73 @@
 package services_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("Bootstrap", func() {
-	var (
-		s                   setup.Setup
-		wrangleFileLocation string
-		shimFileLocation    string
-	)
-	AfterEach(func() {
-		defer s.Close()
-		container := s.Container()
+func TestLinuxBootstrap(t *testing.T) {
+	s := setup.NewLinuxTest()
+	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-linux-amd64"
+	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-linux-amd64"
+	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
+}
 
-		bootstrap, err := di.Resolve[services.Bootstrap](container)
-		Expect(err).To(BeNil())
+func TestDarwinBootstrap(t *testing.T) {
+	s := setup.NewDarwinTest()
+	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-darwin-amd64"
+	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-darwin-amd64"
+	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
+}
 
-		opsys, err := di.Resolve[operatingsystem.OS](container)
-		Expect(err).To(BeNil())
+func TestWindowsBootstrap(t *testing.T) {
+	s := setup.NewWindowsTest()
+	wrangleFileLocation := "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-windows-amd64.exe"
+	shimFileLocation := "C:/ProgramData/wrangle/packages/shim/1.0.0/shim-1.0.0-windows-amd64.exe"
+	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
+}
 
-		globalConfigFile := crosspath.Join(opsys.Home(), ".wrangle", "config.yml")
-		req := &services.BootstrapRequest{
-			ApplicationName: "wrangle",
-		}
-		err = bootstrap.Execute(req)
-		Expect(err).To(BeNil())
+func RunBootstrapTest(t *testing.T,
+	s setup.Setup,
+	wrangleFileLocation string,
+	shimFileLocation string) {
+	defer s.Close()
+	container := s.Container()
 
-		fs, err := di.Resolve[filesystem.FileSystem](container)
-		Expect(err).To(BeNil())
+	bootstrap, err := di.Resolve[services.Bootstrap](container)
+	require.Nil(t, err)
 
-		ok, err := fs.Exists(globalConfigFile)
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
+	opsys, err := di.Resolve[os.OS](container)
+	require.Nil(t, err)
 
-		ok, err = fs.Exists(wrangleFileLocation)
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
+	path, err := di.Resolve[filepath.Processor](container)
+	require.Nil(t, err)
 
-		ok, err = fs.Exists(shimFileLocation)
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
-	})
-	Context("when linux", func() {
-		It("can bootstrap", func() {
-			s = setup.NewLinuxTest()
-			wrangleFileLocation = "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-linux-amd64"
-			shimFileLocation = "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-linux-amd64"
-		})
-	})
-	Context("when darwin", func() {
-		It("can bootstrap", func() {
-			s = setup.NewDarwinTest()
-			wrangleFileLocation = "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-darwin-amd64"
-			shimFileLocation = "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-darwin-amd64"
-		})
-	})
-	Context("when windows", func() {
-		It("can bootstrap", func() {
-			s = setup.NewWindowsTest()
-			wrangleFileLocation = "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-windows-amd64.exe"
-			shimFileLocation = "C:/ProgramData/wrangle/packages/shim/1.0.0/shim-1.0.0-windows-amd64.exe"
-		})
-	})
-})
+	globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
+	req := &services.BootstrapRequest{
+		ApplicationName: "wrangle",
+	}
+	err = bootstrap.Execute(req)
+	require.Nil(t, err)
+
+	fs, err := di.Resolve[fs.FS](container)
+	require.Nil(t, err)
+
+	ok, err := fs.Exists(globalConfigFile)
+	require.Nil(t, err)
+	require.True(t, ok)
+
+	ok, err = fs.Exists(wrangleFileLocation)
+	require.Nil(t, err)
+	require.True(t, ok)
+
+	ok, err = fs.Exists(shimFileLocation)
+	require.Nil(t, err)
+	require.True(t, ok)
+}

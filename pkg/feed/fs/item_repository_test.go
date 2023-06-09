@@ -4,9 +4,11 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 var _ = Describe("ItemRepository", func() {
@@ -15,8 +17,9 @@ var _ = Describe("ItemRepository", func() {
 	)
 	BeforeEach(func() {
 		workingDirectory := "/opt/wrangle/feed"
-		fs := filesystem.NewMemory()
-		repo := feedfs.NewItemRepository(fs, workingDirectory)
+		fs := fs.NewMemory()
+		path := filepath.NewProcessorWithPlatform(platform.Linux)
+		repo := feedfs.NewItemRepository(fs, path, workingDirectory)
 
 		items := conformance.GetItemList()
 		for _, item := range items {

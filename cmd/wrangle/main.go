@@ -2,18 +2,18 @@ package main
 
 import (
 	"log"
-	"os"
-	"strings"
 
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
 	"github.com/patrickhuber/wrangle/pkg/enums"
 	"github.com/patrickhuber/wrangle/pkg/global"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/urfave/cli/v2"
 )
 
@@ -23,11 +23,19 @@ var version = ""
 func main() {
 	s := setup.New()
 	container := s.Container()
-	o, err := di.Resolve[operatingsystem.OS](container)
+
+	o, err := di.Resolve[os.OS](container)
+	handle(err)
+
+	path, err := di.Resolve[filepath.Processor](container)
+	handle(err)
+
+	console, err := di.Resolve[console.Console](container)
 	handle(err)
 
 	appName := "wrangle"
-	if strings.EqualFold(o.Platform(), operatingsystem.PlatformWindows) {
+	plat := platform.Platform(o.Platform())
+	if plat.IsWindows() {
 		appName = appName + ".exe"
 	}
 
@@ -57,7 +65,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    global.FlagConfig,
 				Aliases: []string{"g"},
-				Value:   crosspath.Join(o.Home(), ".wrangle", "config.yml"),
+				Value:   path.Join(o.Home(), ".wrangle", "config.yml"),
 				EnvVars: []string{global.EnvConfig},
 			},
 			&cli.GenericFlag{
@@ -91,7 +99,7 @@ func main() {
 		commands.List,
 		commands.Initialize,
 	}
-	err = app.Run(os.Args)
+	err = app.Run(console.Args())
 	handle(err)
 }
 

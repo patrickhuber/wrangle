@@ -3,17 +3,20 @@ package archive
 import (
 	"compress/gzip"
 
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
 )
 
 // https://github.com/mholt/archiver/blob/master/targz.go
 type tgz struct {
-	fs filesystem.FileSystem
+	fs   fs.FS
+	path filepath.Processor
 }
 
-func NewTarGz(fs filesystem.FileSystem) Provider {
+func NewTarGz(fs fs.FS, path filepath.Processor) Provider {
 	return &tgz{
-		fs: fs,
+		fs:   fs,
+		path: path,
 	}
 }
 
@@ -30,7 +33,7 @@ func (p *tgz) Extract(archive string, destination string, files ...string) error
 	}
 	defer reader.Close()
 
-	return NewTar(p.fs).ExtractReader(reader, destination, files...)
+	return NewTar(p.fs, p.path).ExtractReader(reader, destination, files...)
 }
 
 func (p *tgz) Archive(archive string, files ...string) error {
@@ -43,5 +46,5 @@ func (p *tgz) Archive(archive string, files ...string) error {
 	writer := gzip.NewWriter(f)
 	defer writer.Close()
 
-	return NewTar(p.fs).ArchiveWriter(writer, files...)
+	return NewTar(p.fs, p.path).ArchiveWriter(writer, files...)
 }

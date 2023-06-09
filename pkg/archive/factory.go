@@ -5,7 +5,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
 )
 
 type Factory interface {
@@ -22,11 +23,11 @@ const (
 	Zip   = "zip"
 )
 
-func NewFactory(fs filesystem.FileSystem) Factory {
+func NewFactory(fs fs.FS, path filepath.Processor) Factory {
 	return &factory{
 		providers: map[string]Provider{
-			Tar:   NewTar(fs),
-			Targz: NewTarGz(fs),
+			Tar:   NewTar(fs, path),
+			Targz: NewTarGz(fs, path),
 			Zip:   NewZip(fs),
 		},
 	}

@@ -4,20 +4,21 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 )
 
 type install struct {
-	configProvider config.Provider
-	fs             filesystem.FileSystem
-	serviceFactory feed.ServiceFactory
-	runner         actions.Runner
-	opsys          operatingsystem.OS
+	configProvider   config.Provider
+	fs               fs.FS
+	serviceFactory   feed.ServiceFactory
+	runner           actions.Runner
+	opsys            os.OS
+	metadataProvider actions.MetadataProvider
 }
 
 type InstallRequest struct {
@@ -30,17 +31,19 @@ type Install interface {
 }
 
 func NewInstall(
-	fs filesystem.FileSystem,
+	fs fs.FS,
 	serviceFactory feed.ServiceFactory,
 	runner actions.Runner,
-	o operatingsystem.OS,
-	configProvider config.Provider) Install {
+	o os.OS,
+	configProvider config.Provider,
+	metadataProvider actions.MetadataProvider) Install {
 	return &install{
-		fs:             fs,
-		serviceFactory: serviceFactory,
-		runner:         runner,
-		opsys:          o,
-		configProvider: configProvider,
+		fs:               fs,
+		serviceFactory:   serviceFactory,
+		runner:           runner,
+		opsys:            o,
+		configProvider:   configProvider,
+		metadataProvider: metadataProvider,
 	}
 }
 
@@ -90,7 +93,7 @@ func (i *install) Execute(r *InstallRequest) error {
 
 			oneVersionMatched = true
 			// create a metadata object for the task runs so the task knows to which package it belongs
-			meta := actions.NewDefaultMetadata(cfg, r.Package, v.Version)
+			meta := i.metadataProvider.Get(cfg, r.Package, v.Version)
 
 			for _, target := range v.Manifest.Package.Targets {
 

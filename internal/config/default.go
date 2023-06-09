@@ -3,32 +3,33 @@ package config
 import (
 	"fmt"
 
+	"github.com/patrickhuber/go-xplat/env"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/env"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 )
 
-func NewDefault(os operatingsystem.OS, environment env.Environment) (*config.Config, error) {
+func NewDefault(os os.OS, environment env.Environment, path filepath.Processor) (*config.Config, error) {
 	root := "/opt/wrangle"
-	platform := os.Platform()
+	plat := os.Platform()
 
-	switch platform {
-	case operatingsystem.PlatformWindows:
+	p := platform.Platform(plat)
+	switch {
+	case p.IsWindows():
 		programData := environment.Get("PROGRAMDATA")
-		root = crosspath.Join(programData, "wrangle")
-	case operatingsystem.PlatformDarwin:
-	case operatingsystem.PlatformLinux:
+		root = path.Join(programData, "wrangle")
+	case p.IsUnix():
 		break
 	default:
-		return nil, fmt.Errorf("%s is unsupported", platform)
+		return nil, fmt.Errorf("%s is unsupported", plat)
 	}
 
 	cfg := &config.Config{
 		Paths: &config.Paths{
 			Root:     root,
-			Packages: crosspath.Join(root, "packages"),
-			Bin:      crosspath.Join(root, "bin"),
+			Packages: path.Join(root, "packages"),
+			Bin:      path.Join(root, "bin"),
 		},
 		References: []*config.Reference{
 			{

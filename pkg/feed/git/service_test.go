@@ -7,6 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	gitfeed "github.com/patrickhuber/wrangle/pkg/feed/git"
@@ -20,11 +22,12 @@ var _ = Describe("GitService", func() {
 		logger := log.Memory()
 		store := memory.NewStorage()
 		fs := memfs.New()
+		path := filepath.NewProcessorWithPlatform(platform.Linux)
 
 		repository, err := git.Init(store, fs)
 		Expect(err).To(BeNil())
 
-		svc, err := gitfeed.NewService("test", fs, repository, logger)
+		svc, err := gitfeed.NewService("test", fs, repository, path, logger)
 		Expect(err).To(BeNil())
 
 		items := conformance.GetItemList()

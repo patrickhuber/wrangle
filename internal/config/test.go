@@ -1,13 +1,14 @@
 package config
 
 import (
+	"github.com/patrickhuber/go-xplat/env"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/env"
-	"github.com/patrickhuber/wrangle/pkg/operatingsystem"
 )
 
-func NewTest(os operatingsystem.OS, environment env.Environment) (*config.Config, error) {
-	cfg, err := NewDefault(os, environment)
+func NewTest(os os.OS, environment env.Environment, path filepath.Processor) (*config.Config, error) {
+	cfg, err := NewDefault(os, environment, path)
 	if err != nil {
 		return nil, err
 	}

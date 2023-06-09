@@ -3,9 +3,9 @@ package archive_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/patrickhuber/go-xplat/filepath"
+	filesystem "github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/pkg/archive"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
 )
 
 type TestFile struct {
@@ -15,7 +15,8 @@ type TestFile struct {
 
 var _ = Describe("Provider", func() {
 	var (
-		fs          filesystem.FileSystem
+		fs          filesystem.FS
+		path        filepath.Processor
 		files       []*TestFile
 		provider    archive.Provider
 		archiveFile string
@@ -35,7 +36,7 @@ var _ = Describe("Provider", func() {
 
 	})
 	It("can roundtrip tar", func() {
-		provider = archive.NewTar(fs)
+		provider = archive.NewTar(fs, path)
 		archiveFile = "test.tar"
 	})
 	It("can roundtrip zip", func() {
@@ -43,14 +44,14 @@ var _ = Describe("Provider", func() {
 		archiveFile = "test.zip"
 	})
 	It("can roundtrip tgz", func() {
-		provider = archive.NewTarGz(fs)
+		provider = archive.NewTarGz(fs, path)
 		archiveFile = "test.tgz"
 	})
 	AfterEach(func() {
 		Expect(provider).ToNot(BeNil())
 		names := []string{}
 		for _, f := range files {
-			err := fs.Write(f.Name, []byte(f.Content), 0644)
+			err := fs.WriteFile(f.Name, []byte(f.Content), 0644)
 			Expect(err).To(BeNil())
 			names = append(names, f.Name)
 		}
@@ -68,7 +69,7 @@ var _ = Describe("Provider", func() {
 		destination := "/"
 		Expect(provider.Extract(archiveFile, "/", names...)).To(BeNil())
 		for _, f := range files {
-			filePath := crosspath.Join(destination, f.Name)
+			filePath := path.Join(destination, f.Name)
 			ok, err := fs.Exists(filePath)
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue(), "%s does not exist", filePath)

@@ -5,13 +5,14 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/pkg/archive"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
 )
 
 type extractProvider struct {
 	factory archive.Factory
 	logger  log.Logger
+	path    filepath.Processor
 }
 
 type Extract struct {
@@ -40,7 +41,7 @@ func (p *extractProvider) Execute(t *Action, ctx *Metadata) error {
 		return err
 	}
 
-	archive := crosspath.Join(ctx.PackageVersionPath, extract.Details.Archive)
+	archive := p.path.Join(ctx.PackageVersionPath, extract.Details.Archive)
 	p.logger.Debugf("extracting %s to %s", archive, ctx.PackageVersionPath)
 
 	provider, err := p.factory.Select(extract.Details.Archive)

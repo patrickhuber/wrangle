@@ -6,14 +6,13 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/fs"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
-	"github.com/patrickhuber/wrangle/pkg/filesystem"
-	"github.com/spf13/afero"
 )
 
 var _ = Describe("Download", func() {
@@ -39,8 +38,9 @@ var _ = Describe("Download", func() {
 					Root:     "/wrangle",
 				},
 			}
-			fs := filesystem.FromAferoFS(afero.NewMemMapFs())
-			provider := actions.NewDownloadProvider(log.Default(), fs)
+			fs := fs.NewMemory()
+			path := filepath.NewProcessor()
+			provider := actions.NewDownloadProvider(log.Default(), fs, path)
 			task := &actions.Action{
 				Type: "download",
 				Parameters: map[string]interface{}{
@@ -48,12 +48,12 @@ var _ = Describe("Download", func() {
 					"out": "test-local",
 				},
 			}
-			metadata := actions.NewDefaultMetadata(cfg, "test", "1.0.0")
+			metadata := actions.NewMetadataProvider(path).Get(cfg, "test", "1.0.0")
 			err := provider.Execute(task, metadata)
 			Expect(err).To(BeNil())
 
 			// verify the file was downloaded
-			ok, err := fs.Exists(crosspath.Join(metadata.PackageVersionPath, "test-local"))
+			ok, err := fs.Exists(path.Join(metadata.PackageVersionPath, "test-local"))
 			Expect(err).To(BeNil())
 			Expect(ok).To(BeTrue())
 		})

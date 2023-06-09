@@ -4,7 +4,7 @@ import (
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/wrangle/pkg/crosspath"
+	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/packages"
 	"gopkg.in/yaml.v3"
@@ -18,6 +18,7 @@ const (
 
 type itemRepository struct {
 	fs               billy.Filesystem
+	path             filepath.Processor
 	workingDirectory string
 	logger           log.Logger
 }
@@ -51,7 +52,7 @@ func (r *itemRepository) List(options ...feed.ItemGetOption) ([]*feed.Item, erro
 
 func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.Item, error) {
 	r.logger.Tracef("itemRepository.Get %s", name)
-	packagePath := crosspath.Join(r.workingDirectory, name)
+	packagePath := r.path.Join(r.workingDirectory, name)
 	_, err := r.fs.Stat(packagePath)
 	if err != nil {
 		return nil, err
@@ -124,12 +125,12 @@ func (r *itemRepository) GetObject(packageName, fileName string, out interface{}
 }
 
 func (r *itemRepository) GetItemPath(name string) string {
-	return crosspath.Join(r.workingDirectory, name)
+	return r.path.Join(r.workingDirectory, name)
 }
 
 func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
-	filePath := crosspath.Join(itemPath, fileName)
+	filePath := r.path.Join(itemPath, fileName)
 	return util.ReadFile(r.fs, filePath)
 }
 
@@ -195,7 +196,6 @@ func (r *itemRepository) SaveObject(packageName string, fileName string, object 
 
 func (r *itemRepository) WriteFile(name string, fileName string, content []byte) error {
 	itemPath := r.GetItemPath(name)
-	filePath := crosspath.Join(itemPath, fileName)
-
+	filePath := r.path.Join(itemPath, fileName)
 	return util.WriteFile(r.fs, filePath, content, 0644)
 }

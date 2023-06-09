@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/patrickhuber/go-shellhook"
+	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/pkg/console"
-	"github.com/patrickhuber/wrangle/pkg/env"
 )
 
 var _ = Describe("Hook", func() {
