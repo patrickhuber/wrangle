@@ -1,11 +1,13 @@
 package archive_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/go-xplat/filepath"
-	filesystem "github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/archive"
+	"github.com/stretchr/testify/require"
 )
 
 type TestFile struct {
@@ -13,66 +15,77 @@ type TestFile struct {
 	Content string
 }
 
-var _ = Describe("Provider", func() {
-	var (
-		fs          filesystem.FS
-		path        filepath.Processor
-		files       []*TestFile
-		provider    archive.Provider
+func TestProvider(t *testing.T) {
+	root := "/gran/parent/child"
+
+	files := []*TestFile{
+		{
+			Name:    "1.txt",
+			Content: "1",
+		},
+		{
+			Name:    "2.txt",
+			Content: "2",
+		},
+	}
+	type test struct {
 		archiveFile string
-	)
-	BeforeEach(func() {
-		fs = filesystem.NewMemory()
-		files = []*TestFile{
-			{
-				Name:    "1.txt",
-				Content: "1",
-			},
-			{
-				Name:    "2.txt",
-				Content: "2",
-			},
-		}
+	}
+	tests := []test{
+		{
+			archiveFile: "test.tar",
+		},
+		{
+			archiveFile: "test.zip",
+		},
+		{
+			archiveFile: "test.tgz",
+		},
+	}
 
-	})
-	It("can roundtrip tar", func() {
-		provider = archive.NewTar(fs, path)
-		archiveFile = "test.tar"
-	})
-	It("can roundtrip zip", func() {
-		provider = archive.NewZip(fs)
-		archiveFile = "test.zip"
-	})
-	It("can roundtrip tgz", func() {
-		provider = archive.NewTarGz(fs, path)
-		archiveFile = "test.tgz"
-	})
-	AfterEach(func() {
-		Expect(provider).ToNot(BeNil())
-		names := []string{}
-		for _, f := range files {
-			err := fs.WriteFile(f.Name, []byte(f.Content), 0644)
-			Expect(err).To(BeNil())
-			names = append(names, f.Name)
-		}
+	for _, test := range tests {
+		t.Run(test.archiveFile, func(t *testing.T) {
 
-		Expect(provider.Archive(archiveFile, names...)).To(BeNil())
-		ok, err := fs.Exists(archiveFile)
+			path := filepath.NewProcessorWithPlatform(platform.Linux)
+			fs := fs.NewMemory(fs.WithProcessor(path))
+			factory := archive.NewFactory(fs, path)
+			provider, err := factory.Select(test.archiveFile)
+			require.Nil(t, err)
 
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
+			var rootedFiles []string
+			var names []string
+			for _, f := range files {
+				rootedFile := path.Join(root, f.Name)
+				err := fs.WriteFile(rootedFile, []byte(f.Content), 0644)
+				require.Nil(t, err)
+				rootedFiles = append(rootedFiles, rootedFile)
+				names = append(names, f.Name)
+			}
 
-		for _, f := range files {
-			Expect(fs.Remove(f.Name)).To(BeNil())
-		}
+			rootedArchiveFile := path.Join(root, test.archiveFile)
+			require.Nil(t, provider.Archive(rootedArchiveFile, rootedFiles...))
 
-		destination := "/"
-		Expect(provider.Extract(archiveFile, "/", names...)).To(BeNil())
-		for _, f := range files {
-			filePath := path.Join(destination, f.Name)
-			ok, err := fs.Exists(filePath)
-			Expect(err).To(BeNil())
-			Expect(ok).To(BeTrue(), "%s does not exist", filePath)
-		}
-	})
-})
+			ok, err := fs.Exists(rootedArchiveFile)
+
+			require.Nil(t, err)
+			require.True(t, ok)
+
+			for _, f := range rootedFiles {
+				require.Nil(t, fs.Remove(f))
+			}
+
+			require.Nil(t, provider.Extract(rootedArchiveFile, root, names...))
+			for _, f := range files {
+
+				filePath := path.Join(root, f.Name)
+				ok, err := fs.Exists(filePath)
+				require.Nil(t, err)
+				require.True(t, ok, "%s does not exist", filePath)
+
+				b, err := fs.ReadFile(filePath)
+				require.Nil(t, err)
+				require.Equal(t, f.Content, string(b))
+			}
+		})
+	}
+}

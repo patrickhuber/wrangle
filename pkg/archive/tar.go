@@ -16,14 +16,14 @@ type TarProvider interface {
 }
 
 type tar struct {
-	fs       fs.FS
-	filepath filepath.Processor
+	fs   fs.FS
+	path filepath.Processor
 }
 
-func NewTar(fs fs.FS, fp filepath.Processor) TarProvider {
+func NewTar(fs fs.FS, path filepath.Processor) TarProvider {
 	return &tar{
-		fs:       fs,
-		filepath: fp,
+		fs:   fs,
+		path: path,
 	}
 }
 
@@ -59,7 +59,7 @@ func (a *tar) untar(reader *stdtar.Reader, header *stdtar.Header, destination st
 	case stdtar.TypeDir:
 		return a.fs.Mkdir(destination, 0666)
 	case stdtar.TypeReg, stdtar.TypeRegA, stdtar.TypeChar, stdtar.TypeBlock, stdtar.TypeFifo:
-		target := a.filepath.Join(destination, header.Name)
+		target := a.path.Join(destination, header.Name)
 		writer, err := a.fs.Create(target)
 		if err != nil {
 			return err
