@@ -35,7 +35,7 @@ The scripts above download the latest version of wrangle and then run a `wrangle
 Linux
 
 ```bash
-export VERSION=0.10.0
+export VERSION=0.9.0
 export ARCHIVE=wrangle-darwin-amd64.tgz
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
 tar -xfz ${ARCHIVE}
@@ -48,7 +48,7 @@ rm wrangle
 Darwin
 
 ```bash
-export VERSION=0.10.0
+export VERSION=0.9.0
 export ARCHIVE=wrangle-darwin-amd64.tgz
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
 tar -xfz ${ARCHIVE}
@@ -61,7 +61,7 @@ rm wrangle
 Windows (Powershell)
 
 ```powershell
-$version = "0.10.0"
+$version = "0.9.0"
 $archive = "wrangle-windows-amd64.zip"
 iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/$version/$archive" -OutFile $archive
 Extract-Archive $archive
