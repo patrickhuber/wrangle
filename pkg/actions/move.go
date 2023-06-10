@@ -42,9 +42,10 @@ func (*moveProvider) Type() string {
 	return "move"
 }
 
-func NewMoveProvider(fs fs.FS, logger log.Logger) Provider {
+func NewMoveProvider(fs fs.FS, path filepath.Processor, logger log.Logger) Provider {
 	return &moveProvider{
 		logger: logger,
+		path:   path,
 		fs:     fs,
 	}
 }

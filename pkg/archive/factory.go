@@ -28,7 +28,7 @@ func NewFactory(fs fs.FS, path filepath.Processor) Factory {
 		providers: map[string]Provider{
 			Tar:   NewTar(fs, path),
 			Targz: NewTarGz(fs, path),
-			Zip:   NewZip(fs),
+			Zip:   NewZip(fs, path),
 		},
 	}
 }

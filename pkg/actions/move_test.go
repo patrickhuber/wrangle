@@ -1,37 +1,39 @@
 package actions_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
 	filesystem "github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 )
 
-var _ = Describe("Move", func() {
-	It("can move file", func() {
-		fs := filesystem.NewMemory()
-		logger := log.Memory()
-		provider := actions.NewMoveProvider(fs, logger)
+func TestMove(t *testing.T) {
+	path := filepath.NewProcessorWithPlatform(platform.Linux)
+	fs := filesystem.NewMemory(filesystem.WithProcessor(path))
+	logger := log.Memory()
+	provider := actions.NewMoveProvider(fs, path, logger)
 
-		err := fs.WriteFile("/folder/file.txt", []byte("this is a test"), 0644)
-		Expect(err).To(BeNil())
+	err := fs.WriteFile("/folder/file.txt", []byte("this is a test"), 0644)
+	require.Nil(t, err)
 
-		t := &actions.Action{
-			Type: "move",
-			Parameters: map[string]interface{}{
-				"source":      "file.txt",
-				"destination": "moved.txt",
-			},
-		}
-		ctx := &actions.Metadata{
-			PackageVersionPath: "/folder",
-		}
-		err = provider.Execute(t, ctx)
-		Expect(err).To(BeNil())
-		ok, err := fs.Exists("/folder/moved.txt")
-		Expect(err).To(BeNil())
-		Expect(ok).To(BeTrue())
-	})
-})
+	action := &actions.Action{
+		Type: "move",
+		Parameters: map[string]interface{}{
+			"source":      "file.txt",
+			"destination": "moved.txt",
+		},
+	}
+	ctx := &actions.Metadata{
+		PackageVersionPath: "/folder",
+	}
+	err = provider.Execute(action, ctx)
+	require.Nil(t, err)
+	ok, err := fs.Exists("/folder/moved.txt")
+	require.Nil(t, err)
+	require.True(t, ok)
+}

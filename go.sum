@@ -107,8 +107,8 @@ github.com/patrickhuber/go-log v0.2.0 h1:hbgGTTRUMLJB1X6P5qm7OlTMRwPldNMdFTr0G6y
 github.com/patrickhuber/go-log v0.2.0/go.mod h1:DFwpE+78KUJmx9mbD+c6uRN6mghm+OF+wWCwgKCcB7M=
 github.com/patrickhuber/go-shellhook v0.1.4 h1:q1XmkzCHo1HtSUwzz55UcjnoJgDfwg3t8Rj90Plph1M=
 github.com/patrickhuber/go-shellhook v0.1.4/go.mod h1:7KrxsffowuM/05UfLVvW5AedMgfhMJpaLlK+VmRtMug=
-github.com/patrickhuber/go-xplat v0.2.10 h1:zhlKBNLhw1olNmRH2fsHGgyZmtStuVRz0T0RF1IYiOM=
-github.com/patrickhuber/go-xplat v0.2.10/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
+github.com/patrickhuber/go-xplat v0.2.11 h1:d1FkeHX3LDjwAyblGA7x70wTHMedAV/dHx4YMIJcfdg=
+github.com/patrickhuber/go-xplat v0.2.11/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
 github.com/pjbgf/sha1cd v0.3.0/go.mod h1:nZ1rrWOcGJ5uZgEEVL1VUM9iRQiZvWdbZjkKyFzPPsI=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
