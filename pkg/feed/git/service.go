@@ -18,7 +18,7 @@ func NewService(name string, fs billy.Filesystem, repository *git.Repository, pa
 
 	workingDirectory := "/feed"
 
-	items := NewItemRepository(fs, logger, workingDirectory)
+	items := NewItemRepository(fs, path, logger, workingDirectory)
 	versions := NewVersionRepository(fs, logger, path, workingDirectory)
 
 	svc := feed.NewService(name, items, versions, logger)

@@ -1,37 +1,38 @@
 package git_test
 
 import (
+	"testing"
+
 	"github.com/go-git/go-billy/v5/memfs"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/git"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("ItemRepository", func() {
-	var (
-		tester conformance.ItemRepositoryTester
-	)
-	BeforeEach(func() {
-		workingDirectory := "/opt/wrangle/feed"
-		fs := memfs.New()
-		logger := log.Memory()
-		repo := git.NewItemRepository(fs, logger, workingDirectory)
-		items := conformance.GetItemList()
-		for _, item := range items {
-			Expect(repo.Save(item)).To(BeNil())
-		}
-		tester = conformance.NewItemRepositoryTester(repo)
+func TestItemRepository(t *testing.T) {
+	t.Run("List", func(t *testing.T) {
+		repo := setupItemRepository(t)
+		conformance.CanListAllItems(t, repo)
 	})
-	Describe("List", func() {
-		It("can list all items", func() {
-			tester.CanListAllItems()
-		})
+	t.Run("Get", func(t *testing.T) {
+		repo := setupItemRepository(t)
+		conformance.CanGetItem(t, repo)
 	})
-	Describe("Get", func() {
-		It("can get package", func() {
-			tester.CanGetItem()
-		})
-	})
-})
+}
+
+func setupItemRepository(t *testing.T) feed.ItemRepository {
+	workingDirectory := "/opt/wrangle/feed"
+	fs := memfs.New()
+	path := filepath.NewProcessorWithPlatform(platform.Linux)
+	logger := log.Memory()
+	repo := git.NewItemRepository(fs, path, logger, workingDirectory)
+	items := conformance.GetItemList()
+	for _, item := range items {
+		require.Nil(t, repo.Save(item))
+	}
+	return repo
+}
