@@ -1,37 +1,24 @@
 package conformance
 
 import (
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/stretchr/testify/require"
 )
 
-type ItemRepositoryTester interface {
-	CanListAllItems()
-	CanGetItem()
+func CanListAllItems(t *testing.T, ir feed.ItemRepository) {
+	result, err := ir.List()
+	require.Nil(t, err)
+	require.NotNil(t, result)
+	require.NotEqual(t, len(result), 0)
 }
 
-type itemRepositoryTester struct {
-	repo feed.ItemRepository
-}
-
-func NewItemRepositoryTester(repo feed.ItemRepository) ItemRepositoryTester {
-	return &itemRepositoryTester{
-		repo: repo,
-	}
-}
-
-func (t *itemRepositoryTester) CanListAllItems() {
-	result, err := t.repo.List()
-	Expect(err).To(BeNil())
-	Expect(result).ToNot(BeNil())
-	Expect(len(result)).ToNot(Equal(0))
-}
-
-func (t *itemRepositoryTester) CanGetItem() {
+func CanGetItem(t *testing.T, ir feed.ItemRepository) {
 	name := "test"
-	result, err := t.repo.Get(name)
-	Expect(err).To(BeNil())
-	Expect(result).ToNot(BeNil())
-	Expect(result.Package).ToNot(BeNil())
-	Expect(result.Package.Name).To(Equal(name))
+	result, err := ir.Get(name)
+	require.Nil(t, err)
+	require.NotNil(t, result)
+	require.NotNil(t, result.Package)
+	require.Equal(t, name, result.Package.Name)
 }

@@ -23,11 +23,12 @@ type itemRepository struct {
 	logger           log.Logger
 }
 
-func NewItemRepository(fs billy.Filesystem, logger log.Logger, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs billy.Filesystem, path filepath.Processor, logger log.Logger, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,
 		logger:           logger,
+		path:             path,
 	}
 }
 

@@ -1,41 +1,41 @@
 package fs_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
 )
 
-var _ = Describe("ItemRepository", func() {
-	var (
-		tester conformance.ItemRepositoryTester
-	)
-	BeforeEach(func() {
-		workingDirectory := "/opt/wrangle/feed"
-		fs := fs.NewMemory()
-		path := filepath.NewProcessorWithPlatform(platform.Linux)
-		repo := feedfs.NewItemRepository(fs, path, workingDirectory)
+func TestItemRepo(t *testing.T) {
 
-		items := conformance.GetItemList()
-		for _, item := range items {
-			err := repo.Save(item)
-			Expect(err).To(BeNil())
-		}
-		tester = conformance.NewItemRepositoryTester(repo)
+	t.Run("list", func(t *testing.T) {
+		ir := setupItemRepository(t)
+		conformance.CanListAllItems(t, ir)
 	})
-	Describe("List", func() {
-		It("can list all items", func() {
-			tester.CanListAllItems()
-		})
+
+	t.Run("get", func(t *testing.T) {
+		ir := setupItemRepository(t)
+		conformance.CanGetItem(t, ir)
 	})
-	Describe("Get", func() {
-		It("can get package", func() {
-			tester.CanGetItem()
-		})
-	})
-})
+}
+
+func setupItemRepository(t *testing.T) feed.ItemRepository {
+	workingDirectory := "/opt/wrangle/feed"
+	fs := fs.NewMemory()
+	path := filepath.NewProcessorWithPlatform(platform.Linux)
+	repo := feedfs.NewItemRepository(fs, path, workingDirectory)
+
+	items := conformance.GetItemList()
+	for _, item := range items {
+		err := repo.Save(item)
+		require.Nil(t, err)
+	}
+	return repo
+}
