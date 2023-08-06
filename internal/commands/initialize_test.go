@@ -1,19 +1,19 @@
 package commands_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("Initialize", func() {
-	It("can resolve services", func() {
-		s := setup.NewLinuxTest()
-		container := s.Container()
-		result, err := di.Resolve[services.Initialize](container)
-		Expect(err).To(BeNil())
-		Expect(result).ToNot(BeNil())
-	})
-})
+func TestInitialize(t *testing.T) {
+	s := setup.NewTest(platform.Linux)
+	container := s.Container()
+	result, err := di.Resolve[services.Initialize](container)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}

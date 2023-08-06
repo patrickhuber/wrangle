@@ -11,10 +11,10 @@ const ProviderType = "git"
 
 type provider struct {
 	logger log.Logger
-	path   filepath.Processor
+	path   *filepath.Processor
 }
 
-func NewProvider(path filepath.Processor, logger log.Logger) feed.Provider {
+func NewProvider(path *filepath.Processor, logger log.Logger) feed.Provider {
 	return &provider{
 		logger: logger,
 		path:   path,

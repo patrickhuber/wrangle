@@ -1,8 +1,10 @@
 package conformance
 
 import (
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -10,11 +12,11 @@ const (
 )
 
 type ServiceTester interface {
-	CanListAllPackages()
-	CanReturnLatestVersion()
-	CanReturnSpecificVersion()
-	CanAddVersion()
-	CanUpdateExistingVersion()
+	CanListAllPackages(t *testing.T)
+	CanReturnLatestVersion(t *testing.T)
+	CanReturnSpecificVersion(t *testing.T)
+	CanAddVersion(t *testing.T)
+	CanUpdateExistingVersion(t *testing.T)
 }
 
 type serviceTester struct {
@@ -27,17 +29,17 @@ func NewServiceTester(service feed.Service) ServiceTester {
 	}
 }
 
-func (t *serviceTester) CanListAllPackages() {
-	response, err := t.service.List(&feed.ListRequest{})
-	Expect(err).To(BeNil())
-	Expect(response).ToNot(BeNil())
-	Expect(len(response.Items)).To(Equal(TotalItemCount))
+func (tester *serviceTester) CanListAllPackages(t *testing.T) {
+	response, err := tester.service.List(&feed.ListRequest{})
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	require.Equal(t, TotalItemCount, len(response.Items))
 }
 
-func (t *serviceTester) CanReturnLatestVersion() {
+func (tester *serviceTester) CanReturnLatestVersion(t *testing.T) {
 	packageName := "test"
 	expectedVersion := "1.0.0"
-	response, err := t.service.List(&feed.ListRequest{
+	response, err := tester.service.List(&feed.ListRequest{
 		Where: []*feed.ItemReadAnyOf{
 			{
 				AnyOf: []*feed.ItemReadAllOf{
@@ -69,24 +71,26 @@ func (t *serviceTester) CanReturnLatestVersion() {
 			},
 		},
 	})
-	Expect(err).To(BeNil())
-	Expect(response).ToNot(BeNil())
-	Expect(len(response.Items)).To(Equal(1))
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	require.Equal(t, 1, len(response.Items))
+
 	item := response.Items[0]
-	Expect(item).ToNot(BeNil())
-	Expect(item.Package).ToNot(BeNil())
-	Expect(item.Package.Name).To(Equal(packageName))
-	Expect(item.Package.Versions).ToNot(BeNil())
-	Expect(len(item.Package.Versions)).To(Equal(1))
+	require.NotNil(t, item)
+	require.NotNil(t, item.Package)
+	require.Equal(t, packageName, item.Package.Name)
+	require.NotNil(t, item.Package.Versions)
+	require.Equal(t, 1, len(item.Package.Versions))
+
 	version := item.Package.Versions[0]
-	Expect(version).ToNot(BeNil())
-	Expect(version.Version).To(Equal(expectedVersion))
+	require.NotNil(t, version)
+	require.Equal(t, expectedVersion, version.Version)
 }
 
-func (t *serviceTester) CanReturnSpecificVersion() {
+func (tester *serviceTester) CanReturnSpecificVersion(t *testing.T) {
 	packageName := "test"
 	expectedVersion := "1.0.1"
-	response, err := t.service.List(&feed.ListRequest{
+	response, err := tester.service.List(&feed.ListRequest{
 		Where: []*feed.ItemReadAnyOf{
 			{
 				AnyOf: []*feed.ItemReadAllOf{
@@ -118,24 +122,26 @@ func (t *serviceTester) CanReturnSpecificVersion() {
 			},
 		},
 	})
-	Expect(err).To(BeNil())
-	Expect(response).ToNot(BeNil())
-	Expect(len(response.Items)).To(Equal(1))
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	require.Equal(t, 1, len(response.Items))
+
 	item := response.Items[0]
-	Expect(item).ToNot(BeNil())
-	Expect(item.Package).ToNot(BeNil())
-	Expect(item.Package.Name).To(Equal(packageName))
-	Expect(item.Package.Versions).ToNot(BeNil())
-	Expect(len(item.Package.Versions)).To(Equal(1))
+	require.NotNil(t, item)
+	require.NotNil(t, item.Package)
+	require.Equal(t, packageName, item.Package.Name)
+	require.NotNil(t, item.Package.Versions)
+	require.Equal(t, 1, len(item.Package.Versions))
+
 	version := item.Package.Versions[0]
-	Expect(version).ToNot(BeNil())
-	Expect(version.Version).To(Equal(expectedVersion))
+	require.NotNil(t, version)
+	require.Equal(t, expectedVersion, version.Version)
 }
 
-func (t *serviceTester) CanAddVersion() {
+func (tester *serviceTester) CanAddVersion(t *testing.T) {
 	packageName := "test"
 	newVersion := "2.0.0"
-	response, err := t.service.Update(
+	response, err := tester.service.Update(
 		&feed.UpdateRequest{
 			Items: &feed.ItemUpdate{
 				Modify: []*feed.ItemModify{
@@ -175,13 +181,12 @@ func (t *serviceTester) CanAddVersion() {
 				},
 			},
 		})
-	Expect(err).To(BeNil())
-	Expect(response).ToNot(BeNil())
-	Expect(response.Changed).To(Equal(1))
-
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	require.Equal(t, 1, response.Changed)
 }
 
-func (t *serviceTester) CanUpdateExistingVersion() {
+func (tester *serviceTester) CanUpdateExistingVersion(t *testing.T) {
 	packageName := "test"
 	version := "1.0.0"
 	newVersion := "2.0.0"
@@ -205,8 +210,8 @@ func (t *serviceTester) CanUpdateExistingVersion() {
 			},
 		},
 	}
-	response, err := t.service.Update(request)
-	Expect(err).To(BeNil())
-	Expect(response).ToNot(BeNil())
-	Expect(response.Changed).To(Equal(1))
+	response, err := tester.service.Update(request)
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	require.Equal(t, 1, response.Changed)
 }

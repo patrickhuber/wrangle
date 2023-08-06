@@ -1,5 +1,10 @@
 package packages
 
+import (
+	"github.com/patrickhuber/go-xplat/arch"
+	"github.com/patrickhuber/go-xplat/platform"
+)
+
 type Manifest struct {
 	Package *ManifestPackage `yaml:"package" json:"package"`
 }
@@ -11,8 +16,8 @@ type ManifestPackage struct {
 }
 
 type ManifestTarget struct {
-	Platform     string
-	Architecture string
+	Platform     platform.Platform
+	Architecture arch.Arch
 	Steps        []*ManifestStep
 }
 

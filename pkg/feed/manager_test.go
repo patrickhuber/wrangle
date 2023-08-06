@@ -1,29 +1,26 @@
 package feed_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/wrangle/pkg/config"
-	. "github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
-var _ = Describe("Manager", func() {
-	When("List", func() {
-		It("lists all feeds", func() {
-			cfg := &config.Config{
-				Feeds: []*config.Feed{
-					{
-						Name: "local",
-					},
-					{
-						Name: "remote",
-					},
-				},
-			}
-			mgr := NewManager(cfg)
-			feeds := mgr.List()
-			Expect(len(feeds)).To(Equal(2))
-		})
-	})
-})
+func TestManager(t *testing.T) {
+	cfg := &config.Config{
+		Feeds: []*config.Feed{
+			{
+				Name: "local",
+			},
+			{
+				Name: "remote",
+			},
+		},
+	}
+	mgr := feed.NewManager(cfg)
+	feeds := mgr.List()
+	require.Equal(t, 2, len(feeds))
+}

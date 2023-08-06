@@ -15,14 +15,14 @@ type Metadata struct {
 }
 
 type metadataProvider struct {
-	path filepath.Processor
+	path *filepath.Processor
 }
 
 type MetadataProvider interface {
 	Get(cfg *config.Config, name, version string) *Metadata
 }
 
-func NewMetadataProvider(path filepath.Processor) MetadataProvider {
+func NewMetadataProvider(path *filepath.Processor) MetadataProvider {
 	return &metadataProvider{
 		path: path,
 	}

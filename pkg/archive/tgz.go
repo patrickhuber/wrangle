@@ -10,10 +10,10 @@ import (
 // https://github.com/mholt/archiver/blob/master/targz.go
 type tgz struct {
 	fs   fs.FS
-	path filepath.Processor
+	path *filepath.Processor
 }
 
-func NewTarGz(fs fs.FS, path filepath.Processor) Provider {
+func NewTarGz(fs fs.FS, path *filepath.Processor) Provider {
 	return &tgz{
 		fs:   fs,
 		path: path,

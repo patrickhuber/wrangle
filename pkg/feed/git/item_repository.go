@@ -18,12 +18,12 @@ const (
 
 type itemRepository struct {
 	fs               billy.Filesystem
-	path             filepath.Processor
+	path             *filepath.Processor
 	workingDirectory string
 	logger           log.Logger
 }
 
-func NewItemRepository(fs billy.Filesystem, path filepath.Processor, logger log.Logger, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs billy.Filesystem, path *filepath.Processor, logger log.Logger, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,

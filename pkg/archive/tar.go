@@ -17,10 +17,10 @@ type TarProvider interface {
 
 type tar struct {
 	fs   fs.FS
-	path filepath.Processor
+	path *filepath.Processor
 }
 
-func NewTar(fs fs.FS, path filepath.Processor) TarProvider {
+func NewTar(fs fs.FS, path *filepath.Processor) TarProvider {
 	return &tar{
 		fs:   fs,
 		path: path,

@@ -1,56 +1,56 @@
 package fs_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/arch"
+	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
 )
 
-var _ = Describe("Service", func() {
-	var (
-		tester conformance.ServiceTester
-	)
-	BeforeEach(func() {
-		fs := fs.NewMemory()
-		path := filepath.NewProcessorWithPlatform(platform.Linux)
-		logger := log.Memory()
-		svc := feedfs.NewService("test", fs, path, "/opt/wrangle/feed", logger)
-		items := conformance.GetItemList()
+func TestService(t *testing.T) {
+	t.Run("can list all packages", func(t *testing.T) {
+		tester := SetupServiceTest(t)
+		tester.CanListAllPackages(t)
+	})
+	t.Run("can return latest version", func(t *testing.T) {
+		tester := SetupServiceTest(t)
+		tester.CanReturnLatestVersion(t)
+	})
+	t.Run("can return specific version", func(t *testing.T) {
+		tester := SetupServiceTest(t)
+		tester.CanReturnSpecificVersion(t)
+	})
+	t.Run("can add version", func(t *testing.T) {
+		tester := SetupServiceTest(t)
+		tester.CanAddVersion(t)
+	})
+	t.Run("can update existing version", func(t *testing.T) {
+		tester := SetupServiceTest(t)
+		tester.CanUpdateExistingVersion(t)
+	})
+}
 
-		response, err := svc.Update(&feed.UpdateRequest{
-			Items: &feed.ItemUpdate{
-				Add: items,
-			},
-		})
-		Expect(err).To(BeNil())
-		Expect(response.Changed).To(Equal(conformance.TotalItemCount))
-		tester = conformance.NewServiceTester(svc)
-	})
+func SetupServiceTest(t *testing.T) conformance.ServiceTester {
+	h := host.NewTest(platform.Linux, arch.AMD64)
+	fs := h.FS
+	path := h.Path
+	logger := log.Memory()
+	svc := feedfs.NewService("test", fs, path, "/opt/wrangle/feed", logger)
+	items := conformance.GetItemList()
 
-	Describe("List", func() {
-		It("can list all packages", func() {
-			tester.CanListAllPackages()
-		})
-		It("can return latest version", func() {
-			tester.CanReturnLatestVersion()
-		})
-		It("can return specific version", func() {
-			tester.CanReturnSpecificVersion()
-		})
+	response, err := svc.Update(&feed.UpdateRequest{
+		Items: &feed.ItemUpdate{
+			Add: items,
+		},
 	})
-	Describe("Update", func() {
-		It("can add version", func() {
-			tester.CanAddVersion()
-		})
-		It("can update existing version", func() {
-			tester.CanUpdateExistingVersion()
-		})
-	})
-})
+	require.NoError(t, err)
+	require.Equal(t, conformance.TotalItemCount, response.Changed)
+	return conformance.NewServiceTester(svc)
+}

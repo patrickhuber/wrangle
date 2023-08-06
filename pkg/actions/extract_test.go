@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/arch"
 	"github.com/patrickhuber/go-xplat/filepath"
 	filesystem "github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
@@ -20,7 +22,7 @@ type TestFile struct {
 type extractTest struct {
 	archiveName string
 	fs          filesystem.FS
-	path        filepath.Processor
+	path        *filepath.Processor
 	files       []*TestFile
 	action      *actions.Action
 }
@@ -97,9 +99,9 @@ func TestCanExtract(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.archiveName, func(t *testing.T) {
-
-			path := filepath.NewProcessorWithPlatform(platform.Linux)
-			fs := filesystem.NewMemory(filesystem.WithProcessor(path))
+			h := host.NewTest(platform.Linux, arch.AMD64)
+			path := h.Path
+			fs := h.FS
 
 			rootedFiles := []string{}
 			for _, f := range files {

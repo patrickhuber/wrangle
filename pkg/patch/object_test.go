@@ -2,10 +2,10 @@ package patch_test
 
 import (
 	"reflect"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/patch"
+	"github.com/stretchr/testify/require"
 )
 
 type Car struct {
@@ -24,8 +24,8 @@ type Child struct {
 	Name string
 }
 
-var _ = Describe("Object", func() {
-	It("can modify", func() {
+func TestObject(t *testing.T) {
+	t.Run("can modify", func(t *testing.T) {
 		car := &Car{
 			Make:  "Ford",
 			Model: "F150",
@@ -35,10 +35,10 @@ var _ = Describe("Object", func() {
 			patch.ObjectSetField("Make", "Tesla"))
 
 		_, ok := update.Apply(reflect.ValueOf(car))
-		Expect(ok).To(BeTrue())
-		Expect(car.Make).To(Equal("Tesla"))
+		require.True(t, ok)
+		require.Equal(t, "Tesla", car.Make)
 	})
-	It("can set child field", func() {
+	t.Run("can set child field", func(t *testing.T) {
 		parent := &Parent{
 			Name: "parent",
 			Child: Child{
@@ -51,10 +51,10 @@ var _ = Describe("Object", func() {
 					patch.ObjectSetField("Name", "test"))))
 
 		_, ok := update.Apply(reflect.ValueOf(parent))
-		Expect(ok).To(BeTrue())
-		Expect(parent.Child.Name).To(Equal("test"))
+		require.True(t, ok)
+		require.Equal(t, "test", parent.Child.Name)
 	})
-	It("can set child ptr", func() {
+	t.Run("can set child ptr", func(t *testing.T) {
 		parent := &Parent{
 			Name: "parent",
 		}
@@ -64,8 +64,8 @@ var _ = Describe("Object", func() {
 					patch.ObjectSetField("Name", "test"))))
 
 		_, ok := update.Apply(reflect.ValueOf(parent))
-		Expect(ok).To(BeTrue())
-		Expect(parent.ChildPtr).ToNot(BeNil())
-		Expect(parent.ChildPtr.Name).To(Equal("test"))
+		require.True(t, ok)
+		require.NotNil(t, parent.ChildPtr)
+		require.Equal(t, "test", parent.ChildPtr.Name)
 	})
-})
+}

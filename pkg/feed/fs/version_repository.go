@@ -13,10 +13,10 @@ import (
 type versionRepository struct {
 	fs               fs.FS
 	workingDirectory string
-	path             filepath.Processor
+	path             *filepath.Processor
 }
 
-func NewVersionRepository(fs fs.FS, path filepath.Processor, workingDirectory string) feed.VersionRepository {
+func NewVersionRepository(fs fs.FS, path *filepath.Processor, workingDirectory string) feed.VersionRepository {
 	return &versionRepository{
 		fs:               fs,
 		path:             path,

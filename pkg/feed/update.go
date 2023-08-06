@@ -1,6 +1,10 @@
 package feed
 
-import "github.com/patrickhuber/wrangle/pkg/packages"
+import (
+	"github.com/patrickhuber/go-xplat/arch"
+	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/pkg/packages"
+)
 
 // For an Array:
 // create an {Entity}Update struct
@@ -116,23 +120,23 @@ type ManifestTargetUpdate struct {
 
 type ManifestTargetModify struct {
 	Criteria        *PlatformArchitectureCriteria
-	NewPlatform     *string
-	NewArchitecture *string
+	NewPlatform     *platform.Platform
+	NewArchitecture *arch.Arch
 	Steps           []*ManifestStepPatch
 }
 
 type PlatformArchitectureCriteria struct {
-	Platform     string
-	Architecture string
+	Platform     platform.Platform
+	Architecture arch.Arch
 }
 
 func (c *PlatformArchitectureCriteria) IsMatch(target *packages.ManifestTarget) bool {
-	return c.Architecture == target.Architecture && c.Platform == target.Architecture
+	return c.Architecture == target.Architecture && c.Platform == target.Platform
 }
 
 type ManifestTargetAdd struct {
-	Platform     string
-	Architecture string
+	Platform     platform.Platform
+	Architecture arch.Arch
 	Steps        []*ManifestStepAdd
 }
 

@@ -12,7 +12,7 @@ import (
 type extractProvider struct {
 	factory archive.Factory
 	logger  log.Logger
-	path    filepath.Processor
+	path    *filepath.Processor
 }
 
 type Extract struct {
@@ -24,7 +24,7 @@ type ExtractDetails struct {
 	Out     string `yaml:"out"`
 }
 
-func NewExtractProvider(factory archive.Factory, path filepath.Processor, logger log.Logger) Provider {
+func NewExtractProvider(factory archive.Factory, path *filepath.Processor, logger log.Logger) Provider {
 	return &extractProvider{
 		factory: factory,
 		logger:  logger,

@@ -2,21 +2,20 @@ package githubrelease_test
 
 import (
 	"regexp"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/resource/githubrelease"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("Source", func() {
-	It("regex find must parse and match version", func() {
-		source := githubrelease.Source{
-			TagFilter: "[0-9]([.][0-9]){2}",
-		}
-		re := regexp.MustCompile(source.TagFilter)
-		findString := re.FindString("v1.2.3")
-		Expect(findString).To(Equal("1.2.3"))
-		matchString := re.MatchString("v1.2.3")
-		Expect(matchString).To(BeTrue())
-	})
-})
+func TestSource(t *testing.T) {
+	source := githubrelease.Source{
+		TagFilter: "[0-9]([.][0-9]){2}",
+	}
+	re := regexp.MustCompile(source.TagFilter)
+	findString := re.FindString("v1.2.3")
+	require.Equal(t, "1.2.3", findString)
+
+	matchString := re.MatchString("v1.2.3")
+	require.True(t, matchString)
+}

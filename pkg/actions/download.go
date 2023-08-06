@@ -27,11 +27,11 @@ type downloadProvider struct {
 	name   string
 	logger log.Logger
 	fs     fs.FS
-	path   filepath.Processor
+	path   *filepath.Processor
 }
 
 // NewDownloadProvider creates a new download provider
-func NewDownloadProvider(logger log.Logger, fs fs.FS, path filepath.Processor) Provider {
+func NewDownloadProvider(logger log.Logger, fs fs.FS, path *filepath.Processor) Provider {
 	return &downloadProvider{
 		name:   "download",
 		logger: logger,

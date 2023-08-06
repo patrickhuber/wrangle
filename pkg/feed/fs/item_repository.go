@@ -17,11 +17,11 @@ const (
 
 type itemRepository struct {
 	fs               fs.FS
-	path             filepath.Processor
+	path             *filepath.Processor
 	workingDirectory string
 }
 
-func NewItemRepository(fs fs.FS, path filepath.Processor, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs fs.FS, path *filepath.Processor, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		path:             path,

@@ -14,7 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
-func NewService(name string, fs billy.Filesystem, repository *git.Repository, path filepath.Processor, logger log.Logger) (feed.Service, error) {
+func NewService(name string, fs billy.Filesystem, repository *git.Repository, path *filepath.Processor, logger log.Logger) (feed.Service, error) {
 
 	workingDirectory := "/feed"
 
@@ -28,7 +28,7 @@ func NewService(name string, fs billy.Filesystem, repository *git.Repository, pa
 	}, nil
 }
 
-func NewServiceFromURL(name, url string, path filepath.Processor, logger log.Logger) (feed.Service, error) {
+func NewServiceFromURL(name, url string, path *filepath.Processor, logger log.Logger) (feed.Service, error) {
 
 	fs := memfs.New()
 	storer := memory.NewStorage()

@@ -389,10 +389,10 @@ func (s *service) TargetModify(m *ManifestTargetModify) patch.Applicable {
 		"Tasks": patch.NewSlice(options...),
 	}
 	if m.NewArchitecture != nil {
-		fields["Architecture"] = patch.NewString(*m.NewArchitecture)
+		fields["Architecture"] = *m.NewArchitecture
 	}
 	if m.NewPlatform != nil {
-		fields["Platform"] = patch.NewString(*m.NewPlatform)
+		fields["Platform"] = *m.NewPlatform
 	}
 	return &patch.ObjectUpdate{
 		Value: fields,

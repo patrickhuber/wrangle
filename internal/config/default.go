@@ -10,7 +10,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/config"
 )
 
-func NewDefault(os os.OS, environment env.Environment, path filepath.Processor) (*config.Config, error) {
+func NewDefault(os os.OS, environment env.Environment, path *filepath.Processor) (*config.Config, error) {
 	root := "/opt/wrangle"
 	plat := os.Platform()
 

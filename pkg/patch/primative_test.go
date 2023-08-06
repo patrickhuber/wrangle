@@ -2,62 +2,44 @@ package patch_test
 
 import (
 	"reflect"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/wrangle/pkg/patch"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("Primative", func() {
-	Describe("StringUpdate", func() {
-		When("are different", func() {
-			It("returns new value and true", func() {
-				update := patch.NewString("new")
-				v, ok := update.Apply(reflect.ValueOf("old"))
-				Expect(ok).To(BeTrue())
-				Expect(v.String()).To(Equal("new"))
-			})
-		})
-		When("are the same", func() {
-			It("returns false", func() {
-				update := patch.NewString("old")
-				_, ok := update.Apply(reflect.ValueOf("old"))
-				Expect(ok).To(BeFalse())
-			})
-		})
+func TestPrimative(t *testing.T) {
+	t.Run("string update new value", func(t *testing.T) {
+		update := patch.NewString("new")
+		v, ok := update.Apply(reflect.ValueOf("old"))
+		require.True(t, ok)
+		require.Equal(t, "new", v.String())
 	})
-	Describe("IntUpdate", func() {
-		When("are different", func() {
-			It("returns new value and true", func() {
-				update := patch.NewInt(10)
-				v, ok := update.Apply(reflect.ValueOf(20))
-				Expect(ok).To(BeTrue())
-				Expect(int(v.Int())).To(Equal(10))
-			})
-		})
-		When("are the same", func() {
-			It("returns false", func() {
-				update := patch.NewInt(10)
-				_, ok := update.Apply(reflect.ValueOf(10))
-				Expect(ok).To(BeFalse())
-			})
-		})
+	t.Run("string update no change", func(t *testing.T) {
+		update := patch.NewString("old")
+		_, ok := update.Apply(reflect.ValueOf("old"))
+		require.False(t, ok)
 	})
-	Describe("BoolUpdate", func() {
-		When("are different", func() {
-			It("returns new value and true", func() {
-				update := patch.NewBool(false)
-				v, ok := update.Apply(reflect.ValueOf(true))
-				Expect(ok).To(BeTrue())
-				Expect(v.Bool()).To(Equal(false))
-			})
-		})
-		When("are the same", func() {
-			It("returns false", func() {
-				update := patch.NewBool(true)
-				_, ok := update.Apply(reflect.ValueOf(true))
-				Expect(ok).To(BeFalse())
-			})
-		})
+	t.Run("int update change", func(t *testing.T) {
+		update := patch.NewInt(10)
+		v, ok := update.Apply(reflect.ValueOf(20))
+		require.True(t, ok)
+		require.EqualValues(t, 10, v.Int())
 	})
-})
+	t.Run("int update no change", func(t *testing.T) {
+		update := patch.NewInt(10)
+		_, ok := update.Apply(reflect.ValueOf(10))
+		require.False(t, ok)
+	})
+	t.Run("bool update sets true", func(t *testing.T) {
+		update := patch.NewBool(false)
+		v, ok := update.Apply(reflect.ValueOf(true))
+		require.True(t, ok)
+		require.False(t, v.Bool())
+	})
+	t.Run("bool update no change", func(t *testing.T) {
+		update := patch.NewBool(true)
+		_, ok := update.Apply(reflect.ValueOf(true))
+		require.False(t, ok)
+	})
+}

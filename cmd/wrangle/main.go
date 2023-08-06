@@ -27,7 +27,7 @@ func main() {
 	o, err := di.Resolve[os.OS](container)
 	handle(err)
 
-	path, err := di.Resolve[filepath.Processor](container)
+	path, err := di.Resolve[*filepath.Processor](container)
 	handle(err)
 
 	console, err := di.Resolve[console.Console](container)

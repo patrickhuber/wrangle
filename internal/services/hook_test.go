@@ -2,9 +2,9 @@ package services_test
 
 import (
 	"bytes"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/console"
@@ -12,9 +12,12 @@ import (
 	"github.com/patrickhuber/wrangle/internal/services"
 )
 
-var _ = Describe("Hook", func() {
-
-	DescribeTable("Execute", func(shell string) {
+func TestHook(t *testing.T) {
+	shells := []string{
+		shellhook.Bash,
+		shellhook.Powershell,
+	}
+	for _, shell := range shells {
 		env := env.NewMemory()
 		env.Set("TEST", "TEST")
 		console := console.NewMemory()
@@ -27,12 +30,10 @@ var _ = Describe("Hook", func() {
 			Executable: "/path/to/executable",
 			Shell:      shell,
 		})
-		Expect(err).To(BeNil())
+		require.NoError(t, err)
 
 		outBuffer := console.Out().(*bytes.Buffer)
 		result := outBuffer.String()
-		Expect(result).ToNot(BeEmpty())
-	},
-		Entry(shellhook.Bash, shellhook.Bash),
-		Entry(shellhook.Powershell, shellhook.Powershell))
-})
+		require.NotEmpty(t, result)
+	}
+}

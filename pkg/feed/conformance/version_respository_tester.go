@@ -1,17 +1,19 @@
 package conformance
 
 import (
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/packages"
+	"github.com/stretchr/testify/require"
 )
 
 type VersionRepositoryTester interface {
-	CanGetSingleVersion()
-	CanListAllVersions()
-	CanAddVersion(packageName, version string)
-	CanUpdateVersionNumber(packageName string, version string, newVersion string)
-	CanAddTask()
+	CanGetSingleVersion(t *testing.T)
+	CanListAllVersions(t *testing.T)
+	CanAddVersion(t *testing.T, packageName, version string)
+	CanUpdateVersionNumber(t *testing.T, packageName string, version string, newVersion string)
+	CanAddTask(t *testing.T)
 }
 
 type versionRepositoryTester struct {
@@ -24,24 +26,24 @@ func NewVersionRepositoryTester(repo feed.VersionRepository) VersionRepositoryTe
 	}
 }
 
-func (t *versionRepositoryTester) CanGetSingleVersion() {
+func (test *versionRepositoryTester) CanGetSingleVersion(t *testing.T) {
 	packageName := "test"
 	version := "1.0.0"
-	v, err := t.repo.Get(packageName, version)
-	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
+	v, err := test.repo.Get(packageName, version)
+	require.NoError(t, err)
+	require.NotNil(t, v)
 }
 
-func (t *versionRepositoryTester) CanListAllVersions() {
+func (test *versionRepositoryTester) CanListAllVersions(t *testing.T) {
 	packageName := "test"
 	expectedCount := 3
-	v, err := t.repo.List(packageName)
-	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
-	Expect(len(v)).To(Equal(expectedCount))
+	v, err := test.repo.List(packageName)
+	require.NoError(t, err)
+	require.NotNil(t, v)
+	require.Equal(t, expectedCount, len(v))
 }
 
-func (t *versionRepositoryTester) CanAddVersion(packageName, version string) {
+func (test *versionRepositoryTester) CanAddVersion(t *testing.T, packageName, version string) {
 	v := &packages.Version{
 		Version: version,
 		Manifest: &packages.Manifest{
@@ -58,39 +60,39 @@ func (t *versionRepositoryTester) CanAddVersion(packageName, version string) {
 			},
 		},
 	}
-	err := t.repo.Save(packageName, v)
-	Expect(err).To(BeNil())
-	v, err = t.repo.Get(packageName, version)
-	Expect(err).To(BeNil())
-	Expect(v.Version).To(Equal(version))
+	err := test.repo.Save(packageName, v)
+	require.NoError(t, err)
+	v, err = test.repo.Get(packageName, version)
+	require.NoError(t, err)
+	require.Equal(t, version, v.Version)
 }
 
-func (t *versionRepositoryTester) CanUpdateVersionNumber(packageName string, version string, newVersion string) {
+func (test *versionRepositoryTester) CanUpdateVersionNumber(t *testing.T, packageName string, version string, newVersion string) {
 
-	v, err := t.repo.Get(packageName, version)
-	Expect(err).To(BeNil())
-	Expect(v).ToNot(BeNil())
+	v, err := test.repo.Get(packageName, version)
+	require.NoError(t, err)
+	require.NotNil(t, v)
 
 	v.Version = newVersion
 	v.Manifest.Package.Version = newVersion
 
-	err = t.repo.Save(packageName, v)
-	Expect(err).To(BeNil())
+	err = test.repo.Save(packageName, v)
+	require.NoError(t, err)
 
-	v, err = t.repo.Get(packageName, newVersion)
-	Expect(err).To(BeNil())
-	Expect(v.Version).To(Equal(newVersion))
+	v, err = test.repo.Get(packageName, newVersion)
+	require.NoError(t, err)
+	require.Equal(t, newVersion, v.Version)
 }
 
-func (t *versionRepositoryTester) CanAddTask() {
+func (test *versionRepositoryTester) CanAddTask(t *testing.T) {
 	packageName := "test"
 	version := "1.0.0"
 
-	v, err := t.repo.Get(packageName, version)
-	Expect(err).To(BeNil())
+	v, err := test.repo.Get(packageName, version)
+	require.NoError(t, err)
 
-	Expect(v).ToNot(BeNil())
-	Expect(len(v.Manifest.Package.Targets)).ToNot(Equal(0))
+	require.NotNil(t, v)
+	require.Equal(t, 3, len(v.Manifest.Package.Targets))
 
 	task := &packages.ManifestStep{
 		Action: "test",
@@ -99,11 +101,11 @@ func (t *versionRepositoryTester) CanAddTask() {
 	target := v.Manifest.Package.Targets[0]
 	target.Steps = append(v.Manifest.Package.Targets[0].Steps, task)
 
-	err = t.repo.Save(packageName, v)
-	Expect(err).To(BeNil())
+	err = test.repo.Save(packageName, v)
+	require.NoError(t, err)
 
-	v, err = t.repo.Get(packageName, version)
-	Expect(err).To(BeNil())
-	Expect(len(v.Manifest.Package.Targets)).To(Equal(3))
-	Expect(len(v.Manifest.Package.Targets[0].Steps)).To(Equal(2))
+	v, err = test.repo.Get(packageName, version)
+	require.NoError(t, err)
+	require.Equal(t, 3, len(v.Manifest.Package.Targets))
+	require.Equal(t, 2, len(v.Manifest.Package.Targets[0].Steps))
 }

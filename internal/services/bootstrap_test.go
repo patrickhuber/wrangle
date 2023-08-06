@@ -7,27 +7,28 @@ import (
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLinuxBootstrap(t *testing.T) {
-	s := setup.NewLinuxTest()
+	s := setup.NewTest(platform.Linux)
 	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-linux-amd64"
 	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-linux-amd64"
 	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
 }
 
 func TestDarwinBootstrap(t *testing.T) {
-	s := setup.NewDarwinTest()
+	s := setup.NewTest(platform.Darwin)
 	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-darwin-amd64"
 	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-darwin-amd64"
 	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
 }
 
 func TestWindowsBootstrap(t *testing.T) {
-	s := setup.NewWindowsTest()
+	s := setup.NewTest(platform.Windows)
 	wrangleFileLocation := "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-windows-amd64.exe"
 	shimFileLocation := "C:/ProgramData/wrangle/packages/shim/1.0.0/shim-1.0.0-windows-amd64.exe"
 	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
@@ -46,7 +47,7 @@ func RunBootstrapTest(t *testing.T,
 	opsys, err := di.Resolve[os.OS](container)
 	require.Nil(t, err)
 
-	path, err := di.Resolve[filepath.Processor](container)
+	path, err := di.Resolve[*filepath.Processor](container)
 	require.Nil(t, err)
 
 	globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")

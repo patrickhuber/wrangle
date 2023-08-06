@@ -1,39 +1,38 @@
 package memory_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
+	"testing"
+
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
 )
 
-var _ = Describe("Service", func() {
-	var (
-		tester conformance.ServiceTester
-	)
-	BeforeEach(func() {
+func TestService(t *testing.T) {
+	setup := func(t *testing.T) conformance.ServiceTester {
 		items := conformance.GetItemList()
 		logger := log.Memory()
 		service := memory.NewService("test", logger, items...)
-		tester = conformance.NewServiceTester(service)
+		return conformance.NewServiceTester(service)
+	}
+	t.Run("can list all packages", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanListAllPackages(t)
 	})
-	Describe("List", func() {
-		It("can list all packages", func() {
-			tester.CanListAllPackages()
-		})
-		It("can return latest version", func() {
-			tester.CanReturnLatestVersion()
-		})
-		It("can return specific version", func() {
-			tester.CanReturnSpecificVersion()
-		})
+	t.Run("can return latest version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanReturnLatestVersion(t)
 	})
-	Describe("Update", func() {
-		It("can add version", func() {
-			tester.CanAddVersion()
-		})
-		It("can update existing version", func() {
-			tester.CanUpdateExistingVersion()
-		})
+	t.Run("can return specific version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanReturnSpecificVersion(t)
 	})
-})
+	t.Run("can add version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanAddVersion(t)
+	})
+	t.Run("can update existing version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanUpdateExistingVersion(t)
+	})
+}

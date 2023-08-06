@@ -7,6 +7,7 @@ import (
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/pkg/config"
@@ -15,19 +16,19 @@ import (
 )
 
 func TestWindowsInstall(t *testing.T) {
-	s := setup.NewWindowsTest()
+	s := setup.NewTest(platform.Windows)
 	testFileLocation := `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`
 	RunInstallTest(t, testFileLocation, s)
 }
 
 func TestLinuxInstall(t *testing.T) {
-	s := setup.NewLinuxTest()
+	s := setup.NewTest(platform.Linux)
 	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
 	RunInstallTest(t, testFileLocation, s)
 }
 
 func TestDarwinInstall(t *testing.T) {
-	s := setup.NewDarwinTest()
+	s := setup.NewTest(platform.Darwin)
 	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
 	RunInstallTest(t, testFileLocation, s)
 }
@@ -44,7 +45,7 @@ func RunInstallTest(t *testing.T,
 	install, err := di.Resolve[services.Install](container)
 	require.Nil(t, err)
 
-	path, err := di.Resolve[filepath.Processor](container)
+	path, err := di.Resolve[*filepath.Processor](container)
 	require.Nil(t, err)
 
 	opsys, err := di.Resolve[os.OS](container)

@@ -1,43 +1,42 @@
 package memory_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
+	"testing"
+
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	"github.com/patrickhuber/wrangle/pkg/feed/memory"
 )
 
-var _ = Describe("VersionRepository", func() {
-	var (
-		tester conformance.VersionRepositoryTester
-	)
-	BeforeEach(func() {
-		items := map[string]*feed.Item{}
-		for _, i := range conformance.GetItemList() {
-			items[i.Package.Name] = i
-		}
-		repo := memory.NewVersionRepository(items)
-		tester = conformance.NewVersionRepositoryTester(repo)
+func TestVersionRepository(t *testing.T) {
+	t.Run("can get single version", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanGetSingleVersion(t)
 	})
-	Describe("Get", func() {
-		It("can get single version", func() {
-			tester.CanGetSingleVersion()
-		})
+	t.Run("can list all versions", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanListAllVersions(t)
 	})
-	Describe("List", func() {
-		It("can list all versions", func() {
-			tester.CanListAllVersions()
-		})
+	t.Run("can add a version", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanAddVersion(t, "test", "2.0.0")
 	})
-	Describe("Update", func() {
-		It("can add a version", func() {
-			tester.CanAddVersion("test", "2.0.0")
-		})
-		It("can update existing version", func() {
-			tester.CanUpdateVersionNumber("test", "1.0.0", "2.0.0")
-		})
-		It("can add task", func() {
-			tester.CanAddTask()
-		})
+	t.Run("can update existing version", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanUpdateVersionNumber(t, "test", "1.0.0", "2.0.0")
 	})
-})
+	t.Run("can add task", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanAddTask(t)
+	})
+}
+
+func Setup(t *testing.T) conformance.VersionRepositoryTester {
+
+	items := map[string]*feed.Item{}
+	for _, i := range conformance.GetItemList() {
+		items[i.Package.Name] = i
+	}
+	repo := memory.NewVersionRepository(items)
+	return conformance.NewVersionRepositoryTester(repo)
+}

@@ -16,10 +16,10 @@ type versionRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
 	logger           log.Logger
-	path             filepath.Processor
+	path             *filepath.Processor
 }
 
-func NewVersionRepository(fs billy.Filesystem, logger log.Logger, path filepath.Processor, workingDirectory string) feed.VersionRepository {
+func NewVersionRepository(fs billy.Filesystem, logger log.Logger, path *filepath.Processor, workingDirectory string) feed.VersionRepository {
 	return &versionRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,

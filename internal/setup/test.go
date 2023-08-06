@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
+	"github.com/patrickhuber/go-xplat/arch"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
-	"github.com/patrickhuber/go-xplat/console"
-	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/patrickhuber/wrangle/pkg/config"
@@ -32,31 +31,7 @@ type test struct {
 	container di.Container
 }
 
-func NewDarwinTest() Setup {
-	t := newBaselineTest()
-	container := t.Container()
-	container.RegisterConstructor(func() os.OS { return os.NewDarwinMock() })
-	container.RegisterConstructor(func() filepath.Processor { return filepath.NewProcessorWithPlatform(platform.Darwin) })
-	return t
-}
-
-func NewLinuxTest() Setup {
-	t := newBaselineTest()
-	container := t.Container()
-	container.RegisterConstructor(func() os.OS { return os.NewLinuxMock() })
-	container.RegisterConstructor(func() filepath.Processor { return filepath.NewProcessorWithPlatform(platform.Linux) })
-	return t
-}
-
-func NewWindowsTest() Setup {
-	t := newBaselineTest()
-	container := t.Container()
-	container.RegisterConstructor(func() os.OS { return os.NewWindowsMock() })
-	container.RegisterConstructor(func() filepath.Processor { return filepath.NewProcessorWithPlatform(platform.Windows) })
-	return t
-}
-
-func newBaselineTest() Setup {
+func NewTest(platform platform.Platform) Setup {
 	// start the local http server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.URL.Path, "/test") {
@@ -67,18 +42,21 @@ func newBaselineTest() Setup {
 		rw.Write([]byte("not found"))
 	}))
 	container := di.NewContainer()
+	h := host.NewTest(platform, arch.AMD64)
+	di.RegisterInstance(container, h.OS)
+	di.RegisterInstance(container, h.Console)
+	if h.OS.Platform().IsWindows() {
+		h.Env.Set("PROGRAMDATA", "c:\\programdata")
+	}
+	di.RegisterInstance(container, h.Env)
+	di.RegisterInstance(container, h.FS)
+	di.RegisterInstance(container, h.Path)
 	t := &test{
 		server:    server,
 		container: container,
 	}
-	container.RegisterInstance(reflect.TypeOf(server), server)
-	container.RegisterConstructor(t.newFeedProvider)
-	container.RegisterConstructor(env.NewOS)
-	container.RegisterConstructor(func(processor filepath.Processor) fs.FS {
-		return fs.NewMemory(fs.WithProcessor(processor))
-	}, di.WithLifetime(di.LifetimeStatic))
-	container.RegisterConstructor(func() console.Console { return console.NewMemory() })
-	container.RegisterConstructor(func(opsys os.OS, path filepath.Processor) config.Properties {
+	di.RegisterInstance(container, server)
+	container.RegisterConstructor(func(opsys os.OS, path *filepath.Processor) config.Properties {
 		properties := config.NewProperties()
 		globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
 		properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
@@ -89,6 +67,7 @@ func newBaselineTest() Setup {
 		provider := config.NewFileProvider(fs, props)
 		return config.NewDefaultableProvider(provider, cfg), nil
 	})
+	container.RegisterConstructor(t.newFeedProvider)
 	container.RegisterConstructor(func() log.Logger { return log.Memory() })
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(actions.NewDownloadProvider)

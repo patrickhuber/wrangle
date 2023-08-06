@@ -23,7 +23,7 @@ const (
 	Zip   = "zip"
 )
 
-func NewFactory(fs fs.FS, path filepath.Processor) Factory {
+func NewFactory(fs fs.FS, path *filepath.Processor) Factory {
 	return &factory{
 		providers: map[string]Provider{
 			Tar:   NewTar(fs, path),

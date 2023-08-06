@@ -11,10 +11,10 @@ import (
 
 type zip struct {
 	fs   fs.FS
-	path filepath.Processor
+	path *filepath.Processor
 }
 
-func NewZip(fs fs.FS, path filepath.Processor) Provider {
+func NewZip(fs fs.FS, path *filepath.Processor) Provider {
 	return &zip{
 		fs:   fs,
 		path: path,

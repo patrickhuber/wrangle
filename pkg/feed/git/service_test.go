@@ -1,34 +1,34 @@
 package git_test
 
 import (
+	"testing"
+
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-xplat/arch"
+	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	gitfeed "github.com/patrickhuber/wrangle/pkg/feed/git"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("GitService", func() {
-	var (
-		tester conformance.ServiceTester
-	)
-	BeforeEach(func() {
+func TestService(t *testing.T) {
+	setup := func(t *testing.T) conformance.ServiceTester {
 		logger := log.Memory()
 		store := memory.NewStorage()
+		h := host.NewTest(platform.Linux, arch.AMD64)
 		fs := memfs.New()
-		path := filepath.NewProcessorWithPlatform(platform.Linux)
+		path := h.Path
 
 		repository, err := git.Init(store, fs)
-		Expect(err).To(BeNil())
+		require.NoError(t, err)
 
 		svc, err := gitfeed.NewService("test", fs, repository, path, logger)
-		Expect(err).To(BeNil())
+		require.NoError(t, err)
 
 		items := conformance.GetItemList()
 		response, err := svc.Update(&feed.UpdateRequest{
@@ -36,27 +36,28 @@ var _ = Describe("GitService", func() {
 				Add: items,
 			},
 		})
-		Expect(err).To(BeNil())
-		Expect(response.Changed).To(Equal(conformance.TotalItemCount))
-		tester = conformance.NewServiceTester(svc)
+		require.NoError(t, err)
+		require.Equal(t, conformance.TotalItemCount, response.Changed)
+		return conformance.NewServiceTester(svc)
+	}
+	t.Run("can list all packages", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanListAllPackages(t)
 	})
-	Describe("List", func() {
-		It("can list all packages", func() {
-			tester.CanListAllPackages()
-		})
-		It("can return latest version", func() {
-			tester.CanReturnLatestVersion()
-		})
-		It("can return specific version", func() {
-			tester.CanReturnSpecificVersion()
-		})
+	t.Run("can return latest version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanReturnLatestVersion(t)
 	})
-	Describe("Update", func() {
-		It("can add version", func() {
-			tester.CanAddVersion()
-		})
-		It("can update existing version", func() {
-			tester.CanUpdateExistingVersion()
-		})
+	t.Run("can return specific version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanReturnSpecificVersion(t)
 	})
-})
+	t.Run("can add version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanAddVersion(t)
+	})
+	t.Run("can update existing version", func(t *testing.T) {
+		tester := setup(t)
+		tester.CanUpdateExistingVersion(t)
+	})
+}

@@ -1,52 +1,52 @@
 package fs_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"testing"
+
+	"github.com/patrickhuber/go-xplat/arch"
+	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/pkg/feed/fs"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("VersionRespository", func() {
-	var (
-		tester conformance.VersionRepositoryTester
-	)
-	BeforeEach(func() {
-		fs := fs.NewMemory()
-		path := filepath.NewProcessorWithPlatform(platform.Linux)
-		workingDirectory := "/opt/wrangle/feed"
-		repo := feedfs.NewVersionRepository(fs, path, workingDirectory)
-		items := conformance.GetItemList()
-		for _, item := range items {
-			for _, version := range item.Package.Versions {
-				err := repo.Save(item.Package.Name, version)
-				Expect(err).To(BeNil())
-			}
+func TestVersionRepository(t *testing.T) {
+	t.Run("can list all versions", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanListAllVersions(t)
+	})
+	t.Run("can get single version", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanGetSingleVersion(t)
+	})
+	t.Run("can update ", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanUpdateVersionNumber(t, "test", "1.0.0", "2.0.0")
+	})
+	t.Run("can add task", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanAddTask(t)
+	})
+	t.Run("can", func(t *testing.T) {
+		tester := Setup(t)
+		tester.CanAddVersion(t, "test", "2.0.0")
+	})
+}
+
+func Setup(t *testing.T) conformance.VersionRepositoryTester {
+	h := host.NewTest(platform.Linux, arch.AMD64)
+	fs := h.FS
+	path := h.Path
+	workingDirectory := "/opt/wrangle/feed"
+	repo := feedfs.NewVersionRepository(fs, path, workingDirectory)
+	items := conformance.GetItemList()
+	for _, item := range items {
+		for _, version := range item.Package.Versions {
+			err := repo.Save(item.Package.Name, version)
+			require.NoError(t, err)
 		}
-		tester = conformance.NewVersionRepositoryTester(repo)
-	})
-	Describe("List", func() {
-		It("can list all versions", func() {
-			tester.CanListAllVersions()
-		})
-	})
-	Describe("Get", func() {
-		It("can get single version", func() {
-			tester.CanGetSingleVersion()
-		})
-	})
-	Describe("Update", func() {
-		It("can update ", func() {
-			tester.CanUpdateVersionNumber("test", "1.0.0", "2.0.0")
-		})
-		It("can add task", func() {
-			tester.CanAddTask()
-		})
-		It("can", func() {
-			tester.CanAddVersion("test", "2.0.0")
-		})
-	})
-})
+	}
+	tester := conformance.NewVersionRepositoryTester(repo)
+	return tester
+}

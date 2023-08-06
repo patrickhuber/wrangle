@@ -2,9 +2,9 @@ package services_test
 
 import (
 	"bytes"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/console"
@@ -12,26 +12,33 @@ import (
 	"github.com/patrickhuber/wrangle/internal/services"
 )
 
-var _ = Describe("Export", func() {
-
-	DescribeTable("Execute", func(shell string, expected string) {
-		env := env.NewMemory()
-		env.Set("TEST", "TEST")
-		console := console.NewMemory()
+func TestExport(t *testing.T) {
+	type test struct {
+		shell    string
+		expected string
+	}
+	tests := []test{
+		{shellhook.Bash, "export TEST=TEST;\n"},
+		{shellhook.Powershell, "$env:TEST=\"TEST\";\n"},
+	}
+	for _, test := range tests {
 		shells := map[string]shellhook.Shell{
 			shellhook.Bash:       shellhook.NewBash(),
 			shellhook.Powershell: shellhook.NewPowershell(),
 		}
-		export := services.NewExport(env, shells, console)
-		err := export.Execute(&services.ExportRequest{
-			Shell: shell,
-		})
-		Expect(err).To(BeNil())
+		t.Run(test.shell, func(t *testing.T) {
+			env := env.NewMemory()
+			env.Set("TEST", "TEST")
+			console := console.NewMemory()
+			export := services.NewExport(env, shells, console)
+			err := export.Execute(&services.ExportRequest{
+				Shell: test.shell,
+			})
+			require.NoError(t, err)
 
-		outBuffer := console.Out().(*bytes.Buffer)
-		result := outBuffer.String()
-		Expect(result).To(Equal(expected))
-	},
-		Entry(shellhook.Bash, shellhook.Bash, "export TEST=TEST;\n"),
-		Entry(shellhook.Powershell, shellhook.Powershell, "$env:TEST=\"TEST\";\n"))
-})
+			outBuffer := console.Out().(*bytes.Buffer)
+			result := outBuffer.String()
+			require.Equal(t, test.expected, result)
+		})
+	}
+}

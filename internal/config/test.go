@@ -7,7 +7,7 @@ import (
 	"github.com/patrickhuber/wrangle/pkg/config"
 )
 
-func NewTest(os os.OS, environment env.Environment, path filepath.Processor) (*config.Config, error) {
+func NewTest(os os.OS, environment env.Environment, path *filepath.Processor) (*config.Config, error) {
 	cfg, err := NewDefault(os, environment, path)
 	if err != nil {
 		return nil, err
