@@ -10,7 +10,7 @@ import (
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
-	"github.com/patrickhuber/wrangle/internal/setup"
+	setup "github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/enums"
 	"github.com/patrickhuber/wrangle/pkg/global"

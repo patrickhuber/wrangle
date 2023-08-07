@@ -12,7 +12,7 @@ require (
 	github.com/patrickhuber/go-di v0.5.2
 	github.com/patrickhuber/go-log v0.2.1
 	github.com/patrickhuber/go-shellhook v0.1.4
-	github.com/patrickhuber/go-xplat v0.3.2
+	github.com/patrickhuber/go-xplat v0.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.23.7
 	gopkg.in/yaml.v3 v3.0.1

@@ -8,8 +8,8 @@ import (
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +21,7 @@ func TestInitialize(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(p.String(), func(t *testing.T) {
-			s := setup.NewTest(platform.Linux)
+			s := host.NewTest(platform.Linux, nil, nil)
 			tester := &initializeTester{
 				s: s,
 			}
@@ -31,7 +31,7 @@ func TestInitialize(t *testing.T) {
 }
 
 type initializeTester struct {
-	s setup.Setup
+	s host.Host
 }
 
 func (tester *initializeTester) Run(t *testing.T) {

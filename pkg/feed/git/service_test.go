@@ -7,9 +7,8 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/arch"
-	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 	"github.com/patrickhuber/wrangle/pkg/feed/conformance"
 	gitfeed "github.com/patrickhuber/wrangle/pkg/feed/git"
@@ -20,7 +19,7 @@ func TestService(t *testing.T) {
 	setup := func(t *testing.T) conformance.ServiceTester {
 		logger := log.Memory()
 		store := memory.NewStorage()
-		h := host.NewTest(platform.Linux, arch.AMD64)
+		h := setup.NewTest(setup.Platform(platform.Linux))
 		fs := memfs.New()
 		path := h.Path
 

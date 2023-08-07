@@ -43,7 +43,10 @@ func ListPackagesAction(ctx *cli.Context) error {
 			Output: ctx.String("output"),
 		},
 	}
-	di.Inject(resolver, listPackagesCommand)
+	err = di.Inject(resolver, listPackagesCommand)
+	if err != nil {
+		return err
+	}
 	return listPackagesCommand.Execute()
 }
 

@@ -4,11 +4,10 @@ import (
 	"testing"
 
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/arch"
 	"github.com/patrickhuber/go-xplat/filepath"
 	filesystem "github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 	"github.com/patrickhuber/wrangle/pkg/archive"
 	"github.com/stretchr/testify/require"
@@ -99,7 +98,7 @@ func TestCanExtract(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.archiveName, func(t *testing.T) {
-			h := host.NewTest(platform.Linux, arch.AMD64)
+			h := setup.NewTest(setup.Platform(platform.Linux))
 			path := h.Path
 			fs := h.FS
 

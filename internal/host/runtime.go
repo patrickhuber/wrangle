@@ -1,4 +1,4 @@
-package setup
+package host
 
 import (
 	"github.com/patrickhuber/go-di"
@@ -22,7 +22,7 @@ type runtime struct {
 	container di.Container
 }
 
-func New() Setup {
+func New() Host {
 	container := di.NewContainer()
 	container.RegisterConstructor(env.NewOS)
 	container.RegisterConstructor(func(e env.Environment) log.Logger {

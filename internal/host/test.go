@@ -1,4 +1,4 @@
-package setup
+package host
 
 import (
 	"fmt"
@@ -12,9 +12,9 @@ import (
 	"github.com/patrickhuber/go-xplat/arch"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/go-xplat/setup"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
@@ -31,7 +31,7 @@ type test struct {
 	container di.Container
 }
 
-func NewTest(platform platform.Platform) Setup {
+func NewTest(platform platform.Platform, vars map[string]string, args []string) Host {
 	// start the local http server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.URL.Path, "/test") {
@@ -42,7 +42,11 @@ func NewTest(platform platform.Platform) Setup {
 		rw.Write([]byte("not found"))
 	}))
 	container := di.NewContainer()
-	h := host.NewTest(platform, arch.AMD64)
+	h := setup.NewTest(
+		setup.Platform(platform),
+		setup.Arch(arch.AMD64),
+		setup.Vars(vars),
+		setup.Args(args...))
 	di.RegisterInstance(container, h.OS)
 	di.RegisterInstance(container, h.Console)
 	if h.OS.Platform().IsWindows() {

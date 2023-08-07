@@ -6,14 +6,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/arch"
-	"github.com/patrickhuber/go-xplat/host"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/pkg/actions"
 )
 
 func TestMove(t *testing.T) {
-	h := host.NewTest(platform.Linux, arch.AMD64)
+	h := setup.NewTest(setup.Platform(platform.Linux))
 	path := h.Path
 	fs := h.FS
 	logger := log.Memory()

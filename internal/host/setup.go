@@ -1,4 +1,4 @@
-package setup
+package host
 
 import (
 	"io"
@@ -6,7 +6,7 @@ import (
 	"github.com/patrickhuber/go-di"
 )
 
-type Setup interface {
+type Host interface {
 	io.Closer
 	Container() di.Container
 }

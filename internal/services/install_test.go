@@ -8,34 +8,34 @@ import (
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/setup"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
 func TestWindowsInstall(t *testing.T) {
-	s := setup.NewTest(platform.Windows)
+	s := host.NewTest(platform.Windows, nil, nil)
 	testFileLocation := `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`
 	RunInstallTest(t, testFileLocation, s)
 }
 
 func TestLinuxInstall(t *testing.T) {
-	s := setup.NewTest(platform.Linux)
+	s := host.NewTest(platform.Linux, nil, nil)
 	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
 	RunInstallTest(t, testFileLocation, s)
 }
 
 func TestDarwinInstall(t *testing.T) {
-	s := setup.NewTest(platform.Darwin)
+	s := host.NewTest(platform.Darwin, nil, nil)
 	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
 	RunInstallTest(t, testFileLocation, s)
 }
 
 func RunInstallTest(t *testing.T,
 	testFileLocation string,
-	s setup.Setup) {
+	s host.Host) {
 	defer s.Close()
 	container := s.Container()
 

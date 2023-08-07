@@ -104,6 +104,12 @@ github.com/patrickhuber/go-xplat v0.3.1 h1:HnBHQxeM8foci0c//2bMVhnhVlSPdcxYIzVL8
 github.com/patrickhuber/go-xplat v0.3.1/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
 github.com/patrickhuber/go-xplat v0.3.2 h1:VY81Kh5J+f2eUsqRjUREiqkBKZ6ZUQUaKlf8/IKwKZs=
 github.com/patrickhuber/go-xplat v0.3.2/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
+github.com/patrickhuber/go-xplat v0.4.0 h1:fNJgoIimAssfUR1xlD/4DPdSKT83KfHk3N5bBF5F7Ng=
+github.com/patrickhuber/go-xplat v0.4.0/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
+github.com/patrickhuber/go-xplat v0.4.1 h1:LvX4FKZs9UHSikdh1cGh32zKvEYxeXo/es6+njFXYR8=
+github.com/patrickhuber/go-xplat v0.4.1/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
+github.com/patrickhuber/go-xplat v0.5.0 h1:gbFEa8vJQzFuM4wGPXKa+zMTUx55yhligZfkDFP9QYY=
+github.com/patrickhuber/go-xplat v0.5.0/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
 github.com/pjbgf/sha1cd v0.3.0/go.mod h1:nZ1rrWOcGJ5uZgEEVL1VUM9iRQiZvWdbZjkKyFzPPsI=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
