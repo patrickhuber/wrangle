@@ -21,8 +21,8 @@ func TestListPackages(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, response)
 	require.Equal(t, 1, len(response.Items))
-	require.Equal(t, "test", response.Items[0].Package.Name)
+	require.Equal(t, "test", response.Items[0].Package)
 	// we are just listing packages, not versions so no versions are returned
 	// maybe we sould return the latest version?
-	require.Equal(t, 0, len(response.Items[0].Package.Versions))
+	require.Equal(t, "1.0.0", response.Items[0].Latest)
 }
