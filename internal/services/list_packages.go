@@ -11,8 +11,13 @@ type ListPackagesRequest struct {
 	Name string
 }
 
+type ListPackagesItem struct {
+	Package string
+	Latest  string
+}
+
 type ListPackagesResponse struct {
-	Items []*feed.Item
+	Items []ListPackagesItem
 }
 
 type ListPackages interface {
@@ -42,7 +47,7 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 		return nil, fmt.Errorf("the global config file contains no feeds")
 	}
 
-	var items []*feed.Item
+	var items []ListPackagesItem
 	for _, f := range cfg.Feeds {
 		feedSvc, err := svc.serviceFactory.Create(f)
 		if err != nil {
@@ -62,6 +67,23 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 					},
 				},
 			},
+			Expand: &feed.ItemReadExpand{
+				Package: &feed.ItemReadExpandPackage{
+					Where: []*feed.ItemReadExpandPackageAnyOf{
+						{
+							AnyOf: []*feed.ItemReadExpandPackageAllOf{
+								{
+									AllOf: []*feed.ItemReadExpandPackagePredicate{
+										{
+											Latest: true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		}
 		response, err := feedSvc.List(request)
 		if err != nil {
@@ -70,9 +92,21 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 		if len(response.Items) == 0 {
 			continue
 		}
-		items = response.Items
+		for _, item := range response.Items {
+			var ver string
+			if len(item.Package.Versions) == 0 {
+				ver = ""
+			} else {
+				ver = item.Package.Versions[0].Version
+			}
+			items = append(items, ListPackagesItem{
+				Package: item.Package.Name,
+				Latest:  ver,
+			})
+		}
 		break
 	}
+
 	return &ListPackagesResponse{
 		Items: items,
 	}, nil

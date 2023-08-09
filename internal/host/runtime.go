@@ -57,6 +57,7 @@ func New() Host {
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewBootstrap)
+	container.RegisterConstructor(services.NewListPackages)
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
 	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
 	container.RegisterConstructor(services.NewExport)
