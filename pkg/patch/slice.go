@@ -24,7 +24,7 @@ const (
 
 type SliceOption = func(*SliceUpdate)
 
-func SliceAppend(value interface{}) SliceOption {
+func SliceAppend(value any) SliceOption {
 	patch := &SlicePatch{
 		Operation: AddOperation,
 		Value:     value,
@@ -55,7 +55,7 @@ func SliceRemove(condition func(reflect.Value) bool) SliceOption {
 	}
 }
 
-func SliceModifyAt(index int, value interface{}) SliceOption {
+func SliceModifyAt(index int, value any) SliceOption {
 	patch := &SlicePatch{
 		Operation: ReplaceOperation,
 		Index:     index,
@@ -66,7 +66,7 @@ func SliceModifyAt(index int, value interface{}) SliceOption {
 	}
 }
 
-func SliceModify(condition func(reflect.Value) bool, value interface{}) SliceOption {
+func SliceModify(condition func(reflect.Value) bool, value any) SliceOption {
 	patch := &SlicePatch{
 		Operation: ReplaceOperation,
 		Condition: condition,
@@ -82,7 +82,7 @@ type SlicePatch struct {
 	Index     int
 	Condition func(reflect.Value) bool
 	Operation SliceOperation
-	Value     interface{}
+	Value     any
 }
 
 func (u *SliceUpdate) Apply(val reflect.Value) (reflect.Value, bool) {

@@ -5,7 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func DecodeYamlFileFromGitTree(tree *object.Tree, name string, out interface{}) error {
+func DecodeYamlFileFromGitTree(tree *object.Tree, name string, out any) error {
 	file, err := tree.File(name)
 	if err != nil {
 		if err == object.ErrFileNotFound {
@@ -16,7 +16,7 @@ func DecodeYamlFileFromGitTree(tree *object.Tree, name string, out interface{}) 
 	return DecodeYamlFromGitFile(file, out)
 }
 
-func DecodeYamlFromGitFile(file *object.File, out interface{}) error {
+func DecodeYamlFromGitFile(file *object.File, out any) error {
 	reader, err := file.Blob.Reader()
 	if err != nil {
 		return err

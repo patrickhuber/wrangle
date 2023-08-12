@@ -112,7 +112,7 @@ func (r *itemRepository) GetItemPath(name string) string {
 	return r.path.Join(r.workingDirectory, name)
 }
 
-func (r *itemRepository) GetObject(name string, file string, out interface{}) error {
+func (r *itemRepository) GetObject(name string, file string, out any) error {
 	itemPath := r.GetItemPath(name)
 	data, err := r.fs.ReadFile(r.path.Join(itemPath, file))
 	if err != nil {
@@ -169,7 +169,7 @@ func (r *itemRepository) SaveTemplate(name string, template string) error {
 	return r.WriteFile(name, TemplateFile, []byte(template))
 }
 
-func (r *itemRepository) SaveObject(name string, file string, in interface{}) error {
+func (r *itemRepository) SaveObject(name string, file string, in any) error {
 	content, err := yaml.Marshal(in)
 	if err != nil {
 		return err

@@ -1,6 +1,10 @@
 package git
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
+
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
 	"github.com/patrickhuber/go-log"
@@ -55,6 +59,10 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 	r.logger.Tracef("itemRepository.Get %s", name)
 	packagePath := r.path.Join(r.workingDirectory, name)
 	_, err := r.fs.Stat(packagePath)
+	if errors.Is(fs.ErrNotExist, err) {
+		return nil, fmt.Errorf("%w : %w", feed.ErrNotFound, err)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +125,7 @@ func (r *itemRepository) GetTemplate(packageName string) (string, error) {
 	return string(content), nil
 }
 
-func (r *itemRepository) GetObject(packageName, fileName string, out interface{}) error {
+func (r *itemRepository) GetObject(packageName, fileName string, out any) error {
 	content, err := r.ReadFile(packageName, fileName)
 	if err != nil {
 		return err
@@ -187,7 +195,7 @@ func (r *itemRepository) SaveTemplate(packageName string, template string) error
 	return r.WriteFile(packageName, TemplateFile, []byte(template))
 }
 
-func (r *itemRepository) SaveObject(packageName string, fileName string, object interface{}) error {
+func (r *itemRepository) SaveObject(packageName string, fileName string, object any) error {
 	content, err := yaml.Marshal(object)
 	if err != nil {
 		return err

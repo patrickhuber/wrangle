@@ -15,7 +15,7 @@ func TestListPackages(t *testing.T) {
 	svc, err := di.Resolve[services.ListPackages](h.Container())
 	require.NoError(t, err)
 	request := &services.ListPackagesRequest{
-		Name: "test",
+		Names: []string{"test"},
 	}
 	response, err := svc.Execute(request)
 	require.NoError(t, err)

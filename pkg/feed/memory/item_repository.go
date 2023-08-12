@@ -15,7 +15,7 @@ func NewItemRepository(items map[string]*feed.Item) feed.ItemRepository {
 func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.Item, error) {
 	item, ok := r.items[name]
 	if !ok {
-		return nil, nil
+		return nil, feed.ErrNotFound
 	}
 	return item, nil
 }

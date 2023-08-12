@@ -40,7 +40,7 @@ func TestDownload(t *testing.T) {
 	provider := actions.NewDownloadProvider(log.Default(), fs, path)
 	task := &actions.Action{
 		Type: "download",
-		Parameters: map[string]interface{}{
+		Parameters: map[string]any{
 			"url": server.URL + "/test-remote",
 			"out": "test-local",
 		},

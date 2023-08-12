@@ -40,7 +40,7 @@ func main() {
 	}
 
 	app := &cli.App{
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			global.MetadataDependencyInjection: container,
 		},
 		Name:        appName,
@@ -96,7 +96,6 @@ func main() {
 		commands.Bootstrap,
 		commands.List,
 		commands.Get,
-		commands.List,
 		commands.Initialize,
 	}
 	err = app.Run(console.Args())

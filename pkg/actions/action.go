@@ -5,8 +5,8 @@ import "fmt"
 // Action defines a unit of work for a package
 type Action struct {
 	Type       string
-	Parameters map[string]interface{}
-	Outputs    map[string]interface{}
+	Parameters map[string]any
+	Outputs    map[string]any
 }
 
 // GetStringParameter casts the given parameter as a string and returns the value

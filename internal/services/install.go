@@ -146,7 +146,7 @@ func (i *install) targetIsMatch(target *packages.ManifestTarget) bool {
 }
 
 func (i *install) packageTargetTaskToTask(action *packages.ManifestStep) *actions.Action {
-	parameters := map[string]interface{}{}
+	parameters := map[string]any{}
 	for k, p := range action.With {
 		parameters[k] = p
 	}

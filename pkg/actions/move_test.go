@@ -23,7 +23,7 @@ func TestMove(t *testing.T) {
 
 	action := &actions.Action{
 		Type: "move",
-		Parameters: map[string]interface{}{
+		Parameters: map[string]any{
 			"source":      "file.txt",
 			"destination": "moved.txt",
 		},

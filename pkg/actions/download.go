@@ -40,7 +40,7 @@ func NewDownloadProvider(logger log.Logger, fs fs.FS, path *filepath.Processor) 
 	}
 }
 
-func (p *downloadProvider) Decode(object interface{}) (*Action, error) {
+func (p *downloadProvider) Decode(object any) (*Action, error) {
 	// map structure to Download
 	var download = &Download{}
 	err := mapstructure.Decode(object, download)
@@ -50,7 +50,7 @@ func (p *downloadProvider) Decode(object interface{}) (*Action, error) {
 	// map Download to Task
 	return &Action{
 		Type: p.name,
-		Parameters: map[string]interface{}{
+		Parameters: map[string]any{
 			"url": download.Details.URL,
 			"out": download.Details.Out,
 		},

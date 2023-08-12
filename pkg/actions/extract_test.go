@@ -68,7 +68,7 @@ func TestCanExtract(t *testing.T) {
 			archiveName: "archive.zip",
 			action: &actions.Action{
 				Type: "extract",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"archive": "archive.zip",
 					"out":     "1.txt",
 				},
@@ -78,7 +78,7 @@ func TestCanExtract(t *testing.T) {
 			archiveName: "archive.tar",
 			action: &actions.Action{
 				Type: "extract",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"archive": "archive.tar",
 					"out":     "1.txt",
 				},
@@ -88,7 +88,7 @@ func TestCanExtract(t *testing.T) {
 			archiveName: "archive.tgz",
 			action: &actions.Action{
 				Type: "extract",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"archive": "archive.tgz",
 					"out":     "1.txt",
 				},

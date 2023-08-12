@@ -3,7 +3,7 @@ package patch
 import "reflect"
 
 type MapUpdate struct {
-	Set    map[string]interface{}
+	Set    map[string]any
 	Remove []string
 }
 
@@ -18,10 +18,10 @@ func MapRemove(key string) MapOption {
 	}
 }
 
-func MapSet(key string, value interface{}) MapOption {
+func MapSet(key string, value any) MapOption {
 	return func(m *MapUpdate) {
 		if m.Set == nil {
-			m.Set = map[string]interface{}{}
+			m.Set = map[string]any{}
 		}
 		m.Set[key] = value
 	}

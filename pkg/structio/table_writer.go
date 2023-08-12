@@ -35,12 +35,12 @@ func NewTableWriter(writer io.Writer) Writer {
 	}
 }
 
-func (w *tableWriter) Write(data interface{}) error {
+func (w *tableWriter) Write(data any) error {
 	tabWriter := tabwriter.NewWriter(w.writer, w.minWidth, w.tabWidth, w.padding, w.padchar, w.flags)
-	s := reflect.ValueOf(data).Elem()
+	t := reflect.TypeOf(data)
 
 	// if the object is an array, convert to an array and write each instance
-	if s.Kind() == reflect.Array {
+	if t.Kind() == reflect.Array || t.Kind() == reflect.Slice {
 		slice := w.toSlice(data)
 		if slice == nil {
 			return nil
@@ -55,7 +55,7 @@ func (w *tableWriter) Write(data interface{}) error {
 		for _, e := range slice {
 			w.writeData(e, tabWriter)
 		}
-	} else if s.Kind() == reflect.Map {
+	} else if t.Kind() == reflect.Map {
 		return fmt.Errorf("can not format map into table")
 	} else {
 		err := w.writeHeader(data, tabWriter)
@@ -72,7 +72,7 @@ func (w *tableWriter) Write(data interface{}) error {
 	return tabWriter.Flush()
 }
 
-func (w *tableWriter) writeHeader(data interface{}, tabWriter *tabwriter.Writer) error {
+func (w *tableWriter) writeHeader(data any, tabWriter *tabwriter.Writer) error {
 	for i, n := range structs.Names(data) {
 		if i > 0 {
 			_, err := fmt.Fprint(tabWriter, "\t")
@@ -89,7 +89,7 @@ func (w *tableWriter) writeHeader(data interface{}, tabWriter *tabwriter.Writer)
 	return err
 }
 
-func (w *tableWriter) writeData(data interface{}, tabWriter *tabwriter.Writer) error {
+func (w *tableWriter) writeData(data any, tabWriter *tabwriter.Writer) error {
 	for i, v := range structs.Values(data) {
 		if i > 0 {
 			_, err := fmt.Fprintf(tabWriter, "\t")
@@ -106,7 +106,7 @@ func (w *tableWriter) writeData(data interface{}, tabWriter *tabwriter.Writer) e
 	return err
 }
 
-func (w *tableWriter) toSlice(data interface{}) []interface{} {
+func (w *tableWriter) toSlice(data any) []any {
 	s := reflect.ValueOf(data)
 	if s.Kind() != reflect.Slice {
 		return nil
@@ -117,7 +117,7 @@ func (w *tableWriter) toSlice(data interface{}) []interface{} {
 		return nil
 	}
 
-	ret := make([]interface{}, s.Len())
+	ret := make([]any, s.Len())
 
 	for i := 0; i < s.Len(); i++ {
 		ret[i] = s.Index(i).Interface()

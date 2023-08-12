@@ -17,7 +17,7 @@ func NewYamlWriter(writer io.Writer) Writer {
 	}
 }
 
-func (w *yamlWriter) Write(data interface{}) error {
+func (w *yamlWriter) Write(data any) error {
 	bytes, err := yaml.Marshal(data)
 	if err != nil {
 		return err

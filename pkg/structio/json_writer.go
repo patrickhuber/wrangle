@@ -16,7 +16,7 @@ func NewJSONWriter(writer io.Writer) Writer {
 	}
 }
 
-func (w *jsonWriter) Write(data interface{}) error {
+func (w *jsonWriter) Write(data any) error {
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err

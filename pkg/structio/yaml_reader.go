@@ -16,11 +16,11 @@ func NewYamlReader(reader io.Reader) Reader {
 	}
 }
 
-func (r *yamlReader) Read(out interface{}) error {
+func (r *yamlReader) Read(out any) error {
 	decoder := yaml.NewDecoder(r.reader)
 	return decoder.Decode(out)
 }
 
-func ReadAsYaml(reader io.Reader, out interface{}) error {
+func ReadAsYaml(reader io.Reader, out any) error {
 	return NewYamlReader(reader).Read(out)
 }

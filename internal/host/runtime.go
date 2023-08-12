@@ -5,10 +5,9 @@ import (
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/services"
 
-	"github.com/patrickhuber/go-xplat/console"
 	"github.com/patrickhuber/go-xplat/env"
 	internal_config "github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/pkg/actions"
@@ -37,9 +36,12 @@ func New() Host {
 		}
 		return log.Default(options...)
 	})
-	container.RegisterConstructor(os.New)
-	container.RegisterConstructor(fs.NewOS)
-	container.RegisterConstructor(console.NewOS)
+	setup := setup.New()
+	di.RegisterInstance(container, setup.Console)
+	di.RegisterInstance(container, setup.Env)
+	di.RegisterInstance(container, setup.OS)
+	di.RegisterInstance(container, setup.Path)
+	di.RegisterInstance(container, setup.FS)
 	container.RegisterConstructor(config.NewProperties)
 	container.RegisterConstructor(internal_config.NewDefault)
 	container.RegisterConstructor(func(fs fs.FS, props config.Properties, cfg *config.Config) (config.Provider, error) {

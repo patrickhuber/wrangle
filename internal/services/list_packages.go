@@ -3,12 +3,13 @@ package services
 import (
 	"fmt"
 
+	"github.com/patrickhuber/go-iter"
 	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/patrickhuber/wrangle/pkg/feed"
 )
 
 type ListPackagesRequest struct {
-	Name string
+	Names []string
 }
 
 type ListPackagesItem struct {
@@ -48,44 +49,15 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 	}
 
 	var items []ListPackagesItem
+	query := svc.query(r)
+
 	for _, f := range cfg.Feeds {
 		feedSvc, err := svc.serviceFactory.Create(f)
 		if err != nil {
 			return nil, err
 		}
-		request := &feed.ListRequest{
-			Where: []*feed.ItemReadAnyOf{
-				{
-					AnyOf: []*feed.ItemReadAllOf{
-						{
-							AllOf: []*feed.ItemReadPredicate{
-								{
-									Name: r.Name,
-								},
-							},
-						},
-					},
-				},
-			},
-			Expand: &feed.ItemReadExpand{
-				Package: &feed.ItemReadExpandPackage{
-					Where: []*feed.ItemReadExpandPackageAnyOf{
-						{
-							AnyOf: []*feed.ItemReadExpandPackageAllOf{
-								{
-									AllOf: []*feed.ItemReadExpandPackagePredicate{
-										{
-											Latest: true,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-		response, err := feedSvc.List(request)
+
+		response, err := feedSvc.List(query)
 		if err != nil {
 			return nil, err
 		}
@@ -110,4 +82,41 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 	return &ListPackagesResponse{
 		Items: items,
 	}, nil
+}
+
+func (*listPackages) query(r *ListPackagesRequest) *feed.ListRequest {
+	names := iter.FromSlice(r.Names)
+	request := &feed.ListRequest{
+		Where: []*feed.ItemReadAnyOf{
+			{
+				AnyOf: iter.ToSlice(iter.Select(names, func(name string) *feed.ItemReadAllOf {
+					return &feed.ItemReadAllOf{
+						AllOf: []*feed.ItemReadPredicate{
+							{
+								Name: name,
+							},
+						},
+					}
+				})),
+			},
+		},
+		Expand: &feed.ItemReadExpand{
+			Package: &feed.ItemReadExpandPackage{
+				Where: []*feed.ItemReadExpandPackageAnyOf{
+					{
+						AnyOf: []*feed.ItemReadExpandPackageAllOf{
+							{
+								AllOf: []*feed.ItemReadExpandPackagePredicate{
+									{
+										Latest: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return request
 }

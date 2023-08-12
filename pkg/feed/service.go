@@ -311,7 +311,7 @@ func (s *service) ModifyVersions(name string, modifications []*VersionModify) (b
 }
 
 func (s *service) VersionModify(m *VersionModify) patch.Applicable {
-	properties := map[string]interface{}{}
+	properties := map[string]any{}
 	if m.NewVersion != nil {
 		properties["Version"] = patch.NewString(*m.NewVersion)
 	}
@@ -385,7 +385,7 @@ func (s *service) TargetModify(m *ManifestTargetModify) patch.Applicable {
 		options = append(options, o)
 	}
 
-	fields := map[string]interface{}{
+	fields := map[string]any{
 		"Tasks": patch.NewSlice(options...),
 	}
 	if m.NewArchitecture != nil {

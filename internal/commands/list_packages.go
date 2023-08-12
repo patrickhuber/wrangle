@@ -4,11 +4,9 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-xplat/console"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/packages"
+	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/pkg/structio"
 	"github.com/urfave/cli/v2"
 )
@@ -23,10 +21,9 @@ var ListPackages = &cli.Command{
 }
 
 type ListPackagesCommand struct {
-	FeedService feed.Service         `inject:""`
-	Logger      log.Logger           `inject:""`
-	Console     console.Console      `inject:""`
-	Options     *ListPackagesOptions `options:""`
+	Service services.ListPackages `inject:""`
+	Console console.Console       `inject:""`
+	Options *ListPackagesOptions  `options:""`
 }
 
 type ListPackagesOptions struct {
@@ -51,17 +48,12 @@ func ListPackagesAction(ctx *cli.Context) error {
 }
 
 func (cmd *ListPackagesCommand) Execute() error {
-	request := &feed.ListRequest{}
-	response, err := cmd.FeedService.List(request)
+	request := &services.ListPackagesRequest{}
+	response, err := cmd.Service.Execute(request)
 	if err != nil {
 		return err
 	}
 	w := cmd.Console.Out()
 	writer := structio.NewWriter(w, cmd.Options.Output)
-
-	packages := []*packages.Package{}
-	for _, i := range response.Items {
-		packages = append(packages, i.Package)
-	}
-	return writer.Write(packages)
+	return writer.Write(response.Items)
 }

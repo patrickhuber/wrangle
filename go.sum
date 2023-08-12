@@ -91,10 +91,14 @@ github.com/patrickhuber/go-collections v0.0.9 h1:3Ujrr3ULnyB83fTjP9hi30xapIVZjc2
 github.com/patrickhuber/go-collections v0.0.9/go.mod h1:LB/Q0wkiqOw9CqdobibGxXPfywRPL+KtZX9uyJc7T/4=
 github.com/patrickhuber/go-di v0.5.2 h1:J2n0tT2D7Lfdwz9qrxbxlHU15QiQ9e6cYmcAvclyCIg=
 github.com/patrickhuber/go-di v0.5.2/go.mod h1:2Hpv3zqwKfVzJnm1P6f17J1tzWDAFaALpfWCHwXjcmw=
+github.com/patrickhuber/go-iter v0.5.1 h1:d0RUUHvAAgxUcsfjDqEyc/jVM/hb3L8tHCM2WIBIog0=
+github.com/patrickhuber/go-iter v0.5.1/go.mod h1:2uia9zMKoUFIUZaeP5z+R56aM9/wzdl3f74GmDqAvdo=
 github.com/patrickhuber/go-log v0.2.1 h1:T5PXbGH9vyWgyrdN8QA4gDbWApK8sPYU2i/VqoYBEjE=
 github.com/patrickhuber/go-log v0.2.1/go.mod h1:Li2lmzbdUzFjpAhc9mYWYzXEiCz4QlIbm0PBYOjpCJ4=
 github.com/patrickhuber/go-shellhook v0.1.4 h1:q1XmkzCHo1HtSUwzz55UcjnoJgDfwg3t8Rj90Plph1M=
 github.com/patrickhuber/go-shellhook v0.1.4/go.mod h1:7KrxsffowuM/05UfLVvW5AedMgfhMJpaLlK+VmRtMug=
+github.com/patrickhuber/go-types v0.5.1 h1:gDbjsbSrTuDWkJd2XwTh6+YMG1A/Spequ68sc4QuvXM=
+github.com/patrickhuber/go-types v0.5.1/go.mod h1:fkCDj9+Mfd2t7x0vb8EQywoa1vhBp+G8AW7M5kz7rnc=
 github.com/patrickhuber/go-xplat v0.5.0 h1:gbFEa8vJQzFuM4wGPXKa+zMTUx55yhligZfkDFP9QYY=
 github.com/patrickhuber/go-xplat v0.5.0/go.mod h1:ZveaAmQiWcZO0nWACUrbylAF+BbGwEXdVqM3ZoEOxA4=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
@@ -138,6 +142,8 @@ golang.org/x/crypto v0.3.1-0.20221117191849-2c476679df9a/go.mod h1:hebNnKkNXi2Uz
 golang.org/x/crypto v0.7.0/go.mod h1:pYwdfH91IfpZVANVyUOhSIPZaFoJGxTFbZhFTx+dXZU=
 golang.org/x/crypto v0.12.0 h1:tFM/ta59kqch6LlvYnPa0yx5a83cL2nHflFhYKvv9Yk=
 golang.org/x/crypto v0.12.0/go.mod h1:NF0Gs7EO5K4qLn+Ylc+fih8BSTeIjAP05siRnAh98yw=
+golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 h1:EDuYyU/MkFXllv9QF9819VlI9a4tzGuCbhG0ExK9o1U=
+golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.8.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
 golang.org/x/mod v0.12.0 h1:rmsUpXtvNzj340zd98LZ4KntptpfRHwpFOHG188oHXc=

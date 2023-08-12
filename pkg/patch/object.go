@@ -3,12 +3,12 @@ package patch
 import "reflect"
 
 type ObjectUpdate struct {
-	Value map[string]interface{}
+	Value map[string]any
 }
 
 type ObjectOption func(*ObjectUpdate)
 
-func ObjectSetField(name string, value interface{}) ObjectOption {
+func ObjectSetField(name string, value any) ObjectOption {
 	return func(u *ObjectUpdate) {
 		u.Value[name] = value
 	}
@@ -16,7 +16,7 @@ func ObjectSetField(name string, value interface{}) ObjectOption {
 
 func NewObject(options ...ObjectOption) *ObjectUpdate {
 	update := &ObjectUpdate{
-		Value: make(map[string]interface{}),
+		Value: make(map[string]any),
 	}
 	for _, option := range options {
 		option(update)
@@ -41,7 +41,7 @@ func (u *ObjectUpdate) Apply(val reflect.Value) (reflect.Value, bool) {
 	return val, updated
 }
 
-func (u *ObjectUpdate) Set(val reflect.Value, value interface{}) bool {
+func (u *ObjectUpdate) Set(val reflect.Value, value any) bool {
 	switch t := value.(type) {
 	case Applicable:
 		result, ok := t.Apply(val)
@@ -59,7 +59,7 @@ func (u *ObjectUpdate) Set(val reflect.Value, value interface{}) bool {
 	}
 }
 
-func (u *ObjectUpdate) SetPtr(ptr reflect.Value, value interface{}) bool {
+func (u *ObjectUpdate) SetPtr(ptr reflect.Value, value any) bool {
 	newValue := reflect.New(ptr.Type().Elem())
 	if !u.Set(newValue.Elem(), value) {
 		return false

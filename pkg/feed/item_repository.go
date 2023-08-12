@@ -1,5 +1,7 @@
 package feed
 
+import "fmt"
+
 type ItemGetInclude struct {
 	Platforms bool
 	State     bool
@@ -57,6 +59,8 @@ func ItemSaveTemplate(save bool) ItemSaveOption {
 		i.Template = true
 	}
 }
+
+var ErrNotFound error = fmt.Errorf("not found")
 
 type ItemRepository interface {
 	List(options ...ItemGetOption) ([]*Item, error)
