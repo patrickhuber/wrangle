@@ -18,6 +18,7 @@ var ListPackages = &cli.Command{
 			Name: "output",
 		},
 	},
+	Action: ListPackagesAction,
 }
 
 type ListPackagesCommand struct {
