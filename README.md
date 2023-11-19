@@ -10,7 +10,21 @@ A tool for managing devops environments
 
 ## Getting Started
 
-There are two methods to getting wrangle on a PC. You can do manual download and install or run one of the scripts below. 
+There are three methods to getting wrangle on a PC. You can do `go install`, a manual download and install or run one of the scripts below. 
+
+### Go Install
+
+```
+go install github.com/patrickhuber/wrangle/cmd/wrangle@0.10.0
+```
+
+OR
+
+```
+git clone https://github.com/patrickhuber/wrangle
+cd wrangle
+go install cmd/wrangle@0.10.0
+```
 
 ### Scripted Install
 
