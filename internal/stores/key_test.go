@@ -12,33 +12,38 @@ func TestParse(t *testing.T) {
 	type test struct {
 		name string
 		str  string
-		key  *stores.Value
+		key  *stores.Key
 	}
 	tests := []test{
 		{"name",
-			"name", &stores.Value{
-				Secret: &stores.Secret{
-					Name:    "name",
-					Version: stores.Version{Latest: true},
-				},
-				Path: &dataptr.DataPointer{},
-			}},
-		{"name version",
-			"name@v1.0.0", &stores.Value{
+			"name", &stores.Key{
 				Secret: &stores.Secret{
 					Name: "name",
 					Version: stores.Version{
-						Major:    1,
-						Minor:    0,
-						Revision: 0,
+						Latest: true,
+						Value:  "",
 					},
 				},
 				Path: &dataptr.DataPointer{},
 			}},
-		{"name path", "name/test", &stores.Value{
+		{"name version",
+			"name@v1.0.0", &stores.Key{
+				Secret: &stores.Secret{
+					Name: "name",
+					Version: stores.Version{
+						Value:  "v1.0.0",
+						Latest: false,
+					},
+				},
+				Path: &dataptr.DataPointer{},
+			}},
+		{"name path", "name/test", &stores.Key{
 			Secret: &stores.Secret{
-				Name:    "name",
-				Version: stores.Version{Latest: true},
+				Name: "name",
+				Version: stores.Version{
+					Latest: true,
+					Value:  "",
+				},
 			},
 			Path: &dataptr.DataPointer{
 				Segments: []dataptr.Segment{
@@ -48,13 +53,12 @@ func TestParse(t *testing.T) {
 				},
 			},
 		}},
-		{"name version path", "name@v1.0.0/test", &stores.Value{
+		{"name version path", "name@v1.0.0/test", &stores.Key{
 			Secret: &stores.Secret{
 				Name: "name",
 				Version: stores.Version{
-					Major:    1,
-					Minor:    0,
-					Revision: 0,
+					Value:  "v1.0.0",
+					Latest: false,
 				},
 			},
 			Path: &dataptr.DataPointer{

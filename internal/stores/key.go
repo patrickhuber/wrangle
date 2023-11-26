@@ -1,15 +1,13 @@
 package stores
 
 import (
-	"fmt"
-	"strconv"
 	"unicode/utf8"
 
 	"github.com/patrickhuber/wrangle/internal/dataptr"
 	"github.com/patrickhuber/wrangle/internal/dataptr/parse"
 )
 
-type Value struct {
+type Key struct {
 	Secret *Secret
 	Path   *dataptr.DataPointer
 }
@@ -20,13 +18,11 @@ type Secret struct {
 }
 
 type Version struct {
-	Major    int
-	Minor    int
-	Revision int
-	Latest   bool
+	Value  string
+	Latest bool
 }
 
-func Parse(str string) (*Value, error) {
+func Parse(str string) (*Key, error) {
 	secret := &Secret{}
 	// name
 	// name@v1.0.0
@@ -49,7 +45,7 @@ func Parse(str string) (*Value, error) {
 	}
 
 	if !eat(str, '/') {
-		return &Value{
+		return &Key{
 			Secret: secret,
 			Path:   &dataptr.DataPointer{},
 		}, nil
@@ -60,7 +56,7 @@ func Parse(str string) (*Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Value{
+	return &Key{
 		Secret: secret,
 		Path:   ptr,
 	}, nil
@@ -68,9 +64,6 @@ func Parse(str string) (*Value, error) {
 
 func isLetter(r rune) bool {
 	return r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z'
-}
-func isNumber(r rune) bool {
-	return r >= '0' && r <= '9'
 }
 
 func parseName(str string) (capture string, rest string, err error) {
@@ -89,58 +82,18 @@ func parseName(str string) (capture string, rest string, err error) {
 }
 
 func parseVersion(str string) (version Version, rest string, err error) {
-	if eat(str, 'v') {
-		str = str[1:]
-	}
-
-	major, str, err := parseInteger(str)
-	if err != nil {
-		return
-	}
-
-	if !eat(str, '.') {
-		err = fmt.Errorf("unable to parse version")
-		return
-	}
-	str = str[1:]
-
-	minor, str, err := parseInteger(str)
-	if err != nil {
-		return
-	}
-
-	if !eat(str, '.') {
-		err = fmt.Errorf("unable to parse version")
-		return
-	}
-	str = str[1:]
-
-	revision, str, err := parseInteger(str)
-	if err != nil {
-		return
-	}
-
-	return Version{
-		Major:    major,
-		Minor:    minor,
-		Revision: revision,
-	}, str, nil
-}
-
-func parseInteger(str string) (int, string, error) {
 	i := 0
 	for {
-		r, size := utf8.DecodeRuneInString(str[i:])
-		if !isNumber(r) {
+		if len(str[i:]) == 0 || str[i] == '/' {
 			break
 		}
-		i += size
+		i++
 	}
-	integer, err := strconv.Atoi(str[0:i])
-	if err != nil {
-		return 0, "", err
-	}
-	return integer, str[i:], nil
+	capture := str[0:i]
+	return Version{
+		Value:  capture,
+		Latest: capture == "",
+	}, str[i:], nil
 }
 
 func eat(str string, ch rune) bool {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets"
+	"github.com/patrickhuber/wrangle/internal/stores"
 )
 
 type Store struct {
@@ -23,7 +24,7 @@ func NewKeyVault(uri string, options KeyVaultOptions) *Store {
 	}
 }
 
-func (s Store) Get(key string) (string, error) {
+func (s Store) Get(key stores.Key) (any, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return "", err
@@ -34,7 +35,11 @@ func (s Store) Get(key string) (string, error) {
 		return "", err
 	}
 
-	resp, err := client.GetSecret(context.Background(), key, "", nil)
+	version := ""
+	if !key.Secret.Version.Latest {
+		
+	}
+	resp, err := client.GetSecret(context.Background(), key.Secret.Name, version, nil)
 	if err != nil {
 		return "", err
 	}
