@@ -2,6 +2,9 @@ package azure
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets"
@@ -40,7 +43,33 @@ func (s Store) Get(key stores.Key) (any, error) {
 		return "", err
 	}
 
+	if resp.ContentType != nil && *resp.ContentType == "application/json" {
+		return s.decodeJSON(*resp.Value)
+	}
 	return *resp.Value, nil
+}
+
+func (s Store) decodeJSON(str string) (any, error) {
+	dec := json.NewDecoder(strings.NewReader(str))
+	t, err := dec.Token()
+	if err != nil {
+		return nil, err
+	}
+	if d, ok := t.(json.Delim); ok {
+		switch d {
+		case '[':
+			var array []any
+			err = json.Unmarshal([]byte(str), &array)
+			return array, err
+		case '{':
+			var object map[string]any
+			err = json.Unmarshal([]byte(str), &object)
+			return object, err
+		default:
+			return nil, fmt.Errorf("unexpected json delimiter when decoding secret json %c", d)
+		}
+	}
+	return nil, fmt.Errorf("unexpected input when decoding secret json. Input does not represent a JSON object or array")
 }
 
 func (s Store) Lookup(key stores.Key) (any, bool, error) {

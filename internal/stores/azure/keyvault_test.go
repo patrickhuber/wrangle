@@ -45,4 +45,24 @@ func TestKeyVault(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, str, "value")
 	})
+
+	t.Run("get json object", func(t *testing.T) {
+		s := azure.NewKeyVault(uri, nil)
+		d, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-object"}})
+		require.NoError(t, err)
+		// {"test":"value"}
+		expected := map[string]any{
+			"test": "value",
+		}
+		require.Equal(t, expected, d)
+	})
+
+	t.Run("get json array", func(t *testing.T) {
+		s := azure.NewKeyVault(uri, nil)
+		d, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-array"}})
+		require.NoError(t, err)
+		// ["one", "two", "three"]
+		expected := []any{"one", "two", "three"}
+		require.Equal(t, expected, d)
+	})
 }
