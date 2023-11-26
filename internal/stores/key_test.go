@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParse(t *testing.T) {
+func TestKeyParse(t *testing.T) {
 	type test struct {
 		name string
 		str  string
