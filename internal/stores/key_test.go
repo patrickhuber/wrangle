@@ -17,7 +17,7 @@ func TestParse(t *testing.T) {
 	tests := []test{
 		{"name",
 			"name", &stores.Key{
-				Secret: &stores.Secret{
+				Data: &stores.Data{
 					Name: "name",
 					Version: stores.Version{
 						Latest: true,
@@ -28,7 +28,7 @@ func TestParse(t *testing.T) {
 			}},
 		{"name version",
 			"name@v1.0.0", &stores.Key{
-				Secret: &stores.Secret{
+				Data: &stores.Data{
 					Name: "name",
 					Version: stores.Version{
 						Value:  "v1.0.0",
@@ -38,7 +38,7 @@ func TestParse(t *testing.T) {
 				Path: &dataptr.DataPointer{},
 			}},
 		{"name path", "name/test", &stores.Key{
-			Secret: &stores.Secret{
+			Data: &stores.Data{
 				Name: "name",
 				Version: stores.Version{
 					Latest: true,
@@ -54,7 +54,7 @@ func TestParse(t *testing.T) {
 			},
 		}},
 		{"name version path", "name@v1.0.0/test", &stores.Key{
-			Secret: &stores.Secret{
+			Data: &stores.Data{
 				Name: "name",
 				Version: stores.Version{
 					Value:  "v1.0.0",

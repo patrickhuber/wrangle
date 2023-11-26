@@ -8,11 +8,11 @@ import (
 )
 
 type Key struct {
-	Secret *Secret
-	Path   *dataptr.DataPointer
+	Data *Data
+	Path *dataptr.DataPointer
 }
 
-type Secret struct {
+type Data struct {
 	Name    string
 	Version Version
 }
@@ -23,14 +23,14 @@ type Version struct {
 }
 
 func Parse(str string) (*Key, error) {
-	secret := &Secret{}
+	data := &Data{}
 	// name
 	// name@v1.0.0
 	name, str, err := parseName(str)
 	if err != nil {
 		return nil, err
 	}
-	secret.Name = name
+	data.Name = name
 
 	if eat(str, '@') {
 		str = str[1:]
@@ -39,15 +39,15 @@ func Parse(str string) (*Key, error) {
 		if err != nil {
 			return nil, err
 		}
-		secret.Version = version
+		data.Version = version
 	} else {
-		secret.Version = Version{Latest: true}
+		data.Version = Version{Latest: true}
 	}
 
 	if !eat(str, '/') {
 		return &Key{
-			Secret: secret,
-			Path:   &dataptr.DataPointer{},
+			Data: data,
+			Path: &dataptr.DataPointer{},
 		}, nil
 	}
 	str = str[1:]
@@ -57,8 +57,8 @@ func Parse(str string) (*Key, error) {
 		return nil, err
 	}
 	return &Key{
-		Secret: secret,
-		Path:   ptr,
+		Data: data,
+		Path: ptr,
 	}, nil
 }
 

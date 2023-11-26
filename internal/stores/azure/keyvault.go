@@ -36,10 +36,11 @@ func (s Store) Get(key stores.Key) (any, error) {
 	}
 
 	version := ""
-	if !key.Secret.Version.Latest {
-		
+	if !key.Data.Version.Latest {
+		version = key.Data.Version.Value
 	}
-	resp, err := client.GetSecret(context.Background(), key.Secret.Name, version, nil)
+
+	resp, err := client.GetSecret(context.Background(), key.Data.Name, version, nil)
 	if err != nil {
 		return "", err
 	}
