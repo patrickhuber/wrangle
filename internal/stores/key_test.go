@@ -72,7 +72,7 @@ func TestParse(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			p, err := stores.Parse(test.str)
+			p, err := stores.ParseKey(test.str)
 			require.NoError(t, err)
 			require.NotNil(t, p)
 			require.Equal(t, test.key, p)

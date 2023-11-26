@@ -22,7 +22,7 @@ type Version struct {
 	Latest bool
 }
 
-func Parse(str string) (*Key, error) {
+func ParseKey(str string) (*Key, error) {
 	data := &Data{}
 	// name
 	// name@v1.0.0
