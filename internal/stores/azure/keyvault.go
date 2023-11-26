@@ -18,21 +18,16 @@ type KeyVaultOptions struct {
 }
 
 // NewKeyVault returns a new Store implemented by key vault
-func NewKeyVault(uri string, options KeyVaultOptions) *Store {
+func NewKeyVault(uri string, options *KeyVaultOptions) *Store {
 	return &Store{
 		uri: uri,
 	}
 }
 
 func (s Store) Get(key stores.Key) (any, error) {
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	client, err := s.client()
 	if err != nil {
-		return "", err
-	}
-
-	client, err := azsecrets.NewClient(s.uri, cred, nil)
-	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	version := ""
@@ -46,4 +41,50 @@ func (s Store) Get(key stores.Key) (any, error) {
 	}
 
 	return *resp.Value, nil
+}
+
+func (s Store) Lookup(key stores.Key) (any, bool, error) {
+	client, err := s.client()
+	if err != nil {
+		return nil, false, err
+	}
+
+	version := ""
+	if !key.Data.Version.Latest {
+		version = key.Data.Version.Value
+	}
+
+	resp := client.NewListSecretVersionsPager(key.Data.Name, nil)
+	for resp.More() {
+		page, err := resp.NextPage(context.Background())
+		if err != nil {
+			return nil, false, err
+		}
+		for _, secret := range page.SecretListResult.Value {
+			if version != "" && version != secret.ID.Version() {
+				continue
+			}
+
+			resp, err := client.GetSecret(
+				context.Background(),
+				key.Data.Name,
+				version, nil)
+			if err != nil {
+				return nil, false, err
+			}
+			return *resp.Value, true, nil
+		}
+	}
+
+	// unable to find secret
+	return nil, false, nil
+}
+
+func (s Store) client() (*azsecrets.Client, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return azsecrets.NewClient(s.uri, cred, nil)
 }
