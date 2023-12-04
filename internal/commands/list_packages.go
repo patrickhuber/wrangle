@@ -7,7 +7,7 @@ import (
 	"github.com/patrickhuber/go-xplat/console"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/pkg/structio"
+	"github.com/patrickhuber/wrangle/internal/structio"
 	"github.com/urfave/cli/v2"
 )
 

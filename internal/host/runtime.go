@@ -4,17 +4,18 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
+	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/setup"
+	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 
 	"github.com/patrickhuber/go-xplat/env"
-	internal_config "github.com/patrickhuber/wrangle/internal/config"
-	"github.com/patrickhuber/wrangle/pkg/actions"
-	"github.com/patrickhuber/wrangle/pkg/archive"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/feed/git"
+	"github.com/patrickhuber/wrangle/internal/actions"
+	"github.com/patrickhuber/wrangle/internal/archive"
+	"github.com/patrickhuber/wrangle/internal/feed"
+	"github.com/patrickhuber/wrangle/internal/feed/git"
 )
 
 type runtime struct {
@@ -42,12 +43,7 @@ func New() Host {
 	di.RegisterInstance(container, setup.OS)
 	di.RegisterInstance(container, setup.Path)
 	di.RegisterInstance(container, setup.FS)
-	container.RegisterConstructor(config.NewProperties)
-	container.RegisterConstructor(internal_config.NewDefault)
-	container.RegisterConstructor(func(fs fs.FS, props config.Properties, cfg *config.Config) (config.Provider, error) {
-		provider := config.NewFileProvider(fs, props)
-		return config.NewDefaultableProvider(provider, cfg), nil
-	})
+
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(actions.NewDownloadProvider)
 	container.RegisterConstructor(actions.NewExtractProvider)
@@ -56,10 +52,26 @@ func New() Host {
 	container.RegisterConstructor(actions.NewMetadataProvider)
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
+
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewBootstrap)
 	container.RegisterConstructor(services.NewListPackages)
+	container.RegisterConstructor(func(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (services.Configuration, error) {
+		localDefault := config.NewLocalDefault()
+		globalDefault, err := config.NewGlobalDefault(os, e, path)
+		if err != nil {
+			return services.Configuration{}, err
+		}
+		return services.Configuration{
+			Local:  config.NewLocalProvider(localDefault, os, fs, path),
+			Global: config.NewGlobalProvider(globalDefault, os, e, path, fs),
+		}, nil
+	})
+
+	container.RegisterConstructor(config.NewGlobalProvider)
+	container.RegisterConstructor(config.NewLocalProvider)
+
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
 	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
 	container.RegisterConstructor(services.NewExport)

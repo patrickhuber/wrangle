@@ -5,15 +5,15 @@ import (
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
+	"github.com/patrickhuber/wrangle/internal/enums"
+	"github.com/patrickhuber/wrangle/internal/global"
 	setup "github.com/patrickhuber/wrangle/internal/host"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/enums"
-	"github.com/patrickhuber/wrangle/pkg/global"
 	"github.com/urfave/cli/v2"
 )
 
@@ -82,11 +82,14 @@ func main() {
 			if err != nil {
 				return err
 			}
-			properties, err := di.Resolve[config.Properties](resolver)
+			environment, err := di.Resolve[env.Environment](resolver)
 			if err != nil {
 				return err
 			}
-			properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
+			_, ok := environment.Lookup(global.EnvConfig)
+			if !ok {
+				environment.Set(global.EnvConfig, globalConfigFile)
+			}
 			return nil
 		},
 	}

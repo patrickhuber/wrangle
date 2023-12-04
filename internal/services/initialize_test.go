@@ -8,6 +8,7 @@ import (
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/stretchr/testify/require"
@@ -44,22 +45,30 @@ func (tester *initializeTester) Run(t *testing.T) {
 	path, err := di.Resolve[*filepath.Processor](container)
 	require.NoError(t, err)
 
-	globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
+	pwd, err := opsys.WorkingDirectory()
+	require.NoError(t, err)
+
+	localWrangleDirectory := path.Join(pwd, global.LocalConfigurationDirectoryName)
+	localWrangleConfig := path.Join(pwd, global.LocalConfigurationFileName)
 
 	initialize, err := di.Resolve[services.Initialize](container)
 	require.NoError(t, err)
 
 	req := &services.InitializeRequest{
-		ApplicationName: "",
+		Directory: pwd,
 	}
+
 	err = initialize.Execute(req)
 	require.NoError(t, err)
 
 	fs, err := di.Resolve[fs.FS](container)
 	require.NoError(t, err)
 
-	ok, err := fs.Exists(globalConfigFile)
+	ok, err := fs.Exists(localWrangleDirectory)
 	require.NoError(t, err)
-	require.True(t, ok)
+	require.True(t, ok, "'%s' does not exist", localWrangleDirectory)
 
+	ok, err = fs.Exists(localWrangleConfig)
+	require.NoError(t, err)
+	require.True(t, ok, "'%s' does not exist", localWrangleConfig)
 }

@@ -39,7 +39,7 @@ tar -xfz ${ARCHIVE}
 echo "cleanup: ${ARCHIVE}"
 rm ${ARCHIVE}
 
-# create the global configuration
+# create the global configuration and install packages
 echo "installing"
 sudo wrangle bootstrap
 

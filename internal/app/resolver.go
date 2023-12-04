@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/pkg/global"
+	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/urfave/cli/v2"
 )
 

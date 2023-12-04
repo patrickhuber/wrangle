@@ -11,12 +11,17 @@ import (
 )
 
 func TestListPackages(t *testing.T) {
+
 	h := host.NewTest(platform.Linux, nil, nil)
+	defer h.Close()
+
 	svc, err := di.Resolve[services.ListPackages](h.Container())
 	require.NoError(t, err)
+
 	request := &services.ListPackagesRequest{
 		Names: []string{"test"},
 	}
+
 	response, err := svc.Execute(request)
 	require.NoError(t, err)
 	require.NotNil(t, response)

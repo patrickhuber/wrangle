@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets"
+	"github.com/patrickhuber/wrangle/internal/dataptr"
 	"github.com/patrickhuber/wrangle/internal/stores"
 )
 
@@ -27,10 +28,10 @@ func NewKeyVault(uri string, options *KeyVaultOptions) *Store {
 	}
 }
 
-func (s Store) Get(key stores.Key) (any, error) {
+func (s Store) Get(key stores.Key) (any, bool, error) {
 	client, err := s.client()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	version := ""
@@ -40,13 +41,15 @@ func (s Store) Get(key stores.Key) (any, error) {
 
 	resp, err := client.GetSecret(context.Background(), key.Data.Name, version, nil)
 	if err != nil {
-		return "", err
+		// check not found error
+		return "", false, err
 	}
 
 	if resp.ContentType != nil && *resp.ContentType == "application/json" {
-		return s.decodeJSON(*resp.Value)
+		v, err := s.decodeJSON(*resp.Value)
+		return v, err == nil, err
 	}
-	return *resp.Value, nil
+	return *resp.Value, true, nil
 }
 
 func (s Store) decodeJSON(str string) (any, error) {
@@ -72,41 +75,48 @@ func (s Store) decodeJSON(str string) (any, error) {
 	return nil, fmt.Errorf("unexpected input when decoding secret json. Input does not represent a JSON object or array")
 }
 
-func (s Store) Lookup(key stores.Key) (any, bool, error) {
+func (s Store) List() ([]stores.Key, error) {
 	client, err := s.client()
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
+	var keys []stores.Key
 
-	version := ""
-	if !key.Data.Version.Latest {
-		version = key.Data.Version.Value
-	}
-
-	resp := client.NewListSecretVersionsPager(key.Data.Name, nil)
+	resp := client.NewListSecretsPager(nil)
+	latest := map[string]string{}
 	for resp.More() {
 		page, err := resp.NextPage(context.Background())
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
 		for _, secret := range page.SecretListResult.Value {
-			if version != "" && version != secret.ID.Version() {
-				continue
+			name := secret.ID.Name()
+			version := secret.ID.Version()
+
+			// cache the latest version
+			if _, ok := latest[name]; !ok {
+				resp, err := client.GetSecret(
+					context.Background(),
+					name,
+					version, nil)
+				if err != nil {
+					return nil, err
+				}
+				latest[name] = resp.ID.Version()
 			}
 
-			resp, err := client.GetSecret(
-				context.Background(),
-				key.Data.Name,
-				version, nil)
-			if err != nil {
-				return nil, false, err
-			}
-			return *resp.Value, true, nil
+			keys = append(keys, stores.Key{
+				Data: &stores.Data{
+					Name: name,
+					Version: stores.Version{
+						Value: version,
+					},
+				},
+				Path: &dataptr.DataPointer{},
+			})
 		}
 	}
-
-	// unable to find secret
-	return nil, false, nil
+	return keys, nil
 }
 
 func (s Store) client() (*azsecrets.Client, error) {

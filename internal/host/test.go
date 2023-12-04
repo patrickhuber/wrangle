@@ -10,20 +10,21 @@ import (
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/arch"
+	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/go-xplat/setup"
-	internal_config "github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/services"
 
-	"github.com/patrickhuber/wrangle/pkg/actions"
-	"github.com/patrickhuber/wrangle/pkg/archive"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/feed/memory"
-	"github.com/patrickhuber/wrangle/pkg/packages"
+	"github.com/patrickhuber/wrangle/internal/actions"
+	"github.com/patrickhuber/wrangle/internal/archive"
+	"github.com/patrickhuber/wrangle/internal/feed"
+	"github.com/patrickhuber/wrangle/internal/feed/memory"
+	"github.com/patrickhuber/wrangle/internal/packages"
 )
 
 type test struct {
@@ -41,7 +42,11 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 		rw.WriteHeader(http.StatusNotFound)
 		rw.Write([]byte("not found"))
 	}))
+
+	// create the container
 	container := di.NewContainer()
+
+	// create the xplat host
 	h := setup.NewTest(
 		setup.Platform(platform),
 		setup.Arch(arch.AMD64),
@@ -49,9 +54,18 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 		setup.Args(args...))
 	di.RegisterInstance(container, h.OS)
 	di.RegisterInstance(container, h.Console)
+
+	// set default environment variables here
 	if h.OS.Platform().IsWindows() {
 		h.Env.Set("PROGRAMDATA", "c:\\programdata")
 	}
+	h.Env.Set(global.EnvConfig, h.Path.Join(h.OS.Home(), ".wrangle", "config.yml"))
+
+	// setup the filesystem here
+	h.FS.MkdirAll(h.OS.Home(), 0644)
+	pwd, _ := h.OS.WorkingDirectory()
+	h.FS.MkdirAll(pwd, 0644)
+
 	di.RegisterInstance(container, h.Env)
 	di.RegisterInstance(container, h.FS)
 	di.RegisterInstance(container, h.Path)
@@ -60,17 +74,6 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 		container: container,
 	}
 	di.RegisterInstance(container, server)
-	container.RegisterConstructor(func(opsys os.OS, path *filepath.Processor) config.Properties {
-		properties := config.NewProperties()
-		globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
-		properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
-		return properties
-	})
-	container.RegisterConstructor(internal_config.NewTest)
-	container.RegisterConstructor(func(fs fs.FS, props config.Properties, cfg *config.Config) (config.Provider, error) {
-		provider := config.NewFileProvider(fs, props)
-		return config.NewDefaultableProvider(provider, cfg), nil
-	})
 	container.RegisterConstructor(t.newFeedProvider)
 	container.RegisterConstructor(func() log.Logger { return log.Memory() })
 	container.RegisterConstructor(archive.NewFactory)
@@ -80,10 +83,27 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 	container.RegisterConstructor(actions.NewRunner)
 	container.RegisterConstructor(actions.NewMetadataProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
+
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewBootstrap)
 	container.RegisterConstructor(services.NewListPackages)
+	container.RegisterConstructor(func(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (services.Configuration, error) {
+		localDefault := config.NewLocalDefault()
+		globalDefault, err := config.NewGlobalTest(os, e, path)
+		if err != nil {
+			return services.Configuration{}, err
+		}
+		globalProvider := config.NewGlobalProvider(globalDefault, os, e, path, fs)
+		err = globalProvider.Set(globalDefault)
+		if err != nil {
+			return services.Configuration{}, err
+		}
+		return services.Configuration{
+			Local:  config.NewLocalProvider(localDefault, os, fs, path),
+			Global: globalProvider,
+		}, nil
+	})
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
 	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
 	container.RegisterConstructor(services.NewExport)

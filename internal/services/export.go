@@ -3,9 +3,10 @@ package services
 import (
 	"fmt"
 
+	"github.com/patrickhuber/wrangle/internal/template"
+
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/console"
-	"github.com/patrickhuber/go-xplat/env"
 )
 
 type ExportRequest struct {
@@ -17,16 +18,16 @@ type Export interface {
 }
 
 type export struct {
-	env     env.Environment
-	shells  map[string]shellhook.Shell
-	console console.Console
+	shells        map[string]shellhook.Shell
+	console       console.Console
+	configuration Configuration
 }
 
-func NewExport(env env.Environment, shells map[string]shellhook.Shell, console console.Console) Export {
+func NewExport(shells map[string]shellhook.Shell, console console.Console, configuration Configuration) Export {
 	return &export{
-		env:     env,
-		shells:  shells,
-		console: console,
+		shells:        shells,
+		console:       console,
+		configuration: configuration,
 	}
 }
 
@@ -35,8 +36,25 @@ func (e *export) Execute(r *ExportRequest) error {
 	if !ok {
 		return fmt.Errorf("invalid shell %s", shell)
 	}
-	vars := e.env.Export()
+
+	cfg, err := e.configuration.Get()
+	if err != nil {
+		return err
+	}
+
+	vars := map[string]string{}
+
+	// loop through the variables and interpolate each against the stores
+	for k, v := range cfg.Spec.Environment {
+		// set v as a template and extract any vars
+		t := template.New(v)
+		value, err := t.Evaluate()
+		if err != nil {
+			return err
+		}
+		vars[k] = fmt.Sprintf("%v", value)
+	}
 	rendered := shell.Export(vars)
-	_, err := fmt.Fprint(e.console.Out(), rendered)
+	_, err = fmt.Fprint(e.console.Out(), rendered)
 	return err
 }

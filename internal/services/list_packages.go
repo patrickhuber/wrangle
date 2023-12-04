@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-iter"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/feed"
+	"github.com/patrickhuber/wrangle/internal/feed"
 )
 
 type ListPackagesRequest struct {
@@ -27,31 +26,31 @@ type ListPackages interface {
 
 type listPackages struct {
 	serviceFactory feed.ServiceFactory
-	configProvider config.Provider
+	configuration  Configuration
 }
 
 func NewListPackages(
 	serviceFactory feed.ServiceFactory,
-	configProvider config.Provider) ListPackages {
+	configuration Configuration) ListPackages {
 	return &listPackages{
 		serviceFactory: serviceFactory,
-		configProvider: configProvider,
+		configuration:  configuration,
 	}
 }
 
 func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse, error) {
-	cfg, err := svc.configProvider.Get()
+	cfg, err := svc.configuration.Get()
 	if err != nil {
 		return nil, err
 	}
-	if len(cfg.Feeds) == 0 {
+	if len(cfg.Spec.Feeds) == 0 {
 		return nil, fmt.Errorf("the global config file contains no feeds")
 	}
 
 	var items []ListPackagesItem
 	query := svc.query(r)
 
-	for _, f := range cfg.Feeds {
+	for _, f := range cfg.Spec.Feeds {
 		feedSvc, err := svc.serviceFactory.Create(f)
 		if err != nil {
 			return nil, err

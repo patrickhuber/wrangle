@@ -10,7 +10,6 @@ import (
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -51,10 +50,10 @@ func RunInstallTest(t *testing.T,
 	opsys, err := di.Resolve[os.OS](container)
 	require.Nil(t, err)
 
-	reader, err := di.Resolve[config.Provider](container)
+	manager, err := di.Resolve[services.Configuration](container)
 	require.Nil(t, err)
 
-	cfg, err := reader.Get()
+	cfg, err := manager.Get()
 	require.Nil(t, err)
 
 	globalConfigPath := path.Join(opsys.Home(), ".wrangle", "config.yml")

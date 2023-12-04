@@ -29,27 +29,26 @@ func TestKeyVault(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, err := s.Get(stores.Key{Data: &stores.Data{Name: "test"}})
+		d, ok, err := s.Get(stores.Key{Data: &stores.Data{Name: "test"}})
 		require.NoError(t, err)
+		require.True(t, ok)
 		str, ok := d.(string)
 		require.True(t, ok)
 		require.Equal(t, str, "value")
 	})
 
-	t.Run("lookup", func(t *testing.T) {
+	t.Run("list", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, ok, err := s.Lookup(stores.Key{Data: &stores.Data{Name: "test"}})
+		keys, err := s.List()
 		require.NoError(t, err)
-		require.True(t, ok)
-		str, ok := d.(string)
-		require.True(t, ok)
-		require.Equal(t, str, "value")
+		require.Equal(t, 3, len(keys))
 	})
 
 	t.Run("get json object", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-object"}})
+		d, ok, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-object"}})
 		require.NoError(t, err)
+		require.True(t, ok)
 		// {"test":"value"}
 		expected := map[string]any{
 			"test": "value",
@@ -59,8 +58,9 @@ func TestKeyVault(t *testing.T) {
 
 	t.Run("get json array", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-array"}})
+		d, ok, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-array"}})
 		require.NoError(t, err)
+		require.True(t, ok)
 		// ["one", "two", "three"]
 		expected := []any{"one", "two", "three"}
 		require.Equal(t, expected, d)

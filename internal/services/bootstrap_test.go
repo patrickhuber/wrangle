@@ -50,9 +50,19 @@ func RunBootstrapTest(t *testing.T,
 	path, err := di.Resolve[*filepath.Processor](container)
 	require.Nil(t, err)
 
-	globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
+	rootDirectory := "/opt/wrangle/"
+	if opsys.Platform().IsWindows() {
+		rootDirectory = "c:/ProgramData/wrangle/"
+	}
+	binDirectory := path.Join(rootDirectory, "bin")
+	packageDirectory := path.Join(rootDirectory, "packages")
+	globalConfigFile := path.Join(rootDirectory, "config.yml")
+
 	req := &services.BootstrapRequest{
-		ApplicationName: "wrangle",
+		ConfigFile:       globalConfigFile,
+		RootDirectory:    rootDirectory,
+		BinDirectory:     binDirectory,
+		PackageDirectory: packageDirectory,
 	}
 	err = bootstrap.Execute(req)
 	require.Nil(t, err)

@@ -6,14 +6,14 @@ import (
 
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
-	"github.com/patrickhuber/wrangle/pkg/actions"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/feed"
-	"github.com/patrickhuber/wrangle/pkg/packages"
+	"github.com/patrickhuber/wrangle/internal/actions"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/feed"
+	"github.com/patrickhuber/wrangle/internal/packages"
 )
 
 type install struct {
-	configProvider   config.Provider
+	configuration    Configuration
 	fs               fs.FS
 	serviceFactory   feed.ServiceFactory
 	runner           actions.Runner
@@ -35,14 +35,14 @@ func NewInstall(
 	serviceFactory feed.ServiceFactory,
 	runner actions.Runner,
 	o os.OS,
-	configProvider config.Provider,
+	configuration Configuration,
 	metadataProvider actions.MetadataProvider) Install {
 	return &install{
 		fs:               fs,
 		serviceFactory:   serviceFactory,
 		runner:           runner,
 		opsys:            o,
-		configProvider:   configProvider,
+		configuration:    configuration,
 		metadataProvider: metadataProvider,
 	}
 }
@@ -69,16 +69,16 @@ func (i *install) Execute(r *InstallRequest) error {
 		return err
 	}
 
-	cfg, err := i.configProvider.Get()
+	cfg, err := i.configuration.Get()
 	if err != nil {
 		return err
 	}
 
-	if len(cfg.Feeds) == 0 {
+	if len(cfg.Spec.Feeds) == 0 {
 		return fmt.Errorf("the global config file contains no feeds")
 	}
 
-	items, err := i.getItems(r.Package, r.Version, cfg)
+	items, err := i.getItems(r.Package, r.Version, &cfg)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (i *install) Execute(r *InstallRequest) error {
 
 			oneVersionMatched = true
 			// create a metadata object for the task runs so the task knows to which package it belongs
-			meta := i.metadataProvider.Get(cfg, r.Package, v.Version)
+			meta := i.metadataProvider.Get(&cfg, r.Package, v.Version)
 
 			for _, target := range v.Manifest.Package.Targets {
 
@@ -122,7 +122,7 @@ func (i *install) Execute(r *InstallRequest) error {
 
 func (i *install) getItems(name string, version string, cfg *config.Config) ([]*feed.Item, error) {
 	items := []*feed.Item{}
-	for _, f := range cfg.Feeds {
+	for _, f := range cfg.Spec.Feeds {
 		svc, err := i.serviceFactory.Create(f)
 		if err != nil {
 			return nil, err
