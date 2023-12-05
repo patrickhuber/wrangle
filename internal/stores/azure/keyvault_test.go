@@ -29,7 +29,7 @@ func TestKeyVault(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, ok, err := s.Get(stores.Key{Data: &stores.Data{Name: "test"}})
+		d, ok, err := s.Get(stores.Key{Data: stores.Data{Name: "test"}})
 		require.NoError(t, err)
 		require.True(t, ok)
 		str, ok := d.(string)
@@ -46,7 +46,7 @@ func TestKeyVault(t *testing.T) {
 
 	t.Run("get json object", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, ok, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-object"}})
+		d, ok, err := s.Get(stores.Key{Data: stores.Data{Name: "json-object"}})
 		require.NoError(t, err)
 		require.True(t, ok)
 		// {"test":"value"}
@@ -58,7 +58,7 @@ func TestKeyVault(t *testing.T) {
 
 	t.Run("get json array", func(t *testing.T) {
 		s := azure.NewKeyVault(uri, nil)
-		d, ok, err := s.Get(stores.Key{Data: &stores.Data{Name: "json-array"}})
+		d, ok, err := s.Get(stores.Key{Data: stores.Data{Name: "json-array"}})
 		require.NoError(t, err)
 		require.True(t, ok)
 		// ["one", "two", "three"]

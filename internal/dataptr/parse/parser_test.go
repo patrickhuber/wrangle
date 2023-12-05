@@ -12,25 +12,25 @@ func TestParse(t *testing.T) {
 	type test struct {
 		name string
 		str  string
-		ptr  *dataptr.DataPointer
+		ptr  dataptr.DataPointer
 	}
 	tests := []test{
 
-		{"name", "name", &dataptr.DataPointer{
+		{"name", "name", dataptr.DataPointer{
 			Segments: []dataptr.Segment{
 				dataptr.Element{
 					Name: "name",
 				},
 			},
 		}},
-		{"index", "0", &dataptr.DataPointer{
+		{"index", "0", dataptr.DataPointer{
 			Segments: []dataptr.Segment{
 				dataptr.Index{
 					Index: 0,
 				},
 			},
 		}},
-		{"constraint", "key=value", &dataptr.DataPointer{
+		{"constraint", "key=value", dataptr.DataPointer{
 			Segments: []dataptr.Segment{
 				dataptr.Constraint{
 					Key:   "key",
@@ -38,7 +38,7 @@ func TestParse(t *testing.T) {
 				},
 			},
 		}},
-		{"multi name", "parent/child", &dataptr.DataPointer{
+		{"multi name", "parent/child", dataptr.DataPointer{
 			Segments: []dataptr.Segment{
 				dataptr.Element{
 					Name: "parent",
@@ -48,7 +48,7 @@ func TestParse(t *testing.T) {
 				},
 			},
 		}},
-		{"name constraint", "name/key=value", &dataptr.DataPointer{
+		{"name constraint", "name/key=value", dataptr.DataPointer{
 			Segments: []dataptr.Segment{
 				dataptr.Element{
 					Name: "name",

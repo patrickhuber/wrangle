@@ -9,31 +9,31 @@ import (
 	"github.com/patrickhuber/wrangle/internal/dataptr/token"
 )
 
-func Parse(str string) (*dataptr.DataPointer, error) {
+func Parse(str string) (dataptr.DataPointer, error) {
 	lexer := lex.New(str)
 	return parse(lexer)
 }
 
-func parse(lexer *lex.Lexer) (*dataptr.DataPointer, error) {
+func parse(lexer *lex.Lexer) (dataptr.DataPointer, error) {
 	var segments []dataptr.Segment
 	for {
 		// can be a single segment
 		segment, err := parseSegment(lexer)
 		if err != nil {
-			return nil, err
+			return dataptr.DataPointer{}, err
 		}
 		segments = append(segments, segment)
 
 		// or multiple
 		ok, err := eat(lexer, token.Slash)
 		if err != nil {
-			return nil, err
+			return dataptr.DataPointer{}, err
 		}
 		if !ok {
 			break
 		}
 	}
-	return &dataptr.DataPointer{
+	return dataptr.DataPointer{
 		Segments: segments,
 	}, nil
 }

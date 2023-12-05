@@ -12,40 +12,40 @@ func TestKeyParse(t *testing.T) {
 	type test struct {
 		name string
 		str  string
-		key  *stores.Key
+		key  stores.Key
 	}
 	tests := []test{
 		{"name",
-			"name", &stores.Key{
-				Data: &stores.Data{
+			"name", stores.Key{
+				Data: stores.Data{
 					Name: "name",
 					Version: stores.Version{
 						Latest: true,
 						Value:  "",
 					},
 				},
-				Path: &dataptr.DataPointer{},
+				Path: dataptr.DataPointer{},
 			}},
 		{"name version",
-			"name@v1.0.0", &stores.Key{
-				Data: &stores.Data{
+			"name@v1.0.0", stores.Key{
+				Data: stores.Data{
 					Name: "name",
 					Version: stores.Version{
 						Value:  "v1.0.0",
 						Latest: false,
 					},
 				},
-				Path: &dataptr.DataPointer{},
+				Path: dataptr.DataPointer{},
 			}},
-		{"name path", "name/test", &stores.Key{
-			Data: &stores.Data{
+		{"name path", "name/test", stores.Key{
+			Data: stores.Data{
 				Name: "name",
 				Version: stores.Version{
 					Latest: true,
 					Value:  "",
 				},
 			},
-			Path: &dataptr.DataPointer{
+			Path: dataptr.DataPointer{
 				Segments: []dataptr.Segment{
 					dataptr.Element{
 						Name: "test",
@@ -53,15 +53,15 @@ func TestKeyParse(t *testing.T) {
 				},
 			},
 		}},
-		{"name version path", "name@v1.0.0/test", &stores.Key{
-			Data: &stores.Data{
+		{"name version path", "name@v1.0.0/test", stores.Key{
+			Data: stores.Data{
 				Name: "name",
 				Version: stores.Version{
 					Value:  "v1.0.0",
 					Latest: false,
 				},
 			},
-			Path: &dataptr.DataPointer{
+			Path: dataptr.DataPointer{
 				Segments: []dataptr.Segment{
 					dataptr.Element{
 						Name: "test",

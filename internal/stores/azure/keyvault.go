@@ -22,12 +22,11 @@ type KeyVaultOptions struct {
 }
 
 // NewKeyVault returns a new Store implemented by key vault
-func NewKeyVault(uri string, options *KeyVaultOptions) *Store {
-	return &Store{
+func NewKeyVault(uri string, options *KeyVaultOptions) Store {
+	return Store{
 		uri: uri,
 	}
 }
-
 func (s Store) Get(key stores.Key) (any, bool, error) {
 	client, err := s.client()
 	if err != nil {
@@ -106,13 +105,13 @@ func (s Store) List() ([]stores.Key, error) {
 			}
 
 			keys = append(keys, stores.Key{
-				Data: &stores.Data{
+				Data: stores.Data{
 					Name: name,
 					Version: stores.Version{
 						Value: version,
 					},
 				},
-				Path: &dataptr.DataPointer{},
+				Path: dataptr.DataPointer{},
 			})
 		}
 	}

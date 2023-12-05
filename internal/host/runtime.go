@@ -10,6 +10,8 @@ import (
 	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/stores"
+	"github.com/patrickhuber/wrangle/internal/stores/azure"
 
 	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/wrangle/internal/actions"
@@ -24,6 +26,8 @@ type runtime struct {
 
 func New() Host {
 	container := di.NewContainer()
+
+	// cross platform abstraction
 	container.RegisterConstructor(env.NewOS)
 	container.RegisterConstructor(func(e env.Environment) log.Logger {
 		level, ok := e.Lookup("WRANGLE_LOG_LEVEL")
@@ -44,15 +48,19 @@ func New() Host {
 	di.RegisterInstance(container, setup.Path)
 	di.RegisterInstance(container, setup.FS)
 
+	// actions
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(actions.NewDownloadProvider)
 	container.RegisterConstructor(actions.NewExtractProvider)
 	container.RegisterConstructor(actions.NewFactory)
 	container.RegisterConstructor(actions.NewRunner)
 	container.RegisterConstructor(actions.NewMetadataProvider)
+
+	// feeds
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 
+	// application services
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewBootstrap)
@@ -68,14 +76,16 @@ func New() Host {
 			Global: config.NewGlobalProvider(globalDefault, os, e, path, fs),
 		}, nil
 	})
-
-	container.RegisterConstructor(config.NewGlobalProvider)
-	container.RegisterConstructor(config.NewLocalProvider)
-
-	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
-	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
+
+	// shells
+	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
+	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
+
+	// stores
+	container.RegisterConstructor(func() stores.Factory { return azure.NewFactory() })
+
 	return &runtime{
 		container: container,
 	}

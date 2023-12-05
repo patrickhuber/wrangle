@@ -25,8 +25,26 @@ type Feed struct {
 	URI  string `json:"uri" yaml:"uri"`
 }
 
-type Store struct{}
-type Environment struct{}
+/*
+A store for key vaule pairs
+
+	type: azure.keyvault
+	properties:
+		uri: {key vault uri} // (required)
+
+	type: github.secrets
+	properties:
+		org: {org name}	// (required)
+		repo: {repo name} // (required)
+*/
+type Store struct {
+	// discriminator type (azure.keyvault, ...)
+	Type string `json:"type" yaml:"type"`
+
+	// properties of the specific type
+	Properties map[string]string
+}
+
 type Package struct {
 	Name    string
 	Version string

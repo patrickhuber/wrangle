@@ -1,6 +1,7 @@
 package stores
 
 import (
+	"strings"
 	"unicode/utf8"
 
 	"github.com/patrickhuber/wrangle/internal/dataptr"
@@ -8,8 +9,8 @@ import (
 )
 
 type Key struct {
-	Data *Data
-	Path *dataptr.DataPointer
+	Data Data
+	Path dataptr.DataPointer
 }
 
 type Data struct {
@@ -22,13 +23,26 @@ type Version struct {
 	Latest bool
 }
 
-func ParseKey(str string) (*Key, error) {
-	data := &Data{}
+func (k Key) String() string {
+	builder := strings.Builder{}
+	builder.WriteString(k.Data.Name)
+	if !k.Data.Version.Latest {
+		builder.WriteRune('@')
+		builder.WriteString(k.Data.Version.Value)
+	}
+	if len(k.Path.Segments) != 0 {
+		
+	}
+	return builder.String()
+}
+
+func ParseKey(str string) (Key, error) {
+	data := Data{}
 	// name
 	// name@v1.0.0
 	name, str, err := parseName(str)
 	if err != nil {
-		return nil, err
+		return Key{}, err
 	}
 	data.Name = name
 
@@ -37,7 +51,7 @@ func ParseKey(str string) (*Key, error) {
 		var version Version
 		version, str, err = parseVersion(str)
 		if err != nil {
-			return nil, err
+			return Key{}, err
 		}
 		data.Version = version
 	} else {
@@ -45,18 +59,18 @@ func ParseKey(str string) (*Key, error) {
 	}
 
 	if !eat(str, '/') {
-		return &Key{
+		return Key{
 			Data: data,
-			Path: &dataptr.DataPointer{},
+			Path: dataptr.DataPointer{},
 		}, nil
 	}
 	str = str[1:]
 
 	ptr, err := parse.Parse(str)
 	if err != nil {
-		return nil, err
+		return Key{}, err
 	}
-	return &Key{
+	return Key{
 		Data: data,
 		Path: ptr,
 	}, nil

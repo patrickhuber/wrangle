@@ -19,12 +19,14 @@ import (
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/stores"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/memory"
 	"github.com/patrickhuber/wrangle/internal/packages"
+	memstore "github.com/patrickhuber/wrangle/internal/stores/memory"
 )
 
 type test struct {
@@ -74,8 +76,14 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 		container: container,
 	}
 	di.RegisterInstance(container, server)
+
+	// feeds
 	container.RegisterConstructor(t.newFeedProvider)
+
+	// logging
 	container.RegisterConstructor(func() log.Logger { return log.Memory() })
+
+	// actions
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(actions.NewDownloadProvider)
 	container.RegisterConstructor(actions.NewExtractProvider)
@@ -84,10 +92,13 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 	container.RegisterConstructor(actions.NewMetadataProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 
+	// application services
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewInitialize)
 	container.RegisterConstructor(services.NewBootstrap)
 	container.RegisterConstructor(services.NewListPackages)
+	container.RegisterConstructor(services.NewExport)
+	container.RegisterConstructor(services.NewHook)
 	container.RegisterConstructor(func(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (services.Configuration, error) {
 		localDefault := config.NewLocalDefault()
 		globalDefault, err := config.NewGlobalTest(os, e, path)
@@ -104,10 +115,15 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 			Global: globalProvider,
 		}, nil
 	})
+
+	// test shells
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
 	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
-	container.RegisterConstructor(services.NewExport)
-	container.RegisterConstructor(services.NewHook)
+
+	// stores
+	container.RegisterConstructor(stores.NewRegistry)
+	container.RegisterConstructor(memstore.NewFactory)
+
 	return t
 }
 
