@@ -84,7 +84,8 @@ func New() Host {
 	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
 
 	// stores
-	container.RegisterConstructor(func() stores.Factory { return azure.NewFactory() })
+	container.RegisterConstructor(azure.NewFactory)
+	container.RegisterConstructor(stores.NewRegistry)
 
 	return &runtime{
 		container: container,

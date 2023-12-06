@@ -100,6 +100,8 @@ func main() {
 		commands.List,
 		commands.Get,
 		commands.Initialize,
+		commands.Export,
+		commands.Hook,
 	}
 	err = app.Run(console.Args())
 	handle(err)

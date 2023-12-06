@@ -27,24 +27,31 @@ func (f File) Read() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	defer file.Close()
+
 	e, err := f.getEncoding(f.file)
 	if err != nil {
 		return Config{}, err
 	}
+
 	cfg := Config{}
 	err = Decode(e, &cfg, file)
 	return cfg, err
 }
 
 func (f File) Write(cfg Config) error {
-	file, err := f.fs.OpenFile(f.file, os.O_TRUNC|os.O_CREATE, 0644)
+
+	file, err := f.fs.OpenFile(f.file, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
+
 	e, err := f.getEncoding(f.file)
 	if err != nil {
 		return err
 	}
+
 	return Encode(e, file, cfg)
 }
 

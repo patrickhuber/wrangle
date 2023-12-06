@@ -11,10 +11,9 @@ import (
 )
 
 var Hook = &cli.Command{
-	Name:    "hook",
-	Aliases: []string{"h"},
-	Action:  HookAction,
-	Flags:   []cli.Flag{},
+	Name:   "hook",
+	Action: HookAction,
+	Flags:  []cli.Flag{},
 }
 
 type HookCommand struct {
