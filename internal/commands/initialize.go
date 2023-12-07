@@ -21,6 +21,7 @@ var Initialize = &cli.Command{
 			Value:   false,
 		},
 	},
+	CustomHelpTemplate: CommandHelpTemplate,
 }
 
 type InitializeCommand struct {

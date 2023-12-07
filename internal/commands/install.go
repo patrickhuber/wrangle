@@ -12,8 +12,10 @@ import (
 
 // install subcommand
 var Install = &cli.Command{
-	Name:   "install",
-	Action: InstallAction,
+	Name:               "install",
+	Action:             InstallAction,
+	CustomHelpTemplate: CommandHelpTemplate,
+	Hidden:             true,
 }
 
 type InstallCommand struct {

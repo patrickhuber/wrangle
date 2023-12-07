@@ -10,11 +10,13 @@ import (
 )
 
 var Export = &cli.Command{
-	Name:   "export",
-	Action: ExportAction,
-	CustomHelpTemplate: cli.SubcommandHelpTemplate + `
+	Name:        "export",
+	Action:      ExportAction,
+	Description: "",
+	CustomHelpTemplate: CommandHelpTemplate + `
 ARGS:
-   shell	(bash|powershell)`,
+   shell	(bash|powershell)
+`,
 	ArgsUsage: "<shell>",
 }
 

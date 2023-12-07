@@ -1,6 +1,10 @@
 package azure
 
-import "github.com/patrickhuber/wrangle/internal/stores"
+import (
+	"fmt"
+
+	"github.com/patrickhuber/wrangle/internal/stores"
+)
 
 type Factory struct {
 }
@@ -14,6 +18,9 @@ func (f Factory) Name() string {
 }
 
 func (f Factory) Create(properties map[string]string) (stores.Store, error) {
-	uri := properties["uri"]
+	uri, ok := properties["uri"]
+	if !ok {
+		return nil, fmt.Errorf("invalid azure.keyvault store config. missing required property 'uri'")
+	}
 	return NewKeyVault(uri, nil), nil
 }

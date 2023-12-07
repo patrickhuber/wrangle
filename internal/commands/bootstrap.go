@@ -21,6 +21,7 @@ var Bootstrap = &cli.Command{
 			Value:   false,
 		},
 	},
+	CustomHelpTemplate: CommandHelpTemplate,
 }
 
 type BootstrapCommand struct {

@@ -27,7 +27,9 @@ func Encode(enc Encoding, dst io.Writer, src any) error {
 	var e Encoder
 	switch enc {
 	case Yaml:
-		e = yaml.NewEncoder(dst)
+		yamlEncoder := yaml.NewEncoder(dst)
+		yamlEncoder.SetIndent(2)
+		e = yamlEncoder
 	case Json:
 		e = json.NewEncoder(dst)
 	default:

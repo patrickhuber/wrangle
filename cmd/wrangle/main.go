@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 
 	"github.com/patrickhuber/go-di"
@@ -105,12 +106,45 @@ func main() {
 	// register
 	app.Commands = []*cli.Command{
 		commands.Bootstrap,
-		// commands.List,
-		// commands.Get,
+		commands.List,
+		commands.Get,
 		commands.Initialize,
 		commands.Export,
 		commands.Hook,
 	}
+
+	// this is a hack to get global options printed in the commands
+	// see https://github.com/urfave/cli/issues/734#issuecomment-597344796
+	globalOptionsTemplate := `
+{{if .VisibleFlags}}GLOBAL OPTIONS:
+   {{range $index, $option := .VisibleFlags}}{{if $index}}
+   {{end}}{{$option}}{{end}}
+{{end}}
+`
+	origHelpPrinterCustom := cli.HelpPrinterCustom
+	defer func() {
+		cli.HelpPrinterCustom = origHelpPrinterCustom
+	}()
+	cli.HelpPrinterCustom = func(out io.Writer, tmpl string, data any, customFuncs map[string]any) {
+
+		// inject the application name
+		appName := func() string {
+			return app.Name
+		}
+		if customFuncs == nil {
+			customFuncs = map[string]any{}
+		}
+		customFuncs["appname"] = appName
+
+		// map the data to a map?
+		origHelpPrinterCustom(out, tmpl, data, customFuncs)
+
+		// run on the app context if this is a command
+		if data != app {
+			origHelpPrinterCustom(app.Writer, globalOptionsTemplate, app, nil)
+		}
+	}
+
 	err = app.Run(console.Args())
 	handle(err)
 }

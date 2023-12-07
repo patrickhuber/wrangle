@@ -14,6 +14,11 @@ var Hook = &cli.Command{
 	Name:   "hook",
 	Action: HookAction,
 	Flags:  []cli.Flag{},
+	CustomHelpTemplate: CommandHelpTemplate + `
+ARGS:
+   shell	(bash|powershell)
+`,
+	ArgsUsage: "<shell>",
 }
 
 type HookCommand struct {

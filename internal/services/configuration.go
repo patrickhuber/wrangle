@@ -308,7 +308,7 @@ func (c Configuration) GlobalConfiguration() (config.Config, error) {
 	// load the file
 	cfg, err := config.ReadFile(c.fs, globalDefault)
 	if err != nil {
-		return config.Config{}, fmt.Errorf("%w : unable to load global configuration file '%s'", err, globalDefault)
+		return config.Config{}, fmt.Errorf("unable to load global configuration file. Suggestion run: `wrangle bootstrap`. %w", err)
 	}
 	return cfg, nil
 }
