@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
-	filesystem "github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/actions"
@@ -16,32 +14,6 @@ import (
 type TestFile struct {
 	Name    string
 	Content string
-}
-
-type extractTest struct {
-	archiveName string
-	fs          filesystem.FS
-	path        *filepath.Processor
-	files       []*TestFile
-	action      *actions.Action
-}
-
-func SetupExtractTest(t *testing.T) *extractTest {
-	fs := filesystem.NewMemory()
-	files := []*TestFile{
-		{
-			Name:    "1.txt",
-			Content: "test",
-		},
-	}
-	for _, f := range files {
-		require.Nil(t, fs.WriteFile(f.Name, []byte(f.Content), 0644))
-	}
-	et := &extractTest{
-		fs:    fs,
-		files: files,
-	}
-	return et
 }
 
 func TestCanExtract(t *testing.T) {
