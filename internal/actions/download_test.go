@@ -45,8 +45,7 @@ func TestDownload(t *testing.T) {
 	configuration, err := di.Resolve[services.Configuration](h.Container())
 	require.NoError(t, err)
 
-	cfg, err := configuration.Get()
-	require.NoError(t, err)
+	cfg := configuration.GlobalDefault()
 
 	metadata := actions.NewMetadataProvider(path).Get(&cfg, "test", "1.0.0")
 	err = provider.Execute(task, metadata)

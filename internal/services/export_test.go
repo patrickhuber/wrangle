@@ -9,6 +9,7 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/host"
@@ -31,15 +32,18 @@ func TestExport(t *testing.T) {
 			h := host.NewTest(platform.Linux, nil, nil)
 			container := h.Container()
 
+			fs, err := di.Resolve[fs.FS](container)
+			require.NoError(t, err)
+
 			configuration, err := di.Resolve[services.Configuration](container)
 			require.NoError(t, err)
 
-			cfg, err := configuration.Global.Get()
-			require.NoError(t, err)
-
+			cfg := configuration.GlobalDefault()
 			clear(cfg.Spec.Environment)
 			cfg.Spec.Environment["TEST"] = "TEST"
-			err = configuration.Global.Set(cfg)
+
+			globalConfigPath := configuration.DefaultGlobalConfigFilePath()
+			err = config.WriteFile(fs, globalConfigPath, cfg)
 			require.NoError(t, err)
 
 			result, err := di.Invoke(container, services.NewExport)
@@ -91,6 +95,7 @@ func TestVariableReplacement(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.shell, func(t *testing.T) {
+
 			h := host.NewTest(platform.Linux, nil, nil)
 			container := h.Container()
 
@@ -98,7 +103,11 @@ func TestVariableReplacement(t *testing.T) {
 			configuration, err := di.Resolve[services.Configuration](container)
 			require.NoError(t, err)
 
-			err = configuration.Global.Set(cfg)
+			fs, err := di.Resolve[fs.FS](container)
+			require.NoError(t, err)
+
+			globalPath := configuration.DefaultGlobalConfigFilePath()
+			err = config.WriteFile(fs, globalPath, cfg)
 			require.NoError(t, err)
 
 			// create the export service

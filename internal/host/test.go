@@ -10,13 +10,9 @@ import (
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/arch"
-	"github.com/patrickhuber/go-xplat/env"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/go-xplat/setup"
-	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/stores"
@@ -99,22 +95,7 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 	container.RegisterConstructor(services.NewListPackages)
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
-	container.RegisterConstructor(func(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (services.Configuration, error) {
-		localDefault := config.NewLocalDefault()
-		globalDefault, err := config.NewGlobalTest(os, e, path)
-		if err != nil {
-			return services.Configuration{}, err
-		}
-		globalProvider := config.NewGlobalProvider(globalDefault, os, e, path, fs)
-		err = globalProvider.Set(globalDefault)
-		if err != nil {
-			return services.Configuration{}, err
-		}
-		return services.Configuration{
-			Local:  config.NewLocalProvider(localDefault, os, fs, path),
-			Global: globalProvider,
-		}, nil
-	})
+	container.RegisterConstructor(services.NewTestConfiguration)
 
 	// test shells
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))

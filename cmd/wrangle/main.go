@@ -97,8 +97,8 @@ func main() {
 	// register
 	app.Commands = []*cli.Command{
 		commands.Bootstrap,
-		commands.List,
-		commands.Get,
+		// commands.List,
+		// commands.Get,
 		commands.Initialize,
 		commands.Export,
 		commands.Hook,

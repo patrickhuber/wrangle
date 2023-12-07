@@ -58,7 +58,6 @@ func (i *initialize) Execute(r *InitializeRequest) error {
 		}
 		i.logger.Infof("force = true, overwriting '%s'")
 	}
-
 	cfg := config.Config{
 		ApiVersion: config.ConfigApiVersion,
 		Spec: config.Spec{
@@ -68,7 +67,5 @@ func (i *initialize) Execute(r *InitializeRequest) error {
 			Packages:    []config.Package{},
 		},
 	}
-
-	p := config.NewFile(i.fs, localWrangleFile)
-	return p.Write(cfg)
+	return config.WriteFile(i.fs, localWrangleFile, cfg)
 }

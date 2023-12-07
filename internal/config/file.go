@@ -10,52 +10,39 @@ import (
 	"github.com/patrickhuber/go-xplat/fs"
 )
 
-type File struct {
-	file string
-	fs   fs.FS
-}
-
-func NewFile(fs fs.FS, file string) File {
-	return File{
-		file: file,
-		fs:   fs,
-	}
-}
-
-func (f File) Read() (Config, error) {
-	file, err := f.fs.Open(f.file)
+func ReadFile(fs fs.FS, file string) (Config, error) {
+	f, err := fs.Open(file)
 	if err != nil {
 		return Config{}, err
 	}
-	defer file.Close()
+	defer f.Close()
 
-	e, err := f.getEncoding(f.file)
+	e, err := getEncoding(file)
 	if err != nil {
 		return Config{}, err
 	}
 
 	cfg := Config{}
-	err = Decode(e, &cfg, file)
+	err = Decode(e, &cfg, f)
 	return cfg, err
 }
 
-func (f File) Write(cfg Config) error {
-
-	file, err := f.fs.OpenFile(f.file, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0644)
+func WriteFile(fs fs.FS, file string, cfg Config) error {
+	f, err := fs.OpenFile(file, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer f.Close()
 
-	e, err := f.getEncoding(f.file)
+	e, err := getEncoding(file)
 	if err != nil {
 		return err
 	}
 
-	return Encode(e, file, cfg)
+	return Encode(e, f, cfg)
 }
 
-func (f *File) getEncoding(file string) (Encoding, error) {
+func getEncoding(file string) (Encoding, error) {
 	var encoding Encoding
 	switch strings.ToLower(filepath.Ext(file)) {
 	case ".yml", ".yaml":
@@ -63,7 +50,7 @@ func (f *File) getEncoding(file string) (Encoding, error) {
 	case ".json":
 		encoding = Json
 	default:
-		return encoding, fmt.Errorf("unable to determine encoding for file '%s'", f.file)
+		return encoding, fmt.Errorf("unable to determine encoding for file '%s'", file)
 	}
 	return encoding, nil
 }

@@ -50,10 +50,21 @@ func NewBootstrap(
 func (b *bootstrap) Execute(r *BootstrapRequest) error {
 	b.logger.Debugln("bootstrap")
 
-	cfg := b.configuration.Global.Default()
+	// load the default configuration path
+	// overwrite if the config file is set as a request parameter
+	var globalConfigFilePath = r.ConfigFile
+	if globalConfigFilePath == "" {
+		globalConfigFilePath = b.configuration.DefaultGlobalConfigFilePath()
+	}
+
+	// fetch the global default from the configuration service we do it here so
+	cfg := b.configuration.GlobalDefault()
+
+	// overwrite any parameters specified in the request
 	cfg = b.overwriteConfigDefaults(cfg, r)
 
-	err := b.writeGlobalConfig(cfg)
+	// write the changes back to the config file
+	err := config.WriteFile(b.fs, globalConfigFilePath, cfg)
 	if err != nil {
 		return err
 	}
@@ -106,11 +117,6 @@ func (b *bootstrap) overwriteConfigDefaults(cfg config.Config, req *BootstrapReq
 	}
 
 	return cfg
-}
-
-func (b *bootstrap) writeGlobalConfig(cfg config.Config) error {
-	file := cfg.Spec.Environment[global.EnvConfig]
-	return config.NewFile(b.fs, file).Write(cfg)
 }
 
 func (b *bootstrap) installPackages(cfg config.Config) error {

@@ -4,11 +4,7 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/setup"
-	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
@@ -65,17 +61,7 @@ func New() Host {
 	container.RegisterConstructor(services.NewInstall)
 	container.RegisterConstructor(services.NewBootstrap)
 	container.RegisterConstructor(services.NewListPackages)
-	container.RegisterConstructor(func(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (services.Configuration, error) {
-		localDefault := config.NewLocalDefault()
-		globalDefault, err := config.NewGlobalDefault(os, e, path)
-		if err != nil {
-			return services.Configuration{}, err
-		}
-		return services.Configuration{
-			Local:  config.NewLocalProvider(localDefault, os, fs, path),
-			Global: config.NewGlobalProvider(globalDefault, os, e, path, fs),
-		}, nil
-	})
+	container.RegisterConstructor(services.NewConfiguration)
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
 
