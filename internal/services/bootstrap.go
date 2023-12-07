@@ -63,8 +63,15 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 	// overwrite any parameters specified in the request
 	cfg = b.overwriteConfigDefaults(cfg, r)
 
+	// ensure the path exists
+	globalConfigFolder := b.path.Dir(globalConfigFilePath)
+	err := b.fs.MkdirAll(globalConfigFolder, 0700)
+	if err != nil {
+		return err
+	}
+
 	// write the changes back to the config file
-	err := config.WriteFile(b.fs, globalConfigFilePath, cfg)
+	err = config.WriteFile(b.fs, globalConfigFilePath, cfg)
 	if err != nil {
 		return err
 	}
@@ -79,7 +86,7 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 		return err
 	}
 
-	err = b.setEnvironmentVariables(cfg)
+	err = b.setGlobalEnvironmentVariables(cfg)
 	if err != nil {
 		return err
 	}
@@ -135,10 +142,16 @@ func (b *bootstrap) installPackages(cfg config.Config) error {
 	return nil
 }
 
-func (b *bootstrap) setEnvironmentVariables(cfg config.Config) error {
+func (b *bootstrap) setGlobalEnvironmentVariables(cfg config.Config) error {
 	keys := []string{global.EnvBin, global.EnvConfig, global.EnvRoot, global.EnvPackages}
 	for _, k := range keys {
-		v := cfg.Spec.Environment[k]
+		v, ok := cfg.Spec.Environment[k]
+		if !ok {
+			continue
+		}
+		if v == "" {
+			continue
+		}
 		err := b.environment.Set(k, v)
 		if err != nil {
 			return err

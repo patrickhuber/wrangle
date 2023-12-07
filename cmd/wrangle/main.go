@@ -77,19 +77,27 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
+
 			globalConfigFile := ctx.String(global.FlagConfig)
+			if globalConfigFile == "" {
+				return nil
+			}
+
 			resolver, err := app.GetResolver(ctx)
 			if err != nil {
 				return err
 			}
+
 			environment, err := di.Resolve[env.Environment](resolver)
 			if err != nil {
 				return err
 			}
+
 			_, ok := environment.Lookup(global.EnvConfig)
 			if !ok {
 				environment.Set(global.EnvConfig, globalConfigFile)
 			}
+
 			return nil
 		},
 	}

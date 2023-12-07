@@ -306,5 +306,9 @@ func (c Configuration) GlobalConfiguration() (config.Config, error) {
 	}
 
 	// load the file
-	return config.ReadFile(c.fs, globalDefault)
+	cfg, err := config.ReadFile(c.fs, globalDefault)
+	if err != nil {
+		return config.Config{}, fmt.Errorf("%w : unable to load global configuration file '%s'", err, globalDefault)
+	}
+	return cfg, nil
 }
