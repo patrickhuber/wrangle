@@ -238,7 +238,7 @@ const (
 	LocalConfigFilePattern = "[.]wrangle[.](yml|yaml|json)"
 )
 
-func (c Configuration) LocalConfigurations() ([]config.Config, error) {
+func (c Configuration) LocalConfigurationFiles() ([]string, error) {
 
 	// look in the current directory
 	pwd, err := c.os.WorkingDirectory()
@@ -261,7 +261,7 @@ func (c Configuration) LocalConfigurations() ([]config.Config, error) {
 	}
 
 	// loop through all the directories looking for configuration files
-	var cfgs []config.Config
+	var filePaths []string
 	for _, dir := range dirs {
 
 		files, err := c.fs.ReadDir(dir)
@@ -283,16 +283,29 @@ func (c Configuration) LocalConfigurations() ([]config.Config, error) {
 			}
 
 			filePath := c.path.Join(dir, file.Name())
-
-			// load the configuration file
-			cfg, err := config.ReadFile(c.fs, filePath)
-			if err != nil {
-				return nil, err
-			}
-
-			cfgs = append(cfgs, cfg)
+			filePaths = append(filePaths, filePath)
 		}
 	}
+	return filePaths, nil
+}
+
+func (c Configuration) LocalConfigurations() ([]config.Config, error) {
+
+	filePaths, err := c.LocalConfigurationFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	var cfgs []config.Config
+	for _, filePath := range filePaths {
+		// load the configuration file
+		cfg, err := config.ReadFile(c.fs, filePath)
+		if err != nil {
+			return nil, err
+		}
+		cfgs = append(cfgs, cfg)
+	}
+
 	return cfgs, nil
 }
 
