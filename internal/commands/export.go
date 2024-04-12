@@ -22,6 +22,7 @@ ARGS:
 
 type ExportCommand struct {
 	Export  services.Export `inject:""`
+	Diff    services.Diff   `inject:""`
 	Options ExportOptions
 }
 
@@ -51,8 +52,9 @@ func ExportAction(ctx *cli.Context) error {
 }
 
 func (cmd *ExportCommand) Execute() error {
-	req := &services.ExportRequest{
-		Shell: cmd.Options.Shell,
+	changes, err := cmd.Diff.Execute()
+	if err != nil {
+		return err
 	}
-	return cmd.Export.Execute(req)
+	return cmd.Export.Execute(cmd.Options.Shell, changes)
 }

@@ -62,6 +62,7 @@ func New() Host {
 	container.RegisterConstructor(services.NewBootstrap)
 	container.RegisterConstructor(services.NewListPackages)
 	container.RegisterConstructor(services.NewConfiguration)
+	container.RegisterConstructor(services.NewDiff)
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
 

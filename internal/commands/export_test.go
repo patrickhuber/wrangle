@@ -13,7 +13,12 @@ import (
 func TestExport(t *testing.T) {
 	h := host.NewTest(platform.Linux, nil, nil)
 	container := h.Container()
-	result, err := di.Resolve[services.Export](container)
+
+	export, err := di.Resolve[services.Export](container)
 	require.NoError(t, err)
-	require.NotNil(t, result)
+	require.NotNil(t, export)
+
+	diff, err := di.Resolve[services.Diff](container)
+	require.NoError(t, err)
+	require.NotNil(t, diff)
 }
