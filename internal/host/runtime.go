@@ -5,6 +5,7 @@ import (
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/go-xplat/setup"
+	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
@@ -26,7 +27,7 @@ func New() Host {
 	// cross platform abstraction
 	container.RegisterConstructor(env.NewOS)
 	container.RegisterConstructor(func(e env.Environment) log.Logger {
-		level, ok := e.Lookup("WRANGLE_LOG_LEVEL")
+		level, ok := e.Lookup(global.EnvLogLevel)
 		if !ok {
 			return log.Default()
 		}

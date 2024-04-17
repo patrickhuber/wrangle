@@ -159,3 +159,16 @@ Under the package folder, each version has its own folder as well. For example, 
 ### Packages
 
 ### Versions
+
+## Logging and Debugging
+
+To enable logging, set the WRANGLE_LOG_LEVEL environment variable. 
+
+The following values are accepted:
+
+| level     | description |
+| --------- | ----------- |
+| debug     | all, verbose line level | 
+| info      | informational, warnings and errors |
+| warn      | warnings and errors |
+| error     | errors only (default) |

@@ -18,4 +18,5 @@ RUN openssl s_client -showcerts -connect proxy.golang.org:443 </dev/null 2>/dev/
 RUN update-ca-certificates
 
 COPY --from=build /go/src/dist/wrangle /usr/local/bin/wrangle
-RUN export WRANGLE_LOG_LEVEL=debug;wrangle bootstrap
+RUN export WRANGLE_LOG_LEVEL=debug && \
+    wrangle bootstrap
