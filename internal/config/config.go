@@ -3,11 +3,13 @@ package config
 const (
 	TagLatest = "latest"
 
-	ConfigApiVersion = "wrangle/config/v1"
+	ApiVersion = "wrangle/v1"
+	Kind       = "Config"
 )
 
 type Config struct {
 	ApiVersion string            `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string            `json:"kind" yaml:"kind"`
 	Metadata   map[string]string `json:"metadata" yaml:"metadata"`
 	Spec       Spec              `json:"spec" yaml:"spec"`
 }

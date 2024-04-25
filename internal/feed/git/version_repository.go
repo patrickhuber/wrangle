@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
+	"github.com/mitchellh/mapstructure"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/internal/feed"
@@ -69,12 +70,37 @@ func (s *versionRepository) GetManifest(name string, version string) (*packages.
 	if err != nil {
 		return nil, fmt.Errorf("%w %s", err, manifestPath)
 	}
+
+	// validate with mapstructure package
+	// convert to object
+	var obj any
+	err = yaml.Unmarshal(content, &obj)
+	if err != nil {
+		return nil, err
+	}
+
+	// then map to struct and validate
 	manifest := &packages.Manifest{}
-	err = yaml.Unmarshal(content, &manifest)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:      manifest,
+		ErrorUnused: true,
+		ErrorUnset:  true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = decoder.Decode(obj)
+	if err != nil {
+		return nil, err
+	}
+
 	return manifest, err
 }
 
 func (s *versionRepository) Save(name string, version *packages.Version) error {
+	s.logger.Tracef("versionRepository.Save %s@%s", name, version.Version)
+
 	manifest := version.Manifest
 
 	versionPath := s.path.Join(s.workingDirectory, name, version.Version)

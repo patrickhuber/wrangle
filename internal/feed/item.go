@@ -10,7 +10,7 @@ type Item struct {
 }
 
 type State struct {
-	LatestVersion string
+	LatestVersion string `mapstructure:"version" yaml:"version" json:"version"`
 }
 
 type Platforms struct {

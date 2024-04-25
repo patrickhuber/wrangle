@@ -110,52 +110,66 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 }
 
 func (t *test) newFeedProvider(server *httptest.Server, opsys os.OS, logger log.Logger) feed.Provider {
-	createItem := func(pkg, version string) *feed.Item {
-		extension := ""
-		if opsys.Platform() == os.MockWindowsPlatform {
-			extension = ".exe"
-		}
-		return &feed.Item{
+	type packageVersion struct {
+		pkg      string
+		latest   string
+		versions []string
+	}
+	packageVersions := []packageVersion{
+		{"test", "1.0.0", []string{"1.0.0", "0.8.0"}},
+		{"wrangle", "1.0.0", []string{"0.8.0", "0.9.0", "1.0.0"}},
+		{"shim", "1.0.0", []string{"0.8.0", "0.9.0", "1.0.0"}},
+	}
+	extension := ""
+	if opsys.Platform() == os.MockWindowsPlatform {
+		extension = ".exe"
+	}
+	var items []*feed.Item
+	for _, pv := range packageVersions {
+		items = append(items, &feed.Item{
 			State: &feed.State{
-				LatestVersion: version,
+				LatestVersion: pv.latest,
 			},
 			Package: &packages.Package{
-				Name: pkg,
-				Versions: []*packages.Version{
-					{
-						Version: version,
-						Manifest: &packages.Manifest{
-							Package: &packages.ManifestPackage{
-								Name:    pkg,
-								Version: version,
-								Targets: []*packages.ManifestTarget{
-									{
-										Platform:     opsys.Platform(),
-										Architecture: opsys.Architecture(),
-										Steps: []*packages.ManifestStep{
-											{
-												Action: "download",
-												With: map[string]any{
-													"url": server.URL + "/test",
-													"out": fmt.Sprintf("%s-%s-%s-%s%s", pkg, version, opsys.Platform(), opsys.Architecture(), extension),
+				Name: pv.pkg,
+				Versions: func() []*packages.Version {
+					var versions []*packages.Version
+					for _, v := range pv.versions {
+						versions = append(versions, &packages.Version{
+							Version: v,
+							Manifest: &packages.Manifest{
+								Package: &packages.ManifestPackage{
+									Name:    pv.pkg,
+									Version: v,
+									Targets: []*packages.ManifestTarget{
+										{
+											Platform:     opsys.Platform(),
+											Architecture: opsys.Architecture(),
+											Steps: []*packages.ManifestStep{
+												{
+													Action: "download",
+													With: map[string]any{
+														"url": server.URL + "/test",
+														"out": fmt.Sprintf("%s-%s-%s-%s%s", pv.pkg, v, opsys.Platform(), opsys.Architecture(), extension),
+													},
 												},
 											},
 										},
 									},
 								},
 							},
-						},
-					},
-				},
+						})
+					}
+					return versions
+				}(),
 			},
-		}
+		})
 	}
 
 	return memory.NewProvider(
 		logger,
-		createItem("wrangle", "1.0.0"),
-		createItem("shim", "1.0.0"),
-		createItem("test", "1.0.0"))
+		items...,
+	)
 }
 
 func (t *test) Close() error {

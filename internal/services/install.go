@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/patrickhuber/go-log"
+
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/wrangle/internal/actions"
@@ -19,6 +21,7 @@ type install struct {
 	runner           actions.Runner
 	opsys            os.OS
 	metadataProvider actions.MetadataProvider
+	log              log.Logger
 }
 
 type InstallRequest struct {
@@ -36,7 +39,8 @@ func NewInstall(
 	runner actions.Runner,
 	o os.OS,
 	configuration Configuration,
-	metadataProvider actions.MetadataProvider) Install {
+	metadataProvider actions.MetadataProvider,
+	log log.Logger) Install {
 	return &install{
 		fs:               fs,
 		serviceFactory:   serviceFactory,
@@ -44,6 +48,7 @@ func NewInstall(
 		opsys:            o,
 		configuration:    configuration,
 		metadataProvider: metadataProvider,
+		log:              log,
 	}
 }
 
@@ -69,11 +74,13 @@ func (i *install) Execute(r *InstallRequest) error {
 		return err
 	}
 
+	i.log.Debugln("fetching configuration")
 	cfg, err := i.configuration.Get()
 	if err != nil {
 		return err
 	}
 
+	i.log.Debugf("global configuration file contains %d feeds", len(cfg.Spec.Feeds))
 	if len(cfg.Spec.Feeds) == 0 {
 		return fmt.Errorf("the global config file contains no feeds")
 	}
@@ -83,6 +90,7 @@ func (i *install) Execute(r *InstallRequest) error {
 		return err
 	}
 
+	i.log.Debugf("found %d packages matching %s@%s", len(items), r.Package, r.Version)
 	if len(items) == 0 {
 		return fmt.Errorf("package %s not found", r.Package)
 	}
@@ -91,26 +99,44 @@ func (i *install) Execute(r *InstallRequest) error {
 	for _, item := range items {
 		for _, v := range item.Package.Versions {
 
+			i.log.Tracef("package: %s, version: %s", v.Manifest.Package.Name, v.Manifest.Package.Version)
 			oneVersionMatched = true
+
 			// create a metadata object for the task runs so the task knows to which package it belongs
 			meta := i.metadataProvider.Get(&cfg, r.Package, v.Version)
+
+			oneTargetMatched := false
 
 			for _, target := range v.Manifest.Package.Targets {
 
 				// check if target matches, architecture and platform
 				// we don't want to run windows actions on linux
 				if !i.targetIsMatch(target) {
+					i.log.Debugf("unable to match target %s %s", target.Platform, target.Architecture)
 					continue
 				}
 
+				i.log.Debugf("matched target %s %s", target.Platform, target.Architecture)
+				oneTargetMatched = true
+
 				// run the steps
-				for _, task := range target.Steps {
-					tsk := i.packageTargetTaskToTask(task)
-					err = i.runner.Run(tsk, meta)
+				i.log.Debugf("found %d steps", len(target.Steps))
+				for _, step := range target.Steps {
+
+					i.log.Debugf("running task %s", step.Action)
+
+					action := i.transformManifestStepToAction(step)
+
+					err = i.runner.Run(action, meta)
+
 					if err != nil {
 						return err
 					}
 				}
+			}
+
+			if !oneTargetMatched {
+				return fmt.Errorf("no targets in the package %s@%s match %s %s", r.Package, r.Version, i.opsys.Platform(), i.opsys.Architecture())
 			}
 		}
 	}
@@ -145,7 +171,7 @@ func (i *install) targetIsMatch(target *packages.ManifestTarget) bool {
 	return i.opsys.Architecture() == target.Architecture && i.opsys.Platform() == target.Platform
 }
 
-func (i *install) packageTargetTaskToTask(action *packages.ManifestStep) *actions.Action {
+func (i *install) transformManifestStepToAction(action *packages.ManifestStep) *actions.Action {
 	parameters := map[string]any{}
 	for k, p := range action.With {
 		parameters[k] = p
@@ -158,7 +184,8 @@ func (i *install) packageTargetTaskToTask(action *packages.ManifestStep) *action
 
 func (i *install) createListItemRequest(name, version string) *feed.ListRequest {
 	predicate := &feed.ItemReadExpandPackagePredicate{}
-	if strings.EqualFold(version, config.TagLatest) || strings.EqualFold(strings.TrimSpace(version), "") {
+	version = strings.TrimSpace(version)
+	if strings.EqualFold(version, config.TagLatest) || strings.EqualFold(version, "") {
 		predicate.Latest = true
 	} else {
 		predicate.Version = version

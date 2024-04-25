@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"github.com/mitchellh/mapstructure"
 	"github.com/patrickhuber/go-xplat/filepath"
 
 	"github.com/patrickhuber/go-xplat/fs"
@@ -118,6 +119,29 @@ func (r *itemRepository) GetObject(name string, file string, out any) error {
 	if err != nil {
 		return err
 	}
+
+	// validate with mapstructure package
+	// convert to object
+	var obj any
+	err = yaml.Unmarshal(data, &obj)
+	if err != nil {
+		return err
+	}
+
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:      out,
+		ErrorUnused: true,
+		ErrorUnset:  true,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = decoder.Decode(obj)
+	if err != nil {
+		return err
+	}
+
 	return yaml.Unmarshal(data, out)
 }
 

@@ -48,8 +48,8 @@ func (s *service) Name() string {
 	return s.name
 }
 
-func (s *service) GetNames(request *ListRequest) []string {
-	s.logger.Debug("feedService.GetNames")
+func (s *service) getNames(request *ListRequest) []string {
+	s.logger.Trace("feedService.GetNames")
 	names := []string{}
 	for _, any := range request.Where {
 		for _, all := range any.AnyOf {
@@ -61,7 +61,7 @@ func (s *service) GetNames(request *ListRequest) []string {
 	return names
 }
 
-func (s *service) GetVersions(latestVersion string, request *ItemReadExpand) []string {
+func (s *service) getVersions(latestVersion string, request *ItemReadExpand) []string {
 	s.logger.Tracef("feedService.GetVersions %s", latestVersion)
 	versions := []string{}
 	if strings.TrimSpace(latestVersion) != "" {
@@ -85,13 +85,13 @@ func (s *service) GetVersions(latestVersion string, request *ItemReadExpand) []s
 
 func (s *service) List(request *ListRequest) (*ListResponse, error) {
 	s.logger.Tracef("feedService.List")
-	items, err := s.GetItems(request)
+	items, err := s.listItems(request)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, item := range items {
-		versions, err := s.ExpandPackage(item, request.Expand)
+		versions, err := s.expandPackage(item, request.Expand)
 		if err != nil {
 			return nil, err
 		}
@@ -103,9 +103,9 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 	}, nil
 }
 
-func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
+func (s *service) listItems(request *ListRequest) ([]*Item, error) {
 	s.logger.Tracef("feedService.GetItems")
-	names := s.GetNames(request)
+	names := s.getNames(request)
 	var items []*Item
 	var err error
 
@@ -129,14 +129,14 @@ func (s *service) GetItems(request *ListRequest) ([]*Item, error) {
 	return items, nil
 }
 
-func (s *service) ExpandPackage(item *Item, expand *ItemReadExpand) ([]*packages.Version, error) {
+func (s *service) expandPackage(item *Item, expand *ItemReadExpand) ([]*packages.Version, error) {
 	s.logger.Tracef("feedService.ExpandPackage")
 	latestVersion := ""
 	if item.State != nil {
 		latestVersion = item.State.LatestVersion
 	}
 
-	filter := s.GetVersions(latestVersion, expand)
+	filter := s.getVersions(latestVersion, expand)
 	if len(filter) == 0 {
 		return s.versionRepository.List(item.Package.Name)
 	}
@@ -199,7 +199,7 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 			continue
 		}
 
-		changed, err := s.ModifyItem(item, modify)
+		changed, err := s.modifyItem(item, modify)
 		if err != nil {
 			return nil, err
 		}
@@ -213,7 +213,7 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 	}, nil
 }
 
-func (s *service) ModifyItem(item *Item, modify *ItemModify) (bool, error) {
+func (s *service) modifyItem(item *Item, modify *ItemModify) (bool, error) {
 	s.logger.Tracef("feedService.ModifyItem")
 	if modify == nil {
 		return false, nil
@@ -242,7 +242,7 @@ func (s *service) ModifyItem(item *Item, modify *ItemModify) (bool, error) {
 		modified = true
 	}
 
-	versionModified, err := s.UpdateVersions(item.Package.Name, modify.Package.Versions)
+	versionModified, err := s.updateVersions(item.Package.Name, modify.Package.Versions)
 	if err != nil {
 		return false, err
 	}
@@ -250,18 +250,18 @@ func (s *service) ModifyItem(item *Item, modify *ItemModify) (bool, error) {
 	return modified || versionModified, nil
 }
 
-func (s *service) UpdateVersions(name string, update *VersionUpdate) (bool, error) {
+func (s *service) updateVersions(name string, update *VersionUpdate) (bool, error) {
 
 	if update == nil {
 		return false, nil
 	}
 
-	added, err := s.CreateVersions(name, update.Add)
+	added, err := s.createVersions(name, update.Add)
 	if err != nil {
 		return false, err
 	}
 
-	modified, err := s.ModifyVersions(name, update.Modify)
+	modified, err := s.modifyVersions(name, update.Modify)
 	if err != nil {
 		return false, err
 	}
@@ -274,10 +274,10 @@ func (s *service) UpdateVersions(name string, update *VersionUpdate) (bool, erro
 	return added || modified || removed, nil
 }
 
-func (s *service) CreateVersions(name string, additions []*VersionAdd) (bool, error) {
+func (s *service) createVersions(name string, additions []*VersionAdd) (bool, error) {
 	any := false
 	for _, a := range additions {
-		v := s.ToVersion(a)
+		v := s.toVersion(a)
 		v.Manifest.Package.Name = name
 		err := s.versionRepository.Save(name, v)
 		if err != nil {
@@ -288,14 +288,14 @@ func (s *service) CreateVersions(name string, additions []*VersionAdd) (bool, er
 	return any, nil
 }
 
-func (s *service) ModifyVersions(name string, modifications []*VersionModify) (bool, error) {
+func (s *service) modifyVersions(name string, modifications []*VersionModify) (bool, error) {
 	changed := false
 	for _, m := range modifications {
 		v, err := s.versionRepository.Get(name, m.Version)
 		if err != nil {
 			return false, err
 		}
-		mod := s.VersionModify(m)
+		mod := s.versionModify(m)
 		applied, updated := mod.Apply(reflect.ValueOf(v))
 		if !updated {
 			continue
@@ -310,30 +310,30 @@ func (s *service) ModifyVersions(name string, modifications []*VersionModify) (b
 	return changed, nil
 }
 
-func (s *service) VersionModify(m *VersionModify) patch.Applicable {
+func (s *service) versionModify(m *VersionModify) patch.Applicable {
 	properties := map[string]any{}
 	if m.NewVersion != nil {
 		properties["Version"] = patch.NewString(*m.NewVersion)
 	}
 	if m.Manifest != nil {
-		properties["Manifest"] = s.ManifestModify(m.Manifest)
+		properties["Manifest"] = s.manifestModify(m.Manifest)
 	}
 	return &patch.ObjectUpdate{
 		Value: properties,
 	}
 }
 
-func (s *service) ManifestModify(m *ManifestModify) patch.Applicable {
+func (s *service) manifestModify(m *ManifestModify) patch.Applicable {
 	properties := map[string]any{}
 	if m.Package != nil {
-		properties["Package"] = s.ManifestPackageModify(m.Package)
+		properties["Package"] = s.manifestPackageModify(m.Package)
 	}
 	return &patch.ObjectUpdate{
 		Value: properties,
 	}
 }
 
-func (s *service) ManifestPackageModify(m *ManifestPackageModify) patch.Applicable {
+func (s *service) manifestPackageModify(m *ManifestPackageModify) patch.Applicable {
 	properties := map[string]any{}
 	if m.NewName != nil {
 		properties["Name"] = *m.NewName
@@ -349,86 +349,24 @@ func (s *service) ManifestPackageModify(m *ManifestPackageModify) patch.Applicab
 	}
 }
 
-func (s *service) ManifestTargetUpdate(u *ManifestTargetUpdate) patch.Applicable {
-	options := []patch.SliceOption{}
-	for _, a := range u.Add {
-		o := patch.SliceAppend(s.ToTarget(a))
-		options = append(options, o)
-	}
-	for _, m := range u.Modify {
-		o := patch.SliceModify(func(v reflect.Value) bool {
-			target, ok := v.Interface().(*packages.ManifestTarget)
-			if !ok {
-				return false
-			}
-			return m.Criteria.IsMatch(target)
-		}, s.TargetModify(m))
-		options = append(options, o)
-	}
-	for _, r := range u.Remove {
-		o := patch.SliceRemove(func(v reflect.Value) bool {
-			target, ok := v.Interface().(*packages.ManifestTarget)
-			if !ok {
-				return false
-			}
-			return r.IsMatch(target)
-		})
-		options = append(options, o)
-	}
-	return patch.NewSlice(options...)
-}
-
-func (s *service) TargetModify(m *ManifestTargetModify) patch.Applicable {
-	options := []patch.SliceOption{}
-	for _, t := range m.Steps {
-		o := s.StepPatch(t)
-		options = append(options, o)
-	}
-
-	fields := map[string]any{
-		"Tasks": patch.NewSlice(options...),
-	}
-	if m.NewArchitecture != nil {
-		fields["Architecture"] = *m.NewArchitecture
-	}
-	if m.NewPlatform != nil {
-		fields["Platform"] = *m.NewPlatform
-	}
-	return &patch.ObjectUpdate{
-		Value: fields,
-	}
-}
-
-func (s *service) StepPatch(p *ManifestStepPatch) patch.SliceOption {
-	switch p.Operation {
-	case PatchAdd:
-		return patch.SliceAppend(s.ToStep(p.Value))
-	case PatchRemove:
-		return patch.SliceRemoveAt(p.Index)
-	case PatchReplace:
-		return patch.SliceModifyAt(p.Index, s.ToStep(p.Value))
-	}
-	return nil
-}
-
-func (s *service) ToVersion(versionAdd *VersionAdd) *packages.Version {
+func (s *service) toVersion(versionAdd *VersionAdd) *packages.Version {
 
 	return &packages.Version{
 		Version:  versionAdd.Version,
-		Manifest: s.ToManifest(versionAdd.Manifest),
+		Manifest: s.toManifest(versionAdd.Manifest),
 	}
 }
 
-func (s *service) ToManifest(manifestAdd *ManifestAdd) *packages.Manifest {
+func (s *service) toManifest(manifestAdd *ManifestAdd) *packages.Manifest {
 	return &packages.Manifest{
-		Package: s.ToManfiestPackage(manifestAdd.Package),
+		Package: s.toManfiestPackage(manifestAdd.Package),
 	}
 }
 
-func (s *service) ToManfiestPackage(manifestPackageAdd *ManifestPackageAdd) *packages.ManifestPackage {
+func (s *service) toManfiestPackage(manifestPackageAdd *ManifestPackageAdd) *packages.ManifestPackage {
 	targets := []*packages.ManifestTarget{}
 	for _, t := range manifestPackageAdd.Targets {
-		targets = append(targets, s.ToTarget(t))
+		targets = append(targets, s.toTarget(t))
 	}
 	return &packages.ManifestPackage{
 		Name:    manifestPackageAdd.Name,
@@ -437,7 +375,7 @@ func (s *service) ToManfiestPackage(manifestPackageAdd *ManifestPackageAdd) *pac
 	}
 }
 
-func (s *service) ToTarget(targetAdd *ManifestTargetAdd) *packages.ManifestTarget {
+func (s *service) toTarget(targetAdd *ManifestTargetAdd) *packages.ManifestTarget {
 
 	steps := []*packages.ManifestStep{}
 	for _, t := range targetAdd.Steps {

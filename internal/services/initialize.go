@@ -59,7 +59,8 @@ func (i *initialize) Execute(r *InitializeRequest) error {
 		i.logger.Infof("force = true, overwriting '%s'")
 	}
 	cfg := config.Config{
-		ApiVersion: config.ConfigApiVersion,
+		ApiVersion: config.ApiVersion,
+		Kind:       config.Kind,
 		Spec: config.Spec{
 			Feeds:       []config.Feed{},
 			Stores:      []config.Store{},

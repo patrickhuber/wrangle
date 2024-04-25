@@ -191,7 +191,8 @@ func NewGlobalDefault(os os.OS, e env.Environment, path *filepath.Processor) (co
 		return config.Config{}, fmt.Errorf("%s is unsupported", plat)
 	}
 	cfg := config.Config{
-		ApiVersion: config.ConfigApiVersion,
+		ApiVersion: config.ApiVersion,
+		Kind:       config.Kind,
 		Spec: config.Spec{
 			Environment: map[string]string{
 				global.EnvBin:      path.Join(rootDirectory, "bin"),

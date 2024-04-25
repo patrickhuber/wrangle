@@ -80,21 +80,21 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		option(include)
 	}
 	if include.Platforms {
-		platforms, err := r.GetPlatforms(name)
+		platforms, err := r.getPlatforms(name)
 		if err != nil {
 			return nil, err
 		}
 		item.Platforms = platforms
 	}
 	if include.State {
-		state, err := r.GetState(name)
+		state, err := r.getState(name)
 		if err != nil {
 			return nil, err
 		}
 		item.State = state
 	}
 	if include.Template {
-		template, err := r.GetTemplate(name)
+		template, err := r.getTemplate(name)
 		if err != nil {
 			return nil, err
 		}
@@ -103,30 +103,30 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 	return item, nil
 }
 
-func (r *itemRepository) GetPlatforms(packageName string) ([]*feed.Platform, error) {
+func (r *itemRepository) getPlatforms(packageName string) ([]*feed.Platform, error) {
 	platforms := &feed.Platforms{
 		Platforms: []*feed.Platform{},
 	}
-	err := r.GetObject(packageName, PlatformsFile, &platforms)
+	err := r.getObject(packageName, PlatformsFile, &platforms)
 	return platforms.Platforms, err
 }
 
-func (r *itemRepository) GetState(packageName string) (*feed.State, error) {
+func (r *itemRepository) getState(packageName string) (*feed.State, error) {
 	state := &feed.State{}
-	err := r.GetObject(packageName, StateFile, state)
+	err := r.getObject(packageName, StateFile, state)
 	return state, err
 }
 
-func (r *itemRepository) GetTemplate(packageName string) (string, error) {
-	content, err := r.ReadFile(packageName, TemplateFile)
+func (r *itemRepository) getTemplate(packageName string) (string, error) {
+	content, err := r.readFile(packageName, TemplateFile)
 	if err != nil {
 		return "", err
 	}
 	return string(content), nil
 }
 
-func (r *itemRepository) GetObject(packageName, fileName string, out any) error {
-	content, err := r.ReadFile(packageName, fileName)
+func (r *itemRepository) getObject(packageName, fileName string, out any) error {
+	content, err := r.readFile(packageName, fileName)
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (r *itemRepository) GetItemPath(name string) string {
 	return r.path.Join(r.workingDirectory, name)
 }
 
-func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
+func (r *itemRepository) readFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
 	filePath := r.path.Join(itemPath, fileName)
 	return util.ReadFile(r.fs, filePath)

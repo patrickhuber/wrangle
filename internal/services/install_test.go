@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/patrickhuber/go-di"
@@ -12,33 +13,56 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWindowsInstall(t *testing.T) {
-	s := host.NewTest(platform.Windows, nil, nil)
-	defer s.Close()
-
-	testFileLocation := `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`
-	RunInstallTest(t, testFileLocation, s)
-}
-
-func TestLinuxInstall(t *testing.T) {
-	s := host.NewTest(platform.Linux, nil, nil)
-	defer s.Close()
-
-	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
-	RunInstallTest(t, testFileLocation, s)
-}
-
-func TestDarwinInstall(t *testing.T) {
-	s := host.NewTest(platform.Darwin, nil, nil)
-	defer s.Close()
-
-	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
-	RunInstallTest(t, testFileLocation, s)
+func TestInstall(t *testing.T) {
+	type packageTest struct {
+		name    string
+		version string
+	}
+	type fileTest struct {
+		platform platform.Platform
+		file     string
+	}
+	files := []fileTest{
+		{
+			platform: platform.Windows,
+			file:     `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`,
+		},
+		{
+			platform: platform.Linux,
+			file:     "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64",
+		},
+		{
+			platform: platform.Darwin,
+			file:     "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64",
+		},
+	}
+	packages := []packageTest{
+		{
+			name:    "test",
+			version: "latest",
+		},
+		{
+			name:    "test",
+			version: "1.0.0",
+		},
+	}
+	for _, f := range files {
+		for _, p := range packages {
+			t.Run(fmt.Sprintf("%s_%s_%s", f.platform.String(), p.name, p.version), func(t *testing.T) {
+				s := host.NewTest(f.platform, nil, nil)
+				defer s.Close()
+				RunInstallTest(t, f.file, p.name, p.version, s)
+			})
+		}
+	}
 }
 
 func RunInstallTest(t *testing.T,
 	testFileLocation string,
+	packageName string,
+	packageVersion string,
 	s host.Host) {
+
 	container := s.Container()
 
 	fs, err := di.Resolve[fs.FS](container)
@@ -55,7 +79,8 @@ func RunInstallTest(t *testing.T,
 	require.NoError(t, err)
 
 	req := &services.InstallRequest{
-		Package: "test",
+		Package: packageName,
+		Version: packageVersion,
 	}
 
 	install, err := di.Resolve[services.Install](container)
