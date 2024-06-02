@@ -9,6 +9,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
+	"github.com/patrickhuber/wrangle/internal/stores/keyring"
 
 	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/wrangle/internal/actions"
@@ -76,6 +77,7 @@ func New() Host {
 
 	// stores
 	container.RegisterConstructor(azure.NewFactory)
+	container.RegisterConstructor(keyring.NewFactory)
 	container.RegisterConstructor(stores.NewRegistry)
 
 	return &runtime{
