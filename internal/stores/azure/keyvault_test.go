@@ -65,4 +65,10 @@ func TestKeyVault(t *testing.T) {
 		expected := []any{"one", "two", "three"}
 		require.Equal(t, expected, d)
 	})
+
+	t.Run("set", func(t *testing.T) {
+		s := azure.NewKeyVault(uri, nil)
+		err := s.Set(stores.Key{Data: stores.Data{Name: "set-test"}}, "value")
+		require.NoError(t, err)
+	})
 }

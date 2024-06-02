@@ -3,7 +3,7 @@ package githubrelease
 import (
 	"context"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v62/github"
 )
 
 // GitHub defines a wrapper to calling the github client

@@ -1,6 +1,6 @@
 package githubrelease
 
-import "github.com/google/go-github/v33/github"
+import "github.com/google/go-github/v62/github"
 
 type FakeGitHub struct {
 	Releases []*github.RepositoryRelease

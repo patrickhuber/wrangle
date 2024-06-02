@@ -4,15 +4,16 @@ import "github.com/patrickhuber/wrangle/internal/stores"
 
 // Memory defines a store used for in memory testing
 type Memory struct {
-	Data map[string]string
+	Data map[string]any
 }
 
 func (m *Memory) Name() string {
 	return "memory"
 }
 
-func (m *Memory) Add(k stores.Key, value string) {
+func (m *Memory) Set(k stores.Key, value any) error {
 	m.Data[k.String()] = value
+	return nil
 }
 
 func (m *Memory) Get(k stores.Key) (any, bool, error) {

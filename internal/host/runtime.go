@@ -38,7 +38,10 @@ func New() Host {
 		}
 		return log.Default(options...)
 	})
+
 	setup := setup.New()
+
+	// system abstractions
 	di.RegisterInstance(container, setup.Console)
 	di.RegisterInstance(container, setup.Env)
 	di.RegisterInstance(container, setup.OS)

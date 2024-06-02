@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
@@ -19,13 +20,14 @@ type Configuration struct {
 	e             env.Environment
 	fs            fs.FS
 	globalDefault config.Config
+	log           log.Logger
 }
 
 type GlobalDefault interface {
 	Get() (config.Config, error)
 }
 
-func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (Configuration, error) {
+func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor, log log.Logger) (Configuration, error) {
 	globalDefault, err := NewGlobalDefault(os, e, path)
 	if err != nil {
 		return Configuration{}, err
@@ -36,6 +38,7 @@ func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Proc
 		e:             e,
 		fs:            fs,
 		globalDefault: globalDefault,
+		log:           log,
 	}, nil
 }
 
@@ -304,6 +307,7 @@ func (c Configuration) LocalConfigurations() ([]config.Config, error) {
 		if err != nil {
 			return nil, err
 		}
+		c.log.Debugf("loaded configuration file '%s'", filePath)
 		cfgs = append(cfgs, cfg)
 	}
 
@@ -324,5 +328,7 @@ func (c Configuration) GlobalConfiguration() (config.Config, error) {
 	if err != nil {
 		return config.Config{}, fmt.Errorf("unable to load global configuration file. Suggestion run: `wrangle bootstrap`. %w", err)
 	}
+
+	c.log.Debugf("loaded configuration file '%s'", globalDefault)
 	return cfg, nil
 }

@@ -103,17 +103,30 @@ You can also install packages by creating a .wrangle(.yml|.json) file in the dir
 > .wrangle.yml
 
 ```yaml
-packages:
-- jq@4.31.1
+apiVersion: wrangle/v1
+kind: Config
+spec:
+  packages:
+  - name: jq
+    version: 4.31.1
 
 ```
 
 > .wrangle.json
 
 ```json
-"packages": [
-    "jq@4.31.1"
-]
+{
+    "apiVersion": "wrangle/v1",
+    "kind": "Config",
+    "spec": {
+        "packages": [
+            {
+                "name": "jq",
+                "version": "4.31.1"
+            }
+        ]
+    }
+}
 ```
 
 ```bash
@@ -139,6 +152,40 @@ add the following to end of the $PROFILE file
 ```powershell
 iex $(wrangle hook powershell | Out-String)
 ```
+
+## Variable Replacement
+
+In instances when you need variable replacement for secrets or other configuraiton, wrangle supports external stores. Variables are surrounded with double parenthesis `((<VariablePath>))`, where <VariablePath> is the path to the variable in a store. 
+
+The following stores are supported:
+
+### Azure Key Vault 
+
+```yaml
+stores:
+  type: azure.keyvault
+  properties:
+    uri: {key vault uri} // (required)
+```
+
+| property | description |
+| -------- | ----------- |
+| uri      | the uri to the key vault | https://quickstart-kv.vault.azure.net |
+
+### Keyring
+
+```yaml
+stores:
+  type: keyring
+  properties:
+    service: test
+```
+
+| property | description |
+| -------- | ----------- |
+| service  | the service under which to store secrets |
+
+
 
 ## Package Management
 

@@ -3,7 +3,7 @@ package githubrelease_test
 import (
 	"testing"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v62/github"
 	"github.com/patrickhuber/wrangle/internal/resource/githubrelease"
 	"github.com/stretchr/testify/require"
 )
