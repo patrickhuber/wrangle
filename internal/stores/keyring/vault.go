@@ -2,6 +2,7 @@ package keyring
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/99designs/keyring"
 	"github.com/patrickhuber/wrangle/internal/stores"
@@ -46,6 +47,9 @@ func (v *Vault) Get(k stores.Key) (any, bool, error) {
 
 	item, err := ring.Get(k.Data.Name)
 	if err != nil {
+		if errors.Is(err, keyring.ErrKeyNotFound) {
+			return nil, false, nil
+		}
 		return nil, false, err
 	}
 

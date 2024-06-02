@@ -84,3 +84,33 @@ func TestEvaluate(t *testing.T) {
 		})
 	}
 }
+
+func TestEvaluateFail(t *testing.T) {
+
+	type test struct {
+		name string
+		data any
+	}
+	tests := []test{
+		{
+			name: "string",
+			data: "((key))",
+		},
+		{
+			name: "slice",
+			data: []any{"((key))", "1", "2"},
+		},
+		{
+			name: "map",
+			data: map[any]any{"a": "A", "b": "B", "c": "((key))"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var mp = template.MapProvider{}
+			tmp := template.New(test.data, template.WithProvider(mp))
+			_, err := tmp.Evaluate()
+			require.Error(t, err)
+		})
+	}
+}

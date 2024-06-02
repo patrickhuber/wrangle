@@ -229,6 +229,5 @@ func (stp storeToProvider) Get(key string) (any, bool, error) {
 	if err != nil {
 		return nil, false, err
 	}
-	result, ok, err := stp.store.Get(k)
-	return result, ok, err
+	return stp.store.Get(k)
 }

@@ -86,7 +86,7 @@ func (e *Evaluator) getValue(s string) (any, error) {
 	}
 
 	var value any
-
+	found := false
 	// query all the providers in order to cascade
 	for _, p := range e.providers {
 		v, ok, err := p.Get(s)
@@ -97,8 +97,12 @@ func (e *Evaluator) getValue(s string) (any, error) {
 			continue
 		}
 		value = v
+		found = true
 	}
 
+	if !found {
+		return nil, fmt.Errorf("unable to find variable '%s' in any of the configured stores", s)
+	}
 	// set cache
 	e.variableMap[s] = value
 
