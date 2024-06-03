@@ -95,6 +95,64 @@ func TestConfiguration(t *testing.T) {
 					},
 				},
 			}},
+		{
+			name: "lists",
+			global: config.Config{
+				Spec: config.Spec{
+					Feeds: []config.Feed{
+						{
+							Name: "name",
+							Type: "type",
+							URI:  "uri",
+						},
+					},
+					Stores: []config.Store{
+						{
+							Name: "name",
+							Type: "type",
+							Properties: map[string]string{
+								"key": "value",
+							},
+						},
+					},
+					Packages: []config.Package{
+						{
+							Name:    "name",
+							Version: "version",
+						},
+					},
+				},
+			},
+			local: config.Config{
+				Spec: config.Spec{},
+			},
+			expected: config.Config{
+				Spec: config.Spec{
+					Feeds: []config.Feed{
+						{
+							Name: "name",
+							Type: "type",
+							URI:  "uri",
+						},
+					},
+					Stores: []config.Store{
+						{
+							Name: "name",
+							Type: "type",
+							Properties: map[string]string{
+								"key": "value",
+							},
+						},
+					},
+					Packages: []config.Package{
+						{
+							Name:    "name",
+							Version: "version",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

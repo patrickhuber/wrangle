@@ -72,6 +72,7 @@ func New() Host {
 	container.RegisterConstructor(services.NewHook)
 	container.RegisterConstructor(services.NewSecret)
 	container.RegisterConstructor(services.NewStore)
+	container.RegisterConstructor(services.NewInterpolate)
 
 	// shells
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))

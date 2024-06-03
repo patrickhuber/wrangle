@@ -75,7 +75,7 @@ func (c Configuration) merge(global config.Config, locals ...config.Config) (con
 	if len(locals) == 0 {
 		return global, nil
 	}
-	current := global
+	current := &global
 
 	feeds := map[string]config.Feed{}
 	for _, f := range current.Spec.Feeds {
@@ -136,31 +136,25 @@ func (c Configuration) merge(global config.Config, locals ...config.Config) (con
 		current.Spec.Environment = nil
 	}
 
-	clear(current.Spec.Feeds)
-	if len(feeds) == 0 {
-		current.Spec.Feeds = nil
-	}
+	var feedSlice []config.Feed
 	for _, f := range feeds {
-		current.Spec.Feeds = append(current.Spec.Feeds, f)
+		feedSlice = append(feedSlice, f)
 	}
+	current.Spec.Feeds = feedSlice
 
-	clear(current.Spec.Stores)
-	if len(stores) == 0 {
-		current.Spec.Stores = nil
-	}
+	var storeSlice []config.Store
 	for _, s := range stores {
-		current.Spec.Stores = append(current.Spec.Stores, s)
+		storeSlice = append(storeSlice, s)
 	}
+	current.Spec.Stores = storeSlice
 
-	clear(current.Spec.Packages)
-	if len(packages) == 0 {
-		current.Spec.Packages = nil
-	}
+	var packageSlice []config.Package
 	for _, p := range packages {
-		current.Spec.Packages = append(current.Spec.Packages, p)
+		packageSlice = append(packageSlice, p)
 	}
+	current.Spec.Packages = packageSlice
 
-	return current, nil
+	return *current, nil
 }
 
 func (c Configuration) GlobalDefault() config.Config {

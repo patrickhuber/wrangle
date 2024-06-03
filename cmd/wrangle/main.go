@@ -112,6 +112,7 @@ func main() {
 		commands.Initialize,
 		commands.Export,
 		commands.Hook,
+		commands.Interpolate,
 	}
 
 	// this is a hack to get global options printed in the commands
