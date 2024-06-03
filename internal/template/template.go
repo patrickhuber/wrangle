@@ -25,16 +25,9 @@ func New(data any, ops ...Option) *Template {
 	return t
 }
 
-func (t Template) Evaluate() (any, error) {
-
-	// with no providers, no changes are needed
-	if len(t.providers) == 0 {
-		return t.data, nil
-	}
-
+func (t Template) Evaluate() (*EvaluationResult, error) {
 	e := &Evaluator{
 		providers: t.providers,
 	}
-
 	return e.Evaluate(t.data)
 }

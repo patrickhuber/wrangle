@@ -146,6 +146,7 @@ func (e *diff) getVariableValues(cfg config.Config) (map[string]string, error) {
 	options := iter.ToSlice(optionIter)
 
 	vars := map[string]string{}
+	var unresolved []string
 	for k, v := range cfg.Spec.Environment {
 
 		if !template.HasVariables(v) {
@@ -155,11 +156,18 @@ func (e *diff) getVariableValues(cfg config.Config) (map[string]string, error) {
 
 		// set v as a template and extract any vars
 		t := template.New(v, options...)
-		value, err := t.Evaluate()
+		result, err := t.Evaluate()
 		if err != nil {
 			return nil, err
 		}
-		vars[k] = fmt.Sprintf("%v", value)
+		if len(result.Unresolved) > 0 {
+			unresolved = append(unresolved, result.Unresolved...)
+			continue
+		}
+		vars[k] = fmt.Sprintf("%v", result.Value)
+	}
+	if len(unresolved) > 0 {
+		return nil, fmt.Errorf("unable to resolve the following variables %v", unresolved)
 	}
 	return vars, nil
 }

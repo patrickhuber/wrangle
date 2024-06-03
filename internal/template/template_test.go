@@ -80,7 +80,9 @@ func TestEvaluate(t *testing.T) {
 			tmp := template.New(test.data, template.WithProvider(mp))
 			result, err := tmp.Evaluate()
 			require.NoError(t, err)
-			require.Equal(t, test.expected, result)
+			require.NotNil(t, result)
+			require.Empty(t, result.Unresolved)
+			require.Equal(t, test.expected, result.Value)
 		})
 	}
 }
@@ -88,29 +90,39 @@ func TestEvaluate(t *testing.T) {
 func TestEvaluateFail(t *testing.T) {
 
 	type test struct {
-		name string
-		data any
+		name     string
+		data     any
+		varNames []string
 	}
 	tests := []test{
 		{
-			name: "string",
-			data: "((key))",
+			name:     "string",
+			data:     "((key))",
+			varNames: []string{"key"},
 		},
 		{
-			name: "slice",
-			data: []any{"((key))", "1", "2"},
+			name:     "slice",
+			data:     []any{"((key))", "1", "2"},
+			varNames: []string{"key"},
 		},
 		{
-			name: "map",
-			data: map[any]any{"a": "A", "b": "B", "c": "((key))"},
+			name:     "map",
+			data:     map[any]any{"a": "A", "b": "B", "c": "((key))"},
+			varNames: []string{"key"},
+		},
+		{
+			name:     "multi",
+			data:     "((a))((b))((c))",
+			varNames: []string{"a", "b", "c"},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var mp = template.MapProvider{}
 			tmp := template.New(test.data, template.WithProvider(mp))
-			_, err := tmp.Evaluate()
-			require.Error(t, err)
+			result, err := tmp.Evaluate()
+			require.NoError(t, err)
+			require.Equal(t, len(test.varNames), len(result.Unresolved))
 		})
 	}
 }
