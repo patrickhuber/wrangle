@@ -108,6 +108,7 @@ func main() {
 		commands.Bootstrap,
 		commands.List,
 		commands.Get,
+		commands.Set,
 		commands.Initialize,
 		commands.Export,
 		commands.Hook,

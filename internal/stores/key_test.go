@@ -15,18 +15,32 @@ func TestKeyParse(t *testing.T) {
 		key  stores.Key
 	}
 	tests := []test{
-		{"name",
+		{
+			"name",
 			"name", stores.Key{
 				Data: stores.Data{
 					Name: "name",
 					Version: stores.Version{
-						Latest: true,
+						Latest: true, // latest is true if the value is empty
 						Value:  "",
 					},
 				},
 				Path: dataptr.DataPointer{},
 			}},
-		{"name version",
+		{
+			"name underscore",
+			"name_part",
+			stores.Key{
+				Data: stores.Data{
+					Name: "name_part",
+					Version: stores.Version{
+						Latest: true, // latest is true if the value is empty
+						Value:  "",
+					},
+				},
+			}},
+		{
+			"name version",
 			"name@v1.0.0", stores.Key{
 				Data: stores.Data{
 					Name: "name",
@@ -37,38 +51,42 @@ func TestKeyParse(t *testing.T) {
 				},
 				Path: dataptr.DataPointer{},
 			}},
-		{"name path", "name/test", stores.Key{
-			Data: stores.Data{
-				Name: "name",
-				Version: stores.Version{
-					Latest: true,
-					Value:  "",
-				},
-			},
-			Path: dataptr.DataPointer{
-				Segments: []dataptr.Segment{
-					dataptr.Element{
-						Name: "test",
+		{
+			"name path",
+			"name/test", stores.Key{
+				Data: stores.Data{
+					Name: "name",
+					Version: stores.Version{
+						Latest: true, // latest is true if the value is empty
+						Value:  "",
 					},
 				},
-			},
-		}},
-		{"name version path", "name@v1.0.0/test", stores.Key{
-			Data: stores.Data{
-				Name: "name",
-				Version: stores.Version{
-					Value:  "v1.0.0",
-					Latest: false,
-				},
-			},
-			Path: dataptr.DataPointer{
-				Segments: []dataptr.Segment{
-					dataptr.Element{
-						Name: "test",
+				Path: dataptr.DataPointer{
+					Segments: []dataptr.Segment{
+						dataptr.Element{
+							Name: "test",
+						},
 					},
 				},
-			},
-		}},
+			}},
+		{
+			"name version path",
+			"name@v1.0.0/test", stores.Key{
+				Data: stores.Data{
+					Name: "name",
+					Version: stores.Version{
+						Value:  "v1.0.0",
+						Latest: false,
+					},
+				},
+				Path: dataptr.DataPointer{
+					Segments: []dataptr.Segment{
+						dataptr.Element{
+							Name: "test",
+						},
+					},
+				},
+			}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

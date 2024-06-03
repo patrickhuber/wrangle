@@ -17,8 +17,7 @@ func (m *Memory) Set(k stores.Key, value any) error {
 }
 
 func (m *Memory) Get(k stores.Key) (any, bool, error) {
-	name := k.Data.Name
-	value, ok := m.Data[name]
+	value, ok := m.Data[k.String()]
 	if !ok {
 		return nil, false, nil
 	}

@@ -59,11 +59,6 @@ func TestDiff(t *testing.T) {
 }
 
 func TestDiffVariableReplacement(t *testing.T) {
-	type test struct {
-		shell    string
-		expected string
-	}
-
 	expected := []envdiff.Change{
 		envdiff.Add{
 			Key:   "TEST",
@@ -94,6 +89,7 @@ func TestDiffVariableReplacement(t *testing.T) {
 			Stores: []config.Store{
 				{
 					Type: "memory",
+					Name: "memory",
 					Properties: map[string]string{
 						"key": "TEST",
 					},

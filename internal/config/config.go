@@ -40,6 +40,9 @@ A store for key vaule pairs
 		repo: {repo name} // (required)
 */
 type Store struct {
+	// the name of the store
+	Name string `json:"name" yaml:"name"`
+
 	// discriminator type (azure.keyvault, ...)
 	Type string `json:"type" yaml:"type"`
 

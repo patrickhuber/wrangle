@@ -25,10 +25,15 @@ func TestKeyRing(t *testing.T) {
 		}}
 		err := vault.Set(key, "test")
 		require.Nil(t, err)
+
 		v, ok, err := vault.Get(key)
 		require.Nil(t, err)
 		require.True(t, ok)
 		require.NotNil(t, v)
 		require.Equal(t, "test", v)
+
+		items, err := vault.List()
+		require.NoError(t, err)
+		require.Equal(t, 1, len(items))
 	})
 }

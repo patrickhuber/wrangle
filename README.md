@@ -163,7 +163,8 @@ The following stores are supported:
 
 ```yaml
 stores:
-  type: azure.keyvault
+  name: default
+  type: azure.keyvault  
   properties:
     uri: {key vault uri} // (required)
 ```
@@ -176,6 +177,7 @@ stores:
 
 ```yaml
 stores:
+  name: default
   type: keyring
   properties:
     service: test

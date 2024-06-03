@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/patrickhuber/go-iter"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
 	"github.com/patrickhuber/wrangle/internal/global"
@@ -22,7 +21,7 @@ type Diff interface {
 
 type diff struct {
 	configuration Configuration
-	registry      stores.Registry
+	store         Store
 	environment   env.Environment
 	os            os.OS
 	path          *filepath.Processor
@@ -30,13 +29,13 @@ type diff struct {
 
 func NewDiff(
 	configuration Configuration,
-	registry stores.Registry,
+	store Store,
 	environment env.Environment,
 	os os.OS,
 	path *filepath.Processor) Diff {
 	return &diff{
 		configuration: configuration,
-		registry:      registry,
+		store:         store,
 		environment:   environment,
 		os:            os,
 		path:          path,
@@ -141,9 +140,10 @@ func (e *diff) getVariableValues(cfg config.Config) (map[string]string, error) {
 	}
 
 	// create the template options from the variable providers
-	vp := iter.FromSlice(variableProviders)
-	optionIter := iter.Select(vp, template.WithProvider)
-	options := iter.ToSlice(optionIter)
+	var options []template.Option
+	for _, vp := range variableProviders {
+		options = append(options, template.WithProvider(vp))
+	}
 
 	vars := map[string]string{}
 	var unresolved []string
@@ -197,18 +197,13 @@ func (e diff) isSelfOrSubDirectory(base string, rel string) (bool, error) {
 
 func (e diff) createVariableProviders(cfg config.Config) ([]template.VariableProvider, error) {
 	var variableProviders []template.VariableProvider
+
 	// the registry is responsible for finding the factory to create the store
 	for _, store := range cfg.Spec.Stores {
-		factory, err := e.registry.Get(store.Type)
+		s, err := e.store.Get(store.Name)
 		if err != nil {
 			return nil, err
 		}
-
-		s, err := factory.Create(store.Properties)
-		if err != nil {
-			return nil, err
-		}
-
 		variableProviders = append(variableProviders, storeToProvider{store: s})
 	}
 	return variableProviders, nil

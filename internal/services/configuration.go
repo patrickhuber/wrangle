@@ -42,7 +42,7 @@ func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Proc
 	}, nil
 }
 
-func NewTestConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor) (Configuration, error) {
+func NewTestConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor, log log.Logger) (Configuration, error) {
 	globalDefault, err := NewGlobalTestDefault(os, e, path)
 	if err != nil {
 		return Configuration{}, err
@@ -53,6 +53,7 @@ func NewTestConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.
 		e:             e,
 		fs:            fs,
 		globalDefault: globalDefault,
+		log:           log,
 	}, nil
 }
 
@@ -81,10 +82,9 @@ func (c Configuration) merge(global config.Config, locals ...config.Config) (con
 		feeds[f.Name] = f
 	}
 
-	// TODO: add a store name to avoid merging on type
 	stores := map[string]config.Store{}
 	for _, s := range current.Spec.Stores {
-		stores[s.Type] = s
+		stores[s.Name] = s
 	}
 
 	packages := map[string]config.Package{}
@@ -116,7 +116,7 @@ func (c Configuration) merge(global config.Config, locals ...config.Config) (con
 		}
 
 		for _, s := range local.Spec.Stores {
-			stores[s.Type] = s
+			stores[s.Name] = s
 		}
 
 		for _, p := range local.Spec.Packages {

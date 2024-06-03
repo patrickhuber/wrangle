@@ -30,8 +30,11 @@ func (k Key) String() string {
 		builder.WriteRune('@')
 		builder.WriteString(k.Data.Version.Value)
 	}
-	if len(k.Path.Segments) != 0 {
-		
+	for i, seg := range k.Path.Segments {
+		if i > 0 {
+			builder.WriteRune('/')
+		}
+		builder.WriteString(seg.String())
 	}
 	return builder.String()
 }
@@ -84,7 +87,7 @@ func parseName(str string) (capture string, rest string, err error) {
 	i := 0
 	for {
 		r, size := utf8.DecodeRuneInString(str[i:])
-		if !isLetter(r) {
+		if !(isLetter(r) || r == '_') {
 			break
 		}
 		i += size

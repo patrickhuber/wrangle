@@ -97,6 +97,8 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
 	container.RegisterConstructor(services.NewTestConfiguration)
+	container.RegisterConstructor(services.NewSecret)
+	container.RegisterConstructor(services.NewStore)
 
 	// test shells
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
