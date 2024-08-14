@@ -8,7 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets"
+	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
 	"github.com/patrickhuber/wrangle/internal/dataptr"
 	"github.com/patrickhuber/wrangle/internal/stores"
 )
@@ -73,14 +73,20 @@ func (s Store) List() ([]stores.Key, error) {
 	}
 	var keys []stores.Key
 
-	resp := client.NewListSecretsPager(nil)
+	resp := client.NewListSecretPropertiesPager(nil)
 	latest := map[string]string{}
+
+	// while the pager has more pages
 	for resp.More() {
+
+		// fetch the page
 		page, err := resp.NextPage(context.Background())
 		if err != nil {
 			return nil, err
 		}
-		for _, secret := range page.SecretListResult.Value {
+
+		// iterate over page secrets
+		for _, secret := range page.Value {
 			name := secret.ID.Name()
 			version := secret.ID.Version()
 
