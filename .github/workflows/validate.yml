@@ -39,3 +39,15 @@ jobs:
 
     - name: Test
       run: go test ./...
+
+    - name: Bootstrap Test ${{ matrix.os }}
+      if: ${{ matrix.os != 'windows-latest' }}
+      run: |
+        export WRANGLE_LOG_LEVEL=trace
+        wrangle bootstrap
+
+    - name: Bootstrap Test ${{ matrix.os }}
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        $env:WRANGLE_LOG_LEVEL="trace"
+        wrangle bootstrap
