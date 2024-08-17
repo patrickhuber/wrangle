@@ -35,19 +35,23 @@ jobs:
 
     - name: Build
       run: |
-        go build -v ./...
+        go install github.com/goreleaser/goreleaser/v2@latest
+        goreleaser release --snapshot --clean
 
     - name: Test
-      run: go test ./...
+      run: |
+        go test ./...
 
     - name: Bootstrap Test ${{ matrix.os }}
       if: ${{ matrix.os != 'windows-latest' }}
       run: |
-        export WRANGLE_LOG_LEVEL=trace
-        wrangle bootstrap
+        export GOOS=$(go env GOOS)
+        export GOARCH=$(go env GOARCH)
+        export WRANGLE_LOG_LEVEL=trace        
+        ./dist/wrangle_${GOOS}_${GOARCH}/wrangle bootstrap
 
     - name: Bootstrap Test ${{ matrix.os }}
       if: ${{ matrix.os == 'windows-latest' }}
-      run: |
+      run: |        
         $env:WRANGLE_LOG_LEVEL="trace"
-        wrangle bootstrap
+        ./dist/wrangle_windows_amd64_v1/wrangle.exe bootstrap
