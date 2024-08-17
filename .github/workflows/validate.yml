@@ -33,9 +33,12 @@ jobs:
       with:
         go-version: stable
 
-    - name: Build
+    - name: Install Dependencies
       run: |
         go install github.com/goreleaser/goreleaser/v2@latest
+
+    - name: Build
+      run: |        
         goreleaser release --snapshot --clean
 
     - name: Test
@@ -48,7 +51,7 @@ jobs:
         export GOOS=$(go env GOOS)
         export GOARCH=$(go env GOARCH)
         export WRANGLE_LOG_LEVEL=trace        
-        ./dist/wrangle_${GOOS}_${GOARCH}/wrangle bootstrap
+        sudo ./dist/wrangle_${GOOS}_${GOARCH}/wrangle bootstrap
 
     - name: Bootstrap Test ${{ matrix.os }}
       if: ${{ matrix.os == 'windows-latest' }}
