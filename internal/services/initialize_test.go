@@ -1,77 +1,74 @@
 package services_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/setup"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("Initialize", func() {
-
-	Context("when linux", func() {
-		It("can initialize", func() {
-			s := setup.NewLinuxTest()
-			t := &initializeTester{
+func TestInitialize(t *testing.T) {
+	platforms := []platform.Platform{
+		platform.Linux,
+		platform.Darwin,
+		platform.Windows,
+	}
+	for _, p := range platforms {
+		t.Run(p.String(), func(t *testing.T) {
+			s := host.NewTest(platform.Linux, nil, nil)
+			tester := &initializeTester{
 				s: s,
 			}
-			t.Run()
+			tester.Run(t)
 		})
-	})
-	Context("when darwin", func() {
-		It("can initialize", func() {
-			s := setup.NewLinuxTest()
-			t := &initializeTester{
-				s: s,
-			}
-			t.Run()
-		})
-	})
-	Context("when windows", func() {
-		It("can initialize", func() {
-			s := setup.NewLinuxTest()
-			t := &initializeTester{
-				s: s,
-			}
-			t.Run()
-		})
-	})
-})
-
-type initializeTester struct {
-	s setup.Setup
+	}
 }
 
-func (t *initializeTester) Run() {
-	defer t.s.Close()
-	container := t.s.Container()
+type initializeTester struct {
+	s host.Host
+}
+
+func (tester *initializeTester) Run(t *testing.T) {
+	defer tester.s.Close()
+	container := tester.s.Container()
 
 	opsys, err := di.Resolve[os.OS](container)
-	Expect(err).To(BeNil())
+	require.NoError(t, err)
 
-	path, err := di.Resolve[filepath.Processor](container)
-	Expect(err).To(BeNil())
+	path, err := di.Resolve[*filepath.Processor](container)
+	require.NoError(t, err)
 
-	globalConfigFile := path.Join(opsys.Home(), ".wrangle", "config.yml")
+	pwd, err := opsys.WorkingDirectory()
+	require.NoError(t, err)
+
+	localWrangleDirectory := path.Join(pwd, global.LocalConfigurationDirectoryName)
+	localWrangleConfig := path.Join(pwd, global.LocalConfigurationFileName)
 
 	initialize, err := di.Resolve[services.Initialize](container)
-	Expect(err).To(BeNil())
+	require.NoError(t, err)
 
 	req := &services.InitializeRequest{
-		ApplicationName: "",
+		Directory: pwd,
 	}
+
 	err = initialize.Execute(req)
-	Expect(err).To(BeNil())
+	require.NoError(t, err)
 
 	fs, err := di.Resolve[fs.FS](container)
-	Expect(err).To(BeNil())
+	require.NoError(t, err)
 
-	ok, err := fs.Exists(globalConfigFile)
-	Expect(err).To(BeNil())
-	Expect(ok).To(BeTrue())
+	ok, err := fs.Exists(localWrangleDirectory)
+	require.NoError(t, err)
+	require.True(t, ok, "'%s' does not exist", localWrangleDirectory)
 
+	ok, err = fs.Exists(localWrangleConfig)
+	require.NoError(t, err)
+	require.True(t, ok, "'%s' does not exist", localWrangleConfig)
 }

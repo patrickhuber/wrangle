@@ -1,20 +1,22 @@
 package commands_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/setup"
+
+	"github.com/patrickhuber/wrangle/internal/host"
 )
 
-var _ = Describe("Bootstrap", func() {
-	It("can resolve services", func() {
-		s := setup.NewLinuxTest()
-		container := s.Container()
-		result, err := di.Resolve[services.Bootstrap](container)
-		Expect(err).To(BeNil())
-		Expect(result).ToNot(BeNil())
-	})
-})
+func TestBootstrap(t *testing.T) {
+
+	s := host.NewTest(platform.Linux, nil, nil)
+	container := s.Container()
+	result, err := di.Resolve[services.Bootstrap](container)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+}

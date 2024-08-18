@@ -2,21 +2,28 @@ package services
 
 import (
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-xplat/env"
+	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/wrangle/pkg/config"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/global"
 )
 
 type bootstrap struct {
-	install        Install
-	initialize     Initialize
-	fs             fs.FS
-	configProvider config.Provider
-	logger         log.Logger
+	install       Install
+	fs            fs.FS
+	path          *filepath.Processor
+	configuration Configuration
+	logger        log.Logger
+	environment   env.Environment
 }
 
 type BootstrapRequest struct {
-	ApplicationName string
-	Force           bool
+	Force            bool
+	RootDirectory    string
+	BinDirectory     string
+	ConfigFile       string
+	PackageDirectory string
 }
 
 type Bootstrap interface {
@@ -25,66 +32,108 @@ type Bootstrap interface {
 
 func NewBootstrap(
 	install Install,
-	initialize Initialize,
 	fs fs.FS,
-	configProvider config.Provider,
+	path *filepath.Processor,
+	configuration Configuration,
+	environment env.Environment,
 	logger log.Logger) Bootstrap {
 	return &bootstrap{
-		install:        install,
-		initialize:     initialize,
-		fs:             fs,
-		configProvider: configProvider,
-		logger:         logger,
+		install:       install,
+		fs:            fs,
+		path:          path,
+		configuration: configuration,
+		environment:   environment,
+		logger:        logger,
 	}
 }
 
 func (b *bootstrap) Execute(r *BootstrapRequest) error {
 	b.logger.Debugln("bootstrap")
-	err := b.initialize.Execute(&InitializeRequest{
-		ApplicationName: r.ApplicationName,
-		Force:           r.Force,
-	})
+
+	// load the default configuration path
+	// overwrite if the config file is set as a request parameter
+	var globalConfigFilePath = r.ConfigFile
+	if globalConfigFilePath == "" {
+		globalConfigFilePath = b.configuration.DefaultGlobalConfigFilePath()
+	}
+
+	// fetch the global default from the configuration service we do it here so
+	cfg := b.configuration.GlobalDefault()
+
+	// overwrite any parameters specified in the request
+	cfg = b.overwriteConfigDefaults(cfg, r)
+
+	// ensure the path exists
+	globalConfigFolder := b.path.Dir(globalConfigFilePath)
+	err := b.fs.MkdirAll(globalConfigFolder, 0700)
 	if err != nil {
 		return err
 	}
 
-	err = b.createDirectories()
+	// write the changes back to the config file
+	err = config.WriteFile(b.fs, globalConfigFilePath, cfg)
 	if err != nil {
 		return err
 	}
-	return b.installPackages(r)
+
+	directories := []string{
+		cfg.Spec.Environment[global.EnvPackages],
+		cfg.Spec.Environment[global.EnvBin],
+	}
+
+	err = b.createDirectories(directories)
+	if err != nil {
+		return err
+	}
+
+	err = b.setGlobalEnvironmentVariables(cfg)
+	if err != nil {
+		return err
+	}
+
+	return b.installPackages(cfg)
 }
 
-func (b *bootstrap) createDirectories() error {
-	cfg, err := b.configProvider.Get()
-	if err != nil {
-		return err
-	}
-	directories := []string{
-		cfg.Paths.Bin,
-		cfg.Paths.Packages,
-	}
+func (b *bootstrap) createDirectories(directories []string) error {
 	for _, dir := range directories {
 		b.logger.Debugf("creating %s", dir)
-		err = b.fs.MkdirAll(dir, 0775)
+		err := b.fs.MkdirAll(dir, 0775)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func (b *bootstrap) installPackages(req *BootstrapRequest) error {
-	b.logger.Debugln("install packages")
-	references, err := b.getPackageReferences(req)
-	if err != nil {
-		return err
+
+func (b *bootstrap) overwriteConfigDefaults(cfg config.Config, req *BootstrapRequest) config.Config {
+
+	if req.BinDirectory != "" {
+		cfg.Spec.Environment[global.EnvBin] = req.BinDirectory
 	}
-	for _, reference := range references {
+
+	if req.ConfigFile != "" {
+		cfg.Spec.Environment[global.EnvConfig] = req.ConfigFile
+	}
+
+	if req.PackageDirectory != "" {
+		cfg.Spec.Environment[global.EnvPackages] = req.PackageDirectory
+	}
+
+	if req.RootDirectory != "" {
+		cfg.Spec.Environment[global.EnvRoot] = req.RootDirectory
+	}
+
+	return cfg
+}
+
+func (b *bootstrap) installPackages(cfg config.Config) error {
+	b.logger.Debugln("install packages")
+	for _, pkg := range cfg.Spec.Packages {
 		request := &InstallRequest{
-			Package: reference.Name,
-			Version: reference.Version,
+			Package: pkg.Name,
+			Version: pkg.Version,
 		}
-		b.logger.Debugf("install %s@%s", reference.Name, reference.Version)
+		b.logger.Debugf("install %s@%s", pkg.Name, pkg.Version)
 		err := b.install.Execute(request)
 		if err != nil {
 			return err
@@ -93,12 +142,20 @@ func (b *bootstrap) installPackages(req *BootstrapRequest) error {
 	return nil
 }
 
-// getPackageReferences loads the packages references from the global configuration
-func (b *bootstrap) getPackageReferences(req *BootstrapRequest) ([]*config.Reference, error) {
-	// maybe properties are passed into the get function?
-	cfg, err := b.configProvider.Get()
-	if err != nil {
-		return nil, err
+func (b *bootstrap) setGlobalEnvironmentVariables(cfg config.Config) error {
+	keys := []string{global.EnvBin, global.EnvConfig, global.EnvRoot, global.EnvPackages}
+	for _, k := range keys {
+		v, ok := cfg.Spec.Environment[k]
+		if !ok {
+			continue
+		}
+		if v == "" {
+			continue
+		}
+		err := b.environment.Set(k, v)
+		if err != nil {
+			return err
+		}
 	}
-	return cfg.References, nil
+	return nil
 }

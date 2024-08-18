@@ -10,14 +10,19 @@ import (
 )
 
 var Export = &cli.Command{
-	Name:    "Export",
-	Aliases: []string{"e"},
-	Action:  ExportAction,
-	Flags:   []cli.Flag{},
+	Name:        "export",
+	Action:      ExportAction,
+	Description: "",
+	CustomHelpTemplate: CommandHelpTemplate + `
+ARGS:
+   shell	(bash|powershell)
+`,
+	ArgsUsage: "<shell>",
 }
 
 type ExportCommand struct {
 	Export  services.Export `inject:""`
+	Diff    services.Diff   `inject:""`
 	Options ExportOptions
 }
 
@@ -26,16 +31,17 @@ type ExportOptions struct {
 }
 
 func ExportAction(ctx *cli.Context) error {
+
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return fmt.Errorf("invalid initialize command configuration. %w", err)
 	}
-	if ctx.Args().Len() < 3 {
+	if ctx.Args().Len() < 1 {
 		return fmt.Errorf("expected <shell> argument")
 	}
 	cmd := &ExportCommand{
 		Options: ExportOptions{
-			Shell: ctx.Args().Get(2),
+			Shell: ctx.Args().Get(0),
 		},
 	}
 	err = di.Inject(resolver, cmd)
@@ -46,8 +52,9 @@ func ExportAction(ctx *cli.Context) error {
 }
 
 func (cmd *ExportCommand) Execute() error {
-	req := &services.ExportRequest{
-		Shell: cmd.Options.Shell,
+	changes, err := cmd.Diff.Execute()
+	if err != nil {
+		return err
 	}
-	return cmd.Export.Execute(req)
+	return cmd.Export.Execute(cmd.Options.Shell, changes)
 }

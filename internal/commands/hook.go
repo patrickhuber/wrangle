@@ -11,10 +11,14 @@ import (
 )
 
 var Hook = &cli.Command{
-	Name:    "hook",
-	Aliases: []string{"h"},
-	Action:  HookAction,
-	Flags:   []cli.Flag{},
+	Name:   "hook",
+	Action: HookAction,
+	Flags:  []cli.Flag{},
+	CustomHelpTemplate: CommandHelpTemplate + `
+ARGS:
+   shell	(bash|powershell)
+`,
+	ArgsUsage: "<shell>",
 }
 
 type HookCommand struct {

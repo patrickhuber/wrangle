@@ -1,0 +1,56 @@
+name: validate
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  build_and_test:
+    strategy:
+      matrix:
+        os: 
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Fetch Latest
+      run: |
+        git fetch --force --tags
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: stable
+
+    - name: Build
+      run: |        
+        go build -o dist/wrangle ./cmd/wrangle/main.go
+
+    - name: Test
+      run: |
+        go test ./...
+
+    - name: Bootstrap Test ${{ matrix.os }}
+      if: ${{ matrix.os != 'windows-latest' }}
+      env:
+        WRANGLE_LOG_LEVEL: trace
+      run: |
+        sudo ./dist/wrangle bootstrap
+
+    - name: Bootstrap Test ${{ matrix.os }}
+      if: ${{ matrix.os == 'windows-latest' }}
+      env:
+        WRANGLE_LOG_LEVEL: trace
+      run: |
+        ./dist/wrangle.exe bootstrap

@@ -1,71 +1,90 @@
 package services_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
-	"github.com/patrickhuber/wrangle/internal/setup"
-	"github.com/patrickhuber/wrangle/pkg/config"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
 )
 
-func TestWindowsInstall(t *testing.T) {
-	s := setup.NewWindowsTest()
-	testFileLocation := `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`
-	RunInstallTest(t, testFileLocation, s)
-}
-
-func TestLinuxInstall(t *testing.T) {
-	s := setup.NewLinuxTest()
-	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64"
-	RunInstallTest(t, testFileLocation, s)
-}
-
-func TestDarwinInstall(t *testing.T) {
-	s := setup.NewDarwinTest()
-	testFileLocation := "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64"
-	RunInstallTest(t, testFileLocation, s)
+func TestInstall(t *testing.T) {
+	type packageTest struct {
+		name    string
+		version string
+	}
+	type fileTest struct {
+		platform platform.Platform
+		file     string
+	}
+	files := []fileTest{
+		{
+			platform: platform.Windows,
+			file:     `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`,
+		},
+		{
+			platform: platform.Linux,
+			file:     "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64",
+		},
+		{
+			platform: platform.Darwin,
+			file:     "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64",
+		},
+	}
+	packages := []packageTest{
+		{
+			name:    "test",
+			version: "latest",
+		},
+		{
+			name:    "test",
+			version: "1.0.0",
+		},
+	}
+	for _, f := range files {
+		for _, p := range packages {
+			t.Run(fmt.Sprintf("%s_%s_%s", f.platform.String(), p.name, p.version), func(t *testing.T) {
+				s := host.NewTest(f.platform, nil, nil)
+				defer s.Close()
+				RunInstallTest(t, f.file, p.name, p.version, s)
+			})
+		}
+	}
 }
 
 func RunInstallTest(t *testing.T,
 	testFileLocation string,
-	s setup.Setup) {
-	defer s.Close()
+	packageName string,
+	packageVersion string,
+	s host.Host) {
+
 	container := s.Container()
 
 	fs, err := di.Resolve[fs.FS](container)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
-	install, err := di.Resolve[services.Install](container)
-	require.Nil(t, err)
+	configuration, err := di.Resolve[services.Configuration](container)
+	require.NoError(t, err)
 
-	path, err := di.Resolve[filepath.Processor](container)
-	require.Nil(t, err)
+	cfg := configuration.GlobalDefault()
+	require.NoError(t, err)
 
-	opsys, err := di.Resolve[os.OS](container)
-	require.Nil(t, err)
-
-	reader, err := di.Resolve[config.Provider](container)
-	require.Nil(t, err)
-
-	cfg, err := reader.Get()
-	require.Nil(t, err)
-
-	globalConfigPath := path.Join(opsys.Home(), ".wrangle", "config.yml")
-	cfgBytes, err := yaml.Marshal(cfg)
-	require.Nil(t, err)
-
-	err = fs.WriteFile(globalConfigPath, cfgBytes, 0644)
-	require.Nil(t, err)
+	globalConfigPath := configuration.DefaultGlobalConfigFilePath()
+	err = config.WriteFile(fs, globalConfigPath, cfg)
+	require.NoError(t, err)
 
 	req := &services.InstallRequest{
-		Package: "test",
+		Package: packageName,
+		Version: packageVersion,
 	}
+
+	install, err := di.Resolve[services.Install](container)
+	require.NoError(t, err)
 
 	err = install.Execute(req)
 	require.Nil(t, err)

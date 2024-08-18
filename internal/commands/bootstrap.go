@@ -11,8 +11,9 @@ import (
 
 // bootstrap subcommand
 var Bootstrap = &cli.Command{
-	Name:   "bootstrap",
-	Action: BootstrapAction,
+	Name:        "bootstrap",
+	Action:      BootstrapAction,
+	Description: "bootstrap creates the global configuration file and installs the base packages",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -20,6 +21,7 @@ var Bootstrap = &cli.Command{
 			Value:   false,
 		},
 	},
+	CustomHelpTemplate: CommandHelpTemplate,
 }
 
 type BootstrapCommand struct {

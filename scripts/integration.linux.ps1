@@ -1,2 +1,6 @@
 $ErrorActionPreference = "Stop"
-docker build --build-arg LOCAL="true" -f Dockerfile.integration.linux . 
+$dir=$PSScriptRoot
+$root=Resolve-Path(Join-Path $dir "..")
+$dockerfile = Join-Path $root "docker" "Dockerfile.int.linux"
+$dockerfile
+docker build --build-arg LOCAL="true" -f "$dockerfile" . 

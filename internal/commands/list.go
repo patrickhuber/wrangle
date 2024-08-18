@@ -10,4 +10,6 @@ var List = &cli.Command{
 		ListFeeds,
 		ListVariables,
 	},
+	CustomHelpTemplate: CommandHelpTemplate,
+	Hidden:             true,
 }

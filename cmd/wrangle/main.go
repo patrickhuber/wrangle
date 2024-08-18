@@ -1,19 +1,20 @@
 package main
 
 import (
+	"io"
 	"log"
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-xplat/console"
+	"github.com/patrickhuber/go-xplat/env"
 	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/go-xplat/os"
 	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
-	"github.com/patrickhuber/wrangle/internal/setup"
-	"github.com/patrickhuber/wrangle/pkg/config"
-	"github.com/patrickhuber/wrangle/pkg/enums"
-	"github.com/patrickhuber/wrangle/pkg/global"
+	"github.com/patrickhuber/wrangle/internal/enums"
+	"github.com/patrickhuber/wrangle/internal/global"
+	setup "github.com/patrickhuber/wrangle/internal/host"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,7 +28,7 @@ func main() {
 	o, err := di.Resolve[os.OS](container)
 	handle(err)
 
-	path, err := di.Resolve[filepath.Processor](container)
+	path, err := di.Resolve[*filepath.Processor](container)
 	handle(err)
 
 	console, err := di.Resolve[console.Console](container)
@@ -40,7 +41,7 @@ func main() {
 	}
 
 	app := &cli.App{
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			global.MetadataDependencyInjection: container,
 		},
 		Name:        appName,
@@ -77,16 +78,27 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
+
 			globalConfigFile := ctx.String(global.FlagConfig)
+			if globalConfigFile == "" {
+				return nil
+			}
+
 			resolver, err := app.GetResolver(ctx)
 			if err != nil {
 				return err
 			}
-			properties, err := di.Resolve[config.Properties](resolver)
+
+			environment, err := di.Resolve[env.Environment](resolver)
 			if err != nil {
 				return err
 			}
-			properties.Set(config.GlobalConfigFilePathProperty, globalConfigFile)
+
+			_, ok := environment.Lookup(global.EnvConfig)
+			if !ok {
+				environment.Set(global.EnvConfig, globalConfigFile)
+			}
+
 			return nil
 		},
 	}
@@ -96,9 +108,45 @@ func main() {
 		commands.Bootstrap,
 		commands.List,
 		commands.Get,
-		commands.List,
+		commands.Set,
 		commands.Initialize,
+		commands.Export,
+		commands.Hook,
+		commands.Interpolate,
 	}
+
+	// this is a hack to get global options printed in the commands
+	// see https://github.com/urfave/cli/issues/734#issuecomment-597344796
+	globalOptionsTemplate := `
+{{if .VisibleFlags}}GLOBAL OPTIONS:
+   {{range $index, $option := .VisibleFlags}}{{if $index}}
+   {{end}}{{$option}}{{end}}
+{{end}}
+`
+	origHelpPrinterCustom := cli.HelpPrinterCustom
+	defer func() {
+		cli.HelpPrinterCustom = origHelpPrinterCustom
+	}()
+	cli.HelpPrinterCustom = func(out io.Writer, tmpl string, data any, customFuncs map[string]any) {
+
+		// inject the application name
+		appName := func() string {
+			return app.Name
+		}
+		if customFuncs == nil {
+			customFuncs = map[string]any{}
+		}
+		customFuncs["appname"] = appName
+
+		// map the data to a map?
+		origHelpPrinterCustom(out, tmpl, data, customFuncs)
+
+		// run on the app context if this is a command
+		if data != app {
+			origHelpPrinterCustom(app.Writer, globalOptionsTemplate, app, nil)
+		}
+	}
+
 	err = app.Run(console.Args())
 	handle(err)
 }
