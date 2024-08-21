@@ -51,6 +51,11 @@ func TestDownload(t *testing.T) {
 	err = provider.Execute(task, metadata)
 	require.NoError(t, err)
 
+	// verify the folder was created
+	ok, err = fs.Exists(path.Join(metadata.PackageVersionPath))
+	require.NoError(t, err)
+	require.True(t, ok)
+
 	// verify the file was downloaded
 	ok, err = fs.Exists(path.Join(metadata.PackageVersionPath, "test-local"))
 	require.NoError(t, err)

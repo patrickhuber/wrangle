@@ -88,6 +88,12 @@ func (p *downloadProvider) Execute(t *Action, ctx *Metadata) error {
 
 func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
+	// ensure package version path exists
+	err := p.fs.MkdirAll(ctx.PackageVersionPath, 0755)
+	if err != nil {
+		return err
+	}
+
 	out := p.path.Join(ctx.PackageVersionPath, download.Details.Out)
 	url := download.Details.URL
 
