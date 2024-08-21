@@ -9,16 +9,22 @@ on:
     - main
   workflow_dispatch: 
 
+env:
+  WRANGLE_LOG_LEVEL: trace
+
 jobs:
   build_and_test:
     strategy:
       matrix:
-        os: 
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        cases: 
+        - os: ubuntu-latest
+          ext: ""
+        - os: windows-latest
+          ext: ".exe"
+        - os: macos-latest
+          ext: ""
     
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.cases.os }}
 
     steps:
 
@@ -35,23 +41,13 @@ jobs:
         go-version: stable
 
     - name: Build
-      run: |        
-        go build -o dist/wrangle ./cmd/wrangle/main.go
+      run: |
+        go build -o dist/wrangle${{ matrix.cases.ext }} ./cmd/wrangle/main.go
 
     - name: Test
       run: |
         go test ./...
 
-    - name: Bootstrap Test ${{ matrix.os }}
-      if: ${{ matrix.os != 'windows-latest' }}
-      env:
-        WRANGLE_LOG_LEVEL: trace
+    - name: Bootstrap Test ${{ matrix.cases.os }}
       run: |
-        sudo ./dist/wrangle bootstrap
-
-    - name: Bootstrap Test ${{ matrix.os }}
-      if: ${{ matrix.os == 'windows-latest' }}
-      env:
-        WRANGLE_LOG_LEVEL: trace
-      run: |
-        .\dist\wrangle.exe bootstrap
+        sudo ./dist/wrangle${{ matrix.cases.ext }} bootstrap
