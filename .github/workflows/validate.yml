@@ -16,15 +16,12 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        cases: 
-        - os: ubuntu-latest
-          ext: ""
-        - os: windows-latest
-          ext: ".exe"
-        - os: macos-latest
-          ext: ""
+        os: 
+        - ubuntu-latest
+        - windows-latest
+        - macos-latest
     
-    runs-on: ${{ matrix.cases.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
 
@@ -40,14 +37,26 @@ jobs:
       with:
         go-version: stable
 
-    - name: Build
+    - name: Build ${{ matrix.os }}
+      if: ${{ matrix.os != 'windows-latest' }} 
       run: |
-        go build -o dist/wrangle${{ matrix.cases.ext }} ./cmd/wrangle/main.go
+        go build -o dist/wrangle ./cmd/wrangle/main.go
+
+    - name: Build ${{ matrix.os }}
+      if: ${{ matrix.os == 'windows-latest' }} 
+      run: |
+        go build -o dist/wrangle.exe ./cmd/wrangle/main.go        
 
     - name: Test
       run: |
         go test ./...
 
-    - name: Bootstrap Test ${{ matrix.cases.os }}
+    - name: Bootstrap Test ${{ matrix.os }}      
+      if: ${{ matrix.os != 'windows-latest' }}
       run: |
-        sudo ./dist/wrangle${{ matrix.cases.ext }} bootstrap
+        sudo ./dist/wrangle bootstrap
+
+    - name: Bootstrap Test ${{ matrix.os }}
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        ./dist/wrangle.exe bootstrap
