@@ -54,4 +54,4 @@ jobs:
       env:
         WRANGLE_LOG_LEVEL: trace
       run: |
-        ./dist/wrangle.exe bootstrap
+        .\dist\wrangle.exe bootstrap
