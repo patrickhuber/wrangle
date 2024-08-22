@@ -1,7 +1,10 @@
 # Stop on error
 $ErrorActionPreference = "Stop"
-
+$version = "0.10.1"
 $platform = "windows"
+$destination = "wrangle-$version-$platform-$architecture"
+$archive = "$destination.zip"
+
 $computerInfo = Get-ComputerInfo
 if ($computerInfo.OsType -ne "WINNT"){
     Write-Error -Message "Unkown os type ${computerInfo.OsType}. Expected 'WINNT'"
@@ -14,17 +17,17 @@ if ($computerInfo.OsArchitecture -ne "64-bit"){
     return
 }
 
-$version = "0.10.0"
-$archive = "wrangle-$platform-$architecture.zip"
 $url = "https://github.com/patrickhuber/wrangle/releases/download/$version/$archive"
+
+"downloading $url to $archive"
 
 # download the archive
 Invoke-WebRequest -uri $url -OutFile $archive
 
-# expand the archive and remove the archive
-Expand-Archive -Path $archive
-Remove-Item -Path $archive
+# expand the archive and remove the archive file
+Expand-Archive -Path $archive -DestinationPath $destination
+Remove-Item -Path $archive -Force
 
 # run bootstrap command and cleanup downloaded executable
-wrangle bootstrap
-Remove-Item wrangle.exe
+Invoke-Expression "$destination/wrangle.exe bootstrap"
+Remove-Item -Path $destination -Force -Recurse
