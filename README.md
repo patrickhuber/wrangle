@@ -49,39 +49,42 @@ The scripts above download the latest version of wrangle and then run a `wrangle
 Linux
 
 ```bash
-export VERSION=0.9.0
-export ARCHIVE=wrangle-darwin-amd64.tgz
+export VERSION=0.10.0
+export ARCHIVE="wrangle-${VERSION}-linux-amd64.tar.gz"
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
-tar -xfz ${ARCHIVE}
+tar xfz ${ARCHIVE}
 rm ${ARCHIVE}
 chmod +x wrangle
 wrangle bootstrap
 rm wrangle
+rm README.md
 ```
 
 Darwin
 
 ```bash
-export VERSION=0.9.0
-export ARCHIVE=wrangle-darwin-amd64.tgz
+export VERSION=0.10.0
+export ARCHIVE="wrangle-${VERSION}-darwin-amd64.tar.gz"
 wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
-tar -xfz ${ARCHIVE}
+tar xfz ${ARCHIVE}
 rm ${ARCHIVE}
 chmod +x wrangle
 wrangle bootstrap
 rm wrangle
+rm README.md
 ```
 
 Windows (Powershell)
 
 ```powershell
-$version = "0.9.0"
-$archive = "wrangle-windows-amd64.zip"
+$version = "0.10.0"
+$archive = "wrangle-$version-windows-amd64.zip"
 iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/$version/$archive" -OutFile $archive
-Extract-Archive $archive
+Extract-Archive $archive -DestinationPath .
 Remove-Item $archive
 .\wrangle.exe bootstrap
 Remove-Item wrangle.exe
+Remove-Item README.md
 ```
 
 ## Usage
