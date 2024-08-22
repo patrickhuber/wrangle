@@ -43,8 +43,8 @@ json=$(curl 'https://api.github.com/repos/patrickhuber/wrangle/releases/latest')
 export VERSION=$(echo $json | jq -r '.tag_name')
 
 # variables
-export ARCHIVE=wrangle-${VERSION}-${PLATFORM}-${ARCH}.tar.gz
-export ARCHIVE_FOLDER=wrangle-${VERSION}-${PLATFORM}-${ARCH}
+export ARCHIVE_NAME=wrangle-${VERSION}-${PLATFORM}-${ARCH}
+export ARCHIVE=wrangle-${ARCHIVE_NAME}.tar.gz
 export URL=https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
 echo "downloading: '$ARCHIVE' from '$URL'"
 
@@ -54,16 +54,16 @@ wget $URL
 # extract the executable
 # remove the file
 echo "extracting: ${ARCHIVE}"
-mkdir -p ${ARCHIVE_FOLDER}
-tar xvzf ${ARCHIVE} -C ${ARCHIVE_FOLDER} 
+mkdir -p ${ARCHIVE_NAME}
+tar xvzf ${ARCHIVE} -C ${ARCHIVE_NAME} 
 
 # create the global configuration and install packages
 echo "installing"
-sudo ${ARCHIVE_FOLDER}/wrangle bootstrap
+sudo ${ARCHIVE_NAME}/wrangle bootstrap
 
 # cleanup
-echo "cleanup: ${ARCHIVE_FOLDER}"
-rm -rf ${ARCHIVE_FOLDER}
+echo "cleanup: ${ARCHIVE_NAME}"
+rm -rf ${ARCHIVE_NAME}
 
 echo "cleanup: ${ARCHIVE}"
 rm -f ${ARCHIVE}
