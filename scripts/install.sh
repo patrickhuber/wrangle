@@ -3,12 +3,26 @@
 # exit when any command fails
 set -e
 
+# check for jq
+if ! command -v jq &> /dev/null
+then
+    echo "jq must be installed"
+    exit 1
+fi
+
+# check for curl
+if ! command -v curl &> /dev/null
+then 
+    echo "curl must be installed"
+    exit 1
+fi
+
 # determine if linux or darwin
 OS=$(uname -s)
 case $OS in
 Linux) export PLATFORM=linux;;
 Darwin) export PLATFORM=darwin;;
-*) echo "expected OSTYPE 'linux-gnu' or 'darwin'. found $OSTYPE. no installer is available for this OSTYPE"; exit 1 ;;
+*) echo "expected OS TYPE 'linux-gnu' or 'darwin'. found $OS. no installer is available for this OSTYPE"; exit 1 ;;
 esac
 
 echo "platform: '$PLATFORM'"
@@ -22,9 +36,15 @@ esac
 
 echo "architecture: '$ARCH'"
 
+# get the latest version
+echo "getting latest wrangle version from github"
+json=$(curl 'https://api.github.com/repos/patrickhuber/wrangle/releases/latest')
+
+export VERSION=$(echo $json | jq -r '.tag_name')
+
 # variables
-export VERSION=0.10.0
-export ARCHIVE=wrangle-${PLATFORM}-${ARCH}.tgz
+export ARCHIVE=wrangle-${VERSION}-${PLATFORM}-${ARCH}.tar.gz
+export ARCHIVE_FOLDER=wrangle-${VERSION}-${PLATFORM}-${ARCH}
 export URL=https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
 echo "downloading: '$ARCHIVE' from '$URL'"
 
@@ -34,15 +54,16 @@ wget $URL
 # extract the executable
 # remove the file
 echo "extracting: ${ARCHIVE}"
-tar -xfz ${ARCHIVE}
-
-echo "cleanup: ${ARCHIVE}"
-rm ${ARCHIVE}
+mkdir -p ${ARCHIVE_FOLDER}
+tar xvzf ${ARCHIVE} -C ${ARCHIVE_FOLDER} 
 
 # create the global configuration and install packages
 echo "installing"
-sudo wrangle bootstrap
+sudo ${ARCHIVE_FOLDER}/wrangle bootstrap
 
 # cleanup
-echo "installing"
-rm wrangle
+echo "cleanup: ${ARCHIVE_FOLDER}"
+rm -rf ${ARCHIVE_FOLDER}
+
+echo "cleanup: ${ARCHIVE}"
+rm -f ${ARCHIVE}
