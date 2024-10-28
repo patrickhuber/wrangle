@@ -59,6 +59,7 @@ tar xvzf ${ARCHIVE} -C ${ARCHIVE_NAME}
 
 # create the global configuration and install packages
 echo "installing"
+export WRANGLE_LOG_LEVEL=debug
 sudo ${ARCHIVE_NAME}/wrangle bootstrap
 
 # cleanup

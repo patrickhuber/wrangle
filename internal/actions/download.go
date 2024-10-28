@@ -97,7 +97,7 @@ func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 	out := p.path.Join(ctx.PackageVersionPath, download.Details.Out)
 	url := download.Details.URL
 
-	p.logger.Printf("downloading '%s' to '%s'", url, out)
+	p.logger.Debugf("downloading '%s' to '%s'", url, out)
 
 	resp, err := http.Get(url)
 	if err != nil {
