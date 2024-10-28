@@ -166,7 +166,7 @@ The following stores are supported:
 
 ```yaml
 stores:
-  name: default
+- name: default
   type: azure.keyvault  
   properties:
     uri: {key vault uri} // (required)
@@ -180,7 +180,7 @@ stores:
 
 ```yaml
 stores:
-  name: default
+- name: default
   type: keyring
   properties:
     service: test
@@ -189,8 +189,6 @@ stores:
 | property | description |
 | -------- | ----------- |
 | service  | the service under which to store secrets |
-
-
 
 ## Package Management
 
