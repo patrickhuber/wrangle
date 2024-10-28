@@ -44,7 +44,7 @@ export VERSION=$(echo $json | jq -r '.tag_name')
 
 # variables
 export ARCHIVE_NAME=wrangle-${VERSION}-${PLATFORM}-${ARCH}
-export ARCHIVE=wrangle-${ARCHIVE_NAME}.tar.gz
+export ARCHIVE=${ARCHIVE_NAME}.tar.gz
 export URL=https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
 echo "downloading: '$ARCHIVE' from '$URL'"
 
