@@ -1,6 +1,6 @@
 module github.com/patrickhuber/wrangle
 
-go 1.22
+go 1.23
 
 require (
 	github.com/99designs/keyring v1.2.2
