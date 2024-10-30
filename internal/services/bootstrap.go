@@ -65,7 +65,7 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 
 	// ensure the path exists
 	globalConfigFolder := b.path.Dir(globalConfigFilePath)
-	err := b.fs.MkdirAll(globalConfigFolder, 0700)
+	err := b.fs.MkdirAll(globalConfigFolder, 0600)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 func (b *bootstrap) createDirectories(directories []string) error {
 	for _, dir := range directories {
 		b.logger.Debugf("creating %s", dir)
-		err := b.fs.MkdirAll(dir, 0775)
+		err := b.fs.MkdirAll(dir, 0664)
 		if err != nil {
 			return err
 		}

@@ -89,7 +89,7 @@ func (p *downloadProvider) Execute(t *Action, ctx *Metadata) error {
 func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
 	// ensure package version path exists
-	err := p.fs.MkdirAll(ctx.PackageVersionPath, 0755)
+	err := p.fs.MkdirAll(ctx.PackageVersionPath, 0664)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
 	directory := path.Dir(out)
 	p.logger.Debugf("creating %s", directory)
-	err = p.fs.MkdirAll(directory, 0755)
+	err = p.fs.MkdirAll(directory, 0664)
 	if err != nil {
 		return err
 	}
