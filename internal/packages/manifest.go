@@ -18,6 +18,7 @@ type ManifestPackage struct {
 type ManifestTarget struct {
 	Platform     platform.Platform
 	Architecture arch.Arch
+	Executables  []string
 	Steps        []*ManifestStep
 }
 
