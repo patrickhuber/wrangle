@@ -3,9 +3,9 @@ package services
 import (
 	"fmt"
 
+	"github.com/patrickhuber/go-cross/console"
+	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/go-xplat/console"
-	"github.com/patrickhuber/go-xplat/env"
 )
 
 type hook struct {

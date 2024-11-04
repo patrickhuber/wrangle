@@ -2,12 +2,15 @@ package git
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
 	"github.com/mitchellh/mapstructure"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -17,10 +20,10 @@ type versionRepository struct {
 	fs               billy.Filesystem
 	workingDirectory string
 	logger           log.Logger
-	path             *filepath.Processor
+	path             filepath.Provider
 }
 
-func NewVersionRepository(fs billy.Filesystem, logger log.Logger, path *filepath.Processor, workingDirectory string) feed.VersionRepository {
+func NewVersionRepository(fs billy.Filesystem, logger log.Logger, path filepath.Provider, workingDirectory string) feed.VersionRepository {
 	return &versionRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,
@@ -85,6 +88,7 @@ func (s *versionRepository) GetManifest(name string, version string) (*packages.
 		Result:      manifest,
 		ErrorUnused: true,
 		ErrorUnset:  true,
+		DecodeHook:  decodeHook,
 	})
 	if err != nil {
 		return nil, err
@@ -92,10 +96,20 @@ func (s *versionRepository) GetManifest(name string, version string) (*packages.
 
 	err = decoder.Decode(obj)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to decode manifest for package '%s' version '%s' %w", name, version, err)
 	}
 
-	return manifest, err
+	return manifest, nil
+}
+
+func decodeHook(fromType reflect.Type, toType reflect.Type, from any) (any, error) {
+	switch toType {
+	case reflect.TypeOf((*platform.Platform)(nil)).Elem():
+		return platform.Parse(from.(string)), nil
+	case reflect.TypeOf((*arch.Arch)(nil)).Elem():
+		return arch.Parse(from.(string)), nil
+	}
+	return from, nil
 }
 
 func (s *versionRepository) Save(name string, version *packages.Version) error {
@@ -104,7 +118,7 @@ func (s *versionRepository) Save(name string, version *packages.Version) error {
 	manifest := version.Manifest
 
 	versionPath := s.path.Join(s.workingDirectory, name, version.Version)
-	err := s.fs.MkdirAll(versionPath, 0600)
+	err := s.fs.MkdirAll(versionPath, 0775)
 	if err != nil {
 		return err
 	}

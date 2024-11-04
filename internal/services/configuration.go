@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/patrickhuber/go-cross/env"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/os"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/env"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
 type Configuration struct {
-	path          *filepath.Processor
+	path          filepath.Provider
 	os            os.OS
 	e             env.Environment
 	fs            fs.FS
@@ -27,7 +27,7 @@ type GlobalDefault interface {
 	Get() (config.Config, error)
 }
 
-func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor, log log.Logger) (Configuration, error) {
+func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path filepath.Provider, log log.Logger) (Configuration, error) {
 	globalDefault, err := NewGlobalDefault(os, e, path)
 	if err != nil {
 		return Configuration{}, err
@@ -42,7 +42,7 @@ func NewConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Proc
 	}, nil
 }
 
-func NewTestConfiguration(os os.OS, e env.Environment, fs fs.FS, path *filepath.Processor, log log.Logger) (Configuration, error) {
+func NewTestConfiguration(os os.OS, e env.Environment, fs fs.FS, path filepath.Provider, log log.Logger) (Configuration, error) {
 	globalDefault, err := NewGlobalTestDefault(os, e, path)
 	if err != nil {
 		return Configuration{}, err
@@ -165,6 +165,10 @@ func (c Configuration) DefaultGlobalConfigFilePath() string {
 	return c.path.Join(c.os.Home(), ".wrangle", "config.yml")
 }
 
+func (c Configuration) DefaultUserConfigurationPath() string {
+	return c.path.Join(c.os.Home(), ".wrangle", "config.yml")
+}
+
 func (c Configuration) DefaultLocalConfigFilePath() (string, error) {
 	wd, err := c.os.WorkingDirectory()
 	if err != nil {
@@ -173,16 +177,16 @@ func (c Configuration) DefaultLocalConfigFilePath() (string, error) {
 	return c.path.Join(wd, ".wrangle.yml"), nil
 }
 
-func NewGlobalDefault(os os.OS, e env.Environment, path *filepath.Processor) (config.Config, error) {
+func NewGlobalDefault(os os.OS, e env.Environment, path filepath.Provider) (config.Config, error) {
 	rootDirectory := "/opt/wrangle"
 	plat := os.Platform()
 
 	p := platform.Platform(plat)
 	switch {
-	case p.IsWindows():
+	case platform.IsWindows(p):
 		programData := e.Get("PROGRAMDATA")
 		rootDirectory = path.Join(programData, "wrangle")
-	case p.IsUnix():
+	case platform.IsPosix(p):
 		break
 	default:
 		return config.Config{}, fmt.Errorf("%s is unsupported", plat)
@@ -218,7 +222,7 @@ func NewGlobalDefault(os os.OS, e env.Environment, path *filepath.Processor) (co
 	return cfg, nil
 }
 
-func NewGlobalTestDefault(os os.OS, e env.Environment, path *filepath.Processor) (config.Config, error) {
+func NewGlobalTestDefault(os os.OS, e env.Environment, path filepath.Provider) (config.Config, error) {
 	cfg, err := NewGlobalDefault(os, e, path)
 	if err != nil {
 		return config.Config{}, err

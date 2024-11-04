@@ -1,6 +1,8 @@
 package conformance
 
 import (
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 )
@@ -42,8 +44,8 @@ func createVersion(name string, version string) *packages.Version {
 				Version: version,
 				Targets: []*packages.ManifestTarget{
 					{
-						Platform:     "linux",
-						Architecture: "amd64",
+						Platform:     platform.Linux,
+						Architecture: arch.AMD64,
 						Steps: []*packages.ManifestStep{
 							{
 								Action: "download",
@@ -55,8 +57,8 @@ func createVersion(name string, version string) *packages.Version {
 						},
 					},
 					{
-						Platform:     "darwin",
-						Architecture: "amd64",
+						Platform:     platform.Darwin,
+						Architecture: arch.AMD64,
 						Steps: []*packages.ManifestStep{
 							{
 								Action: "download",
@@ -68,8 +70,8 @@ func createVersion(name string, version string) *packages.Version {
 						},
 					},
 					{
-						Platform:     "windows",
-						Architecture: "amd64",
+						Platform:     platform.Windows,
+						Architecture: arch.AMD64,
 						Steps: []*packages.ManifestStep{
 							{
 								Action: "download",

@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"github.com/go-git/go-billy/v5/memfs"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/feed/conformance"
 	"github.com/patrickhuber/wrangle/internal/feed/git"
 	"github.com/stretchr/testify/require"
@@ -39,8 +40,8 @@ func CreateTest(t *testing.T) conformance.VersionRepositoryTester {
 	fs := memfs.New()
 	workingDirectory := "/opt/wrangle/feed"
 	logger := log.Memory()
-	h := setup.NewTest(setup.Platform(platform.Linux))
-	path := h.Path
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	path := h.Path()
 	repo := git.NewVersionRepository(fs, logger, path, workingDirectory)
 	items := conformance.GetItemList()
 	for _, item := range items {

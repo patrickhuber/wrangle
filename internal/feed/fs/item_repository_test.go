@@ -5,8 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
@@ -27,9 +28,9 @@ func TestItemRepo(t *testing.T) {
 
 func setupItemRepository(t *testing.T) feed.ItemRepository {
 	workingDirectory := "/opt/wrangle/feed"
-	h := setup.NewTest(setup.Platform(platform.Linux))
-	fs := h.FS
-	path := h.Path
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	fs := h.FS()
+	path := h.Path()
 	repo := feedfs.NewItemRepository(fs, path, workingDirectory)
 
 	items := conformance.GetItemList()

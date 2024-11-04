@@ -3,8 +3,9 @@ package fs_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
 	"github.com/stretchr/testify/require"
@@ -34,9 +35,9 @@ func TestVersionRepository(t *testing.T) {
 }
 
 func Setup(t *testing.T) conformance.VersionRepositoryTester {
-	h := setup.NewTest(setup.Platform(platform.Linux))
-	fs := h.FS
-	path := h.Path
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	fs := h.FS()
+	path := h.Path()
 	workingDirectory := "/opt/wrangle/feed"
 	repo := feedfs.NewVersionRepository(fs, path, workingDirectory)
 	items := conformance.GetItemList()

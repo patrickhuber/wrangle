@@ -1,17 +1,19 @@
 package host
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
 	"github.com/patrickhuber/wrangle/internal/stores/keyring"
 
-	"github.com/patrickhuber/go-xplat/env"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/patrickhuber/wrangle/internal/feed"
@@ -26,7 +28,6 @@ func New() Host {
 	container := di.NewContainer()
 
 	// cross platform abstraction
-	container.RegisterConstructor(env.NewOS)
 	container.RegisterConstructor(func(e env.Environment) log.Logger {
 		level, ok := e.Lookup(global.EnvLogLevel)
 		if !ok {
@@ -35,19 +36,22 @@ func New() Host {
 		options := []log.LogOption{}
 		logLevel, err := log.ParseLevel(level)
 		if err == nil {
-			options = append(options, log.SetLevel(logLevel))
+			options = append(options, log.WithLevel(logLevel))
+		} else {
+			fmt.Printf("invalid log level environment variable value WRANGLE_LOG_LEVEL='%s'", level)
+			fmt.Println()
 		}
 		return log.Default(options...)
 	})
 
-	setup := setup.New()
+	target := cross.New()
 
 	// system abstractions
-	di.RegisterInstance(container, setup.Console)
-	di.RegisterInstance(container, setup.Env)
-	di.RegisterInstance(container, setup.OS)
-	di.RegisterInstance(container, setup.Path)
-	di.RegisterInstance(container, setup.FS)
+	di.RegisterInstance(container, target.Console)
+	di.RegisterInstance(container, target.Env)
+	di.RegisterInstance(container, target.OS)
+	di.RegisterInstance(container, target.Path)
+	di.RegisterInstance(container, target.FS)
 
 	// actions
 	container.RegisterConstructor(archive.NewFactory)

@@ -1,10 +1,10 @@
 package services
 
 import (
+	"github.com/patrickhuber/go-cross/env"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/env"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
@@ -12,7 +12,7 @@ import (
 type bootstrap struct {
 	install       Install
 	fs            fs.FS
-	path          *filepath.Processor
+	path          filepath.Provider
 	configuration Configuration
 	logger        log.Logger
 	environment   env.Environment
@@ -33,7 +33,7 @@ type Bootstrap interface {
 func NewBootstrap(
 	install Install,
 	fs fs.FS,
-	path *filepath.Processor,
+	path filepath.Provider,
 	configuration Configuration,
 	environment env.Environment,
 	logger log.Logger) Bootstrap {
@@ -65,7 +65,7 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 
 	// ensure the path exists
 	globalConfigFolder := b.path.Dir(globalConfigFilePath)
-	err := b.fs.MkdirAll(globalConfigFolder, 0600)
+	err := b.fs.MkdirAll(globalConfigFolder, 0700)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,10 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 func (b *bootstrap) createDirectories(directories []string) error {
 	for _, dir := range directories {
 		b.logger.Debugf("creating %s", dir)
-		err := b.fs.MkdirAll(dir, 0664)
+		// directories need:
+		// 	user/group: execute, read, write
+		// 	all: read and execute
+		err := b.fs.MkdirAll(dir, 0775)
 		if err != nil {
 			return err
 		}

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-cross/fs"
 )
 
 func ReadFile(fs fs.FS, file string) (Config, error) {

@@ -3,8 +3,9 @@ package archive_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/stretchr/testify/require"
 )
@@ -44,9 +45,9 @@ func TestProvider(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.archiveFile, func(t *testing.T) {
-			h := setup.NewTest(setup.Platform(platform.Linux))
-			path := h.Path
-			fs := h.FS
+			h := cross.NewTest(platform.Linux, arch.AMD64)
+			path := h.Path()
+			fs := h.FS()
 			factory := archive.NewFactory(fs, path)
 			provider, err := factory.Select(test.archiveFile)
 			require.Nil(t, err)

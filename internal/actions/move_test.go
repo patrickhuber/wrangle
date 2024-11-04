@@ -5,16 +5,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/actions"
 )
 
 func TestMove(t *testing.T) {
-	h := setup.NewTest(setup.Platform(platform.Linux))
-	path := h.Path
-	fs := h.FS
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	path := h.Path()
+	fs := h.FS()
 	logger := log.Memory()
 	provider := actions.NewMoveProvider(fs, path, logger)
 

@@ -3,17 +3,17 @@ package archive
 import (
 	"compress/gzip"
 
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 )
 
 // https://github.com/mholt/archiver/blob/master/targz.go
 type tgz struct {
 	fs   fs.FS
-	path *filepath.Processor
+	path filepath.Provider
 }
 
-func NewTarGz(fs fs.FS, path *filepath.Processor) Provider {
+func NewTarGz(fs fs.FS, path filepath.Provider) Provider {
 	return &tgz{
 		fs:   fs,
 		path: path,

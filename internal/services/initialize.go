@@ -1,9 +1,9 @@
 package services
 
 import (
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
@@ -11,7 +11,7 @@ import (
 type initialize struct {
 	fs     fs.FS
 	logger log.Logger
-	path   *filepath.Processor
+	path   filepath.Provider
 }
 
 type InitializeRequest struct {
@@ -23,7 +23,7 @@ type Initialize interface {
 	Execute(r *InitializeRequest) error
 }
 
-func NewInitialize(fs fs.FS, path *filepath.Processor, logger log.Logger) Initialize {
+func NewInitialize(fs fs.FS, path filepath.Provider, logger log.Logger) Initialize {
 	return &initialize{
 		fs:     fs,
 		logger: logger,
@@ -38,7 +38,7 @@ func (i *initialize) Execute(r *InitializeRequest) error {
 	localDotDir := i.path.Join(r.Directory, global.LocalConfigurationDirectoryName)
 	i.logger.Infof("creating '%s'", localDotDir)
 
-	err := i.fs.MkdirAll(localDotDir, 0664)
+	err := i.fs.MkdirAll(localDotDir, 0775)
 	if err != nil {
 		return err
 	}

@@ -5,8 +5,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 )
 
 type Factory interface {
@@ -23,7 +23,7 @@ const (
 	Zip   = "zip"
 )
 
-func NewFactory(fs fs.FS, path *filepath.Processor) Factory {
+func NewFactory(fs fs.FS, path filepath.Provider) Factory {
 	return &factory{
 		providers: map[string]Provider{
 			Tar:   NewTar(fs, path),

@@ -4,12 +4,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/patrickhuber/go-cross/console"
+	"github.com/patrickhuber/go-cross/env"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/os"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/console"
-	"github.com/patrickhuber/go-xplat/env"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/os"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/enums"
@@ -28,7 +28,7 @@ func main() {
 	o, err := di.Resolve[os.OS](container)
 	handle(err)
 
-	path, err := di.Resolve[*filepath.Processor](container)
+	path, err := di.Resolve[filepath.Provider](container)
 	handle(err)
 
 	console, err := di.Resolve[console.Console](container)
@@ -36,7 +36,7 @@ func main() {
 
 	appName := "wrangle"
 	plat := platform.Platform(o.Platform())
-	if plat.IsWindows() {
+	if platform.IsWindows(plat) {
 		appName = appName + ".exe"
 	}
 

@@ -3,9 +3,9 @@ package services_test
 import (
 	"testing"
 
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
@@ -46,7 +46,7 @@ func TestShim(t *testing.T) {
 			err = config.WriteFile(fs, globalConfigPath, cfg)
 			require.NoError(t, err)
 
-			err = fs.MkdirAll("/opt/wrangle/packages/test/1.0.0", 0664)
+			err = fs.MkdirAll("/opt/wrangle/packages/test/1.0.0", 0775)
 			require.NoError(t, err)
 
 			err = fs.WriteFile("/opt/wrangle/packages/test/1.0.0/"+test.exeName, []byte{}, 0775)

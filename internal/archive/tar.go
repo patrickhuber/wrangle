@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 )
 
 type TarProvider interface {
@@ -17,10 +17,10 @@ type TarProvider interface {
 
 type tar struct {
 	fs   fs.FS
-	path *filepath.Processor
+	path filepath.Provider
 }
 
-func NewTar(fs fs.FS, path *filepath.Processor) TarProvider {
+func NewTar(fs fs.FS, path filepath.Provider) TarProvider {
 	return &tar{
 		fs:   fs,
 		path: path,

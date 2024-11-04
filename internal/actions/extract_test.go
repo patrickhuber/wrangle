@@ -3,9 +3,10 @@ package actions_test
 import (
 	"testing"
 
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/stretchr/testify/require"
@@ -70,9 +71,9 @@ func TestCanExtract(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.archiveName, func(t *testing.T) {
-			h := setup.NewTest(setup.Platform(platform.Linux))
-			path := h.Path
-			fs := h.FS
+			h := cross.NewTest(platform.Linux, arch.AMD64)
+			path := h.Path()
+			fs := h.FS()
 
 			rootedFiles := []string{}
 			for _, f := range files {

@@ -2,9 +2,9 @@ package fs
 
 import (
 	"github.com/mitchellh/mapstructure"
-	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-cross/filepath"
 
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -18,11 +18,11 @@ const (
 
 type itemRepository struct {
 	fs               fs.FS
-	path             *filepath.Processor
+	path             filepath.Provider
 	workingDirectory string
 }
 
-func NewItemRepository(fs fs.FS, path *filepath.Processor, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs fs.FS, path filepath.Provider, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		path:             path,
@@ -151,7 +151,7 @@ func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {
-	err := r.fs.MkdirAll(r.GetItemPath(item.Package.Name), 0644)
+	err := r.fs.MkdirAll(r.GetItemPath(item.Package.Name), 0775)
 	if err != nil {
 		return err
 	}

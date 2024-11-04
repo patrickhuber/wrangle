@@ -3,11 +3,11 @@ package services_test
 import (
 	"testing"
 
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/os"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
@@ -42,7 +42,7 @@ func (tester *initializeTester) Run(t *testing.T) {
 	opsys, err := di.Resolve[os.OS](container)
 	require.NoError(t, err)
 
-	path, err := di.Resolve[*filepath.Processor](container)
+	path, err := di.Resolve[filepath.Provider](container)
 	require.NoError(t, err)
 
 	pwd, err := opsys.WorkingDirectory()

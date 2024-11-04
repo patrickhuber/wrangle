@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"github.com/patrickhuber/go-xplat/filepath"
+	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
@@ -16,14 +16,14 @@ type Metadata struct {
 }
 
 type metadataProvider struct {
-	path *filepath.Processor
+	path filepath.Provider
 }
 
 type MetadataProvider interface {
 	Get(cfg *config.Config, name, version string) *Metadata
 }
 
-func NewMetadataProvider(path *filepath.Processor) MetadataProvider {
+func NewMetadataProvider(path filepath.Provider) MetadataProvider {
 	return &metadataProvider{
 		path: path,
 	}

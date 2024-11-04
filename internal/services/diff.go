@@ -10,9 +10,9 @@ import (
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/template"
 
-	"github.com/patrickhuber/go-xplat/env"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-cross/env"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/os"
 )
 
 type Diff interface {
@@ -24,7 +24,7 @@ type diff struct {
 	store         Store
 	environment   env.Environment
 	os            os.OS
-	path          *filepath.Processor
+	path          filepath.Provider
 }
 
 func NewDiff(
@@ -32,7 +32,7 @@ func NewDiff(
 	store Store,
 	environment env.Environment,
 	os os.OS,
-	path *filepath.Processor) Diff {
+	path filepath.Provider) Diff {
 	return &diff{
 		configuration: configuration,
 		store:         store,

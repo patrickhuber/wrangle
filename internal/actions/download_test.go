@@ -4,10 +4,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
@@ -29,7 +29,7 @@ func TestDownload(t *testing.T) {
 	server, err := di.Resolve[*httptest.Server](h.Container())
 	require.NoError(t, err)
 
-	path, err := di.Resolve[*filepath.Processor](h.Container())
+	path, err := di.Resolve[filepath.Provider](h.Container())
 	require.NoError(t, err)
 
 	fs, err := di.Resolve[fs.FS](h.Container())

@@ -3,6 +3,8 @@ package conformance
 import (
 	"testing"
 
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"github.com/stretchr/testify/require"
@@ -52,8 +54,8 @@ func (test *versionRepositoryTester) CanAddVersion(t *testing.T, packageName, ve
 				Version: version,
 				Targets: []*packages.ManifestTarget{
 					{
-						Platform:     "linux",
-						Architecture: "amd64",
+						Platform:     platform.Linux,
+						Architecture: arch.AMD64,
 						Steps:        []*packages.ManifestStep{},
 					},
 				},

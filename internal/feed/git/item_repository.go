@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/util"
+	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -22,12 +22,12 @@ const (
 
 type itemRepository struct {
 	fs               billy.Filesystem
-	path             *filepath.Processor
+	path             filepath.Provider
 	workingDirectory string
 	logger           log.Logger
 }
 
-func NewItemRepository(fs billy.Filesystem, path *filepath.Processor, logger log.Logger, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs billy.Filesystem, path filepath.Provider, logger log.Logger, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		workingDirectory: workingDirectory,
@@ -144,7 +144,7 @@ func (r *itemRepository) readFile(name, fileName string) ([]byte, error) {
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {
-	err := r.fs.MkdirAll(r.GetItemPath(item.Package.Name), 0600)
+	err := r.fs.MkdirAll(r.GetItemPath(item.Package.Name), 0775)
 	if err != nil {
 		return err
 	}

@@ -6,9 +6,10 @@ import (
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/conformance"
 	gitfeed "github.com/patrickhuber/wrangle/internal/feed/git"
@@ -19,9 +20,9 @@ func TestService(t *testing.T) {
 	setup := func(t *testing.T) conformance.ServiceTester {
 		logger := log.Memory()
 		store := memory.NewStorage()
-		h := setup.NewTest(setup.Platform(platform.Linux))
+		h := cross.NewTest(platform.Linux, arch.AMD64)
 		fs := memfs.New()
-		path := h.Path
+		path := h.Path()
 
 		repository, err := git.Init(store, fs)
 		require.NoError(t, err)

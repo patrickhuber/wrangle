@@ -1,8 +1,8 @@
 package packages
 
 import (
-	"github.com/patrickhuber/go-xplat/arch"
-	"github.com/patrickhuber/go-xplat/platform"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 )
 
 type Manifest struct {

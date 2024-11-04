@@ -5,9 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/conformance"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
@@ -37,9 +38,9 @@ func TestService(t *testing.T) {
 }
 
 func SetupServiceTest(t *testing.T) conformance.ServiceTester {
-	h := setup.NewTest(setup.Platform(platform.Linux))
-	fs := h.FS
-	path := h.Path
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	fs := h.FS()
+	path := h.Path()
 	logger := log.Memory()
 	svc := feedfs.NewService("test", fs, path, "/opt/wrangle/feed", logger)
 	items := conformance.GetItemList()

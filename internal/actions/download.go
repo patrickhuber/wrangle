@@ -7,9 +7,9 @@ import (
 	"path"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
 )
 
 // Download defines the outer structure for a download task
@@ -27,11 +27,11 @@ type downloadProvider struct {
 	name   string
 	logger log.Logger
 	fs     fs.FS
-	path   *filepath.Processor
+	path   filepath.Provider
 }
 
 // NewDownloadProvider creates a new download provider
-func NewDownloadProvider(logger log.Logger, fs fs.FS, path *filepath.Processor) Provider {
+func NewDownloadProvider(logger log.Logger, fs fs.FS, path filepath.Provider) Provider {
 	return &downloadProvider{
 		name:   "download",
 		logger: logger,
@@ -89,7 +89,7 @@ func (p *downloadProvider) Execute(t *Action, ctx *Metadata) error {
 func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
 	// ensure package version path exists
-	err := p.fs.MkdirAll(ctx.PackageVersionPath, 0664)
+	err := p.fs.MkdirAll(ctx.PackageVersionPath, 0775)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (p *downloadProvider) execute(download *Download, ctx *Metadata) error {
 
 	directory := path.Dir(out)
 	p.logger.Debugf("creating %s", directory)
-	err = p.fs.MkdirAll(directory, 0664)
+	err = p.fs.MkdirAll(directory, 0775)
 	if err != nil {
 		return err
 	}

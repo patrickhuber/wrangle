@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"

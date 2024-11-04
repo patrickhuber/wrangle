@@ -6,9 +6,9 @@ import (
 	"slices"
 	"text/template"
 
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
@@ -31,7 +31,7 @@ type ShimResponse struct {
 
 func NewShim(
 	fs fs.FS,
-	path *filepath.Processor,
+	path filepath.Provider,
 	configuration Configuration,
 	log log.Logger) Shim {
 	shells := []string{"bash", "powershell"}
@@ -47,7 +47,7 @@ func NewShim(
 type shim struct {
 	shells        []string
 	fs            fs.FS
-	path          *filepath.Processor
+	path          filepath.Provider
 	configuration Configuration
 	log           log.Logger
 }

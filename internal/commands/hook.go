@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
+	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/console"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/urfave/cli/v2"

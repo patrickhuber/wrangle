@@ -5,12 +5,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/patrickhuber/go-cross/console"
+	"github.com/patrickhuber/go-cross/env"
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/os"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/go-xplat/console"
-	"github.com/patrickhuber/go-xplat/env"
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
-	"github.com/patrickhuber/go-xplat/platform"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
 	"github.com/patrickhuber/wrangle/internal/global"
@@ -155,10 +155,10 @@ func TestDiffDifferentDir(t *testing.T) {
 
 			ctx := setup(t, config.Config{})
 
-			err := ctx.fs.MkdirAll(test.startDirectory, 0644)
+			err := ctx.fs.MkdirAll(test.startDirectory, 0775)
 			require.NoError(t, err)
 
-			err = ctx.fs.MkdirAll(test.nextDirectory, 0644)
+			err = ctx.fs.MkdirAll(test.nextDirectory, 0775)
 			require.NoError(t, err)
 
 			// set the working directory

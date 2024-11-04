@@ -3,6 +3,8 @@ package conformance
 import (
 	"testing"
 
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/stretchr/testify/require"
 )
@@ -159,8 +161,8 @@ func (tester *serviceTester) CanAddVersion(t *testing.T) {
 												Version: newVersion,
 												Targets: []*feed.ManifestTargetAdd{
 													{
-														Platform:     "linux",
-														Architecture: "amd64",
+														Platform:     platform.Linux,
+														Architecture: arch.AMD64,
 														Steps: []*feed.ManifestStepAdd{
 															{
 																Action: "download",

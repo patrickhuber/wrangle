@@ -2,9 +2,13 @@ package fs
 
 import (
 	"fmt"
+	"reflect"
 
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/mitchellh/mapstructure"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -13,10 +17,10 @@ import (
 type versionRepository struct {
 	fs               fs.FS
 	workingDirectory string
-	path             *filepath.Processor
+	path             filepath.Provider
 }
 
-func NewVersionRepository(fs fs.FS, path *filepath.Processor, workingDirectory string) feed.VersionRepository {
+func NewVersionRepository(fs fs.FS, path filepath.Provider, workingDirectory string) feed.VersionRepository {
 	return &versionRepository{
 		fs:               fs,
 		path:             path,
@@ -26,7 +30,7 @@ func NewVersionRepository(fs fs.FS, path *filepath.Processor, workingDirectory s
 
 func (r *versionRepository) Save(name string, version *packages.Version) error {
 	versionPath := r.GetVersionFolderPath(name, version.Version)
-	err := r.fs.MkdirAll(versionPath, 0644)
+	err := r.fs.MkdirAll(versionPath, 0775)
 	if err != nil {
 		return err
 	}
@@ -46,11 +50,29 @@ func (r *versionRepository) Get(name string, version string) (*packages.Version,
 	if err != nil {
 		return nil, err
 	}
-	manifest := &packages.Manifest{}
-	err = yaml.Unmarshal(data, manifest)
+
+	var obj any
+	err = yaml.Unmarshal(data, &obj)
 	if err != nil {
 		return nil, err
 	}
+
+	manifest := &packages.Manifest{}
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:      manifest,
+		ErrorUnused: true,
+		ErrorUnset:  true,
+		DecodeHook:  decodeHook,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = decoder.Decode(obj)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode manifest for package '%s' version '%s' %w", name, version, err)
+	}
+
 	if manifest.Package == nil {
 		return nil, fmt.Errorf("invalid package %s. manifest.Package is nil", versionFile)
 	}
@@ -59,6 +81,16 @@ func (r *versionRepository) Get(name string, version string) (*packages.Version,
 		Manifest: manifest,
 	}
 	return v, nil
+}
+
+func decodeHook(fromType reflect.Type, toType reflect.Type, from any) (any, error) {
+	switch toType {
+	case reflect.TypeOf((*platform.Platform)(nil)).Elem():
+		return platform.Parse(from.(string)), nil
+	case reflect.TypeOf((*arch.Arch)(nil)).Elem():
+		return arch.Parse(from.(string)), nil
+	}
+	return from, nil
 }
 
 func (r *versionRepository) List(name string) ([]*packages.Version, error) {

@@ -6,8 +6,9 @@ import (
 
 	"github.com/patrickhuber/go-log"
 
-	"github.com/patrickhuber/go-xplat/fs"
-	"github.com/patrickhuber/go-xplat/os"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/os"
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
@@ -21,6 +22,7 @@ type install struct {
 	runner           actions.Runner
 	opsys            os.OS
 	metadataProvider actions.MetadataProvider
+	path             filepath.Provider
 	log              log.Logger
 }
 
@@ -40,6 +42,7 @@ func NewInstall(
 	o os.OS,
 	configuration Configuration,
 	metadataProvider actions.MetadataProvider,
+	path filepath.Provider,
 	log log.Logger) Install {
 	return &install{
 		fs:               fs,
@@ -48,6 +51,7 @@ func NewInstall(
 		opsys:            o,
 		configuration:    configuration,
 		metadataProvider: metadataProvider,
+		path:             path,
 		log:              log,
 	}
 }
@@ -98,50 +102,97 @@ func (i *install) Execute(r *InstallRequest) error {
 	oneVersionMatched := false
 	for _, item := range items {
 		for _, v := range item.Package.Versions {
-
 			i.log.Tracef("package: %s, version: %s", v.Manifest.Package.Name, v.Manifest.Package.Version)
 			oneVersionMatched = true
 
 			// create a metadata object for the task runs so the task knows to which package it belongs
 			meta := i.metadataProvider.Get(&cfg, r.Package, v.Version)
 
-			oneTargetMatched := false
+			err := i.runTargets(
+				v.Manifest.Package.Name,
+				v.Manifest.Package.Version,
+				v.Manifest.Package.Targets,
+				meta)
 
-			for _, target := range v.Manifest.Package.Targets {
-
-				// check if target matches, architecture and platform
-				// we don't want to run windows actions on linux
-				if !i.targetIsMatch(target) {
-					i.log.Debugf("unable to match target %s %s", target.Platform, target.Architecture)
-					continue
-				}
-
-				i.log.Debugf("matched target %s %s", target.Platform, target.Architecture)
-				oneTargetMatched = true
-
-				// run the steps
-				i.log.Debugf("found %d steps", len(target.Steps))
-				for _, step := range target.Steps {
-
-					i.log.Debugf("running task %s", step.Action)
-
-					action := i.transformManifestStepToAction(step)
-
-					err = i.runner.Run(action, meta)
-
-					if err != nil {
-						return err
-					}
-				}
-			}
-
-			if !oneTargetMatched {
-				return fmt.Errorf("no targets in the package %s@%s match %s %s", r.Package, r.Version, i.opsys.Platform(), i.opsys.Architecture())
+			if err != nil {
+				return err
 			}
 		}
 	}
 	if !oneVersionMatched {
-		return fmt.Errorf("no packages were installed because no versions were matched to the criteria")
+		return fmt.Errorf("no packages were installed matching name '%s' and version '%s'", r.Package, r.Version)
+	}
+	return nil
+}
+
+func (i *install) runTargets(
+	packageName string,
+	packageVersion string,
+	targets []*packages.ManifestTarget,
+	meta *actions.Metadata) error {
+
+	oneTargetMatched := false
+
+	for _, target := range targets {
+
+		// check if target matches, architecture and platform
+		// we don't want to run windows actions on linux
+		if !i.targetIsMatch(target) {
+			i.log.Debugf("unable to match target %s %s", target.Platform, target.Architecture)
+			continue
+		}
+
+		i.log.Debugf("matched target %s %s", target.Platform, target.Architecture)
+		oneTargetMatched = true
+
+		err := i.runSteps(target.Steps, meta)
+		if err != nil {
+			return err
+		}
+
+		for _, exec := range target.Executables {
+			execPath := i.path.Join(meta.PackageVersionPath, exec)
+			ok, err := i.fs.Exists(execPath)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				continue
+			}
+			err = i.setExecutable(execPath, meta)
+			if err != nil {
+				return err
+			}
+			err = i.shimExecutable(execPath, meta)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if !oneTargetMatched {
+		return fmt.Errorf("no targets in the package %s@%s match %s %s", packageName, packageVersion, i.opsys.Platform(), i.opsys.Architecture())
+	}
+	return nil
+}
+
+func (i *install) setExecutable(execPath string, meta *actions.Metadata) error {
+	return i.fs.Chmod(execPath, 0755)
+}
+
+func (i *install) shimExecutable(execPath string, meta *actions.Metadata) error {
+	return nil
+}
+
+func (i *install) runSteps(steps []*packages.ManifestStep, meta *actions.Metadata) error {
+	i.log.Debugf("found %d steps", len(steps))
+	for _, step := range steps {
+		i.log.Debugf("runing task %s", step.Action)
+		action := i.transformManifestStepToAction(step)
+		err := i.runner.Run(action, meta)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

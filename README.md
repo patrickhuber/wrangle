@@ -196,7 +196,7 @@ Wrangle is a simple package manager much like [arkade](https://github.com/alexel
 
 Wrangle can find packages in one or more feeds. The default feed is https://github.com/patrickhuber/wrangle-packages.
 
-When wrangle bootstrap is called, wrangle will go to default feed (or the overrided feed) and install itself and a shim execuable.
+When wrangle bootstrap is called, wrangle will go to default feed (or the overrided feed) and install itself 'wrangle@latest' and the 'shim@latest' packages.
 
 ### Feeds
 

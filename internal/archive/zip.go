@@ -5,16 +5,16 @@ import (
 	"io"
 	"os"
 
-	"github.com/patrickhuber/go-xplat/filepath"
-	"github.com/patrickhuber/go-xplat/fs"
+	"github.com/patrickhuber/go-cross/filepath"
+	"github.com/patrickhuber/go-cross/fs"
 )
 
 type zip struct {
 	fs   fs.FS
-	path *filepath.Processor
+	path filepath.Provider
 }
 
-func NewZip(fs fs.FS, path *filepath.Processor) Provider {
+func NewZip(fs fs.FS, path filepath.Provider) Provider {
 	return &zip{
 		fs:   fs,
 		path: path,

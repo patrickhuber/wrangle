@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"github.com/go-git/go-billy/v5/memfs"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/conformance"
 	"github.com/patrickhuber/wrangle/internal/feed/git"
@@ -27,8 +28,8 @@ func TestItemRepository(t *testing.T) {
 func setupItemRepository(t *testing.T) feed.ItemRepository {
 	workingDirectory := "/opt/wrangle/feed"
 	fs := memfs.New()
-	h := setup.NewTest(setup.Platform(platform.Linux))
-	path := h.Path
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	path := h.Path()
 	logger := log.Memory()
 	repo := git.NewItemRepository(fs, path, logger, workingDirectory)
 	items := conformance.GetItemList()

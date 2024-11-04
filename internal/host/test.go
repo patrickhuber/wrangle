@@ -6,13 +6,13 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/os"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/go-xplat/arch"
-	"github.com/patrickhuber/go-xplat/os"
-	"github.com/patrickhuber/go-xplat/platform"
-	"github.com/patrickhuber/go-xplat/setup"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/stores"
@@ -30,7 +30,7 @@ type test struct {
 	container di.Container
 }
 
-func NewTest(platform platform.Platform, vars map[string]string, args []string) Host {
+func NewTest(plat platform.Platform, vars map[string]string, args []string) Host {
 	// start the local http server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.URL.Path, "/test") {
@@ -45,28 +45,30 @@ func NewTest(platform platform.Platform, vars map[string]string, args []string) 
 	container := di.NewContainer()
 
 	// create the xplat host
-	h := setup.NewTest(
-		setup.Platform(platform),
-		setup.Arch(arch.AMD64),
-		setup.Vars(vars),
-		setup.Args(args...))
-	di.RegisterInstance(container, h.OS)
-	di.RegisterInstance(container, h.Console)
+	target := cross.NewTest(plat, arch.AMD64, args...)
+	di.RegisterInstance(container, target.OS())
+	di.RegisterInstance(container, target.Console())
+
+	env := target.Env()
+	path := target.Path()
+	os := target.OS()
 
 	// set default environment variables here
-	if h.OS.Platform().IsWindows() {
-		h.Env.Set("PROGRAMDATA", "c:\\programdata")
+	if platform.IsWindows(plat) {
+		env.Set("PROGRAMDATA", "c:\\programdata")
 	}
-	h.Env.Set(global.EnvConfig, h.Path.Join(h.OS.Home(), ".wrangle", "config.yml"))
+	env.Set(global.EnvConfig, path.Join(os.Home(), ".wrangle", "config.yml"))
 
+	fs := target.FS()
 	// setup the filesystem here
-	h.FS.MkdirAll(h.OS.Home(), 0644)
-	pwd, _ := h.OS.WorkingDirectory()
-	h.FS.MkdirAll(pwd, 0644)
+	fs.MkdirAll(os.Home(), 0700)
+	pwd, _ := os.WorkingDirectory()
+	fs.MkdirAll(pwd, 0700)
 
-	di.RegisterInstance(container, h.Env)
-	di.RegisterInstance(container, h.FS)
-	di.RegisterInstance(container, h.Path)
+	di.RegisterInstance(container, env)
+	di.RegisterInstance(container, fs)
+	di.RegisterInstance(container, path)
+
 	t := &test{
 		server:    server,
 		container: container,
@@ -125,7 +127,7 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys os.OS, logger log.
 		{"shim", "1.0.0", []string{"0.8.0", "0.9.0", "1.0.0"}},
 	}
 	extension := ""
-	if opsys.Platform() == os.MockWindowsPlatform {
+	if platform.IsWindows(opsys.Platform()) {
 		extension = ".exe"
 	}
 	var items []*feed.Item
