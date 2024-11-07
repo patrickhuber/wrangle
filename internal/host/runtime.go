@@ -47,11 +47,11 @@ func New() Host {
 	target := cross.New()
 
 	// system abstractions
-	di.RegisterInstance(container, target.Console)
-	di.RegisterInstance(container, target.Env)
-	di.RegisterInstance(container, target.OS)
-	di.RegisterInstance(container, target.Path)
-	di.RegisterInstance(container, target.FS)
+	di.RegisterInstance(container, target.Console())
+	di.RegisterInstance(container, target.Env())
+	di.RegisterInstance(container, target.OS())
+	di.RegisterInstance(container, target.Path())
+	di.RegisterInstance(container, target.FS())
 
 	// actions
 	container.RegisterConstructor(archive.NewFactory)
