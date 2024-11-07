@@ -189,8 +189,12 @@ func (i *install) setExecutable(execPath string) error {
 }
 
 func (i *install) shimExecutable(execPath string, meta *actions.Metadata) error {
+	shell := "bash"
+	if platform.IsWindows(i.opsys.Platform()) {
+		shell = "powershell"
+	}
 	return i.shim.Execute(&ShimRequest{
-		Shell:       "bash",
+		Shell:       shell,
 		Executables: []string{execPath},
 	})
 }
