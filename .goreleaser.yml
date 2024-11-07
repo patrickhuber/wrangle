@@ -1,6 +1,8 @@
 # see documentation at https://goreleaser.com
 project_name: wrangle
 
+version: 2
+
 before:
   hooks:
   # You may remove this if you don't use go modules.
@@ -36,7 +38,7 @@ checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ incpatch .Version }}"
+  version_template: "{{ incpatch .Version }}"
 
 changelog:
   sort: asc
