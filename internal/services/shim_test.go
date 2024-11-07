@@ -3,11 +3,11 @@ package services_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/platform"
-	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/config"
-	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/stretchr/testify/require"
 )
@@ -26,23 +26,21 @@ func TestShim(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			h := host.NewTest(test.platform, nil, nil)
-
-			container := h.Container()
-
-			svc, err := di.Resolve[services.Shim](container)
-			require.NoError(t, err)
-
-			fs, err := di.Resolve[fs.FS](container)
-			require.NoError(t, err)
-
-			configuration, err := di.Resolve[services.Configuration](container)
+			target := cross.NewTest(test.platform, arch.AMD64)
+			fs := target.FS()
+			os := target.OS()
+			env := target.Env()
+			path := target.Path()
+			log := log.Memory()
+			configuration, err := services.NewConfiguration(os, env, fs, path, log)
 			require.NoError(t, err)
 
 			cfg := configuration.GlobalDefault()
 			require.NoError(t, err)
 
-			globalConfigPath := configuration.DefaultGlobalConfigFilePath()
+			globalConfigPath, err := configuration.DefaultGlobalConfigFilePath()
+			require.NoError(t, err)
+
 			err = config.WriteFile(fs, globalConfigPath, cfg)
 			require.NoError(t, err)
 
@@ -53,11 +51,12 @@ func TestShim(t *testing.T) {
 			require.NoError(t, err)
 
 			req := &services.ShimRequest{
-				Shell:   "bash",
-				Package: "test",
-				Version: "1.0.0",
+				Shell:       "bash",
+				Executables: []string{"/opt/wrangle/package/test/1.0.0/" + test.exeName},
 			}
-			err = svc.Execute(req)
+
+			shim := services.NewShim(fs, path, configuration, log)
+			err = shim.Execute(req)
 			if err != nil {
 				t.Fatal(err)
 			}

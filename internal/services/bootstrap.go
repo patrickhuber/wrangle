@@ -53,8 +53,12 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 	// load the default configuration path
 	// overwrite if the config file is set as a request parameter
 	var globalConfigFilePath = r.ConfigFile
+	var err error
 	if globalConfigFilePath == "" {
-		globalConfigFilePath = b.configuration.DefaultGlobalConfigFilePath()
+		globalConfigFilePath, err = b.configuration.DefaultGlobalConfigFilePath()
+		if err != nil {
+			return err
+		}
 	}
 
 	// fetch the global default from the configuration service we do it here so
@@ -65,7 +69,7 @@ func (b *bootstrap) Execute(r *BootstrapRequest) error {
 
 	// ensure the path exists
 	globalConfigFolder := b.path.Dir(globalConfigFilePath)
-	err := b.fs.MkdirAll(globalConfigFolder, 0700)
+	err = b.fs.MkdirAll(globalConfigFolder, 0700)
 	if err != nil {
 		return err
 	}

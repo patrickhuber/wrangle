@@ -21,19 +21,23 @@ func TestInstall(t *testing.T) {
 	type fileTest struct {
 		platform platform.Platform
 		file     string
+		shim     string
 	}
 	files := []fileTest{
 		{
 			platform: platform.Windows,
-			file:     `C:\ProgramData\wrangle\packages\test\1.0.0\test-1.0.0-windows-amd64.exe`,
+			file:     `C:\ProgramData\wrangle\packages\test\1.0.0\test.exe`,
+			shim:     `C:\ProgramData\wrangle\bin\test.exe`,
 		},
 		{
 			platform: platform.Linux,
-			file:     "/opt/wrangle/packages/test/1.0.0/test-1.0.0-linux-amd64",
+			file:     "/opt/wrangle/packages/test/1.0.0/test",
+			shim:     `/opt/wrangle/bin/test`,
 		},
 		{
 			platform: platform.Darwin,
-			file:     "/opt/wrangle/packages/test/1.0.0/test-1.0.0-darwin-amd64",
+			file:     "/opt/wrangle/packages/test/1.0.0/test",
+			shim:     `/opt/wrangle/bin/test`,
 		},
 	}
 	packages := []packageTest{
@@ -51,7 +55,7 @@ func TestInstall(t *testing.T) {
 			t.Run(fmt.Sprintf("%s_%s_%s", f.platform.String(), p.name, p.version), func(t *testing.T) {
 				s := host.NewTest(f.platform, nil, nil)
 				defer s.Close()
-				RunInstallTest(t, f.file, p.name, p.version, s)
+				RunInstallTest(t, f.file, f.shim, p.name, p.version, s)
 			})
 		}
 	}
@@ -59,6 +63,7 @@ func TestInstall(t *testing.T) {
 
 func RunInstallTest(t *testing.T,
 	testFileLocation string,
+	shimFileLocation string,
 	packageName string,
 	packageVersion string,
 	s host.Host) {
@@ -74,7 +79,9 @@ func RunInstallTest(t *testing.T,
 	cfg := configuration.GlobalDefault()
 	require.NoError(t, err)
 
-	globalConfigPath := configuration.DefaultGlobalConfigFilePath()
+	globalConfigPath, err := configuration.DefaultGlobalConfigFilePath()
+	require.NoError(t, err)
+
 	err = config.WriteFile(fs, globalConfigPath, cfg)
 	require.NoError(t, err)
 
@@ -92,4 +99,8 @@ func RunInstallTest(t *testing.T,
 	ok, err := fs.Exists(testFileLocation)
 	require.Nil(t, err)
 	require.True(t, ok, "file '%s' not found", testFileLocation)
+
+	ok, err = fs.Exists(shimFileLocation)
+	require.Nil(t, err)
+	require.True(t, ok, "file '%s' not found", shimFileLocation)
 }

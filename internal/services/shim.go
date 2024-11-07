@@ -19,8 +19,6 @@ type Shim interface {
 
 type ShimRequest struct {
 	Shell       string
-	Package     string
-	Version     string
 	Executables []string
 }
 
@@ -57,12 +55,6 @@ exec {{.Executable}} "$@"`
 
 const powershellTemplate = `{{.Executable}} @args`
 
-var executableExtensions = []string{
-	".bat",
-	".cmd",
-	".exe",
-}
-
 func (s *shim) Execute(req *ShimRequest) error {
 	if !slices.Contains(s.shells, req.Shell) {
 		return fmt.Errorf("expected req.Shell to be one of %v", s.shells)
@@ -70,11 +62,6 @@ func (s *shim) Execute(req *ShimRequest) error {
 
 	// load the configuration
 	cfg, err := s.configuration.Get()
-	if err != nil {
-		return err
-	}
-
-	executables, err := s.getPackageVersionExecutables(cfg, req.Package, req.Version)
 	if err != nil {
 		return err
 	}
@@ -90,7 +77,7 @@ func (s *shim) Execute(req *ShimRequest) error {
 	}
 
 	var buf bytes.Buffer
-	for _, executable := range executables {
+	for _, executable := range req.Executables {
 		data := map[string]any{
 			"Executable": executable,
 		}
@@ -117,48 +104,6 @@ func (s *shim) getTemplate(shell string) (string, error) {
 		return powershellTemplate, nil
 	}
 	return "", fmt.Errorf("unable to find shim template for shell %s", shell)
-}
-
-func (s *shim) getPackageVersionExecutables(cfg config.Config, packageName string, packageVersion string) ([]string, error) {
-
-	// check package root
-	packagesRoot := cfg.Spec.Environment[global.EnvPackages]
-	packageRootPath := s.path.Join(packagesRoot, packageName)
-	_, err := s.fs.Stat(packageRootPath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to find installed package %s %w", packageName, err)
-	}
-
-	// check package version
-	packageVersionPath := s.path.Join(packageRootPath, packageVersion)
-	_, err = s.fs.Stat(packageVersionPath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to find installed package %s %s %w", packageName, packageVersion, err)
-	}
-
-	// loop over all files looking for executable flag to be set or known executable extensions
-	// TODO promote this to a 'executable' property on the package target
-	files, err := s.fs.ReadDir(packageVersionPath)
-	if err != nil {
-		return nil, err
-	}
-	var executables []string
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		filePath := s.path.Join(packageVersionPath, file.Name())
-		stat, err := s.fs.Stat(filePath)
-		if err != nil {
-			return nil, err
-		}
-		ext := s.path.Ext(file.Name())
-		if stat.Mode()&0111 == 0 && !slices.Contains(executableExtensions, ext) {
-			continue
-		}
-		executables = append(executables, s.path.Join(packageVersionPath, file.Name()))
-	}
-	return executables, nil
 }
 
 func (s *shim) getShimPath(cfg config.Config, executable string) string {

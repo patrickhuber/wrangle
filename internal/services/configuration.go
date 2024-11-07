@@ -161,12 +161,20 @@ func (c Configuration) GlobalDefault() config.Config {
 	return c.globalDefault
 }
 
-func (c Configuration) DefaultGlobalConfigFilePath() string {
-	return c.path.Join(c.os.Home(), ".wrangle", "config.yml")
+func (c Configuration) DefaultGlobalConfigFilePath() (string, error) {
+	home, err := c.os.Home()
+	if err != nil {
+		return "", err
+	}
+	return c.path.Join(home, ".wrangle", "config.yml"), nil
 }
 
-func (c Configuration) DefaultUserConfigurationPath() string {
-	return c.path.Join(c.os.Home(), ".wrangle", "config.yml")
+func (c Configuration) DefaultUserConfigurationPath() (string, error) {
+	home, err := c.os.Home()
+	if err != nil {
+		return "", err
+	}
+	return c.path.Join(home, ".wrangle", "config.yml"), nil
 }
 
 func (c Configuration) DefaultLocalConfigFilePath() (string, error) {
@@ -316,9 +324,13 @@ func (c Configuration) GlobalConfiguration() (config.Config, error) {
 
 	// check if the env var is set, use the value if so
 	globalDefault, ok := c.e.Lookup(global.EnvConfig)
+	var err error
 	if !ok {
 		// otherwise use default
-		globalDefault = c.DefaultGlobalConfigFilePath()
+		globalDefault, err = c.DefaultGlobalConfigFilePath()
+		if err != nil {
+			return config.Config{}, err
+		}
 	}
 
 	// load the file

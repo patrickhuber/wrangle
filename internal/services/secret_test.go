@@ -26,7 +26,10 @@ func TestSecrets(t *testing.T) {
 	cfg := configuration.GlobalDefault()
 	cfg.Spec.Stores = append(cfg.Spec.Stores, config.Store{Type: "memory", Name: "test"})
 
-	err = config.WriteFile(fs, configuration.DefaultGlobalConfigFilePath(), cfg)
+	globalConfigFilePath, err := configuration.DefaultGlobalConfigFilePath()
+	require.NoError(t, err)
+
+	err = config.WriteFile(fs, globalConfigFilePath, cfg)
 	require.Nil(t, err)
 
 	secrets, err := di.Resolve[services.Secret](h.Container())

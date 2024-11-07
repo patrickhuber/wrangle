@@ -13,7 +13,7 @@ require (
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/patrickhuber/go-cross v0.0.3
+	github.com/patrickhuber/go-cross v0.0.5
 	github.com/patrickhuber/go-di v0.5.4
 	github.com/patrickhuber/go-iter v0.5.3
 	github.com/patrickhuber/go-log v0.2.1

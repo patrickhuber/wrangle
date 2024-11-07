@@ -40,6 +40,9 @@ func main() {
 		appName = appName + ".exe"
 	}
 
+	home, err := o.Home()
+	handle(err)
+
 	app := &cli.App{
 		Metadata: map[string]any{
 			global.MetadataDependencyInjection: container,
@@ -66,7 +69,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    global.FlagConfig,
 				Aliases: []string{"g"},
-				Value:   path.Join(o.Home(), ".wrangle", "config.yml"),
+				Value:   path.Join(home, ".wrangle", "config.yml"),
 				EnvVars: []string{global.EnvConfig},
 			},
 			&cli.GenericFlag{

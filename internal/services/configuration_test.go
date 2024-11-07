@@ -165,7 +165,10 @@ func TestConfiguration(t *testing.T) {
 			fs, err := di.Resolve[fs.FS](h.Container())
 			require.NoError(t, err)
 
-			err = config.WriteFile(fs, configuration.DefaultGlobalConfigFilePath(), test.global)
+			globalConfigPath, err := configuration.DefaultGlobalConfigFilePath()
+			require.NoError(t, err)
+
+			err = config.WriteFile(fs, globalConfigPath, test.global)
 			require.NoError(t, err)
 
 			localConfigFilePath, err := configuration.DefaultLocalConfigFilePath()

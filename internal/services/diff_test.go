@@ -225,7 +225,9 @@ func setup(t *testing.T, cfg config.Config) context {
 	fs, err := di.Resolve[fs.FS](container)
 	require.NoError(t, err)
 
-	globalPath := configuration.DefaultGlobalConfigFilePath()
+	globalPath, err := configuration.DefaultGlobalConfigFilePath()
+	require.NoError(t, err)
+
 	err = config.WriteFile(fs, globalPath, cfg)
 	require.NoError(t, err)
 

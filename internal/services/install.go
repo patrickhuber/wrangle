@@ -9,6 +9,7 @@ import (
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-cross/os"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
@@ -24,6 +25,7 @@ type install struct {
 	metadataProvider actions.MetadataProvider
 	path             filepath.Provider
 	log              log.Logger
+	shim             Shim
 }
 
 type InstallRequest struct {
@@ -43,6 +45,7 @@ func NewInstall(
 	configuration Configuration,
 	metadataProvider actions.MetadataProvider,
 	path filepath.Provider,
+	shim Shim,
 	log log.Logger) Install {
 	return &install{
 		fs:               fs,
@@ -52,6 +55,7 @@ func NewInstall(
 		configuration:    configuration,
 		metadataProvider: metadataProvider,
 		path:             path,
+		shim:             shim,
 		log:              log,
 	}
 }
@@ -159,7 +163,7 @@ func (i *install) runTargets(
 			if !ok {
 				continue
 			}
-			err = i.setExecutable(execPath, meta)
+			err = i.setExecutable(execPath)
 			if err != nil {
 				return err
 			}
@@ -176,12 +180,19 @@ func (i *install) runTargets(
 	return nil
 }
 
-func (i *install) setExecutable(execPath string, meta *actions.Metadata) error {
+func (i *install) setExecutable(execPath string) error {
+	// windows platform will throw path error so skip here
+	if platform.IsWindows(i.opsys.Platform()) {
+		return nil
+	}
 	return i.fs.Chmod(execPath, 0755)
 }
 
 func (i *install) shimExecutable(execPath string, meta *actions.Metadata) error {
-	return nil
+	return i.shim.Execute(&ShimRequest{
+		Shell:       "bash",
+		Executables: []string{execPath},
+	})
 }
 
 func (i *install) runSteps(steps []*packages.ManifestStep, meta *actions.Metadata) error {

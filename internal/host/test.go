@@ -1,7 +1,6 @@
 package host
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -57,11 +56,12 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	if platform.IsWindows(plat) {
 		env.Set("PROGRAMDATA", "c:\\programdata")
 	}
-	env.Set(global.EnvConfig, path.Join(os.Home(), ".wrangle", "config.yml"))
+	home, _ := os.Home()
+	env.Set(global.EnvConfig, path.Join(home, ".wrangle", "config.yml"))
 
 	fs := target.FS()
 	// setup the filesystem here
-	fs.MkdirAll(os.Home(), 0700)
+	fs.MkdirAll(home, 0700)
 	pwd, _ := os.WorkingDirectory()
 	fs.MkdirAll(pwd, 0700)
 
@@ -151,12 +151,13 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys os.OS, logger log.
 										{
 											Platform:     opsys.Platform(),
 											Architecture: opsys.Architecture(),
+											Executables:  []string{pv.pkg + extension},
 											Steps: []*packages.ManifestStep{
 												{
 													Action: "download",
 													With: map[string]any{
 														"url": server.URL + "/test",
-														"out": fmt.Sprintf("%s-%s-%s-%s%s", pv.pkg, v, opsys.Platform(), opsys.Architecture(), extension),
+														"out": pv.pkg + extension,
 													},
 												},
 											},

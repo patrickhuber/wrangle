@@ -23,7 +23,10 @@ func TestListPackages(t *testing.T) {
 	configuration, err := di.Resolve[services.Configuration](h.Container())
 	require.Nil(t, err)
 
-	err = config.WriteFile(fs, configuration.DefaultGlobalConfigFilePath(), configuration.GlobalDefault())
+	globalConfigFilePath, err := configuration.DefaultGlobalConfigFilePath()
+	require.NoError(t, err)
+
+	err = config.WriteFile(fs, globalConfigFilePath, configuration.GlobalDefault())
 	require.Nil(t, err)
 
 	svc, err := di.Resolve[services.ListPackages](h.Container())

@@ -15,22 +15,22 @@ import (
 
 func TestLinuxBootstrap(t *testing.T) {
 	s := host.NewTest(platform.Linux, nil, nil)
-	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-linux-amd64"
-	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-linux-amd64"
+	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle"
+	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim"
 	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
 }
 
 func TestDarwinBootstrap(t *testing.T) {
 	s := host.NewTest(platform.Darwin, nil, nil)
-	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-darwin-amd64"
-	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim-1.0.0-darwin-amd64"
+	wrangleFileLocation := "/opt/wrangle/packages/wrangle/1.0.0/wrangle"
+	shimFileLocation := "/opt/wrangle/packages/shim/1.0.0/shim"
 	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
 }
 
 func TestWindowsBootstrap(t *testing.T) {
 	s := host.NewTest(platform.Windows, nil, nil)
-	wrangleFileLocation := "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle-1.0.0-windows-amd64.exe"
-	shimFileLocation := "C:/ProgramData/wrangle/packages/shim/1.0.0/shim-1.0.0-windows-amd64.exe"
+	wrangleFileLocation := "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle.exe"
+	shimFileLocation := "C:/ProgramData/wrangle/packages/shim/1.0.0/shim.exe"
 	RunBootstrapTest(t, s, wrangleFileLocation, shimFileLocation)
 }
 
