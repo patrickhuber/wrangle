@@ -9,30 +9,30 @@ import (
 )
 
 func TestService(t *testing.T) {
-	setup := func(t *testing.T) conformance.ServiceTester {
+	setup := func() conformance.ServiceTester {
 		items := conformance.GetItemList()
 		logger := log.Memory()
 		service := memory.NewService("test", logger, items...)
 		return conformance.NewServiceTester(service)
 	}
 	t.Run("can list all packages", func(t *testing.T) {
-		tester := setup(t)
+		tester := setup()
 		tester.CanListAllPackages(t)
 	})
 	t.Run("can return latest version", func(t *testing.T) {
-		tester := setup(t)
+		tester := setup()
 		tester.CanReturnLatestVersion(t)
 	})
 	t.Run("can return specific version", func(t *testing.T) {
-		tester := setup(t)
+		tester := setup()
 		tester.CanReturnSpecificVersion(t)
 	})
 	t.Run("can add version", func(t *testing.T) {
-		tester := setup(t)
+		tester := setup()
 		tester.CanAddVersion(t)
 	})
 	t.Run("can update existing version", func(t *testing.T) {
-		tester := setup(t)
+		tester := setup()
 		tester.CanUpdateExistingVersion(t)
 	})
 }

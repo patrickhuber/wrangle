@@ -9,7 +9,7 @@ import (
 )
 
 func TestService(t *testing.T) {
-	setup := func(t *testing.T, versions []string) githubrelease.Service {
+	setup := func(versions []string) githubrelease.Service {
 		releases := []*github.RepositoryRelease{}
 		for i := range versions {
 			version := versions[i]
@@ -20,7 +20,7 @@ func TestService(t *testing.T) {
 	}
 	t.Run("check when releases", func(t *testing.T) {
 		versions := []string{"v1.0.0", "v2.0.0"}
-		service := setup(t, versions)
+		service := setup(versions)
 		request := &githubrelease.CheckRequest{}
 		response, err := service.Check(request)
 		require.NoError(t, err)
@@ -30,7 +30,7 @@ func TestService(t *testing.T) {
 	t.Run("returns greater", func(t *testing.T) {
 		versions := []string{"v1.10.0", "v1.10.1", "v1.11.0", "v1.11.1"}
 
-		service := setup(t, versions)
+		service := setup(versions)
 		request := &githubrelease.CheckRequest{
 			Version: githubrelease.Version{
 				ID: "1.10.1",
@@ -43,7 +43,7 @@ func TestService(t *testing.T) {
 	})
 	t.Run("returns current release", func(t *testing.T) {
 		versions := []string{"v1.10.0", "v1.10.1", "v1.11.0", "v1.11.1"}
-		service := setup(t, versions)
+		service := setup(versions)
 		request := &githubrelease.CheckRequest{
 			Version: githubrelease.Version{
 				ID: "1.11.1",

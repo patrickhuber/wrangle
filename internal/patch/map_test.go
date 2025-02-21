@@ -9,7 +9,7 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	setup := func(t *testing.T) map[string]int {
+	setup := func() map[string]int {
 		return map[string]int{
 			"one":   1,
 			"two":   2,
@@ -17,7 +17,7 @@ func TestMap(t *testing.T) {
 		}
 	}
 	t.Run("can add", func(t *testing.T) {
-		m := setup(t)
+		m := setup()
 		p := patch.NewMap(
 			patch.MapSet("four", 4))
 
@@ -31,7 +31,7 @@ func TestMap(t *testing.T) {
 		require.Equal(t, 4, v)
 	})
 	t.Run("can remove", func(t *testing.T) {
-		m := setup(t)
+		m := setup()
 		p := patch.NewMap(
 			patch.MapRemove("two"))
 
@@ -44,7 +44,7 @@ func TestMap(t *testing.T) {
 		require.False(t, ok)
 	})
 	t.Run("can set", func(t *testing.T) {
-		m := setup(t)
+		m := setup()
 		p := patch.NewMap(
 			patch.MapSet("two", 4))
 
