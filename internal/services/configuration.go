@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 
 	"github.com/patrickhuber/go-cross/env"
@@ -185,7 +186,7 @@ func (c Configuration) DefaultLocalConfigFilePath() (string, error) {
 	return c.path.Join(wd, ".wrangle.yml"), nil
 }
 
-func NewGlobalDefault(os os.OS, e env.Environment, path filepath.Provider) (config.Config, error) {
+func GetDefaultInstallationRoot(os os.OS, e env.Environment, path filepath.Provider) (string, error) {
 	rootDirectory := "/opt/wrangle"
 	plat := os.Platform()
 
@@ -197,9 +198,13 @@ func NewGlobalDefault(os os.OS, e env.Environment, path filepath.Provider) (conf
 	case platform.IsPosix(p):
 		break
 	default:
-		return config.Config{}, fmt.Errorf("%s is unsupported", plat)
+		return "", fmt.Errorf("%s is unsupported", plat)
 	}
-	cfg := config.Config{
+	return rootDirectory, nil
+}
+
+func CreateDefaultConfiguation(rootDirectory string) config.Config {
+	return config.Config{
 		ApiVersion: config.ApiVersion,
 		Kind:       config.Kind,
 		Spec: config.Spec{
@@ -227,7 +232,14 @@ func NewGlobalDefault(os os.OS, e env.Environment, path filepath.Provider) (conf
 			},
 		},
 	}
-	return cfg, nil
+}
+
+func NewGlobalDefault(os os.OS, e env.Environment, path filepath.Provider) (config.Config, error) {
+	rootDirectory, err := GetDefaultInstallationRoot(os, e, path)
+	if err != nil {
+		return config.Config{}, err
+	}
+	return CreateDefaultConfiguation(rootDirectory), nil
 }
 
 func NewGlobalTestDefault(os os.OS, e env.Environment, path filepath.Provider) (config.Config, error) {
