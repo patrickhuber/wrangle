@@ -102,11 +102,6 @@ func (c Configuration) merge(global config.Config, locals ...config.Config) (con
 			return config.Config{}, fmt.Errorf("unable to merge configurations incompatible api versions '%s' and '%s'", current.ApiVersion, local.ApiVersion)
 		}
 
-		// apply local metadata to global metadata, overwriting any duplicates
-		for k, v := range local.Metadata {
-			current.Metadata[k] = v
-		}
-
 		// apply local environment to current metadata, overwriting any duplicates
 		for k, v := range local.Spec.Environment {
 			current.Spec.Environment[k] = v
@@ -127,10 +122,6 @@ func (c Configuration) merge(global config.Config, locals ...config.Config) (con
 			}
 			packages[key] = p
 		}
-	}
-
-	if len(current.Metadata) == 0 {
-		current.Metadata = nil
 	}
 
 	if len(current.Spec.Environment) == 0 {
@@ -335,7 +326,7 @@ func (c Configuration) LocalConfigurations() ([]config.Config, error) {
 func (c Configuration) GlobalConfiguration() (config.Config, error) {
 
 	// check if the env var is set, use the value if so
-	globalDefault, ok := c.e.Lookup(global.EnvConfig)
+	globalDefault, ok := c.e.Lookup(global.EnvSystemConfig)
 	var err error
 	if !ok {
 		// otherwise use default

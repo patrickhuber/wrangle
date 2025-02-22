@@ -26,7 +26,7 @@ func TestDiff(t *testing.T) {
 			Value: "TEST",
 		},
 		envdiff.Add{
-			Key:   global.EnvConfig,
+			Key:   global.EnvSystemConfig,
 			Value: "/home/fake/.wrangle/config.yml",
 		},
 		envdiff.Add{
@@ -65,7 +65,7 @@ func TestDiffVariableReplacement(t *testing.T) {
 			Value: "TEST",
 		},
 		envdiff.Add{
-			Key:   global.EnvConfig,
+			Key:   global.EnvSystemConfig,
 			Value: "/home/fake/.wrangle/config.yml",
 		},
 		envdiff.Add{

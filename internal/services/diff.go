@@ -176,7 +176,7 @@ func (e *diff) getVariableValues(cfg config.Config) (map[string]string, error) {
 func cleanEnv(m map[string]string) map[string]string {
 	delete(m, global.EnvDiff)
 	delete(m, global.EnvLocalConfig)
-	delete(m, global.EnvConfig)
+	delete(m, global.EnvSystemConfig)
 	return m
 }
 

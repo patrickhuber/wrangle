@@ -70,7 +70,7 @@ func main() {
 				Name:    global.FlagConfig,
 				Aliases: []string{"g"},
 				Value:   path.Join(home, ".wrangle", "config.yml"),
-				EnvVars: []string{global.EnvConfig},
+				EnvVars: []string{global.EnvSystemConfig},
 			},
 			&cli.GenericFlag{
 				Name:        global.FlagOutput,
@@ -97,9 +97,9 @@ func main() {
 				return err
 			}
 
-			_, ok := environment.Lookup(global.EnvConfig)
+			_, ok := environment.Lookup(global.EnvSystemConfig)
 			if !ok {
-				environment.Set(global.EnvConfig, globalConfigFile)
+				environment.Set(global.EnvSystemConfig, globalConfigFile)
 			}
 
 			return nil

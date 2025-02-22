@@ -53,10 +53,10 @@ func (i *initialize) Execute(r *InitializeRequest) error {
 
 	if exists {
 		if !r.Force {
-			i.logger.Infof("file '%s' exists, force=false, skipping create")
+			i.logger.Infof("file '%s' exists, force == false, skipping create")
 			return nil
 		}
-		i.logger.Infof("force = true, overwriting '%s'")
+		i.logger.Infof("force == true, overwriting '%s'")
 	}
 	cfg := config.Config{
 		ApiVersion: config.ApiVersion,

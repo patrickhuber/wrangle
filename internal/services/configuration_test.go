@@ -58,10 +58,6 @@ func TestConfiguration(t *testing.T) {
 		{
 			name: "local override",
 			global: config.Config{
-				Metadata: map[string]string{
-					"TEST":   "global",
-					"GLOBAL": "",
-				},
 				Spec: config.Spec{
 					Environment: map[string]string{
 						"TEST":   "global",
@@ -70,10 +66,6 @@ func TestConfiguration(t *testing.T) {
 				},
 			},
 			local: config.Config{
-				Metadata: map[string]string{
-					"TEST":  "local",
-					"LOCAL": "",
-				},
 				Spec: config.Spec{
 					Environment: map[string]string{
 						"TEST":  "local",
@@ -82,11 +74,6 @@ func TestConfiguration(t *testing.T) {
 				},
 			},
 			expected: config.Config{
-				Metadata: map[string]string{
-					"TEST":   "local",
-					"LOCAL":  "",
-					"GLOBAL": "",
-				},
 				Spec: config.Spec{
 					Environment: map[string]string{
 						"TEST":   "local",

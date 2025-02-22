@@ -119,7 +119,7 @@ func (b *bootstrap) overwriteConfigDefaults(cfg config.Config, req *BootstrapReq
 	}
 
 	if req.ConfigFile != "" {
-		cfg.Spec.Environment[global.EnvConfig] = req.ConfigFile
+		cfg.Spec.Environment[global.EnvSystemConfig] = req.ConfigFile
 	}
 
 	if req.PackageDirectory != "" {
@@ -150,7 +150,7 @@ func (b *bootstrap) installPackages(cfg config.Config) error {
 }
 
 func (b *bootstrap) setGlobalEnvironmentVariables(cfg config.Config) error {
-	keys := []string{global.EnvBin, global.EnvConfig, global.EnvRoot, global.EnvPackages}
+	keys := []string{global.EnvBin, global.EnvSystemConfig, global.EnvRoot, global.EnvPackages}
 	for _, k := range keys {
 		v, ok := cfg.Spec.Environment[k]
 		if !ok {

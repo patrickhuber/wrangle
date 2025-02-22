@@ -57,7 +57,7 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 		env.Set("PROGRAMDATA", "c:\\programdata")
 	}
 	home, _ := os.Home()
-	env.Set(global.EnvConfig, path.Join(home, ".wrangle", "config.yml"))
+	env.Set(global.EnvSystemConfig, path.Join(home, ".wrangle", "config.yml"))
 
 	fs := target.FS()
 	// setup the filesystem here

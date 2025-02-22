@@ -42,6 +42,17 @@ func WriteFile(fs fs.FS, file string, cfg Config) error {
 	return Encode(e, f, cfg)
 }
 
+func WriteFileIfNotExists(fs fs.FS, file string, cfg Config) error {
+	exists, err := fs.Exists(file)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	return WriteFile(fs, file, cfg)
+}
+
 func getEncoding(file string) (Encoding, error) {
 	var encoding Encoding
 	switch strings.ToLower(filepath.Ext(file)) {

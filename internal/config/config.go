@@ -8,10 +8,9 @@ const (
 )
 
 type Config struct {
-	ApiVersion string            `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string            `json:"kind" yaml:"kind"`
-	Metadata   map[string]string `json:"metadata" yaml:"metadata"`
-	Spec       Spec              `json:"spec" yaml:"spec"`
+	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string `json:"kind" yaml:"kind"`
+	Spec       Spec   `json:"spec" yaml:"spec"`
 }
 
 type Spec struct {
