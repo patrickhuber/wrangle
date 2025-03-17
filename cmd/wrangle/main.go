@@ -67,7 +67,7 @@ func main() {
 				EnvVars: []string{global.EnvPackages},
 			},
 			&cli.StringFlag{
-				Name:    global.FlagConfig,
+				Name:    global.FlagSystemConfig,
 				Aliases: []string{"g"},
 				Value:   path.Join(home, ".wrangle", "config.yml"),
 				EnvVars: []string{global.EnvSystemConfig},
@@ -82,7 +82,7 @@ func main() {
 		},
 		Before: func(ctx *cli.Context) error {
 
-			globalConfigFile := ctx.String(global.FlagConfig)
+			globalConfigFile := ctx.String(global.FlagSystemConfig)
 			if globalConfigFile == "" {
 				return nil
 			}
