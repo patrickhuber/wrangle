@@ -94,13 +94,13 @@ func RunInstallTest(t *testing.T,
 	require.NoError(t, err)
 
 	err = install.Execute(req)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	ok, err := fs.Exists(testFileLocation)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.True(t, ok, "file '%s' not found", testFileLocation)
 
 	ok, err = fs.Exists(shimFileLocation)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.True(t, ok, "file '%s' not found", shimFileLocation)
 }

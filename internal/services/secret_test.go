@@ -17,10 +17,10 @@ func TestSecrets(t *testing.T) {
 	defer h.Close()
 
 	fs, err := di.Resolve[fs.FS](h.Container())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	configuration, err := di.Resolve[services.Configuration](h.Container())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	// add in the memory store
 	cfg := configuration.GlobalDefault()
@@ -30,7 +30,7 @@ func TestSecrets(t *testing.T) {
 	require.NoError(t, err)
 
 	err = config.WriteFile(fs, globalConfigFilePath, cfg)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	secrets, err := di.Resolve[services.Secret](h.Container())
 	require.NoError(t, err)

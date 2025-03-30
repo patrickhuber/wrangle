@@ -36,7 +36,7 @@ func setupItemRepository(t *testing.T) feed.ItemRepository {
 	items := conformance.GetItemList()
 	for _, item := range items {
 		err := repo.Save(item)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	}
 	return repo
 }

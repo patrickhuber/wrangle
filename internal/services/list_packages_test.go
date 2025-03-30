@@ -18,16 +18,16 @@ func TestListPackages(t *testing.T) {
 	defer h.Close()
 
 	fs, err := di.Resolve[fs.FS](h.Container())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	configuration, err := di.Resolve[services.Configuration](h.Container())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	globalConfigFilePath, err := configuration.DefaultGlobalConfigFilePath()
 	require.NoError(t, err)
 
 	err = config.WriteFile(fs, globalConfigFilePath, configuration.GlobalDefault())
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	svc, err := di.Resolve[services.ListPackages](h.Container())
 	require.NoError(t, err)

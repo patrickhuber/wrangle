@@ -42,13 +42,13 @@ func RunBootstrapTest(t *testing.T,
 	container := s.Container()
 
 	bootstrap, err := di.Resolve[services.Bootstrap](container)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	opsys, err := di.Resolve[os.OS](container)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	path, err := di.Resolve[filepath.Provider](container)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	rootDirectory := "/opt/wrangle/"
 	if platform.IsWindows(opsys.Platform()) {
@@ -65,20 +65,20 @@ func RunBootstrapTest(t *testing.T,
 		PackageDirectory: packageDirectory,
 	}
 	err = bootstrap.Execute(req)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	fs, err := di.Resolve[fs.FS](container)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	ok, err := fs.Exists(globalConfigFile)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.True(t, ok)
 
 	ok, err = fs.Exists(wrangleFileLocation)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.True(t, ok)
 
 	ok, err = fs.Exists(shimFileLocation)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.True(t, ok)
 }
