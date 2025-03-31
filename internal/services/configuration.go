@@ -180,13 +180,11 @@ func (c Configuration) DefaultLocalConfigFilePath() (string, error) {
 func GetDefaultInstallationRoot(os os.OS, e env.Environment, path filepath.Provider) (string, error) {
 	rootDirectory := "/opt/wrangle"
 	plat := os.Platform()
-
-	p := platform.Platform(plat)
 	switch {
-	case platform.IsWindows(p):
+	case platform.IsWindows(plat):
 		programData := e.Get("PROGRAMDATA")
 		rootDirectory = path.Join(programData, "wrangle")
-	case platform.IsPosix(p):
+	case platform.IsPosix(plat):
 		break
 	default:
 		return "", fmt.Errorf("%s is unsupported", plat)
