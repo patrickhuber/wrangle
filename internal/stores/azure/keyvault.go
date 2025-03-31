@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
-	"github.com/patrickhuber/wrangle/internal/dataptr"
+	"github.com/patrickhuber/wrangle/internal/dataptr/ast"
 	"github.com/patrickhuber/wrangle/internal/stores"
 )
 
@@ -109,7 +109,7 @@ func (s Store) List() ([]stores.Key, error) {
 						Value: version,
 					},
 				},
-				Path: dataptr.DataPointer{},
+				Path: ast.DataPointer{},
 			})
 		}
 	}

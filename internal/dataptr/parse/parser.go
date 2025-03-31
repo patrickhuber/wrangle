@@ -4,41 +4,41 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/patrickhuber/wrangle/internal/dataptr"
+	"github.com/patrickhuber/wrangle/internal/dataptr/ast"
 	"github.com/patrickhuber/wrangle/internal/dataptr/lex"
 	"github.com/patrickhuber/wrangle/internal/dataptr/token"
 )
 
-func Parse(str string) (dataptr.DataPointer, error) {
+func Parse(str string) (ast.DataPointer, error) {
 	lexer := lex.New(str)
 	return parse(lexer)
 }
 
-func parse(lexer *lex.Lexer) (dataptr.DataPointer, error) {
-	var segments []dataptr.Segment
+func parse(lexer *lex.Lexer) (ast.DataPointer, error) {
+	var segments []ast.Segment
 	for {
 		// can be a single segment
 		segment, err := parseSegment(lexer)
 		if err != nil {
-			return dataptr.DataPointer{}, err
+			return ast.DataPointer{}, err
 		}
 		segments = append(segments, segment)
 
 		// or multiple
 		ok, err := eat(lexer, token.Slash)
 		if err != nil {
-			return dataptr.DataPointer{}, err
+			return ast.DataPointer{}, err
 		}
 		if !ok {
 			break
 		}
 	}
-	return dataptr.DataPointer{
+	return ast.DataPointer{
 		Segments: segments,
 	}, nil
 }
 
-func parseSegment(lexer *lex.Lexer) (dataptr.Segment, error) {
+func parseSegment(lexer *lex.Lexer) (ast.Segment, error) {
 	tok, err := lexer.Peek()
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func parseSegment(lexer *lex.Lexer) (dataptr.Segment, error) {
 		if err != nil {
 			return nil, err
 		}
-		return dataptr.Index{
+		return ast.Index{
 			Index: i,
 		}, nil
 	}
@@ -67,7 +67,7 @@ func parseSegment(lexer *lex.Lexer) (dataptr.Segment, error) {
 		return nil, err
 	}
 	if !ok {
-		return dataptr.Element{
+		return ast.Element{
 			Name: name,
 		}, nil
 	}
@@ -77,7 +77,7 @@ func parseSegment(lexer *lex.Lexer) (dataptr.Segment, error) {
 	if err != nil {
 		return nil, err
 	}
-	return dataptr.Constraint{
+	return ast.Constraint{
 		Key:   name,
 		Value: value,
 	}, nil

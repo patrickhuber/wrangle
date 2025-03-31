@@ -4,13 +4,13 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/patrickhuber/wrangle/internal/dataptr"
+	"github.com/patrickhuber/wrangle/internal/dataptr/ast"
 	"github.com/patrickhuber/wrangle/internal/dataptr/parse"
 )
 
 type Key struct {
 	Data Data
-	Path dataptr.DataPointer
+	Path ast.DataPointer
 }
 
 type Data struct {
@@ -64,7 +64,7 @@ func ParseKey(str string) (Key, error) {
 	if !eat(str, '/') {
 		return Key{
 			Data: data,
-			Path: dataptr.DataPointer{},
+			Path: ast.DataPointer{},
 		}, nil
 	}
 	str = str[1:]

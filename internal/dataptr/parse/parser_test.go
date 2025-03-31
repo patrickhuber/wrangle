@@ -3,7 +3,7 @@ package parse_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/wrangle/internal/dataptr"
+	"github.com/patrickhuber/wrangle/internal/dataptr/ast"
 	"github.com/patrickhuber/wrangle/internal/dataptr/parse"
 	"github.com/stretchr/testify/require"
 )
@@ -12,48 +12,48 @@ func TestParse(t *testing.T) {
 	type test struct {
 		name string
 		str  string
-		ptr  dataptr.DataPointer
+		ptr  ast.DataPointer
 	}
 	tests := []test{
 
-		{"name", "name", dataptr.DataPointer{
-			Segments: []dataptr.Segment{
-				dataptr.Element{
+		{"name", "name", ast.DataPointer{
+			Segments: []ast.Segment{
+				ast.Element{
 					Name: "name",
 				},
 			},
 		}},
-		{"index", "0", dataptr.DataPointer{
-			Segments: []dataptr.Segment{
-				dataptr.Index{
+		{"index", "0", ast.DataPointer{
+			Segments: []ast.Segment{
+				ast.Index{
 					Index: 0,
 				},
 			},
 		}},
-		{"constraint", "key=value", dataptr.DataPointer{
-			Segments: []dataptr.Segment{
-				dataptr.Constraint{
+		{"constraint", "key=value", ast.DataPointer{
+			Segments: []ast.Segment{
+				ast.Constraint{
 					Key:   "key",
 					Value: "value",
 				},
 			},
 		}},
-		{"multi name", "parent/child", dataptr.DataPointer{
-			Segments: []dataptr.Segment{
-				dataptr.Element{
+		{"multi name", "parent/child", ast.DataPointer{
+			Segments: []ast.Segment{
+				ast.Element{
 					Name: "parent",
 				},
-				dataptr.Element{
+				ast.Element{
 					Name: "child",
 				},
 			},
 		}},
-		{"name constraint", "name/key=value", dataptr.DataPointer{
-			Segments: []dataptr.Segment{
-				dataptr.Element{
+		{"name constraint", "name/key=value", ast.DataPointer{
+			Segments: []ast.Segment{
+				ast.Element{
 					Name: "name",
 				},
-				dataptr.Constraint{
+				ast.Constraint{
 					Key:   "key",
 					Value: "value",
 				},
