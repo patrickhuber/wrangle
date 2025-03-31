@@ -5,7 +5,6 @@ const (
 	EnvBin          = EnvPrefix + "BIN"
 	EnvRoot         = EnvPrefix + "ROOT"
 	EnvPackages     = EnvPrefix + "PACKAGES"
-	EnvConfig       = EnvPrefix + "CONFIG"
 	EnvDiff         = EnvPrefix + "DIFF"
 	EnvLocalConfig  = EnvPrefix + "LOCAL_CONFIG"
 	EnvUserConfig   = EnvPrefix + "USER_CONFIG"
