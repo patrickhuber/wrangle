@@ -1,13 +1,14 @@
 package global
 
 const (
-	EnvBin          = "WRANGLE_BIN"
-	EnvRoot         = "WRANGLE_ROOT"
-	EnvPackages     = "WRANGLE_PACKAGES"
-	EnvConfig       = "WRANLGE_CONFIG"
-	EnvDiff         = "WRANGLE_DIFF"
-	EnvLocalConfig  = "WRANGLE_LOCAL_CONFIG"
-	EnvUserConfig   = "WRANGLE_USER_CONFIG"
-	EnvSystemConfig = "WRANGLE_GLOBAL_CONFIG"
-	EnvLogLevel     = "WRANGLE_LOG_LEVEL"
+	EnvPrefix       = "WRANGLE_"
+	EnvBin          = EnvPrefix + "BIN"
+	EnvRoot         = EnvPrefix + "ROOT"
+	EnvPackages     = EnvPrefix + "PACKAGES"
+	EnvConfig       = EnvPrefix + "CONFIG"
+	EnvDiff         = EnvPrefix + "DIFF"
+	EnvLocalConfig  = EnvPrefix + "LOCAL_CONFIG"
+	EnvUserConfig   = EnvPrefix + "USER_CONFIG"
+	EnvSystemConfig = EnvPrefix + "GLOBAL_CONFIG"
+	EnvLogLevel     = EnvPrefix + "LOG_LEVEL"
 )
