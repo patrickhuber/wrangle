@@ -22,8 +22,7 @@ import (
 var version = ""
 
 func main() {
-	h, err := host.New()
-	handle(err)
+	h := host.New()
 
 	container := h.Container()
 
