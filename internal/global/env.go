@@ -6,9 +6,9 @@ const (
 	EnvRoot         = EnvPrefix + "ROOT"
 	EnvPackages     = EnvPrefix + "PACKAGES"
 	EnvConfig       = EnvPrefix + "CONFIG"
-	EnvDiff         = EnvPrefix + "DIFF"
 	EnvLocalConfig  = EnvPrefix + "LOCAL_CONFIG"
 	EnvUserConfig   = EnvPrefix + "USER_CONFIG"
-	EnvSystemConfig = EnvPrefix + "GLOBAL_CONFIG"
+	EnvSystemConfig = EnvPrefix + "SYSTEM_CONFIG"
 	EnvLogLevel     = EnvPrefix + "LOG_LEVEL"
+	EnvDiff         = EnvPrefix + "DIFF"
 )

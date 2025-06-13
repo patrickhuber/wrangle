@@ -26,12 +26,12 @@ func TestDiff(t *testing.T) {
 			Value: "TEST",
 		},
 		envdiff.Add{
-			Key:   global.EnvSystemConfig,
-			Value: "/home/fake/.wrangle/config.yml",
-		},
-		envdiff.Add{
 			Key:   global.EnvLocalConfig,
 			Value: "/working",
+		},
+		envdiff.Add{
+			Key:   global.EnvSystemConfig,
+			Value: "/home/fake/.wrangle/config.yml",
 		},
 	}
 	diff, err := envdiff.Encode(expected)
@@ -65,12 +65,12 @@ func TestDiffVariableReplacement(t *testing.T) {
 			Value: "TEST",
 		},
 		envdiff.Add{
-			Key:   global.EnvSystemConfig,
-			Value: "/home/fake/.wrangle/config.yml",
-		},
-		envdiff.Add{
 			Key:   global.EnvLocalConfig,
 			Value: "/working",
+		},
+		envdiff.Add{
+			Key:   global.EnvSystemConfig,
+			Value: "/home/fake/.wrangle/config.yml",
 		},
 	}
 	diff, err := envdiff.Encode(expected)
@@ -128,8 +128,8 @@ func TestDiffDifferentDir(t *testing.T) {
 			startDirectory: "/grand/parent/child",
 			nextDirectory:  "/grand/parent/child/baby",
 			expected: map[string]string{
-				"WRANGLE_GLOBAL_CONFIG": "/home/fake/.wrangle/config.yml",
-				"WRANGLE_LOCAL_CONFIG":  "/grand/parent/child/baby",
+				global.EnvSystemConfig: "/home/fake/.wrangle/config.yml",
+				global.EnvLocalConfig:  "/grand/parent/child/baby",
 			},
 		},
 		{
@@ -137,8 +137,8 @@ func TestDiffDifferentDir(t *testing.T) {
 			startDirectory: "/grand/parent/child",
 			nextDirectory:  "/grand/parent",
 			expected: map[string]string{
-				"WRANGLE_GLOBAL_CONFIG": "/home/fake/.wrangle/config.yml",
-				"WRANGLE_LOCAL_CONFIG":  "/grand/parent",
+				global.EnvSystemConfig: "/home/fake/.wrangle/config.yml",
+				global.EnvLocalConfig:  "/grand/parent",
 			},
 		},
 		{
@@ -146,8 +146,8 @@ func TestDiffDifferentDir(t *testing.T) {
 			startDirectory: "/grand/parent/child",
 			nextDirectory:  "/grand/parent/sibling",
 			expected: map[string]string{
-				"WRANGLE_GLOBAL_CONFIG": "/home/fake/.wrangle/config.yml",
-				"WRANGLE_LOCAL_CONFIG":  "/grand/parent/sibling",
+				global.EnvSystemConfig: "/home/fake/.wrangle/config.yml",
+				global.EnvLocalConfig:  "/grand/parent/sibling",
 			},
 		}}
 	for _, test := range tests {

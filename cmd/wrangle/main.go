@@ -14,7 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/enums"
 	"github.com/patrickhuber/wrangle/internal/global"
-	setup "github.com/patrickhuber/wrangle/internal/host"
+	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/urfave/cli/v2"
 )
 
@@ -22,8 +22,10 @@ import (
 var version = ""
 
 func main() {
-	s := setup.New()
-	container := s.Container()
+	h, err := host.New()
+	handle(err)
+
+	container := h.Container()
 
 	o, err := di.Resolve[os.OS](container)
 	handle(err)
