@@ -1,8 +1,8 @@
 module github.com/patrickhuber/wrangle
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.24.0
+toolchain go1.24.3
 
 require (
 	github.com/99designs/keyring v1.2.2
@@ -59,6 +59,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/patrickhuber/go-config v0.1.7 // indirect
+	github.com/patrickhuber/go-dataptr v0.1.6 // indirect
 	github.com/patrickhuber/go-types v0.6.0 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect

@@ -27,6 +27,14 @@ func ReadFile(fs fs.FS, file string) (Config, error) {
 	return cfg, err
 }
 
+func ReadOrCreateFile(fs fs.FS, file string, defaultFactory func() Config) (Config, error) {
+	err := WriteFileIfNotExists(fs, file, defaultFactory)
+	if err != nil {
+		return Config{}, err
+	}
+	return ReadFile(fs, file)
+}
+
 func WriteFile(fs fs.FS, file string, cfg Config) error {
 	f, err := fs.OpenFile(file, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
@@ -42,7 +50,7 @@ func WriteFile(fs fs.FS, file string, cfg Config) error {
 	return Encode(e, f, cfg)
 }
 
-func WriteFileIfNotExists(fs fs.FS, file string, cfg Config) error {
+func WriteFileIfNotExists(fs fs.FS, file string, defaultFactory func() Config) error {
 	exists, err := fs.Exists(file)
 	if err != nil {
 		return err
@@ -50,7 +58,7 @@ func WriteFileIfNotExists(fs fs.FS, file string, cfg Config) error {
 	if exists {
 		return nil
 	}
-	return WriteFile(fs, file, cfg)
+	return WriteFile(fs, file, defaultFactory())
 }
 
 func getEncoding(file string) (Encoding, error) {
