@@ -12,11 +12,12 @@ import (
 )
 
 func TestSystemProvider(t *testing.T) {
+
 	// arrange
 	target := cross.NewTest(platform.Linux, arch.AMD64)
 	fileSystem := target.FS()
-	fakeHomePath := "/home/fake/.wrangle/config.yml"
-	err := config.WriteFile(fileSystem, fakeHomePath, config.Config{})
+	fakeSystemConfigPath := "/opt/wrangle/config/config.yml"
+	err := config.WriteFile(fileSystem, fakeSystemConfigPath, config.Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,11 +28,12 @@ func TestSystemProvider(t *testing.T) {
 		MergedConfiguration: map[string]any{
 			"spec": map[string]any{
 				"env": map[string]any{
-					global.EnvSystemConfig: fakeHomePath,
+					global.EnvSystemConfig: fakeSystemConfigPath,
 				},
 			},
 		},
 	})
+
 	// assert
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
