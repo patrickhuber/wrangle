@@ -15,7 +15,9 @@ require (
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/patrickhuber/go-config v0.1.7
 	github.com/patrickhuber/go-cross v0.0.5
+	github.com/patrickhuber/go-dataptr v0.1.7
 	github.com/patrickhuber/go-di v0.5.4
 	github.com/patrickhuber/go-iter v0.5.3
 	github.com/patrickhuber/go-log v0.2.1
@@ -58,8 +60,6 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
-	github.com/patrickhuber/go-config v0.1.7 // indirect
-	github.com/patrickhuber/go-dataptr v0.1.6 // indirect
 	github.com/patrickhuber/go-types v0.6.0 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
