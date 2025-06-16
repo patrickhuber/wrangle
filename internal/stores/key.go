@@ -4,8 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/patrickhuber/wrangle/internal/dataptr"
-	"github.com/patrickhuber/wrangle/internal/dataptr/parse"
+	"github.com/patrickhuber/go-dataptr"
 )
 
 type Key struct {
@@ -67,9 +66,9 @@ func ParseKey(str string) (Key, error) {
 			Path: dataptr.DataPointer{},
 		}, nil
 	}
-	str = str[1:]
+	str = str[0:]
 
-	ptr, err := parse.Parse(str)
+	ptr, err := dataptr.Parse(str)
 	if err != nil {
 		return Key{}, err
 	}

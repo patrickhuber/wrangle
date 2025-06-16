@@ -3,7 +3,7 @@ package stores_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/wrangle/internal/dataptr"
+	"github.com/patrickhuber/go-dataptr"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/stretchr/testify/require"
 )
@@ -63,8 +63,8 @@ func TestKeyParse(t *testing.T) {
 				},
 				Path: dataptr.DataPointer{
 					Segments: []dataptr.Segment{
-						dataptr.Element{
-							Name: "test",
+						dataptr.Key{
+							Key: "test",
 						},
 					},
 				},
@@ -81,8 +81,8 @@ func TestKeyParse(t *testing.T) {
 				},
 				Path: dataptr.DataPointer{
 					Segments: []dataptr.Segment{
-						dataptr.Element{
-							Name: "test",
+						dataptr.Key{
+							Key: "test",
 						},
 					},
 				},
