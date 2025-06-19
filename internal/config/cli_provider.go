@@ -7,11 +7,11 @@ import (
 )
 
 type CliProvider struct {
-	ctx     cli.Context
+	ctx     *cli.Context
 	flagMap map[string]string
 }
 
-func NewCliProvider(ctx cli.Context) config.Provider {
+func NewCliProvider(ctx *cli.Context) config.Provider {
 	flagMap := map[string]string{
 		global.FlagBin:          global.EnvBin,
 		global.FlagSystemConfig: global.EnvSystemConfig,
