@@ -167,7 +167,7 @@ func (i *install) runTargets(
 			if err != nil {
 				return err
 			}
-			err = i.shimExecutable(execPath, meta)
+			err = i.shimExecutable(execPath)
 			if err != nil {
 				return err
 			}
@@ -188,7 +188,7 @@ func (i *install) setExecutable(execPath string) error {
 	return i.fs.Chmod(execPath, 0755)
 }
 
-func (i *install) shimExecutable(execPath string, meta *actions.Metadata) error {
+func (i *install) shimExecutable(execPath string) error {
 	shell := "bash"
 	if platform.IsWindows(i.opsys.Platform()) {
 		shell = "powershell"
