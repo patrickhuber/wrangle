@@ -34,5 +34,9 @@ func (p *CliProvider) Get(ctx *config.GetContext) (any, error) {
 		}
 		m[e] = p.ctx.String(f)
 	}
-	return m, nil
+	return map[string]any{
+		"spec": map[string]any{
+			"env": m,
+		},
+	}, nil
 }
