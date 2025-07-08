@@ -15,7 +15,7 @@ require (
 	github.com/go-git/go-git/v5 v5.16.2
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/patrickhuber/go-config v0.3.0
+	github.com/patrickhuber/go-config v0.4.0
 	github.com/patrickhuber/go-cross v0.0.5
 	github.com/patrickhuber/go-dataptr v0.1.7
 	github.com/patrickhuber/go-di v0.5.4
@@ -70,7 +70,7 @@ require (
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
+	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/net v0.41.0 // indirect
