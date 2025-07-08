@@ -119,8 +119,8 @@ github.com/mtibben/percent v0.2.1/go.mod h1:KG9uO+SZkUp+VkRHsCdYQV3XSZrrSpR3O9ib
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
 github.com/onsi/gomega v1.34.1/go.mod h1:kU1QgUvBDLXBJq618Xvm2LUX6rSAfRaFRTcdOeDLwwY=
-github.com/patrickhuber/go-config v0.2.0 h1:g1oRQwtlRqg3/TnkwGexz2Lt9JZUdBZlYE+zgaYBMNg=
-github.com/patrickhuber/go-config v0.2.0/go.mod h1:/0PJ5tJUTtkgFK308Tk6MY8dAQXo/4bEmDKVWUVUdCE=
+github.com/patrickhuber/go-config v0.3.0 h1:wWxu62n2B2gaV3EN5RJqKKjexjPPwx0KeXiDKdBpA/s=
+github.com/patrickhuber/go-config v0.3.0/go.mod h1:/0PJ5tJUTtkgFK308Tk6MY8dAQXo/4bEmDKVWUVUdCE=
 github.com/patrickhuber/go-cross v0.0.5 h1:qnqp3g1G/hLEOLKCfojVxe4KVjS2+KAy7UAaGq6cfF4=
 github.com/patrickhuber/go-cross v0.0.5/go.mod h1:4IR8GpD0gBiEzX95FQzw2aOjdDXcYsboSS+zHfCzpAk=
 github.com/patrickhuber/go-dataptr v0.1.7 h1:PXTdMTcsb/lscz5DlJ3ZuHPeAeUbjlxtg9zJvYQlyAk=

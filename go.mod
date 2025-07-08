@@ -15,7 +15,7 @@ require (
 	github.com/go-git/go-git/v5 v5.16.2
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/patrickhuber/go-config v0.2.0
+	github.com/patrickhuber/go-config v0.3.0
 	github.com/patrickhuber/go-cross v0.0.5
 	github.com/patrickhuber/go-dataptr v0.1.7
 	github.com/patrickhuber/go-di v0.5.4
