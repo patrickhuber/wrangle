@@ -73,6 +73,12 @@ func main() {
 				Value:   path.Join(home, ".wrangle", "config.yml"),
 				EnvVars: []string{global.EnvSystemConfig},
 			},
+			&cli.StringFlag{
+				Name:    global.FlagUserConfig,
+				Aliases: []string{"u"},
+				Value:   path.Join(home, ".wrangle", "config.yml"),
+				EnvVars: []string{global.EnvUserConfig},
+			},
 			&cli.GenericFlag{
 				Name:        global.FlagOutput,
 				Aliases:     []string{"o"},
