@@ -1,6 +1,10 @@
 package config
 
 import (
+	"fmt"
+
+	iofs "io/fs"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-cross/fs"
@@ -8,14 +12,16 @@ import (
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
-func NewSystemProvider(fs fs.FS) config.Provider {
+func NewSystemProvider(fs fs.FS, errorIfNotExists bool) config.Provider {
 	return &systemProvider{
-		fs: fs,
+		fs:               fs,
+		errorIfNotExists: errorIfNotExists,
 	}
 }
 
 type systemProvider struct {
-	fs fs.FS
+	fs               fs.FS
+	errorIfNotExists bool
 }
 
 // Get implements config.Provider.
@@ -24,6 +30,17 @@ func (p *systemProvider) Get(ctx *config.GetContext) (any, error) {
 	systemConfigPath, err := dataptr.GetAs[string]("/spec/env/"+global.EnvSystemConfig, ctx.MergedConfiguration)
 	if err != nil {
 		return nil, err
+	}
+
+	// if the system config doesn't exist and the errorIfNotExists flag is set, return an error
+	if p.errorIfNotExists {
+		exists, err := p.fs.Exists(systemConfigPath)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, fmt.Errorf("%w system config file %s does not exist", iofs.ErrNotExist, systemConfigPath)
+		}
 	}
 
 	// does the file exist, if not, create it

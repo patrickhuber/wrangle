@@ -1,44 +1,99 @@
 package config_test
 
 import (
+	"errors"
+	"io/fs"
 	"testing"
 
 	cfgpkg "github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/platform"
+	"github.com/stretchr/testify/require"
+
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
 func TestSystemProvider(t *testing.T) {
-
-	// arrange
-	target := cross.NewTest(platform.Linux, arch.AMD64)
-	fileSystem := target.FS()
-	fakeSystemConfigPath := "/opt/wrangle/config/config.yml"
-	err := config.WriteFile(fileSystem, fakeSystemConfigPath, config.Config{})
-	if err != nil {
-		t.Fatal(err)
+	type test struct {
+		name                 string
+		errorIfNotExists     bool
+		expectError          bool
+		expectFileCreated    bool
+		expectedErrorType    error
+		expectedErrorMessage string
 	}
-	systemProvider := config.NewSystemProvider(fileSystem)
 
-	// act
-	cfg, err := systemProvider.Get(&cfgpkg.GetContext{
-		MergedConfiguration: map[string]any{
-			"spec": map[string]any{
-				"env": map[string]any{
-					global.EnvSystemConfig: fakeSystemConfigPath,
-				},
-			},
+	tests := []test{
+		{
+			name:                 "errors when config file doesn't exist and errorIfNotExists is true",
+			errorIfNotExists:     true,
+			expectError:          true,
+			expectFileCreated:    false,
+			expectedErrorType:    fs.ErrNotExist,
+			expectedErrorMessage: "system config file",
 		},
-	})
-
-	// assert
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		{
+			name:              "creates config file when it doesn't exist and errorIfNotExists is false",
+			errorIfNotExists:  false,
+			expectError:       false,
+			expectFileCreated: true,
+		},
 	}
-	if cfg == nil {
-		t.Fatal("expected a configuration, got nil")
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// arrange
+			target := cross.NewTest(platform.Linux, arch.AMD64)
+			fileSystem := target.FS()
+			fakeSystemConfigPath := "/etc/wrangle/config.yml"
+
+			// ensure the file doesn't exist
+			exists, _ := fileSystem.Exists(fakeSystemConfigPath)
+			require.False(t, exists)
+
+			systemProvider := config.NewSystemProvider(fileSystem, test.errorIfNotExists)
+
+			// act
+			cfg, err := systemProvider.Get(&cfgpkg.GetContext{
+				MergedConfiguration: map[string]any{
+					"spec": map[string]any{
+						"env": map[string]any{
+							global.EnvSystemConfig: fakeSystemConfigPath,
+						},
+					},
+				},
+			})
+
+			// assert
+			if test.expectError {
+				require.Error(t, err)
+				if test.expectedErrorType != nil {
+					require.True(t, errors.Is(err, test.expectedErrorType))
+				}
+				if test.expectedErrorMessage != "" {
+					require.Contains(t, err.Error(), test.expectedErrorMessage)
+					require.Contains(t, err.Error(), fakeSystemConfigPath)
+				}
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, cfg)
+
+				// verify the config is a map (as expected from the provider)
+				cfgMap, ok := cfg.(map[string]any)
+				require.True(t, ok)
+				require.NotNil(t, cfgMap)
+			}
+
+			// verify file creation expectation
+			exists, err = fileSystem.Exists(fakeSystemConfigPath)
+			require.NoError(t, err)
+			if test.expectFileCreated {
+				require.True(t, exists, "expected file to be created")
+			} else {
+				require.False(t, exists, "expected file not to be created")
+			}
+		})
 	}
 }
