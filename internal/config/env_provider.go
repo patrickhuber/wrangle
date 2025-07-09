@@ -10,11 +10,16 @@ import (
 
 type EnvProvider struct {
 	environment env.Environment
+	prefixes    []string
 }
 
-func NewEnvProvider(environment env.Environment) config.Provider {
+func NewEnvProvider(environment env.Environment, prefixes ...string) config.Provider {
+	if len(prefixes) == 0 {
+		prefixes = append(prefixes, global.EnvPrefix)
+	}
 	return &EnvProvider{
 		environment: environment,
+		prefixes:    prefixes,
 	}
 }
 
@@ -23,8 +28,11 @@ func (p *EnvProvider) Get(ctx *config.GetContext) (any, error) {
 	m := p.environment.Export()
 	envConfig := map[string]any{}
 	for k, v := range m {
-		if strings.HasPrefix(k, global.EnvPrefix) {
-			envConfig[k] = v
+		// check if the key starts with any of the prefixes
+		for _, prefix := range p.prefixes {
+			if strings.HasPrefix(k, prefix) {
+				envConfig[k] = v
+			}
 		}
 	}
 
