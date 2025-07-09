@@ -37,7 +37,7 @@ func (p *userProvider) Get(ctx *config.GetContext) (any, error) {
 			return nil, err
 		}
 		if !exists {
-			return nil, fmt.Errorf("%w user config file %s does not exist", iofs.ErrNotExist, userConfigPath)
+			return nil, fmt.Errorf("%w user config file %s does not exist. Run `wrangle bootstrap` to create it", iofs.ErrNotExist, userConfigPath)
 		}
 	}
 

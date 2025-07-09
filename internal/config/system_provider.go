@@ -39,7 +39,7 @@ func (p *systemProvider) Get(ctx *config.GetContext) (any, error) {
 			return nil, err
 		}
 		if !exists {
-			return nil, fmt.Errorf("%w system config file %s does not exist", iofs.ErrNotExist, systemConfigPath)
+			return nil, fmt.Errorf("%w system config file %s does not exist. Run `wrangle bootstrap` to create it", iofs.ErrNotExist, systemConfigPath)
 		}
 	}
 
