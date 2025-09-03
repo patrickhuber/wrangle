@@ -3,11 +3,20 @@ package host
 import (
 	"fmt"
 
+	goconfig "github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
+	"github.com/patrickhuber/wrangle/internal/bootstrap"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/diff"
 	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/initialize"
+	"github.com/patrickhuber/wrangle/internal/install"
+	"github.com/patrickhuber/wrangle/internal/interpolate"
+	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
 	"github.com/patrickhuber/wrangle/internal/stores/keyring"
@@ -53,6 +62,11 @@ func New() Host {
 	di.RegisterInstance(container, target.Path())
 	di.RegisterInstance(container, target.FS())
 
+	// configuration
+	container.RegisterConstructor(goconfig.DefaultGlobResolver)
+	container.RegisterConstructor(config.NewSystemDefaultProvider)
+	container.RegisterConstructor(config.NewDefaultConfiguration)
+
 	// actions
 	container.RegisterConstructor(archive.NewFactory)
 	container.RegisterConstructor(actions.NewDownloadProvider)
@@ -64,20 +78,34 @@ func New() Host {
 	// feeds
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
+	container.RegisterConstructor(feed.NewListPackages)
+
+	// initialize
+	container.RegisterConstructor(initialize.NewConfiguration)
+	container.RegisterConstructor(initialize.NewService)
+
+	// bootstrap
+	container.RegisterConstructor(bootstrap.NewConfiguration)
+	container.RegisterConstructor(bootstrap.NewService)
+
+	// install
+	container.RegisterConstructor(install.NewService)
+
+	// shim
+	container.RegisterConstructor(shim.NewService)
+
+	// diff
+	container.RegisterConstructor(diff.NewService)
 
 	// application services
-	container.RegisterConstructor(services.NewInitialize)
-	container.RegisterConstructor(services.NewInstall)
-	container.RegisterConstructor(services.NewBootstrap)
-	container.RegisterConstructor(services.NewListPackages)
-	container.RegisterConstructor(services.NewConfiguration)
-	container.RegisterConstructor(services.NewDiff)
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
-	container.RegisterConstructor(services.NewSecret)
-	container.RegisterConstructor(services.NewStore)
-	container.RegisterConstructor(services.NewInterpolate)
-	container.RegisterConstructor(services.NewShim)
+
+	// interpolate
+	container.RegisterConstructor(interpolate.NewService)
+
+	// secrets
+	container.RegisterConstructor(secret.NewService)
 
 	// shells
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
@@ -87,6 +115,7 @@ func New() Host {
 	container.RegisterConstructor(azure.NewFactory)
 	container.RegisterConstructor(keyring.NewFactory)
 	container.RegisterConstructor(stores.NewRegistry)
+	container.RegisterConstructor(stores.NewService)
 
 	return &runtime{
 		container: container,

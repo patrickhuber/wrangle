@@ -16,7 +16,7 @@ func TestKeyRing(t *testing.T) {
 	}
 	factory := keyring.NewFactory()
 	vault, err := factory.Create(map[string]string{"service": "test"})
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, vault)
 
 	t.Run("set", func(t *testing.T) {
@@ -24,10 +24,10 @@ func TestKeyRing(t *testing.T) {
 			Name: "test",
 		}}
 		err := vault.Set(key, "test")
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		v, ok, err := vault.Get(key)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.True(t, ok)
 		require.NotNil(t, v)
 		require.Equal(t, "test", v)

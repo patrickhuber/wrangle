@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
+	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/enums"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/host"
@@ -35,10 +37,19 @@ func main() {
 	console, err := di.Resolve[console.Console](container)
 	handle(err)
 
+	environment, err := di.Resolve[env.Environment](container)
+	handle(err)
+
 	appName := "wrangle"
+	root := "/opt/wrangle"
 	plat := platform.Platform(o.Platform())
 	if platform.IsWindows(plat) {
 		appName = appName + ".exe"
+		programData := environment.Get("ProgramData")
+		if len(programData) == 0 {
+			handle(fmt.Errorf("failed to get ProgramData environment variable"))
+		}
+		root = path.Join(programData, "wrangle")
 	}
 
 	home, err := o.Home()
@@ -70,7 +81,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    global.FlagSystemConfig,
 				Aliases: []string{"g"},
-				Value:   path.Join(home, ".wrangle", "config.yml"),
+				Value:   path.Join(root, "config", "config.yml"),
 				EnvVars: []string{global.EnvSystemConfig},
 			},
 			&cli.StringFlag{
@@ -94,12 +105,15 @@ func main() {
 				return nil
 			}
 
-			resolver, err := app.GetResolver(ctx)
+			container, err := app.GetContainer(ctx)
 			if err != nil {
 				return err
 			}
 
-			environment, err := di.Resolve[env.Environment](resolver)
+			// register the cli context
+			di.RegisterInstance(container, config.CliContext(ctx))
+
+			environment, err := di.Resolve[env.Environment](container)
 			if err != nil {
 				return err
 			}

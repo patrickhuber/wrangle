@@ -6,7 +6,7 @@ import (
 	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/structio"
 	"github.com/urfave/cli/v2"
 )
@@ -22,9 +22,9 @@ var ListPackages = &cli.Command{
 }
 
 type ListPackagesCommand struct {
-	Service services.ListPackages `inject:""`
-	Console console.Console       `inject:""`
-	Options *ListPackagesOptions  `options:""`
+	Service feed.ListPackages    `inject:""`
+	Console console.Console      `inject:""`
+	Options *ListPackagesOptions `options:""`
 }
 
 type ListPackagesOptions struct {
@@ -49,7 +49,7 @@ func ListPackagesAction(ctx *cli.Context) error {
 }
 
 func (cmd *ListPackagesCommand) Execute() error {
-	request := &services.ListPackagesRequest{}
+	request := &feed.ListPackagesRequest{}
 	response, err := cmd.Service.Execute(request)
 	if err != nil {
 		return err

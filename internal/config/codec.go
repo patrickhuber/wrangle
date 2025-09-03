@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/BurntSushi/toml"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,6 +22,7 @@ type Encoding string
 const (
 	Yaml Encoding = "yaml"
 	Json Encoding = "json"
+	Toml Encoding = "toml"
 )
 
 func Encode(enc Encoding, dst io.Writer, src any) error {
@@ -32,6 +34,8 @@ func Encode(enc Encoding, dst io.Writer, src any) error {
 		e = yamlEncoder
 	case Json:
 		e = json.NewEncoder(dst)
+	case Toml:
+		e = toml.NewEncoder(dst)
 	default:
 		return fmt.Errorf("invalid encoding '%s'", enc)
 	}

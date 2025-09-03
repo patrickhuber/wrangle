@@ -1,21 +1,23 @@
-package services_test
+package diff_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/patrickhuber/go-cross/console"
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-cross/os"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/diff"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
 	"github.com/patrickhuber/wrangle/internal/global"
-	"github.com/patrickhuber/wrangle/internal/host"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/stores"
+	"github.com/patrickhuber/wrangle/internal/stores/memory"
 )
 
 func TestDiff(t *testing.T) {
@@ -34,25 +36,31 @@ func TestDiff(t *testing.T) {
 			Value: "/home/fake/.wrangle/config.yml",
 		},
 	}
-	diff, err := envdiff.Encode(expected)
+
+	envDiff, err := envdiff.Encode(expected)
 	require.NoError(t, err)
 
 	expected = append(expected,
 		envdiff.Add{
 			Key:   global.EnvDiff,
-			Value: diff,
+			Value: envDiff,
 		})
 
 	cfg := config.Config{
 		Spec: config.Spec{
 			Environment: map[string]string{
-				"TEST": "TEST",
+				"TEST":                 "TEST",
+				global.EnvSystemConfig: "/home/fake/.wrangle/config.yml",
 			},
 		},
 	}
 
-	ctx := setup(t, cfg)
-	actual, err := ctx.diff.Execute()
+	container := setup(cfg)
+
+	diffSvc, err := di.Resolve[diff.Service](container)
+	require.NoError(t, err)
+
+	actual, err := diffSvc.Execute()
 	require.NoError(t, err)
 
 	require.Equal(t, expected, actual)
@@ -73,18 +81,19 @@ func TestDiffVariableReplacement(t *testing.T) {
 			Value: "/home/fake/.wrangle/config.yml",
 		},
 	}
-	diff, err := envdiff.Encode(expected)
+	envDiff, err := envdiff.Encode(expected)
 	require.NoError(t, err)
 
 	expected = append(expected, envdiff.Add{
 		Key:   global.EnvDiff,
-		Value: diff,
+		Value: envDiff,
 	})
 
 	cfg := config.Config{
 		Spec: config.Spec{
 			Environment: map[string]string{
-				"TEST": "((key))",
+				"TEST":                 "((key))",
+				global.EnvSystemConfig: "/home/fake/.wrangle/config.yml",
 			},
 			Stores: []config.Store{
 				{
@@ -98,10 +107,13 @@ func TestDiffVariableReplacement(t *testing.T) {
 		},
 	}
 
-	ctx := setup(t, cfg)
+	container := setup(cfg)
+
+	diffSvc, err := di.Resolve[diff.Service](container)
+	require.NoError(t, err)
 
 	// execute the diff
-	actual, err := ctx.diff.Execute()
+	actual, err := diffSvc.Execute()
 	require.NoError(t, err)
 	require.Equal(t, expected, actual)
 
@@ -153,39 +165,57 @@ func TestDiffDifferentDir(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			ctx := setup(t, config.Config{})
+			container := setup(config.Config{
+				Spec: config.Spec{
+					Environment: map[string]string{
+						global.EnvSystemConfig: "/home/fake/.wrangle/config.yml",
+					},
+				},
+			})
 
-			err := ctx.fs.MkdirAll(test.startDirectory, 0775)
+			fs, err := di.Resolve[fs.FS](container)
 			require.NoError(t, err)
 
-			err = ctx.fs.MkdirAll(test.nextDirectory, 0775)
+			os, err := di.Resolve[os.OS](container)
+			require.NoError(t, err)
+
+			err = fs.MkdirAll(test.startDirectory, 0775)
+			require.NoError(t, err)
+
+			err = fs.MkdirAll(test.nextDirectory, 0775)
 			require.NoError(t, err)
 
 			// set the working directory
-			err = ctx.os.ChangeDirectory(test.startDirectory)
+			err = os.ChangeDirectory(test.startDirectory)
+			require.NoError(t, err)
+
+			diffSvc, err := di.Resolve[diff.Service](container)
 			require.NoError(t, err)
 
 			// run diff the first time
-			changes, err := ctx.diff.Execute()
+			changes, err := diffSvc.Execute()
+			require.NoError(t, err)
+
+			env, err := di.Resolve[env.Environment](container)
 			require.NoError(t, err)
 
 			// apply the changes
-			apply(changes, ctx.env)
+			apply(changes, env)
 
 			// set the working directory
-			err = ctx.os.ChangeDirectory(test.nextDirectory)
+			err = os.ChangeDirectory(test.nextDirectory)
 			require.NoError(t, err)
 
 			// run diff the second time
-			changes, err = ctx.diff.Execute()
+			changes, err = diffSvc.Execute()
 			require.NoError(t, err)
-			apply(changes, ctx.env)
+			apply(changes, env)
 
 			// make sure the env is what we expect
 			for key := range test.expected {
-				v, ok := ctx.env.Lookup(key)
-				require.True(t, ok)
-				require.Equal(t, test.expected[key], v)
+				v, ok := env.Lookup(key)
+				require.True(t, ok, "missing env var: %s", key)
+				require.Equal(t, test.expected[key], v, "unexpected value for env var: %s", key)
 			}
 		})
 	}
@@ -205,54 +235,20 @@ func apply(changes []envdiff.Change, e env.Environment) {
 	}
 }
 
-type context struct {
-	container di.Container
-	diff      services.Diff
-	console   console.Console
-	os        os.OS
-	fs        fs.FS
-	env       env.Environment
-}
-
-func setup(t *testing.T, cfg config.Config) context {
-	h := host.NewTest(platform.Linux, nil, nil)
-	container := h.Container()
-
-	// the default configuration needs to be replaced
-	configuration, err := di.Resolve[services.Configuration](container)
-	require.NoError(t, err)
-
-	fs, err := di.Resolve[fs.FS](container)
-	require.NoError(t, err)
-
-	globalPath, err := configuration.DefaultGlobalConfigFilePath()
-	require.NoError(t, err)
-
-	err = config.WriteFile(fs, globalPath, cfg)
-	require.NoError(t, err)
-
-	// create the diff service
-	result, err := di.Invoke(container, services.NewDiff)
-	require.NoError(t, err)
-
-	diff, ok := result.(services.Diff)
-	require.True(t, ok)
-
-	console, err := di.Resolve[console.Console](container)
-	require.NoError(t, err)
-
-	os, err := di.Resolve[os.OS](container)
-	require.NoError(t, err)
-
-	e, err := di.Resolve[env.Environment](container)
-	require.NoError(t, err)
-
-	return context{
-		diff:      diff,
-		console:   console,
-		os:        os,
-		container: container,
-		fs:        fs,
-		env:       e,
-	}
+func setup(cfg config.Config) di.Container {
+	target := cross.NewTest(platform.Linux, arch.AMD64)
+	container := di.NewContainer()
+	di.RegisterInstance(container, target.Console())
+	di.RegisterInstance(container, target.OS())
+	di.RegisterInstance(container, target.FS())
+	di.RegisterInstance(container, target.Env())
+	di.RegisterInstance(container, target.Path())
+	di.RegisterInstance(container, config.NewMock(cfg))
+	di.RegisterInstance(container, stores.NewRegistry(
+		[]stores.Factory{
+			memory.NewFactory(),
+		}))
+	container.RegisterConstructor(stores.NewService)
+	container.RegisterConstructor(diff.NewService)
+	return container
 }

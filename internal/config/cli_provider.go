@@ -3,15 +3,14 @@ package config
 import (
 	"github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/wrangle/internal/global"
-	"github.com/urfave/cli/v2"
 )
 
 type CliProvider struct {
-	ctx     *cli.Context
+	ctx     CliContext
 	flagMap map[string]string
 }
 
-func NewCliProvider(ctx *cli.Context) config.Provider {
+func NewCliProvider(ctx CliContext) config.Provider {
 	flagMap := map[string]string{
 		global.FlagBin:          global.EnvBin,
 		global.FlagSystemConfig: global.EnvSystemConfig,

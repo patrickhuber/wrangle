@@ -53,7 +53,7 @@ func TestUserProvider(t *testing.T) {
 			exists, _ := fileSystem.Exists(fakeUserConfigPath)
 			require.False(t, exists)
 
-			userProvider := config.NewUserProvider(fileSystem, test.errorIfNotExists)
+			userProvider := config.NewUserProvider(fileSystem, target.Path(), test.errorIfNotExists)
 
 			// act
 			cfg, err := userProvider.Get(&cfgpkg.GetContext{
@@ -81,7 +81,7 @@ func TestUserProvider(t *testing.T) {
 				require.NotNil(t, cfg)
 
 				// verify the config is returned as expected from the provider
-				require.IsType(t, config.Config{}, cfg)
+				require.IsType(t, map[string]any{}, cfg)
 			}
 
 			// verify file creation expectation

@@ -87,17 +87,17 @@ func TestCanExtract(t *testing.T) {
 			factory := archive.NewFactory(fs, path)
 
 			provider, err := factory.Select(test.archiveName)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			// create the test archive
 			archivePath := path.Join(metadata.PackageVersionPath, test.archiveName)
 			err = provider.Archive(archivePath, rootedFiles...)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			// cleanup so when we roundtrip we see the actual files
 			for _, f := range rootedFiles {
 				err = fs.Remove(f)
-				require.Nil(t, err)
+				require.NoError(t, err)
 			}
 
 			extract := actions.NewExtractProvider(factory, path, logger)
@@ -109,10 +109,10 @@ func TestCanExtract(t *testing.T) {
 			for _, f := range files {
 				filePath := path.Join(metadata.PackageVersionPath, f.Name)
 				ok, err := fs.Exists(filePath)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.True(t, ok, "file %s does not exist", filePath)
 				bytes, err := fs.ReadFile(filePath)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.Equal(t, string(bytes), f.Content)
 			}
 		})

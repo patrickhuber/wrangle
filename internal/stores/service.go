@@ -1,31 +1,31 @@
-package services
+package stores
 
 import (
 	"fmt"
 
-	"github.com/patrickhuber/wrangle/internal/stores"
+	"github.com/patrickhuber/wrangle/internal/config"
 )
 
-type Store interface {
-	Get(name string) (stores.Store, error)
-	List() ([]stores.Store, error)
+type Service interface {
+	Get(name string) (Store, error)
+	List() ([]Store, error)
 }
 
-type store struct {
-	configuration Configuration
-	registry      stores.Registry
-	cache         map[string]stores.Store
+type service struct {
+	configuration config.Configuration
+	registry      Registry
+	cache         map[string]Store
 }
 
-func NewStore(configuration Configuration, registry stores.Registry) Store {
-	return &store{
+func NewService(configuration config.Configuration, registry Registry) Service {
+	return &service{
 		configuration: configuration,
 		registry:      registry,
-		cache:         map[string]stores.Store{},
+		cache:         map[string]Store{},
 	}
 }
 
-func (s *store) Get(name string) (stores.Store, error) {
+func (s *service) Get(name string) (Store, error) {
 	err := s.load()
 	if err != nil {
 		return nil, err
@@ -38,21 +38,21 @@ func (s *store) Get(name string) (stores.Store, error) {
 	return st, nil
 }
 
-func (s *store) List() ([]stores.Store, error) {
+func (s *service) List() ([]Store, error) {
 
 	err := s.load()
 	if err != nil {
 		return nil, err
 	}
 
-	var results []stores.Store
+	var results []Store
 	for _, v := range s.cache {
 		results = append(results, v)
 	}
 	return results, nil
 }
 
-func (s *store) load() error {
+func (s *service) load() error {
 	if len(s.cache) > 0 {
 		return nil
 	}

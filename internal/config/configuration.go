@@ -6,77 +6,75 @@ import (
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/os"
 	"github.com/patrickhuber/wrangle/internal/global"
-	"github.com/urfave/cli/v2"
 )
 
 type Configuration interface {
 	Get() (Config, error)
 }
 
-func NewConfiguration(root config.Root) Configuration {
-	return &configuration{
-		root: root,
+func NewTestConfiguration(
+	env env.Environment,
+	fs fs.FS,
+	path filepath.Provider,
+	os os.OS,
+	cli CliContext,
+	globResolver config.GlobResolver,
+	systemDefaultProvider SystemDefaultProvider) (Configuration, error) {
+
+	errorIfNotExists := true
+
+	// the CliContext will provide some defaults in the default case that we need to supply here
+	builder := config.NewBuilder()
+	builder.WithProvider(NewTestDefaultProvider(os, env, path))
+	builder.WithProvider(NewEnvProvider(env, global.EnvPrefix))
+	builder.WithProvider(NewCliProvider(cli))
+	builder.WithProvider(NewSystemProvider(fs, path, systemDefaultProvider, errorIfNotExists))
+	builder.WithProvider(NewUserProvider(fs, path, errorIfNotExists))
+	builder.WithFactory(NewLocalFactory(fs, path, os, globResolver, errorIfNotExists))
+
+	root, err := builder.Build()
+	if err != nil {
+		return nil, err
 	}
+	return NewConfiguration(root), nil
 }
 
 func NewDefaultConfiguration(
 	env env.Environment,
 	fs fs.FS,
 	path filepath.Provider,
-	cli *cli.Context) Configuration {
+	os os.OS,
+	cli CliContext,
+	globResolver config.GlobResolver,
+	systemDefaultProvider SystemDefaultProvider) (Configuration, error) {
 
 	errorIfNotExists := true
-	root := config.NewRoot(
-		NewEnvProvider(env, global.EnvSystemConfig, global.EnvUserConfig),
-		NewCliProvider(cli),
-		NewSystemProvider(fs, errorIfNotExists),
-		NewUserProvider(fs, errorIfNotExists),
-		NewLocalProvider(fs, path, errorIfNotExists),
-	)
+	builder := config.NewBuilder()
+	builder.WithProvider(NewEnvProvider(env, global.EnvPrefix))
+	builder.WithProvider(NewCliProvider(cli))
+	builder.WithProvider(NewSystemProvider(fs, path, systemDefaultProvider, errorIfNotExists))
+	builder.WithProvider(NewUserProvider(fs, path, errorIfNotExists))
+	builder.WithFactory(NewLocalFactory(fs, path, os, globResolver, errorIfNotExists))
+
+	root, err := builder.Build()
+	if err != nil {
+		return nil, err
+	}
 	return &configuration{
 		root: root,
-	}
-}
-
-func NewBootstrapConfiguration(
-	env env.Environment,
-	fs fs.FS,
-	cli *cli.Context) Configuration {
-
-	errorIfNotExists := false
-	root := config.NewRoot(
-		NewEnvProvider(env, global.EnvSystemConfig, global.EnvUserConfig),
-		NewCliProvider(cli),
-		NewSystemProvider(fs, errorIfNotExists),
-		NewUserProvider(fs, errorIfNotExists),
-	)
-	return &configuration{
-		root: root,
-	}
-}
-
-func NewInitializeConfiguration(
-	env env.Environment,
-	cli *cli.Context,
-	fs fs.FS,
-	path filepath.Provider,
-	providers ...config.Provider) Configuration {
-
-	root := config.NewRoot(
-		NewEnvProvider(env, global.EnvSystemConfig, global.EnvUserConfig),
-		NewCliProvider(cli),
-		NewSystemProvider(fs, true),
-		NewUserProvider(fs, true),
-		NewLocalProvider(fs, path, false),
-	)
-	return &configuration{
-		root: root,
-	}
+	}, nil
 }
 
 type configuration struct {
 	root config.Root
+}
+
+func NewConfiguration(root config.Root) Configuration {
+	return &configuration{
+		root: root,
+	}
 }
 
 func (c *configuration) Get() (Config, error) {

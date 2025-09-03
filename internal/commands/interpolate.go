@@ -6,7 +6,7 @@ import (
 	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/structio"
 	"github.com/urfave/cli/v2"
 )
@@ -18,8 +18,8 @@ var Interpolate = &cli.Command{
 }
 
 type InterpolateCommand struct {
-	Interpolate services.Interpolate `inject:""`
-	Console     console.Console      `inject:""`
+	Interpolate interpolate.Service `inject:""`
+	Console     console.Console     `inject:""`
 	Options     InterpolateOptions
 }
 

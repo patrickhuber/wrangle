@@ -24,7 +24,7 @@ func NewFactory(providers ...Provider) Factory {
 func (f *factory) Create(name string) (Provider, error) {
 	provider, ok := f.providers[name]
 	if !ok {
-		return nil, fmt.Errorf("provider %s not found", name)
+		return nil, fmt.Errorf("actions.Factory : provider '%s' not found", name)
 	}
 	return provider, nil
 }

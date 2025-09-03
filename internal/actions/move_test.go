@@ -20,7 +20,7 @@ func TestMove(t *testing.T) {
 	provider := actions.NewMoveProvider(fs, path, logger)
 
 	err := fs.WriteFile("/folder/file.txt", []byte("this is a test"), 0644)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	action := &actions.Action{
 		Type: "move",
@@ -33,8 +33,8 @@ func TestMove(t *testing.T) {
 		PackageVersionPath: "/folder",
 	}
 	err = provider.Execute(action, ctx)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	ok, err := fs.Exists("/folder/moved.txt")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.True(t, ok)
 }

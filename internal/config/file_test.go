@@ -353,7 +353,7 @@ func TestWriteFileIfNotExists(t *testing.T) {
 		fs := h.FS()
 
 		filePath := "/tmp/write_if_not_exists.yml"
-		defaultFactory := func() config.Config {
+		defaultFactory := func() (config.Config, error) {
 			return config.Config{
 				ApiVersion: config.ApiVersion,
 				Kind:       config.Kind,
@@ -362,7 +362,7 @@ func TestWriteFileIfNotExists(t *testing.T) {
 						"NEW": "value",
 					},
 				},
-			}
+			}, nil
 		}
 
 		err := config.WriteFileIfNotExists(fs, filePath, defaultFactory)
@@ -396,7 +396,7 @@ func TestWriteFileIfNotExists(t *testing.T) {
 		err := config.WriteFile(fs, filePath, originalCfg)
 		require.NoError(t, err)
 
-		defaultFactory := func() config.Config {
+		defaultFactory := func() (config.Config, error) {
 			return config.Config{
 				ApiVersion: config.ApiVersion,
 				Kind:       config.Kind,
@@ -405,7 +405,7 @@ func TestWriteFileIfNotExists(t *testing.T) {
 						"DEFAULT": "value",
 					},
 				},
-			}
+			}, nil
 		}
 
 		err = config.WriteFileIfNotExists(fs, filePath, defaultFactory)
@@ -425,7 +425,7 @@ func TestReadOrCreateFile(t *testing.T) {
 		fs := h.FS()
 
 		filePath := "/tmp/read_or_create_file.yml"
-		defaultFactory := func() config.Config {
+		defaultFactory := func() (config.Config, error) {
 			return config.Config{
 				ApiVersion: config.ApiVersion,
 				Kind:       config.Kind,
@@ -434,7 +434,7 @@ func TestReadOrCreateFile(t *testing.T) {
 						"CREATED": "value",
 					},
 				},
-			}
+			}, nil
 		}
 
 		readCfg, err := config.ReadOrCreateFile(fs, filePath, defaultFactory)
@@ -467,7 +467,7 @@ func TestReadOrCreateFile(t *testing.T) {
 		err := config.WriteFile(fs, filePath, originalCfg)
 		require.NoError(t, err)
 
-		defaultFactory := func() config.Config {
+		defaultFactory := func() (config.Config, error) {
 			return config.Config{
 				ApiVersion: config.ApiVersion,
 				Kind:       config.Kind,
@@ -476,7 +476,7 @@ func TestReadOrCreateFile(t *testing.T) {
 						"DEFAULT": "value",
 					},
 				},
-			}
+			}, nil
 		}
 
 		readCfg, err := config.ReadOrCreateFile(fs, filePath, defaultFactory)

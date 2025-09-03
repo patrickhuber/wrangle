@@ -7,6 +7,7 @@ import (
 	"github.com/patrickhuber/go-dataptr"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFlagProvider(t *testing.T) {
@@ -27,9 +28,12 @@ func TestFlagProvider(t *testing.T) {
 		"--" + global.FlagSystemConfig, expected[global.EnvSystemConfig],
 		"--" + global.FlagLogLevel, expected[global.EnvLogLevel],
 	})
+	builder := cfgpkg.NewBuilder(flagProvider)
+	root, err := builder.Build()
+	require.NoError(t, err)
 
 	// act
-	cfg, err := flagProvider.Get(&cfgpkg.GetContext{
+	cfg, err := root.Get(&cfgpkg.GetContext{
 		MergedConfiguration: map[string]any{
 			"spec": map[string]any{
 				"flags": map[string]any{

@@ -1,38 +1,36 @@
-package services_test
+package feed_test
 
 import (
 	"testing"
 
-	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/bootstrap"
+	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/host"
-	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/stretchr/testify/require"
 )
 
 func TestListPackages(t *testing.T) {
-
-	h := host.NewTest(platform.Linux, nil, nil)
+	plat := platform.Linux
+	h := host.NewTest(plat, nil, nil)
 	defer h.Close()
 
-	fs, err := di.Resolve[fs.FS](h.Container())
-	require.Nil(t, err)
+	container := h.Container()
 
-	configuration, err := di.Resolve[services.Configuration](h.Container())
-	require.Nil(t, err)
-
-	globalConfigFilePath, err := configuration.DefaultGlobalConfigFilePath()
+	// bootstrap needs to run to setup the user and system configurations
+	bootstrapService, err := di.Resolve[bootstrap.Service](container)
 	require.NoError(t, err)
 
-	err = config.WriteFile(fs, globalConfigFilePath, configuration.GlobalDefault())
-	require.Nil(t, err)
-
-	svc, err := di.Resolve[services.ListPackages](h.Container())
+	err = bootstrapService.Execute(&bootstrap.Request{
+		Force: true,
+	})
 	require.NoError(t, err)
 
-	request := &services.ListPackagesRequest{
+	svc, err := di.Resolve[feed.ListPackages](container)
+	require.NoError(t, err)
+
+	request := &feed.ListPackagesRequest{
 		Names: []string{"test"},
 	}
 

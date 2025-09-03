@@ -12,5 +12,15 @@ func GetResolver(ctx *cli.Context) (di.Resolver, error) {
 	if ctx == nil || ctx.App == nil || ctx.App.Metadata == nil {
 		return nil, fmt.Errorf("application context, application or metadata is null")
 	}
-	return ctx.App.Metadata[global.MetadataDependencyInjection].(di.Resolver), nil
+
+	metadataDependencyInjection, ok := ctx.App.Metadata[global.MetadataDependencyInjection]
+	if !ok {
+		return nil, fmt.Errorf("dependency injection metadata is missing")
+	}
+
+	resolver, ok := metadataDependencyInjection.(di.Resolver)
+	if !ok {
+		return nil, fmt.Errorf("dependency injection metadata is not a resolver")
+	}
+	return resolver, nil
 }

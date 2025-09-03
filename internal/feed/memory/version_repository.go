@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 )
@@ -18,14 +20,27 @@ func NewVersionRepository(items map[string]*feed.Item) feed.VersionRepository {
 func (r *versionRepository) Get(packageName string, version string) (*packages.Version, error) {
 	item, ok := r.items[packageName]
 	if !ok {
-		return nil, nil
+		return nil, fmt.Errorf("package %s not found", packageName)
 	}
 	for _, v := range item.Package.Versions {
 		if v.Version == version {
 			return v, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("version %s not found for package %s", version, packageName)
+}
+
+func (r *versionRepository) Lookup(packageName string, version string) (bool, *packages.Version, error) {
+	item, ok := r.items[packageName]
+	if !ok {
+		return false, nil, nil
+	}
+	for _, v := range item.Package.Versions {
+		if v.Version == version {
+			return true, v, nil
+		}
+	}
+	return false, nil, nil
 }
 
 func (r *versionRepository) List(name string) ([]*packages.Version, error) {

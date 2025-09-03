@@ -9,7 +9,7 @@ type FlagProvider struct {
 	provider config.Provider
 }
 
-func NewFlagProvider(args []string) config.Provider {
+func NewFlagProvider(args []string) config.Factory {
 	flagToEnvMap := map[string]string{
 		global.FlagBin:          global.EnvBin,
 		global.FlagSystemConfig: global.EnvSystemConfig,
@@ -24,7 +24,7 @@ func NewFlagProvider(args []string) config.Provider {
 			Name: flag,
 		})
 	}
-	provider := config.NewFlag(
+	return config.NewFlag(
 		configFlags,
 		args,
 		config.FlagOption{Transformers: []config.Transformer{
@@ -41,11 +41,4 @@ func NewFlagProvider(args []string) config.Provider {
 					},
 				}, nil
 			})}})
-	return &FlagProvider{
-		provider: provider,
-	}
-}
-
-func (p *FlagProvider) Get(ctx *config.GetContext) (any, error) {
-	return p.provider.Get(ctx)
 }

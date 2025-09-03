@@ -1,4 +1,4 @@
-package services
+package diff
 
 import (
 	"fmt"
@@ -15,24 +15,24 @@ import (
 	"github.com/patrickhuber/go-cross/os"
 )
 
-type Diff interface {
+type Service interface {
 	Execute() ([]envdiff.Change, error)
 }
 
 type diff struct {
-	configuration Configuration
-	store         Store
+	configuration config.Configuration
+	store         stores.Service
 	environment   env.Environment
 	os            os.OS
 	path          filepath.Provider
 }
 
-func NewDiff(
-	configuration Configuration,
-	store Store,
+func NewService(
+	configuration config.Configuration,
+	store stores.Service,
 	environment env.Environment,
 	os os.OS,
-	path filepath.Provider) Diff {
+	path filepath.Provider) Service {
 	return &diff{
 		configuration: configuration,
 		store:         store,
@@ -115,7 +115,7 @@ func (e *diff) shouldTakeNoAction(workingDirectory string, localConfig string) (
 		return true, nil
 	}
 	// is the working directory a sub directory of the last configuration file?
-	filePaths, err := e.configuration.LocalConfigurationFiles()
+	filePaths, err := []string{}, error(nil)
 	if err != nil {
 		return false, err
 	}

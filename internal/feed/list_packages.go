@@ -1,10 +1,10 @@
-package services
+package feed
 
 import (
 	"fmt"
 
 	"github.com/patrickhuber/go-iter"
-	"github.com/patrickhuber/wrangle/internal/feed"
+	"github.com/patrickhuber/wrangle/internal/config"
 )
 
 type ListPackagesRequest struct {
@@ -25,13 +25,13 @@ type ListPackages interface {
 }
 
 type listPackages struct {
-	serviceFactory feed.ServiceFactory
-	configuration  Configuration
+	serviceFactory ServiceFactory
+	configuration  config.Configuration
 }
 
 func NewListPackages(
-	serviceFactory feed.ServiceFactory,
-	configuration Configuration) ListPackages {
+	serviceFactory ServiceFactory,
+	configuration config.Configuration) ListPackages {
 	return &listPackages{
 		serviceFactory: serviceFactory,
 		configuration:  configuration,
@@ -83,14 +83,14 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 	}, nil
 }
 
-func (*listPackages) query(r *ListPackagesRequest) *feed.ListRequest {
+func (*listPackages) query(r *ListPackagesRequest) *ListRequest {
 	names := iter.FromSlice(r.Names)
-	request := &feed.ListRequest{
-		Where: []*feed.ItemReadAnyOf{
+	request := &ListRequest{
+		Where: []*ItemReadAnyOf{
 			{
-				AnyOf: iter.ToSlice(iter.Select(names, func(name string) *feed.ItemReadAllOf {
-					return &feed.ItemReadAllOf{
-						AllOf: []*feed.ItemReadPredicate{
+				AnyOf: iter.ToSlice(iter.Select(names, func(name string) *ItemReadAllOf {
+					return &ItemReadAllOf{
+						AllOf: []*ItemReadPredicate{
 							{
 								Name: name,
 							},
@@ -99,13 +99,13 @@ func (*listPackages) query(r *ListPackagesRequest) *feed.ListRequest {
 				})),
 			},
 		},
-		Expand: &feed.ItemReadExpand{
-			Package: &feed.ItemReadExpandPackage{
-				Where: []*feed.ItemReadExpandPackageAnyOf{
+		Expand: &ItemReadExpand{
+			Package: &ItemReadExpandPackage{
+				Where: []*ItemReadExpandPackageAnyOf{
 					{
-						AnyOf: []*feed.ItemReadExpandPackageAllOf{
+						AnyOf: []*ItemReadExpandPackageAllOf{
 							{
-								AllOf: []*feed.ItemReadExpandPackagePredicate{
+								AllOf: []*ItemReadExpandPackagePredicate{
 									{
 										Latest: true,
 									},

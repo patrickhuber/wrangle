@@ -6,7 +6,7 @@ import "github.com/urfave/cli/v2"
 var Set = &cli.Command{
 	Name: "set",
 	Subcommands: []*cli.Command{
-		SetSerect,
+		SetSecret,
 	},
 	CustomHelpTemplate: CommandHelpTemplate,
 }

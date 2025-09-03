@@ -1,4 +1,4 @@
-package services_test
+package initialize_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/host"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/initialize"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,27 +48,22 @@ func (tester *initializeTester) Run(t *testing.T) {
 	pwd, err := opsys.WorkingDirectory()
 	require.NoError(t, err)
 
-	localWrangleDirectory := path.Join(pwd, global.LocalConfigurationDirectoryName)
 	localWrangleConfig := path.Join(pwd, global.LocalConfigurationFileName)
 
-	initialize, err := di.Resolve[services.Initialize](container)
+	service, err := di.Resolve[initialize.Service](container)
 	require.NoError(t, err)
 
-	req := &services.InitializeRequest{
+	req := &initialize.Request{
 		Directory: pwd,
 	}
 
-	err = initialize.Execute(req)
+	err = service.Execute(req)
 	require.NoError(t, err)
 
 	fs, err := di.Resolve[fs.FS](container)
 	require.NoError(t, err)
 
-	ok, err := fs.Exists(localWrangleDirectory)
-	require.NoError(t, err)
-	require.True(t, ok, "'%s' does not exist", localWrangleDirectory)
-
-	ok, err = fs.Exists(localWrangleConfig)
+	ok, err := fs.Exists(localWrangleConfig)
 	require.NoError(t, err)
 	require.True(t, ok, "'%s' does not exist", localWrangleConfig)
 }
