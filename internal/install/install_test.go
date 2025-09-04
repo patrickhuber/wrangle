@@ -12,6 +12,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	feedmemory "github.com/patrickhuber/wrangle/internal/feed/memory"
+	"github.com/patrickhuber/wrangle/internal/fixtures"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/packages"
@@ -63,17 +64,15 @@ func RunInstallTest(t *testing.T,
 	plat platform.Platform) {
 
 	target := cross.NewTest(plat, arch.AMD64)
-	root := "/opt/wrangle"
-	if platform.IsWindows(plat) {
-		root = `C:\ProgramData\wrangle`
-	}
-	packagesDir := target.Path().Join(root, "packages")
+	err := fixtures.Apply(target.OS(), target.FS(), target.Env())
+	require.NoError(t, err)
 
-	exeName := "test"
+	root, err := config.GetRoot(target.Env(), plat)
+	require.NoError(t, err)
 
-	if platform.IsWindows(plat) {
-		exeName = "test.exe"
-	}
+	packagesDir := config.GetDefaultPackagesPath(target.Path(), root)
+	appName, err := config.GetAppName("test", plat)
+	require.NoError(t, err)
 
 	actualPackageVersion := packageVersion
 	if actualPackageVersion == "latest" {
@@ -122,8 +121,8 @@ func RunInstallTest(t *testing.T,
 												{
 													Action: "move",
 													With: map[string]any{
-														"source":      exeName,
-														"destination": exeName,
+														"source":      appName,
+														"destination": appName,
 													},
 												},
 											},
@@ -154,10 +153,10 @@ func RunInstallTest(t *testing.T,
 
 	// write out package file
 	metadata := metadataProvider.Get(&cfg, packageName, actualPackageVersion)
-	packageVersionFileLocation := target.Path().Join(metadata.PackageVersionPath, exeName)
+	packageVersionFileLocation := target.Path().Join(metadata.PackageVersionPath, appName)
 	target.FS().WriteFile(packageVersionFileLocation, []byte("test"), 0644)
 
-	err := service.Execute(req)
+	err = service.Execute(req)
 	require.NoError(t, err)
 
 	fs := target.FS()

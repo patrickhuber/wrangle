@@ -21,8 +21,8 @@ func GetRoot(env env.Environment, plat platform.Platform) (string, error) {
 	return root, nil
 }
 
-func GetAppName(plat platform.Platform) (string, error) {
-	appName := "wrangle"
+func GetAppName(appNameBase string, plat platform.Platform) (string, error) {
+	appName := appNameBase
 	if platform.IsWindows(plat) {
 		appName = appName + ".exe"
 	}

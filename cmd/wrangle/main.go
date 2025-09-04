@@ -38,7 +38,7 @@ func main() {
 	environment, err := di.Resolve[env.Environment](container)
 	handle(err)
 
-	appName, err := config.GetAppName(o.Platform())
+	appName, err := config.GetAppName("wrangle", o.Platform())
 	handle(err)
 
 	root, err := config.GetRoot(environment, o.Platform())
