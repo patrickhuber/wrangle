@@ -1,15 +1,20 @@
 package bootstrap
 
 import (
+	"fmt"
+
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/install"
 )
 
 type service struct {
 	install       install.Service
 	configuration Configuration `inject:"bootstrap"`
-	logger        log.Logger
+	logger        log.Logger    `inject:"logger"`
+	fs            fs.FS         `inject:"fs"`
 }
 
 type Request struct {
@@ -23,11 +28,13 @@ type Service interface {
 func NewService(
 	install install.Service,
 	configuration Configuration,
-	logger log.Logger) Service {
+	logger log.Logger,
+	fs fs.FS) Service {
 	return &service{
 		install:       install,
 		configuration: configuration,
 		logger:        logger,
+		fs:            fs,
 	}
 }
 
@@ -47,6 +54,13 @@ func (b *service) Execute(r *Request) error {
 		return err
 	}
 
+	// make sure the bin directory exists
+	binDirectory := cfg.Spec.Environment[global.EnvBin]
+	err = b.fs.MkdirAll(binDirectory, 0755)
+	if err != nil {
+		return fmt.Errorf("BootstrapService : failed to create bin directory %s: %w", binDirectory, err)
+	}
+
 	return b.installPackages(cfg)
 }
 
@@ -60,7 +74,7 @@ func (b *service) installPackages(cfg config.Config) error {
 		b.logger.Debugf("install %s@%s", pkg.Name, pkg.Version)
 		err := b.install.Execute(request)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to install package %s@%s: %w", pkg.Name, pkg.Version, err)
 		}
 	}
 	return nil

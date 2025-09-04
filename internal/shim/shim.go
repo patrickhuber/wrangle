@@ -58,17 +58,17 @@ func (s *service) Execute(req *Request) error {
 	// load the configuration
 	cfg, err := s.configuration.Get()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get configuration: %w", err)
 	}
 
 	content, err := s.getTemplate(req.Shell)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get template for shell %s: %w", req.Shell, err)
 	}
 
 	temp, err := template.New("").Parse(content)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse template for shell %s: %w", req.Shell, err)
 	}
 
 	var buf bytes.Buffer
@@ -78,14 +78,14 @@ func (s *service) Execute(req *Request) error {
 		}
 		err = temp.Execute(&buf, data)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to execute template for %s: %w", executable, err)
 		}
 
 		shimPath := s.getShimPath(cfg, executable)
 
 		err = s.fs.WriteFile(shimPath, buf.Bytes(), 0775)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to write shim file %s: %w", shimPath, err)
 		}
 	}
 	return nil
