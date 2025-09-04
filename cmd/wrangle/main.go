@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/os"
-	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/commands"
@@ -40,17 +38,11 @@ func main() {
 	environment, err := di.Resolve[env.Environment](container)
 	handle(err)
 
-	appName := "wrangle"
-	root := "/opt/wrangle"
-	plat := platform.Platform(o.Platform())
-	if platform.IsWindows(plat) {
-		appName = appName + ".exe"
-		programData := environment.Get("ProgramData")
-		if len(programData) == 0 {
-			handle(fmt.Errorf("failed to get ProgramData environment variable"))
-		}
-		root = path.Join(programData, "wrangle")
-	}
+	appName, err := config.GetAppName(o.Platform())
+	handle(err)
+
+	root, err := config.GetRoot(environment, o.Platform())
+	handle(err)
 
 	home, err := o.Home()
 	handle(err)
@@ -67,28 +59,31 @@ func main() {
 				Name:    global.FlagBin,
 				Aliases: []string{"b"},
 				EnvVars: []string{global.EnvBin},
+				Value:   config.GetDefaultBinPath(path, root),
 			},
 			&cli.StringFlag{
 				Name:    global.FlagRoot,
 				Aliases: []string{"r"},
 				EnvVars: []string{global.EnvRoot},
+				Value:   root,
 			},
 			&cli.StringFlag{
 				Name:    global.FlagPackages,
 				Aliases: []string{"p"},
 				EnvVars: []string{global.EnvPackages},
+				Value:   config.GetDefaultPackagesPath(path, root),
 			},
 			&cli.StringFlag{
 				Name:    global.FlagSystemConfig,
 				Aliases: []string{"g"},
-				Value:   path.Join(root, "config", "config.yml"),
 				EnvVars: []string{global.EnvSystemConfig},
+				Value:   config.GetDefaultSystemConfigPath(path, root),
 			},
 			&cli.StringFlag{
 				Name:    global.FlagUserConfig,
 				Aliases: []string{"u"},
-				Value:   path.Join(home, ".wrangle", "config.yml"),
 				EnvVars: []string{global.EnvUserConfig},
+				Value:   config.GetDefaultUserConfigPath(path, home),
 			},
 			&cli.GenericFlag{
 				Name:        global.FlagOutput,
@@ -100,11 +95,6 @@ func main() {
 		},
 		Before: func(ctx *cli.Context) error {
 
-			globalConfigFile := ctx.String(global.FlagSystemConfig)
-			if globalConfigFile == "" {
-				return nil
-			}
-
 			container, err := app.GetContainer(ctx)
 			if err != nil {
 				return err
@@ -112,17 +102,6 @@ func main() {
 
 			// register the cli context
 			di.RegisterInstance(container, config.CliContext(ctx))
-
-			environment, err := di.Resolve[env.Environment](container)
-			if err != nil {
-				return err
-			}
-
-			_, ok := environment.Lookup(global.EnvSystemConfig)
-			if !ok {
-				environment.Set(global.EnvSystemConfig, globalConfigFile)
-			}
-
 			return nil
 		},
 	}
