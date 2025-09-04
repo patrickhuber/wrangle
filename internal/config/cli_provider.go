@@ -28,9 +28,6 @@ func NewCliProvider(ctx CliContext) config.Provider {
 func (p *CliProvider) Get(ctx *config.GetContext) (any, error) {
 	m := map[string]any{}
 	for f, e := range p.flagMap {
-		if !p.ctx.IsSet(f) {
-			continue
-		}
 		m[e] = p.ctx.String(f)
 	}
 	return map[string]any{
