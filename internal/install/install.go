@@ -95,28 +95,28 @@ func (i *service) validate() error {
 func (i *service) Execute(r *Request) error {
 	err := i.validate()
 	if err != nil {
-		return fmt.Errorf("install service, validation failed: %w", err)
+		return fmt.Errorf("InstallService : validation failed: %w", err)
 	}
 
 	i.log.Debugln("fetching configuration")
 	cfg, err := i.configuration.Get()
 	if err != nil {
-		return fmt.Errorf("install service, unable to get configuration: %w", err)
+		return fmt.Errorf("InstallService : unable to get configuration: %w", err)
 	}
 
 	i.log.Debugf("global configuration file contains %d feeds", len(cfg.Spec.Feeds))
 	if len(cfg.Spec.Feeds) == 0 {
-		return fmt.Errorf("install service, the global config file contains no feeds")
+		return fmt.Errorf("InstallService : the global config file contains no feeds")
 	}
 
 	items, err := i.getItems(r.Package, r.Version, &cfg)
 	if err != nil {
-		return fmt.Errorf("install service, unable to get package items (package:'%s', version:'%s'): %w", r.Package, r.Version, err)
+		return fmt.Errorf("InstallService : unable to get package items (package:'%s', version:'%s'): %w", r.Package, r.Version, err)
 	}
 
 	i.log.Debugf("found %d packages matching %s@%s", len(items), r.Package, r.Version)
 	if len(items) == 0 {
-		return fmt.Errorf("install service, package %s not found", r.Package)
+		return fmt.Errorf("InstallService : package %s not found", r.Package)
 	}
 
 	oneVersionMatched := false
@@ -145,7 +145,7 @@ func (i *service) Execute(r *Request) error {
 		}
 	}
 	if !oneVersionMatched {
-		return fmt.Errorf("install service, no packages were installed matching name '%s' and version '%s'", r.Package, r.Version)
+		return fmt.Errorf("InstallService : , no packages were installed matching name '%s' and version '%s'", r.Package, r.Version)
 	}
 	return nil
 }
@@ -157,6 +157,8 @@ func (i *service) runTargets(
 	meta *actions.Metadata) error {
 
 	oneTargetMatched := false
+
+	i.log.Debugf("InstallService : runTargets : current platform %s and architecture %s", i.opsys.Platform(), i.opsys.Architecture())
 
 	for _, target := range targets {
 
