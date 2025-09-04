@@ -98,7 +98,7 @@ func ReadFile(fs fs.FS, file string) (Config, error) {
 	return cfg, err
 }
 
-func ReadOrCreateFile(fs fs.FS, file string, defaultFactory func() Config) (Config, error) {
+func ReadOrCreateFile(fs fs.FS, file string, defaultFactory func() (Config, error)) (Config, error) {
 	err := WriteFileIfNotExists(fs, file, defaultFactory)
 	if err != nil {
 		return Config{}, err
@@ -121,7 +121,7 @@ func WriteFile(fs fs.FS, file string, cfg Config) error {
 	return Encode(e, f, cfg)
 }
 
-func WriteFileIfNotExists(fs fs.FS, file string, defaultFactory func() Config) error {
+func WriteFileIfNotExists(fs fs.FS, file string, defaultFactory func() (Config, error)) error {
 	exists, err := fs.Exists(file)
 	if err != nil {
 		return err
@@ -129,7 +129,11 @@ func WriteFileIfNotExists(fs fs.FS, file string, defaultFactory func() Config) e
 	if exists {
 		return nil
 	}
-	return WriteFile(fs, file, defaultFactory())
+	cfg, err := defaultFactory()
+	if err != nil {
+		return err
+	}
+	return WriteFile(fs, file, cfg)
 }
 
 func getEncoding(file string) (Encoding, error) {
@@ -139,6 +143,8 @@ func getEncoding(file string) (Encoding, error) {
 		encoding = Yaml
 	case ".json":
 		encoding = Json
+	case ".toml":
+		encoding = Toml
 	default:
 		return encoding, fmt.Errorf("unable to determine encoding for file '%s'", file)
 	}

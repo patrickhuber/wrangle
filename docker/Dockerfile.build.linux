@@ -1,4 +1,4 @@
-FROM golang:1.23.2 AS build
+FROM golang:1.25.1 AS build
 
 ADD . ./src
 WORKDIR /go/src
@@ -18,5 +18,13 @@ RUN openssl s_client -showcerts -connect proxy.golang.org:443 </dev/null 2>/dev/
 RUN update-ca-certificates
 
 COPY --from=build /go/src/dist/wrangle /usr/local/bin/wrangle
+
+# run the bootstrap workflow
 RUN export WRANGLE_LOG_LEVEL=trace && \
     wrangle bootstrap
+
+WORKDIR /working
+
+# run the initialize workflow
+RUN export WRANGLE_LOG_LEVEL=trace && \
+    wrangle initialize

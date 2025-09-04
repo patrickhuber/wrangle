@@ -1,4 +1,4 @@
-package services
+package secret
 
 import (
 	"fmt"
@@ -6,19 +6,19 @@ import (
 	"github.com/patrickhuber/wrangle/internal/stores"
 )
 
-type Secret struct {
-	store Store
+type Service struct {
+	storeService stores.Service
 }
 
-func NewSecret(st Store) Secret {
-	return Secret{
-		store: st,
+func NewService(st stores.Service) Service {
+	return Service{
+		storeService: st,
 	}
 }
 
-func (s *Secret) Get(store string, key string) (any, error) {
+func (s *Service) Get(store string, key string) (any, error) {
 
-	st, err := s.store.Get(store)
+	st, err := s.storeService.Get(store)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +34,8 @@ func (s *Secret) Get(store string, key string) (any, error) {
 	return v, nil
 }
 
-func (s *Secret) Set(store string, key string, value string) error {
-	st, err := s.store.Get(store)
+func (s *Service) Set(store string, key string, value string) error {
+	st, err := s.storeService.Get(store)
 	if err != nil {
 		return err
 	}

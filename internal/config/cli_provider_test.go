@@ -14,9 +14,16 @@ import (
 func TestCliProvider(t *testing.T) {
 	// create a fake cli context and use it to create a cli provdier
 	app := cli.NewApp()
-	app.Flags = append(app.Flags, &cli.StringFlag{
-		Name: global.FlagUserConfig,
-	})
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  global.FlagUserConfig,
+			Value: "user",
+		},
+		&cli.StringFlag{
+			Name:  global.FlagSystemConfig,
+			Value: "system",
+		},
+	}
 	app.Action = func(ctx *cli.Context) error {
 		provider := wrangle_config.NewCliProvider(ctx)
 		value, err := provider.Get(&config.GetContext{})
@@ -26,12 +33,19 @@ func TestCliProvider(t *testing.T) {
 		if value == nil {
 			return fmt.Errorf("expected value to not be nil")
 		}
-		localConfig, err := dataptr.GetAs[string]("/spec/env/"+global.EnvUserConfig, value)
+		userConfig, err := dataptr.GetAs[string]("/spec/env/"+global.EnvUserConfig, value)
 		if err != nil {
 			return err
 		}
-		if localConfig == "" {
-			return fmt.Errorf("expected local config to have a value")
+		if userConfig == "" {
+			return fmt.Errorf("expected user config to have a value")
+		}
+		systemConfig, err := dataptr.GetAs[string]("/spec/env/"+global.EnvSystemConfig, value)
+		if err != nil {
+			return err
+		}
+		if systemConfig == "" {
+			return fmt.Errorf("expected system config to have a value")
 		}
 		return nil
 	}

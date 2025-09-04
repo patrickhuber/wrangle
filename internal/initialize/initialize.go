@@ -1,6 +1,8 @@
-package services
+package initialize
 
 import (
+	"fmt"
+
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
@@ -8,40 +10,31 @@ import (
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
-type initialize struct {
+type service struct {
 	fs     fs.FS
 	logger log.Logger
 	path   filepath.Provider
 }
 
-type InitializeRequest struct {
-	Directory string
+type Request struct {
+	Directory string // defaults to ./.wrangle
 	Force     bool
 }
 
-type Initialize interface {
-	Execute(r *InitializeRequest) error
+type Service interface {
+	Execute(r *Request) error
 }
 
-func NewInitialize(fs fs.FS, path filepath.Provider, logger log.Logger) Initialize {
-	return &initialize{
+func NewService(fs fs.FS, path filepath.Provider, logger log.Logger) Service {
+	return &service{
 		fs:     fs,
 		logger: logger,
 		path:   path,
 	}
 }
 
-func (i *initialize) Execute(r *InitializeRequest) error {
+func (i *service) Execute(r *Request) error {
 	i.logger.Debugln("initalize")
-	i.logger.Infof("initializing in local directory '%s'", r.Directory)
-
-	localDotDir := i.path.Join(r.Directory, global.LocalConfigurationDirectoryName)
-	i.logger.Infof("creating '%s'", localDotDir)
-
-	err := i.fs.MkdirAll(localDotDir, 0775)
-	if err != nil {
-		return err
-	}
 
 	localWrangleFile := i.path.Join(r.Directory, global.LocalConfigurationFileName)
 
@@ -53,8 +46,7 @@ func (i *initialize) Execute(r *InitializeRequest) error {
 
 	if exists {
 		if !r.Force {
-			i.logger.Infof("file '%s' exists, force == false, skipping create")
-			return nil
+			return fmt.Errorf("file '%s' exists, force == false, skipping create", localWrangleFile)
 		}
 		i.logger.Infof("force == true, overwriting '%s'")
 	}

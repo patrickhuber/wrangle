@@ -5,7 +5,7 @@ import (
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/bootstrap"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,8 +25,8 @@ var Bootstrap = &cli.Command{
 }
 
 type BootstrapCommand struct {
-	Bootstrap services.Bootstrap `inject:""`
-	Options   BootstarapOptions  `options:""`
+	Bootstrap bootstrap.Service `inject:""`
+	Options   BootstarapOptions `options:""`
 }
 
 type BootstarapOptions struct {
@@ -34,7 +34,7 @@ type BootstarapOptions struct {
 }
 
 func (cmd *BootstrapCommand) Execute() error {
-	req := &services.BootstrapRequest{
+	req := &bootstrap.Request{
 		Force: cmd.Options.Force,
 	}
 	return cmd.Bootstrap.Execute(req)

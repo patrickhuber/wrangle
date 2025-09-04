@@ -1,4 +1,4 @@
-package services_test
+package shim_test
 
 import (
 	"testing"
@@ -8,7 +8,8 @@ import (
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/config"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,43 +29,42 @@ func TestShim(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			target := cross.NewTest(test.platform, arch.AMD64)
 			fs := target.FS()
-			os := target.OS()
-			env := target.Env()
 			path := target.Path()
 			log := log.Memory()
-			configuration, err := services.NewConfiguration(os, env, fs, path, log)
+
+			cfg := config.Config{
+				Spec: config.Spec{
+					Environment: map[string]string{
+						global.EnvBin:      "/opt/wrangle/bin",
+						global.EnvPackages: "/opt/wrangle/packages",
+					},
+				},
+			}
+			configuration := config.NewMock(cfg)
+
+			err := fs.MkdirAll(path.Join(cfg.Spec.Environment[global.EnvPackages], "test", "1.0.0"), 0775)
 			require.NoError(t, err)
 
-			cfg := configuration.GlobalDefault()
+			err = fs.WriteFile(path.Join(cfg.Spec.Environment[global.EnvPackages], "test", "1.0.0", test.exeName), []byte{}, 0775)
 			require.NoError(t, err)
 
-			globalConfigPath, err := configuration.DefaultGlobalConfigFilePath()
-			require.NoError(t, err)
-
-			err = config.WriteFile(fs, globalConfigPath, cfg)
-			require.NoError(t, err)
-
-			err = fs.MkdirAll("/opt/wrangle/packages/test/1.0.0", 0775)
-			require.NoError(t, err)
-
-			err = fs.WriteFile("/opt/wrangle/packages/test/1.0.0/"+test.exeName, []byte{}, 0775)
-			require.NoError(t, err)
-
-			req := &services.ShimRequest{
-				Shell:       "bash",
-				Executables: []string{"/opt/wrangle/package/test/1.0.0/" + test.exeName},
+			req := &shim.Request{
+				Shell: "bash",
+				Executables: []string{
+					path.Join(cfg.Spec.Environment[global.EnvPackages], "test", "1.0.0", test.exeName),
+				},
 			}
 
-			shim := services.NewShim(fs, path, configuration, log)
+			shim := shim.NewService(fs, path, configuration, log)
 			err = shim.Execute(req)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			_, err = fs.Stat("/opt/wrangle/bin/" + test.exeName)
+			_, err = fs.Stat(path.Join(cfg.Spec.Environment[global.EnvBin], test.exeName))
 			require.NoError(t, err)
 
-			content, err := fs.ReadFile("/opt/wrangle/bin/" + test.exeName)
+			content, err := fs.ReadFile(path.Join(cfg.Spec.Environment[global.EnvBin], test.exeName))
 			require.NoError(t, err)
 			require.NotEmpty(t, content)
 		})

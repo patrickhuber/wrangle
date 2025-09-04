@@ -50,14 +50,14 @@ func TestProvider(t *testing.T) {
 			fs := h.FS()
 			factory := archive.NewFactory(fs, path)
 			provider, err := factory.Select(test.archiveFile)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			var rootedFiles []string
 			var names []string
 			for _, f := range files {
 				rootedFile := path.Join(root, f.Name)
 				err := fs.WriteFile(rootedFile, []byte(f.Content), 0644)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				rootedFiles = append(rootedFiles, rootedFile)
 				names = append(names, f.Name)
 			}
@@ -67,7 +67,7 @@ func TestProvider(t *testing.T) {
 
 			ok, err := fs.Exists(rootedArchiveFile)
 
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.True(t, ok)
 
 			for _, f := range rootedFiles {
@@ -79,11 +79,11 @@ func TestProvider(t *testing.T) {
 
 				filePath := path.Join(root, f.Name)
 				ok, err := fs.Exists(filePath)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.True(t, ok, "%s does not exist", filePath)
 
 				b, err := fs.ReadFile(filePath)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.Equal(t, f.Content, string(b))
 			}
 		})

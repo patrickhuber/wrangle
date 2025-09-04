@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	goconfig "github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/os"
@@ -12,8 +13,16 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/bootstrap"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/diff"
+	"github.com/patrickhuber/wrangle/internal/fixtures"
+	"github.com/patrickhuber/wrangle/internal/initialize"
+	"github.com/patrickhuber/wrangle/internal/install"
+	"github.com/patrickhuber/wrangle/internal/interpolate"
+	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
@@ -47,27 +56,12 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	target := cross.NewTest(plat, arch.AMD64, args...)
 	di.RegisterInstance(container, target.OS())
 	di.RegisterInstance(container, target.Console())
+	di.RegisterInstance(container, target.Env())
+	di.RegisterInstance(container, target.FS())
+	di.RegisterInstance(container, target.Path())
 
-	env := target.Env()
-	path := target.Path()
-	os := target.OS()
-
-	// set default environment variables here
-	if platform.IsWindows(plat) {
-		env.Set("PROGRAMDATA", "c:\\programdata")
-	}
-	home, _ := os.Home()
-	env.Set(global.EnvSystemConfig, path.Join(home, ".wrangle", "config.yml"))
-
-	fs := target.FS()
-	// setup the filesystem here
-	fs.MkdirAll(home, 0700)
-	pwd, _ := os.WorkingDirectory()
-	fs.MkdirAll(pwd, 0700)
-
-	di.RegisterInstance(container, env)
-	di.RegisterInstance(container, fs)
-	di.RegisterInstance(container, path)
+	// set system environment variables and files
+	fixtures.Apply(target.OS(), target.FS(), target.Env())
 
 	t := &test{
 		server:    server,
@@ -75,8 +69,17 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	}
 	di.RegisterInstance(container, server)
 
+	// cli
+	di.RegisterInstance(container, config.NewMockCliContext(map[string]string{}))
+
+	// configuration
+	container.RegisterConstructor(goconfig.DefaultGlobResolver)
+	container.RegisterConstructor(config.NewTestSystemDefaultProvider)
+	container.RegisterConstructor(config.NewTestConfiguration)
+
 	// feeds
 	container.RegisterConstructor(t.newFeedProvider)
+	container.RegisterConstructor(feed.NewListPackages)
 
 	// logging
 	container.RegisterConstructor(func() log.Logger { return log.Memory() })
@@ -90,19 +93,32 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	container.RegisterConstructor(actions.NewMetadataProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 
+	// initialize
+	container.RegisterConstructor(initialize.NewService)
+	container.RegisterConstructor(initialize.NewTestConfiguration)
+
+	// bootstrap
+	container.RegisterConstructor(bootstrap.NewService)
+	container.RegisterConstructor(bootstrap.NewTestConfiguration)
+
+	// install
+	container.RegisterConstructor(install.NewService)
+
+	// shim
+	container.RegisterConstructor(shim.NewService)
+
+	// diff
+	container.RegisterConstructor(diff.NewService)
+
 	// application services
-	container.RegisterConstructor(services.NewInstall)
-	container.RegisterConstructor(services.NewInitialize)
-	container.RegisterConstructor(services.NewBootstrap)
-	container.RegisterConstructor(services.NewListPackages)
-	container.RegisterConstructor(services.NewDiff)
 	container.RegisterConstructor(services.NewExport)
 	container.RegisterConstructor(services.NewHook)
-	container.RegisterConstructor(services.NewTestConfiguration)
-	container.RegisterConstructor(services.NewSecret)
-	container.RegisterConstructor(services.NewStore)
-	container.RegisterConstructor(services.NewInterpolate)
-	container.RegisterConstructor(services.NewShim)
+
+	// interpolate
+	container.RegisterConstructor(interpolate.NewService)
+
+	// secrets
+	container.RegisterConstructor(secret.NewService)
 
 	// test shells
 	container.RegisterConstructor(shellhook.NewBash, di.WithName(shellhook.Bash))
@@ -111,6 +127,7 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	// stores
 	container.RegisterConstructor(stores.NewRegistry)
 	container.RegisterConstructor(memstore.NewFactory)
+	container.RegisterConstructor(stores.NewService)
 
 	return t
 }

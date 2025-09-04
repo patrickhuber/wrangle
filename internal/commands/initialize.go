@@ -5,7 +5,7 @@ import (
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/initialize"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,7 +25,7 @@ var Initialize = &cli.Command{
 }
 
 type InitializeCommand struct {
-	Initialize services.Initialize `inject:""`
+	Initialize initialize.Service `inject:""`
 	Options    InitializeOptions
 }
 
@@ -52,7 +52,7 @@ func InitializeAction(ctx *cli.Context) error {
 }
 
 func (cmd *InitializeCommand) Execute() error {
-	req := &services.InitializeRequest{
+	req := &initialize.Request{
 		Force: cmd.Options.Force,
 	}
 	return cmd.Initialize.Execute(req)

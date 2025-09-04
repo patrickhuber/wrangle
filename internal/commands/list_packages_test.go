@@ -3,38 +3,32 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/wrangle/internal/bootstrap"
 	"github.com/patrickhuber/wrangle/internal/commands"
-	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/host"
-	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/stretchr/testify/require"
 )
 
 func TestListPackages(t *testing.T) {
 
 	h := host.NewTest(platform.Linux, nil, []string{})
+	container := h.Container()
+
+	bootstrapService, err := di.Resolve[bootstrap.Service](container)
+	require.NoError(t, err)
+
+	err = bootstrapService.Execute(&bootstrap.Request{})
+	require.NoError(t, err)
+
 	cmd := &commands.ListPackagesCommand{
 		Options: &commands.ListPackagesOptions{
 			Output: ".",
 		},
 	}
 
-	fs, err := di.Resolve[fs.FS](h.Container())
-	require.Nil(t, err)
-
-	configuration, err := di.Resolve[services.Configuration](h.Container())
-	require.Nil(t, err)
-
-	globalConfigPath, err := configuration.DefaultGlobalConfigFilePath()
-	require.NoError(t, err)
-
-	err = config.WriteFile(fs, globalConfigPath, configuration.GlobalDefault())
-	require.Nil(t, err)
-
-	err = di.Inject(h.Container(), cmd)
+	err = di.Inject(container, cmd)
 	require.NoError(t, err)
 
 	err = cmd.Execute()

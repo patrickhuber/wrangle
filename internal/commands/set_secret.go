@@ -6,11 +6,11 @@ import (
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/urfave/cli/v2"
 )
 
-var SetSerect = &cli.Command{
+var SetSecret = &cli.Command{
 	Name:   "secret",
 	Action: SetSecretAction,
 	Flags: []cli.Flag{
@@ -30,7 +30,7 @@ var SetSerect = &cli.Command{
 }
 
 type SetSecretCommand struct {
-	Secret  services.Secret `inject:""`
+	Secret  secret.Service `inject:""`
 	Options SetSecretOptions
 }
 

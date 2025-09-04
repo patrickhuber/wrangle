@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
+	"github.com/patrickhuber/wrangle/internal/diff"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ func TestExport(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, export)
 
-	diff, err := di.Resolve[services.Diff](container)
+	diff, err := di.Resolve[diff.Service](container)
 	require.NoError(t, err)
 	require.NotNil(t, diff)
 }

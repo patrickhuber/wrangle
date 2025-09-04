@@ -2,6 +2,12 @@ package memory
 
 import "github.com/patrickhuber/wrangle/internal/stores"
 
+func NewStore() *Memory {
+	return &Memory{
+		Data: make(map[string]any),
+	}
+}
+
 // Memory defines a store used for in memory testing
 type Memory struct {
 	Data map[string]any

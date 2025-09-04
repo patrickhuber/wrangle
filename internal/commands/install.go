@@ -5,7 +5,7 @@ import (
 
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/install"
 
 	"github.com/urfave/cli/v2"
 )
@@ -19,8 +19,8 @@ var Install = &cli.Command{
 }
 
 type InstallCommand struct {
-	Install services.Install `inject:""`
-	Options InstallOptions   `options:""`
+	Install install.Service `inject:""`
+	Options InstallOptions  `options:""`
 }
 
 type InstallOptions struct {
@@ -29,7 +29,7 @@ type InstallOptions struct {
 
 func (cmd *InstallCommand) Execute() error {
 
-	request := &services.InstallRequest{
+	request := &install.Request{
 		Package: cmd.Options.Package,
 	}
 	return cmd.Install.Execute(request)

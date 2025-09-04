@@ -11,14 +11,23 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
+	"github.com/patrickhuber/wrangle/internal/bootstrap"
+	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/host"
-	"github.com/patrickhuber/wrangle/internal/services"
 )
 
 func TestDownload(t *testing.T) {
 
 	h := host.NewTest(platform.Windows, nil, nil)
 	defer h.Close()
+
+	container := h.Container()
+	bootstrapService, err := di.Resolve[bootstrap.Service](container)
+	require.NoError(t, err)
+
+	// the environment must be bootstrapped before this command can run
+	err = bootstrapService.Execute(&bootstrap.Request{})
+	require.NoError(t, err)
 
 	p, err := di.Invoke(h.Container(), actions.NewDownloadProvider)
 	require.NoError(t, err)
@@ -42,10 +51,11 @@ func TestDownload(t *testing.T) {
 			"out": "test-local",
 		},
 	}
-	configuration, err := di.Resolve[services.Configuration](h.Container())
+	configuration, err := di.Resolve[config.Configuration](h.Container())
 	require.NoError(t, err)
 
-	cfg := configuration.GlobalDefault()
+	cfg, err := configuration.Get()
+	require.NoError(t, err)
 
 	metadata := actions.NewMetadataProvider(path).Get(&cfg, "test", "1.0.0")
 	err = provider.Execute(task, metadata)

@@ -153,6 +153,10 @@ func (s *service) expandPackage(item *Item, expand *ItemReadExpand) ([]*packages
 		if err != nil {
 			return nil, err
 		}
+		// a nil version is the same as not found, this is easy to miss
+		if v == nil {
+			continue
+		}
 		versions = append(versions, v)
 	}
 	return versions, nil

@@ -53,7 +53,8 @@ func TestSystemProvider(t *testing.T) {
 			exists, _ := fileSystem.Exists(fakeSystemConfigPath)
 			require.False(t, exists)
 
-			systemProvider := config.NewSystemProvider(fileSystem, test.errorIfNotExists)
+			systemDefaultProvider := config.NewTestSystemDefaultProvider(target.Path())
+			systemProvider := config.NewSystemProvider(fileSystem, target.Path(), systemDefaultProvider, test.errorIfNotExists)
 
 			// act
 			cfg, err := systemProvider.Get(&cfgpkg.GetContext{
@@ -61,6 +62,7 @@ func TestSystemProvider(t *testing.T) {
 					"spec": map[string]any{
 						"env": map[string]any{
 							global.EnvSystemConfig: fakeSystemConfigPath,
+							global.EnvRoot:         "/opt/wrangle",
 						},
 					},
 				},
