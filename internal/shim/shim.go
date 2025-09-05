@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"slices"
+	"strings"
 	"text/template"
 
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 )
@@ -27,7 +29,7 @@ func NewService(
 	path filepath.Provider,
 	configuration config.Configuration,
 	log log.Logger) Service {
-	shells := []string{"bash", "powershell"}
+	shells := []string{shellhook.Bash, shellhook.Powershell}
 	return &service{
 		shells:        shells,
 		log:           log,
@@ -81,7 +83,7 @@ func (s *service) Execute(req *Request) error {
 			return fmt.Errorf("failed to execute template for %s: %w", executable, err)
 		}
 
-		shimPath := s.getShimPath(cfg, executable)
+		shimPath := s.getShimPath(cfg, req.Shell, executable)
 
 		err = s.fs.WriteFile(shimPath, buf.Bytes(), 0775)
 		if err != nil {
@@ -93,15 +95,20 @@ func (s *service) Execute(req *Request) error {
 
 func (s *service) getTemplate(shell string) (string, error) {
 	switch shell {
-	case "bash":
+	case shellhook.Bash:
 		return bashTemplate, nil
-	case "powershell":
+	case shellhook.Powershell:
 		return powershellTemplate, nil
 	}
 	return "", fmt.Errorf("unable to find shim template for shell %s", shell)
 }
 
-func (s *service) getShimPath(cfg config.Config, executable string) string {
+func (s *service) getShimPath(cfg config.Config, shell string, executable string) string {
 	fileName := s.path.Base(executable)
+	if shell == shellhook.Powershell {
+		ext := s.path.Ext(fileName)
+		fileNameWithoutExtension := strings.TrimSuffix(fileName, ext)
+		fileName = fileNameWithoutExtension + ".ps1"
+	}
 	return s.path.Join(cfg.Spec.Environment[global.EnvBin], fileName)
 }
