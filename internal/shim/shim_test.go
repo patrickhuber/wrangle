@@ -7,7 +7,9 @@ import (
 	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/fixtures"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/stretchr/testify/require"
@@ -17,13 +19,16 @@ func TestShim(t *testing.T) {
 	type test struct {
 		name     string
 		platform platform.Platform
+		shell    string
 		exeName  string
+		expected string
 	}
 	tests := []test{
-		{"file_name_only", platform.Linux, "test"},
-		{"exe", platform.Linux, "test.exe"},
-		{"bat", platform.Linux, "test.bat"},
-		{"cmd", platform.Linux, "test.cmd"},
+		{"file_name_only", platform.Linux, shellhook.Bash, "test", "test"},
+		{"exe", platform.Windows, shellhook.Powershell, "test.exe", "test.ps1"},
+		{"bat", platform.Windows, shellhook.Powershell, "test.bat", "test.ps1"},
+		{"cmd", platform.Windows, shellhook.Powershell, "test.cmd", "test.ps1"},
+		{"ps1", platform.Windows, shellhook.Powershell, "test.exe", "test.ps1"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -31,27 +36,39 @@ func TestShim(t *testing.T) {
 			fs := target.FS()
 			path := target.Path()
 			log := log.Memory()
+			env := target.Env()
+
+			fixtures.Apply(target.OS(), fs, env)
+
+			root, err := config.GetRoot(env, test.platform)
+			require.NoError(t, err)
+
+			binDirectory := config.GetDefaultBinPath(path, root)
+			packagesDirectory := config.GetDefaultPackagesPath(path, root)
 
 			cfg := config.Config{
 				Spec: config.Spec{
 					Environment: map[string]string{
-						global.EnvBin:      "/opt/wrangle/bin",
-						global.EnvPackages: "/opt/wrangle/packages",
+						global.EnvBin:      binDirectory,
+						global.EnvPackages: packagesDirectory,
 					},
 				},
 			}
 			configuration := config.NewMock(cfg)
 
-			err := fs.MkdirAll(path.Join(cfg.Spec.Environment[global.EnvPackages], "test", "1.0.0"), 0775)
+			packageName := "test"
+			packageVersion := "1.0.0"
+
+			err = fs.MkdirAll(path.Join(packagesDirectory, packageName, packageVersion), 0775)
 			require.NoError(t, err)
 
-			err = fs.WriteFile(path.Join(cfg.Spec.Environment[global.EnvPackages], "test", "1.0.0", test.exeName), []byte{}, 0775)
+			err = fs.WriteFile(path.Join(packagesDirectory, packageName, packageVersion, test.exeName), []byte{}, 0775)
 			require.NoError(t, err)
 
 			req := &shim.Request{
-				Shell: "bash",
+				Shell: test.shell,
 				Executables: []string{
-					path.Join(cfg.Spec.Environment[global.EnvPackages], "test", "1.0.0", test.exeName),
+					path.Join(packagesDirectory, packageName, packageVersion, test.exeName),
 				},
 			}
 
@@ -61,10 +78,10 @@ func TestShim(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			_, err = fs.Stat(path.Join(cfg.Spec.Environment[global.EnvBin], test.exeName))
+			_, err = fs.Stat(path.Join(binDirectory, test.expected))
 			require.NoError(t, err)
 
-			content, err := fs.ReadFile(path.Join(cfg.Spec.Environment[global.EnvBin], test.exeName))
+			content, err := fs.ReadFile(path.Join(binDirectory, test.expected))
 			require.NoError(t, err)
 			require.NotEmpty(t, content)
 		})
