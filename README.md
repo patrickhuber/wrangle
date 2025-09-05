@@ -221,6 +221,4 @@ The following values are accepted:
 | debug     | all, verbose line level | 
 | info      | informational, warnings and errors |
 | warn      | warnings and errors |
-
 | error     | errors only (default) |
-
