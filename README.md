@@ -51,7 +51,7 @@ Linux
 ```bash
 export VERSION=0.10.3
 export ARCHIVE="wrangle-${VERSION}-linux-amd64.tar.gz"
-wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
+wget https://github.com/patrickhuber/wrangle/releases/download/v${VERSION}/${ARCHIVE}
 tar xfz ${ARCHIVE}
 rm ${ARCHIVE}
 chmod +x wrangle
@@ -65,7 +65,7 @@ Darwin
 ```bash
 export VERSION=0.10.3
 export ARCHIVE="wrangle-${VERSION}-darwin-amd64.tar.gz"
-wget https://github.com/patrickhuber/wrangle/releases/download/${VERSION}/${ARCHIVE}
+wget https://github.com/patrickhuber/wrangle/releases/download/v${VERSION}/${ARCHIVE}
 tar xfz ${ARCHIVE}
 rm ${ARCHIVE}
 chmod +x wrangle
@@ -79,8 +79,8 @@ Windows (Powershell)
 ```powershell
 $version = "0.10.3"
 $archive = "wrangle-$version-windows-amd64.zip"
-iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/$version/$archive" -OutFile $archive
-Extract-Archive $archive -DestinationPath .
+iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/v$version/$archive" -OutFile $archive
+Expand-Archive $archive -DestinationPath .
 Remove-Item $archive
 .\wrangle.exe bootstrap
 Remove-Item wrangle.exe
@@ -223,3 +223,4 @@ The following values are accepted:
 | warn      | warnings and errors |
 
 | error     | errors only (default) |
+
