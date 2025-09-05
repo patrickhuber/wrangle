@@ -15,6 +15,8 @@ var Install = &cli.Command{
 	Name:               "install",
 	Action:             InstallAction,
 	CustomHelpTemplate: CommandHelpTemplate,
+	Description:        "Installs the specified package",
+	Usage:              "install the specified package",
 	Hidden:             true,
 }
 

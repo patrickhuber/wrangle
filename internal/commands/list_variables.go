@@ -12,8 +12,10 @@ import (
 )
 
 var ListVariables = &cli.Command{
-	Name:   "variables",
-	Action: ListVariablesAction,
+	Name:        "variables",
+	Action:      ListVariablesAction,
+	Description: "list available variables",
+	Usage:       "list available variables",
 }
 
 type ListVariablesCommand struct {

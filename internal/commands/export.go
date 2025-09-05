@@ -13,7 +13,8 @@ import (
 var Export = &cli.Command{
 	Name:        "export",
 	Action:      ExportAction,
-	Description: "",
+	Description: "Exports the current environment variables to in the format of the specified shell",
+	Usage:       "export aggregated environment variables to the format of the specified shell",
 	CustomHelpTemplate: CommandHelpTemplate + `
 ARGS:
    shell	(bash|powershell)

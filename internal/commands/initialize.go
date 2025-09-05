@@ -21,6 +21,8 @@ var Initialize = &cli.Command{
 			Value:   false,
 		},
 	},
+	Description:        "Initialize local configuration in the current directory",
+	Usage:              "initialize local configuration in the current directory",
 	CustomHelpTemplate: CommandHelpTemplate,
 }
 

@@ -5,8 +5,10 @@ import (
 )
 
 var ListFeeds = &cli.Command{
-	Name:   "feeds",
-	Action: ListFeedsAction,
+	Name:        "feeds",
+	Action:      ListFeedsAction,
+	Description: "list available feeds",
+	Usage:       "list available feeds",
 }
 
 type ListFeedsCommand struct {
