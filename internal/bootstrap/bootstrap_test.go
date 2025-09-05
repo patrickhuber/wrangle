@@ -19,7 +19,6 @@ func TestBootstrap(t *testing.T) {
 		binDirectory        string
 		globalConfigFile    string
 		wrangleFileLocation string
-		shimFileLocation    string
 	}
 	tests := []test{
 		{
@@ -28,7 +27,6 @@ func TestBootstrap(t *testing.T) {
 			globalConfigFile:    "/opt/wrangle/config/config.yml",
 			binDirectory:        "/opt/wrangle/bin",
 			wrangleFileLocation: "/opt/wrangle/packages/wrangle/1.0.0/wrangle",
-			shimFileLocation:    "/opt/wrangle/packages/shim/1.0.0/shim",
 		},
 		{
 			name:                "Darwin",
@@ -36,7 +34,6 @@ func TestBootstrap(t *testing.T) {
 			globalConfigFile:    "/opt/wrangle/config/config.yml",
 			binDirectory:        "/opt/wrangle/bin",
 			wrangleFileLocation: "/opt/wrangle/packages/wrangle/1.0.0/wrangle",
-			shimFileLocation:    "/opt/wrangle/packages/shim/1.0.0/shim",
 		},
 		{
 			name:                "Windows",
@@ -44,12 +41,11 @@ func TestBootstrap(t *testing.T) {
 			globalConfigFile:    "C:/ProgramData/wrangle/config/config.yml",
 			binDirectory:        "C:/ProgramData/wrangle/bin",
 			wrangleFileLocation: "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle.exe",
-			shimFileLocation:    "C:/ProgramData/wrangle/packages/shim/1.0.0/shim.exe",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			RunBootstrapTest(t, test.plat, test.globalConfigFile, test.wrangleFileLocation, test.shimFileLocation, test.binDirectory)
+			RunBootstrapTest(t, test.plat, test.globalConfigFile, test.wrangleFileLocation, test.binDirectory)
 		})
 	}
 }
@@ -59,7 +55,6 @@ func RunBootstrapTest(
 	plat platform.Platform,
 	globalConfigFile string,
 	wrangleFileLocation string,
-	shimFileLocation string,
 	binDirectory string) {
 
 	host := host.NewTest(plat, nil, nil)
@@ -89,10 +84,6 @@ func RunBootstrapTest(
 	ok, err = fs.Exists(wrangleFileLocation)
 	require.NoError(t, err)
 	require.True(t, ok, wrangleFileLocation+" does not exist")
-
-	ok, err = fs.Exists(shimFileLocation)
-	require.NoError(t, err)
-	require.True(t, ok, shimFileLocation+" does not exist")
 
 	ok, err = fs.Exists(binDirectory)
 	require.NoError(t, err)

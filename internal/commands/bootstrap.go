@@ -14,6 +14,7 @@ var Bootstrap = &cli.Command{
 	Name:        "bootstrap",
 	Action:      BootstrapAction,
 	Description: "bootstrap creates the global configuration file and installs the base packages",
+	Usage:       "create configuration files and installs the base packages",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",

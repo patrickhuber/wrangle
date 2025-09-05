@@ -124,10 +124,6 @@ func (p *testSystemDefaultProvider) GetDefault(ctx *config.GetContext) (Config, 
 					Name:    "wrangle",
 					Version: "latest",
 				},
-				{
-					Name:    "shim",
-					Version: "latest",
-				},
 			},
 			Feeds: []Feed{
 				{
@@ -157,10 +153,6 @@ func (p *systemDefaultProvider) GetDefault(ctx *config.GetContext) (Config, erro
 			Packages: []Package{
 				{
 					Name:    "wrangle",
-					Version: "latest",
-				},
-				{
-					Name:    "shim",
 					Version: "latest",
 				},
 			},
