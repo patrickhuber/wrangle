@@ -12,9 +12,11 @@ import (
 )
 
 var Interpolate = &cli.Command{
-	Name:    "interpolate",
-	Aliases: []string{"int"},
-	Action:  InterpolateAction,
+	Name:        "interpolate",
+	Aliases:     []string{"int"},
+	Action:      InterpolateAction,
+	Description: "Interpolate generates the aggregated configuration from all configurations",
+	Usage:       "generate the aggregated configuration from all configurations",
 }
 
 type InterpolateCommand struct {

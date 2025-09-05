@@ -11,9 +11,11 @@ import (
 )
 
 var Hook = &cli.Command{
-	Name:   "hook",
-	Action: HookAction,
-	Flags:  []cli.Flag{},
+	Name:        "hook",
+	Action:      HookAction,
+	Description: "Generates the shell hook script for the specified shell",
+	Usage:       "generate the shell hook script for the specified shell",
+	Flags:       []cli.Flag{},
 	CustomHelpTemplate: CommandHelpTemplate + `
 ARGS:
    shell	(bash|powershell)

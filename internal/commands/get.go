@@ -7,4 +7,6 @@ var Get = &cli.Command{
 	Name:               "get",
 	Hidden:             true,
 	CustomHelpTemplate: CommandHelpTemplate,
+	Description:        "Gets the specified resource",
+	Usage:              "get the specified resource",
 }
