@@ -2,10 +2,10 @@ package:
   name: test
   version: 1.0.0
   targets:
-    - platform: linux
-      architecture: amd64
-      steps:
-        - action: download
-          with:
-            out: index.html
-            url: https://www.google.com
+  - platform: linux
+    architecture: amd64
+    steps:
+    - action: download
+      with:
+        out: index.html
+        url: https://www.google.com
