@@ -1,32 +1,32 @@
 package:
-    name: bbr
-    version: 1.9.5
-    targets:
-    - platform: linux
-      architecture: amd64
-      steps:
-      - action: download
-        with:
-          url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.9.5/bbr-1.9.5-linux-amd64.tar
-          out: bbr-1.9.5-linux.tar
-      - action: extract 
-        with:
-          archive: bbr-1.9.5-linux.tar
-      - action: move
-        with:
-          source: bbr
-          destination: bbr-1.9.5-linux
-    - platform: darwin
-      architecture: amd64
-      steps:
-      - action: download
-        with:
-          url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.9.5/bbr-1.9.5-darwin-amd64.tar
-          out: bbr-1.9.5-darwin.tar
-      - action: extract
-        with:
-          archive: bbr-1.9.5-darwin.tar
-      - action: move
-        with:
-          source: bbr-mac
-          destination: bbr-1.9.5-darwin
+  name: bbr
+  version: 1.9.5
+  targets:
+  - platform: linux
+    architecture: amd64
+    steps:
+    - action: download
+      with:
+        url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.9.5/bbr-1.9.5-linux-amd64.tar
+        out: bbr-1.9.5-linux.tar
+    - action: extract 
+      with:
+        archive: bbr-1.9.5-linux.tar
+    - action: move
+      with:
+        source: bbr
+        destination: bbr-1.9.5-linux
+  - platform: darwin
+    architecture: amd64
+    steps:
+    - action: download
+      with:
+        url: https://github.com/cloudfoundry-incubator/bosh-backup-and-restore/releases/download/v1.9.5/bbr-1.9.5-darwin-amd64.tar
+        out: bbr-1.9.5-darwin.tar
+    - action: extract
+      with:
+        archive: bbr-1.9.5-darwin.tar
+    - action: move
+      with:
+        source: bbr-mac
+        destination: bbr-1.9.5-darwin
