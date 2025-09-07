@@ -53,6 +53,7 @@ func main() {
 		},
 		Name:        appName,
 		Version:     version,
+		Usage:       "A DevOps Environment Management CLI",
 		Description: "A DevOps Environment Management CLI",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
