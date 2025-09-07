@@ -2,7 +2,8 @@
 $ErrorActionPreference = "Stop"
 $latest = Invoke-WebRequest 'https://api.github.com/repos/patrickhuber/wrangle/releases/latest'
 $json = $latest.Content | ConvertFrom-Json
-$version = $json.tag_name
+$version = $json.tag_name.TrimStart("v")
+"version: $version"
 
 $computerInfo = Get-ComputerInfo
 
@@ -13,12 +14,14 @@ switch ($computerInfo.OsType){
     "MACROS" { $platform = "darwin" }
     default  { Write-Error -Message "Unkown os type ${computerInfo.OsType}. Expected 'windows', 'linux' or 'darwin'" }
 }
+"platform: $platform"
 
 $architecture = "amd64"
 if ($computerInfo.OsArchitecture -ne "64-bit"){
     Write-Error -Message "Unkown os architecture ${computerInfo.OsArchitecture}. Expected '64-bit'"
     return
 }
+"architecture: $architecture"
 
 foreach ($asset in $json.assets){
     if (-not $asset.name.Contains($version)){
