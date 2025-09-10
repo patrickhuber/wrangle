@@ -1,4 +1,4 @@
-package services_test
+package hook_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-shellhook"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/hook"
 )
 
 func TestHook(t *testing.T) {
@@ -25,8 +25,8 @@ func TestHook(t *testing.T) {
 			shellhook.Bash:       shellhook.NewBash(),
 			shellhook.Powershell: shellhook.NewPowershell(),
 		}
-		export := services.NewHook(env, shells, console)
-		err := export.Execute(&services.HookRequest{
+		export := hook.NewService(env, shells, console)
+		err := export.Execute(&hook.Request{
 			Executable: "/path/to/executable",
 			Shell:      shell,
 		})

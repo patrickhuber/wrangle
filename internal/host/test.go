@@ -16,12 +16,13 @@ import (
 	"github.com/patrickhuber/wrangle/internal/bootstrap"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/diff"
+	"github.com/patrickhuber/wrangle/internal/export"
 	"github.com/patrickhuber/wrangle/internal/fixtures"
+	"github.com/patrickhuber/wrangle/internal/hook"
 	"github.com/patrickhuber/wrangle/internal/initialize"
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/secret"
-	"github.com/patrickhuber/wrangle/internal/services"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
 
@@ -110,9 +111,11 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	// diff
 	container.RegisterConstructor(diff.NewService)
 
-	// application services
-	container.RegisterConstructor(services.NewExport)
-	container.RegisterConstructor(services.NewHook)
+	// export
+	container.RegisterConstructor(export.NewService)
+
+	// hook
+	container.RegisterConstructor(hook.NewService)
 
 	// interpolate
 	container.RegisterConstructor(interpolate.NewService)
