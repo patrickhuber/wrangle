@@ -16,7 +16,6 @@ type localFactory struct {
 }
 
 // NewLocalFactory creates a new local configuration provider.
-// TODO: see if one provider per file can be created
 func NewLocalFactory(
 	fs fs.FS,
 	path filepath.Provider,
