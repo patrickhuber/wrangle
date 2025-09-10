@@ -1,4 +1,4 @@
-package services
+package hook
 
 import (
 	"fmt"
@@ -8,30 +8,30 @@ import (
 	"github.com/patrickhuber/go-shellhook"
 )
 
-type hook struct {
+type service struct {
 	shells  map[string]shellhook.Shell
 	console console.Console
 	env     env.Environment
 }
 
-type Hook interface {
-	Execute(r *HookRequest) error
+type Service interface {
+	Execute(r *Request) error
 }
 
-type HookRequest struct {
+type Request struct {
 	Executable string
 	Shell      string
 }
 
-func NewHook(env env.Environment, shells map[string]shellhook.Shell, console console.Console) Hook {
-	return &hook{
+func NewService(env env.Environment, shells map[string]shellhook.Shell, console console.Console) Service {
+	return &service{
 		shells:  shells,
 		console: console,
 		env:     env,
 	}
 }
 
-func (h *hook) Execute(r *HookRequest) error {
+func (h *service) Execute(r *Request) error {
 	shell, ok := h.shells[r.Shell]
 	if !ok {
 		return fmt.Errorf("invalid shell %s", shell)

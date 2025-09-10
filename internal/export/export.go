@@ -1,4 +1,4 @@
-package services
+package export
 
 import (
 	"fmt"
@@ -9,27 +9,27 @@ import (
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
-type Export interface {
+type Service interface {
 	// Execute executes the export of the changes in the context of the given shell
 	Execute(shell string, changes []envdiff.Change) error
 }
 
-type export struct {
+type service struct {
 	shells  map[string]shellhook.Shell
 	console console.Console
 }
 
-func NewExport(
+func NewService(
 	shells map[string]shellhook.Shell,
 	console console.Console,
-) Export {
-	return &export{
+) Service {
+	return &service{
 		shells:  shells,
 		console: console,
 	}
 }
 
-func (e *export) Execute(shell string, changes []envdiff.Change) error {
+func (e *service) Execute(shell string, changes []envdiff.Change) error {
 	var err error
 	out := e.console.Out()
 	s, ok := e.shells[shell]

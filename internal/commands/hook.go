@@ -6,7 +6,7 @@ import (
 	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/hook"
 	"github.com/urfave/cli/v2"
 )
 
@@ -24,7 +24,7 @@ ARGS:
 }
 
 type HookCommand struct {
-	Hook    services.Hook   `inject:""`
+	Hook    hook.Service    `inject:""`
 	Console console.Console `inject:""`
 	Options HookOptions
 }
@@ -58,7 +58,7 @@ func (cmd *HookCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	req := &services.HookRequest{
+	req := &hook.Request{
 		Executable: executable,
 		Shell:      cmd.Options.Shell,
 	}

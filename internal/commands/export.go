@@ -6,7 +6,7 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/diff"
-	"github.com/patrickhuber/wrangle/internal/services"
+	"github.com/patrickhuber/wrangle/internal/export"
 	"github.com/urfave/cli/v2"
 )
 
@@ -23,8 +23,8 @@ ARGS:
 }
 
 type ExportCommand struct {
-	Export  services.Export `inject:""`
-	Diff    diff.Service    `inject:""`
+	Export  export.Service `inject:""`
+	Diff    diff.Service   `inject:""`
 	Options ExportOptions
 }
 
