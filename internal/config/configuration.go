@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/filepath"

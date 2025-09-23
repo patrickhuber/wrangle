@@ -8,7 +8,6 @@ import (
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
 	"github.com/patrickhuber/wrangle/internal/export"
-	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,7 +37,6 @@ func TestService_Execute_WritesShellCommandsAndDiff(t *testing.T) {
 				"export FOO='bar'",
 				"export FOO='baz'",
 				"unset BAR",
-				"export " + global.EnvDiff + "='",
 			},
 		},
 		{
@@ -53,7 +51,6 @@ func TestService_Execute_WritesShellCommandsAndDiff(t *testing.T) {
 				"$env:FOO=\"bar\"",
 				"$env:FOO=\"baz\"",
 				"Remove-Item Env:\\BAR",
-				"$env:" + global.EnvDiff + "=",
 			},
 		},
 	}

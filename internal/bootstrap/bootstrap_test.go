@@ -14,38 +14,38 @@ import (
 
 func TestBootstrap(t *testing.T) {
 	type test struct {
-		name                string
-		plat                platform.Platform
-		binDirectory        string
-		globalConfigFile    string
-		wrangleFileLocation string
+		name                 string
+		plat                 platform.Platform
+		binDirectory         string
+		globalConfigFile     string
+		versionedPackagePath string
 	}
 	tests := []test{
 		{
-			name:                "Linux",
-			plat:                platform.Linux,
-			globalConfigFile:    "/opt/wrangle/config/config.yml",
-			binDirectory:        "/opt/wrangle/bin",
-			wrangleFileLocation: "/opt/wrangle/packages/wrangle/1.0.0/wrangle",
+			name:                 "Linux",
+			plat:                 platform.Linux,
+			globalConfigFile:     "/opt/wrangle/config/config.yml",
+			binDirectory:         "/opt/wrangle/bin",
+			versionedPackagePath: "/opt/wrangle/packages/wrangle/1.0.0/wrangle",
 		},
 		{
-			name:                "Darwin",
-			plat:                platform.Darwin,
-			globalConfigFile:    "/opt/wrangle/config/config.yml",
-			binDirectory:        "/opt/wrangle/bin",
-			wrangleFileLocation: "/opt/wrangle/packages/wrangle/1.0.0/wrangle",
+			name:                 "Darwin",
+			plat:                 platform.Darwin,
+			globalConfigFile:     "/opt/wrangle/config/config.yml",
+			binDirectory:         "/opt/wrangle/bin",
+			versionedPackagePath: "/opt/wrangle/packages/wrangle/1.0.0/wrangle",
 		},
 		{
-			name:                "Windows",
-			plat:                platform.Windows,
-			globalConfigFile:    "C:/ProgramData/wrangle/config/config.yml",
-			binDirectory:        "C:/ProgramData/wrangle/bin",
-			wrangleFileLocation: "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle.exe",
+			name:                 "Windows",
+			plat:                 platform.Windows,
+			globalConfigFile:     "C:/ProgramData/wrangle/config/config.yml",
+			binDirectory:         "C:/ProgramData/wrangle/bin",
+			versionedPackagePath: "C:/ProgramData/wrangle/packages/wrangle/1.0.0/wrangle.exe",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			RunBootstrapTest(t, test.plat, test.globalConfigFile, test.wrangleFileLocation, test.binDirectory)
+			RunBootstrapTest(t, test.plat, test.globalConfigFile, test.versionedPackagePath, test.binDirectory)
 		})
 	}
 }
@@ -54,7 +54,7 @@ func RunBootstrapTest(
 	t *testing.T,
 	plat platform.Platform,
 	globalConfigFile string,
-	wrangleFileLocation string,
+	versionedPackagePath string,
 	binDirectory string) {
 
 	host := host.NewTest(plat, nil, nil)
@@ -81,9 +81,9 @@ func RunBootstrapTest(
 	require.NoError(t, err)
 	require.True(t, ok, globalConfigFile+" does not exist")
 
-	ok, err = fs.Exists(wrangleFileLocation)
+	ok, err = fs.Exists(versionedPackagePath)
 	require.NoError(t, err)
-	require.True(t, ok, wrangleFileLocation+" does not exist")
+	require.True(t, ok, "versioned package path: "+versionedPackagePath+" does not exist")
 
 	ok, err = fs.Exists(binDirectory)
 	require.NoError(t, err)

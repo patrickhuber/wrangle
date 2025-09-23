@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-cross/filepath"
 
 	"github.com/patrickhuber/go-cross/fs"

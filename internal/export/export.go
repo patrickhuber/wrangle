@@ -6,7 +6,6 @@ import (
 	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
-	"github.com/patrickhuber/wrangle/internal/global"
 )
 
 type Service interface {
@@ -36,29 +35,30 @@ func (e *service) Execute(shell string, changes []envdiff.Change) error {
 	if !ok {
 		return fmt.Errorf("invalid shell %s", shell)
 	}
+
+	// write out the changes as lines
+	lines := []string{}
 	for _, change := range changes {
 		switch c := change.(type) {
 		case envdiff.Add:
 			str := s.Export(c.Key, c.Value)
-			_, err = fmt.Fprintln(out, str)
+			lines = append(lines, str)
 		case envdiff.Remove:
 			str := s.Unset(c.Key)
-			_, err = fmt.Fprintln(out, str)
+			lines = append(lines, str)
 		case envdiff.Update:
 			str := s.Export(c.Key, c.Value)
-			_, err = fmt.Fprintln(out, str)
+			lines = append(lines, str)
 		}
+	}
+
+	// format the lines into the output
+	for _, line := range lines {
+		_, err = fmt.Fprintln(out, line)
 		if err != nil {
 			return err
 		}
 	}
 
-	// save the diff
-	diffStr, err := envdiff.Encode(changes)
-	if err != nil {
-		return err
-	}
-	exportStr := s.Export(global.EnvDiff, diffStr)
-	_, err = fmt.Fprintln(out, exportStr)
 	return err
 }

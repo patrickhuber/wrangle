@@ -44,7 +44,8 @@ func (p *localFactory) Providers() ([]config.Provider, error) {
 		p.filesystem,
 		p.path,
 		p.resolver,
-		workingDirectory, ".wrangle.*")
+		workingDirectory,
+		"**/*.wrangle.*")
 
 	return glob.Providers()
 }

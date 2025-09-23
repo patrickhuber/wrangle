@@ -13,11 +13,11 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/go-git/go-billy/v5 v5.6.2
 	github.com/go-git/go-git/v5 v5.16.2
+	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/go-github/v62 v62.0.0
-	github.com/mitchellh/mapstructure v1.5.0
-	github.com/patrickhuber/go-config v0.6.0
+	github.com/patrickhuber/go-config v0.6.3
 	github.com/patrickhuber/go-cross v0.0.6
-	github.com/patrickhuber/go-dataptr v0.1.7
+	github.com/patrickhuber/go-dataptr v0.1.9
 	github.com/patrickhuber/go-di v0.5.5
 	github.com/patrickhuber/go-iter v0.5.3
 	github.com/patrickhuber/go-log v0.2.1

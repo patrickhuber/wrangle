@@ -2,7 +2,6 @@ package diff
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
@@ -22,23 +21,23 @@ type Service interface {
 type diff struct {
 	configuration config.Configuration
 	store         stores.Service
-	environment   env.Environment
 	os            os.OS
 	path          filepath.Provider
+	environment   env.Environment
 }
 
 func NewService(
 	configuration config.Configuration,
 	store stores.Service,
-	environment env.Environment,
 	os os.OS,
+	environment env.Environment,
 	path filepath.Provider) Service {
 	return &diff{
 		configuration: configuration,
 		store:         store,
-		environment:   environment,
 		os:            os,
 		path:          path,
+		environment:   environment,
 	}
 }
 
@@ -48,18 +47,8 @@ func (e *diff) Execute() ([]envdiff.Change, error) {
 		return nil, err
 	}
 
-	// is the local config the same as the working directory?
-	localConfig, localConfigSet := e.environment.Lookup(global.EnvLocalConfig)
-	if localConfigSet {
-		noAction, err := e.shouldTakeNoAction(wd, localConfig)
-		if err != nil {
-			return nil, err
-		}
-		if noAction {
-			return nil, nil
-		}
-	}
-
+	// configuration get uses the default configuration provider to load configurations
+	// this also looks at the environment and working directory to determin if the config should change
 	cfg, err := e.configuration.Get()
 	if err != nil {
 		return nil, err
@@ -109,29 +98,6 @@ func (e *diff) Execute() ([]envdiff.Change, error) {
 	return changes, err
 }
 
-func (e *diff) shouldTakeNoAction(workingDirectory string, localConfig string) (bool, error) {
-	if localConfig == workingDirectory {
-		// do nothing
-		return true, nil
-	}
-	// is the working directory a sub directory of the last configuration file?
-	filePaths, err := []string{}, error(nil)
-	if err != nil {
-		return false, err
-	}
-	if len(filePaths) > 0 {
-		lastFilePath := filePaths[len(filePaths)-1]
-		inSubOfLoadedConfig, err := e.isSelfOrSubDirectory(lastFilePath, workingDirectory)
-		if err != nil {
-			return false, err
-		}
-		if inSubOfLoadedConfig {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 func (e *diff) getVariableValues(cfg config.Config) (map[string]string, error) {
 	// create variable providers for each store
 	variableProviders, err := e.createVariableProviders(cfg)
@@ -178,21 +144,6 @@ func cleanEnv(m map[string]string) map[string]string {
 	delete(m, global.EnvLocalConfig)
 	delete(m, global.EnvSystemConfig)
 	return m
-}
-
-func (e diff) isSelfOrSubDirectory(base string, rel string) (bool, error) {
-	if base == rel {
-		return true, nil
-	}
-
-	// are we in a sub directory?
-	rel, err := e.path.Rel(base, rel)
-	if err != nil {
-		return false, err
-	}
-
-	// this is not a sub directory becuase it contains ".."
-	return !strings.Contains(rel, ".."), nil
 }
 
 func (e diff) createVariableProviders(cfg config.Config) ([]template.VariableProvider, error) {

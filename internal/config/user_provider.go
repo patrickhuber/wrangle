@@ -5,7 +5,7 @@ import (
 
 	iofs "io/fs"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
@@ -73,5 +73,11 @@ func (p *userProvider) getDefault() (Config, error) {
 	return Config{
 		ApiVersion: ApiVersion,
 		Kind:       Kind,
+		Spec: Spec{
+			Feeds:       []Feed{},
+			Stores:      []Store{},
+			Environment: map[string]string{},
+			Packages:    []Package{},
+		},
 	}, nil
 }
