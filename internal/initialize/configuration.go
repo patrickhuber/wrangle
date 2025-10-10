@@ -24,6 +24,7 @@ func NewConfiguration(
 	systemDefaultProvider config.SystemDefaultProvider) (Configuration, error) {
 
 	builder := goconfig.NewBuilder()
+	builder.WithProvider(config.NewDefaultProvider(os, env, path))
 	builder.WithProvider(config.NewEnvProvider(env, global.EnvPrefix))
 	builder.WithProvider(config.NewCliProvider(cli))
 	builder.WithProvider(config.NewSystemProvider(fs, path, systemDefaultProvider, true))

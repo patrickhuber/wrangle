@@ -19,12 +19,23 @@ RUN update-ca-certificates
 
 COPY --from=build /go/src/dist/wrangle /usr/local/bin/wrangle
 
-# run the bootstrap workflow
+# run the bootstrap command
 RUN export WRANGLE_LOG_LEVEL=trace && \
     wrangle bootstrap
 
 WORKDIR /working
 
-# run the initialize workflow
+# run the initialize command
 RUN export WRANGLE_LOG_LEVEL=trace && \
-    wrangle initialize
+    wrangle initialize && \
+    FILE_PATH="/working/.wrangle.toml" && \
+    if [ ! -f "$FILE_PATH" ]; then \
+        echo "Error: File '$FILE_PATH' does not exist." >&2 \
+        exit 1; \
+    fi
+
+# run the export command
+RUN export WRANGLE_LOG_LEVEL=trace && \
+    echo 'TEST="test"' >> /working/.wrangle.toml && \
+    export WRANGLE_LOG_LEVEL=trace && \
+    wrangle export bash > /working/export.temp 
