@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-config"
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/filepath"
@@ -52,6 +52,7 @@ func NewDefaultConfiguration(
 
 	errorIfNotExists := true
 	builder := config.NewBuilder()
+	builder.WithProvider(NewDefaultProvider(os, env, path))
 	builder.WithProvider(NewEnvProvider(env, global.EnvPrefix))
 	builder.WithProvider(NewCliProvider(cli))
 	builder.WithProvider(NewSystemProvider(fs, path, systemDefaultProvider, errorIfNotExists))

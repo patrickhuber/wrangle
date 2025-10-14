@@ -43,14 +43,17 @@ func Encode(enc Encoding, dst io.Writer, src any) error {
 }
 
 func Decode(enc Encoding, dst any, src io.Reader) error {
-	var e Decoder
 	switch enc {
 	case Yaml:
-		e = yaml.NewDecoder(src)
+		return yaml.NewDecoder(src).Decode(dst)
 	case Json:
-		e = json.NewDecoder(src)
+		return json.NewDecoder(src).Decode(dst)
+	case Toml:
+		// BurntSushi/toml exposes toml.NewDecoder for v2, but classic usage is toml.DecodeReader
+		// Simplest:
+		_, err := toml.NewDecoder(src).Decode(dst)
+		return err
 	default:
 		return fmt.Errorf("invalid encoding '%s'", enc)
 	}
-	return e.Decode(dst)
 }

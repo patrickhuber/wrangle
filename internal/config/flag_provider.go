@@ -29,10 +29,10 @@ func NewFlagProvider(args []string) config.Factory {
 		args,
 		config.FlagOption{Transformers: []config.Transformer{
 			config.FuncTypedTransformer(func(m map[string]any) (map[string]any, error) {
-				result := map[string]any{}
+				result := map[string]string{}
 				for flag, envVar := range flagToEnvMap {
 					if value, ok := m[flag]; ok {
-						result[envVar] = value
+						result[envVar] = value.(string)
 					}
 				}
 				return map[string]any{

@@ -161,7 +161,7 @@ func TestEnvProvider(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, cfg)
 
-			envConfig, err := dataptr.GetAs[map[string]any]("/spec/env", cfg)
+			envConfig, err := dataptr.GetAs[map[string]string]("/spec/env", cfg)
 			require.NoError(t, err)
 			require.NotNil(t, envConfig)
 			require.Equal(t, test.expectedEnvVarCount, len(envConfig), "unexpected number of environment variables")

@@ -26,7 +26,7 @@ func NewEnvProvider(environment env.Environment, prefixes ...string) config.Prov
 func (p *EnvProvider) Get(ctx *config.GetContext) (any, error) {
 	// use the environment to get the configuration
 	m := p.environment.Export()
-	envConfig := map[string]any{}
+	envConfig := map[string]string{}
 	for k, v := range m {
 		// check if the key starts with any of the prefixes
 		for _, prefix := range p.prefixes {

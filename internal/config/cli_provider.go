@@ -26,9 +26,13 @@ func NewCliProvider(ctx CliContext) config.Provider {
 }
 
 func (p *CliProvider) Get(ctx *config.GetContext) (any, error) {
-	m := map[string]any{}
+	m := map[string]string{}
 	for f, e := range p.flagMap {
-		m[e] = p.ctx.String(f)
+		// only set the flag if the value is not empty
+		value := p.ctx.String(f)
+		if value != "" {
+			m[e] = value
+		}
 	}
 	return map[string]any{
 		"spec": map[string]any{
