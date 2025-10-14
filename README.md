@@ -15,7 +15,7 @@ There are three methods to getting wrangle on a PC. You can do `go install`, a m
 ### Go Install
 
 ```
-go install github.com/patrickhuber/wrangle/cmd/wrangle@0.10.4
+go install github.com/patrickhuber/wrangle/cmd/wrangle@0.10.5
 ```
 
 OR
@@ -23,7 +23,7 @@ OR
 ```
 git clone https://github.com/patrickhuber/wrangle
 cd wrangle
-go install cmd/wrangle@0.10.4
+go install cmd/wrangle@0.10.5
 ```
 
 ### Scripted Install
@@ -49,7 +49,7 @@ The scripts above download the latest version of wrangle and then run a `wrangle
 Linux
 
 ```bash
-export VERSION=0.10.4
+export VERSION=0.10.5
 export ARCHIVE="wrangle-${VERSION}-linux-amd64.tar.gz"
 wget https://github.com/patrickhuber/wrangle/releases/download/v${VERSION}/${ARCHIVE}
 tar xfz ${ARCHIVE}
@@ -63,7 +63,7 @@ rm README.md
 Darwin
 
 ```bash
-export VERSION=0.10.4
+export VERSION=0.10.5
 export ARCHIVE="wrangle-${VERSION}-darwin-amd64.tar.gz"
 wget https://github.com/patrickhuber/wrangle/releases/download/v${VERSION}/${ARCHIVE}
 tar xfz ${ARCHIVE}
@@ -77,7 +77,7 @@ rm README.md
 Windows (Powershell)
 
 ```powershell
-$version = "0.10.4"
+$version = "0.10.5"
 $archive = "wrangle-$version-windows-amd64.zip"
 iwr -Uri "https://github.com/patrickhuber/wrangle/releases/download/v$version/$archive" -OutFile $archive
 Expand-Archive $archive -DestinationPath .
