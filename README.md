@@ -132,6 +132,17 @@ spec:
 }
 ```
 
+> .wrangle.toml
+
+```toml
+apiVersion = "wrangle/v1"
+kind = "Config"
+
+[spec.packages]
+name = "jq"
+version = "4.31.1"
+```
+
 ```bash
 wrangle restore
 ```
