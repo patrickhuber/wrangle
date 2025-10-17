@@ -6,6 +6,7 @@ import (
 
 	"github.com/patrickhuber/go-log"
 
+	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-cross/os"
@@ -27,11 +28,13 @@ type service struct {
 	path             filepath.Provider
 	log              log.Logger
 	shim             shim.Service
+	console          console.Console
 }
 
 type Request struct {
 	Package string
 	Version string
+	Force   bool
 }
 
 type Service interface {
@@ -47,6 +50,7 @@ func NewService(
 	metadataProvider actions.MetadataProvider,
 	path filepath.Provider,
 	shim shim.Service,
+	console console.Console,
 	log log.Logger) Service {
 	return &service{
 		fs:               fs,
@@ -57,6 +61,7 @@ func NewService(
 		metadataProvider: metadataProvider,
 		path:             path,
 		shim:             shim,
+		console:          console,
 		log:              log,
 	}
 }
@@ -88,6 +93,9 @@ func (i *service) validate() error {
 	}
 	if i.path == nil {
 		return fmt.Errorf("path property must have a value")
+	}
+	if i.console == nil {
+		return fmt.Errorf("console property must have a value")
 	}
 	return nil
 }
@@ -133,7 +141,27 @@ func (i *service) Execute(r *Request) error {
 			// create a metadata object for the task runs so the task knows to which package it belongs
 			meta := i.metadataProvider.Get(&cfg, r.Package, v.Version)
 
-			err := i.runTargets(
+			// check if the package version already exists
+			exists, err := i.fs.Exists(meta.PackageVersionPath)
+			if err != nil {
+				return fmt.Errorf("InstallService : unable to check if package version exists: %w", err)
+			}
+
+			if exists && !r.Force {
+				i.log.Infof("package %s@%s is already installed, skipping installation. Use --force to reinstall.", r.Package, v.Version)
+				continue
+			}
+
+			if exists && r.Force {
+				i.log.Debugf("package %s@%s already exists, will reinstall due to --force flag", r.Package, v.Version)
+				// Check if we need to handle currently running executable
+				err = i.handleRunningExecutable(v.Manifest.Package.Targets, meta)
+				if err != nil {
+					return err
+				}
+			}
+
+			err = i.runTargets(
 				v.Manifest.Package.Name,
 				v.Manifest.Package.Version,
 				v.Manifest.Package.Targets,
@@ -309,4 +337,69 @@ func (i *service) createListItemRequest(name, version string) *feed.ListRequest 
 			},
 		},
 	}
+}
+
+func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, meta *actions.Metadata) error {
+	// Get the currently running executable path
+	currentExe, err := i.console.Executable()
+	if err != nil {
+		return fmt.Errorf("InstallService : unable to get current executable path: %w", err)
+	}
+
+	i.log.Debugf("current executable: %s", currentExe)
+
+	// Check if any of the executables in the targets match the current executable
+	for _, target := range targets {
+		if !i.targetIsMatch(target) {
+			continue
+		}
+
+		for _, exec := range target.Executables {
+			execPath := i.path.Join(meta.PackageVersionPath, exec)
+			
+			// Check if this is the same file as the currently running executable
+			isSame, err := i.isSameFile(currentExe, execPath)
+			if err != nil {
+				i.log.Debugf("unable to compare files: %v", err)
+				continue
+			}
+
+			if isSame {
+				i.log.Infof("detected that %s is the currently running executable, renaming before reinstall", execPath)
+				// Rename the executable with a .old suffix and timestamp
+				oldPath := execPath + ".old"
+				err = i.fs.Rename(execPath, oldPath)
+				if err != nil {
+					return fmt.Errorf("InstallService : unable to rename running executable: %w", err)
+				}
+				i.log.Debugf("renamed %s to %s", execPath, oldPath)
+			}
+		}
+	}
+	return nil
+}
+
+func (i *service) isSameFile(path1, path2 string) (bool, error) {
+	// Check if both files exist
+	exists1, err := i.fs.Exists(path1)
+	if err != nil {
+		return false, err
+	}
+	if !exists1 {
+		return false, nil
+	}
+
+	exists2, err := i.fs.Exists(path2)
+	if err != nil {
+		return false, err
+	}
+	if !exists2 {
+		return false, nil
+	}
+
+	// Clean and compare paths
+	clean1 := i.path.Clean(path1)
+	clean2 := i.path.Clean(path2)
+	
+	return clean1 == clean2, nil
 }
