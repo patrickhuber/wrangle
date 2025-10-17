@@ -48,7 +48,6 @@ func NewService(
 //     the file is then integrated into the current configuration
 //   - creates the user configuration file if it doesn't exist
 //     the file is then integrated into the current configuration
-//   - cleans up any old renamed executables
 //   - installs any packages in the packages directory
 func (b *service) Execute(r *Request) error {
 
