@@ -154,6 +154,11 @@ func (i *service) Execute(r *Request) error {
 
 			if exists && r.Force {
 				i.log.Debugf("package %s@%s already exists, will reinstall due to --force flag", r.Package, v.Version)
+				// Clean up any .old files in the directory before handling running executables
+				err = i.cleanupOldFiles(meta.PackageVersionPath)
+				if err != nil {
+					i.log.Warnf("failed to cleanup old files: %v", err)
+				}
 				// Check if we need to handle currently running executable
 				err = i.handleRunningExecutable(v.Manifest.Package.Targets, meta)
 				if err != nil {
@@ -367,20 +372,8 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 			if isSame {
 				i.log.Infof("detected that %s is the currently running executable, renaming before reinstall", execPath)
 				
-				// Delete any existing .old file before renaming
-				oldPath := fmt.Sprintf("%s.old", execPath)
-				exists, err := i.fs.Exists(oldPath)
-				if err != nil {
-					i.log.Debugf("unable to check if old file exists: %v", err)
-				} else if exists {
-					i.log.Debugf("removing existing old file: %s", oldPath)
-					err = i.fs.Remove(oldPath)
-					if err != nil {
-						i.log.Warnf("failed to remove existing old file %s: %v", oldPath, err)
-					}
-				}
-				
 				// Rename the executable with a .old suffix
+				oldPath := fmt.Sprintf("%s.old", execPath)
 				err = i.fs.Rename(execPath, oldPath)
 				if err != nil {
 					return fmt.Errorf("InstallService : unable to rename running executable: %w", err)
@@ -389,6 +382,38 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 			}
 		}
 	}
+	return nil
+}
+
+func (i *service) cleanupOldFiles(dirPath string) error {
+	i.log.Debugf("cleaning up *.old files in %s", dirPath)
+	
+	entries, err := i.fs.ReadDir(dirPath)
+	if err != nil {
+		// If directory doesn't exist, nothing to clean up
+		exists, checkErr := i.fs.Exists(dirPath)
+		if checkErr == nil && !exists {
+			return nil
+		}
+		return fmt.Errorf("failed to read directory: %w", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		
+		// Check if file has .old suffix
+		if len(entry.Name()) > 4 && entry.Name()[len(entry.Name())-4:] == ".old" {
+			oldFilePath := i.path.Join(dirPath, entry.Name())
+			i.log.Debugf("removing old file: %s", oldFilePath)
+			err = i.fs.Remove(oldFilePath)
+			if err != nil {
+				i.log.Warnf("failed to remove old file %s: %v", oldFilePath, err)
+			}
+		}
+	}
+	
 	return nil
 }
 

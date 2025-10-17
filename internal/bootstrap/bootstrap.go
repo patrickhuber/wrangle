@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"fmt"
-	"regexp"
 
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
@@ -10,13 +9,6 @@ import (
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/install"
-)
-
-var (
-	// oldExecutablePattern matches files with .old suffix
-	// Pattern matches: .old
-	// Examples: wrangle.exe.old, wrangle.old
-	oldExecutablePattern = regexp.MustCompile(`\.old$`)
 )
 
 type service struct {
@@ -74,12 +66,6 @@ func (b *service) Execute(r *Request) error {
 		return fmt.Errorf("BootstrapService : failed to create bin directory %s: %w", binDirectory, err)
 	}
 
-	// cleanup old renamed executables
-	err = b.cleanupOldExecutables(cfg)
-	if err != nil {
-		b.logger.Warnf("failed to cleanup old executables: %v", err)
-	}
-
 	return b.installPackages(cfg, r.Force)
 }
 
@@ -97,67 +83,5 @@ func (b *service) installPackages(cfg config.Config, force bool) error {
 			return fmt.Errorf("failed to install package %s@%s: %w", pkg.Name, pkg.Version, err)
 		}
 	}
-	return nil
-}
-
-func (b *service) cleanupOldExecutables(cfg config.Config) error {
-	b.logger.Debugln("cleaning up old renamed executables")
-	
-	packagesDir := cfg.Spec.Environment[global.EnvPackages]
-	
-	// Walk through all package directories
-	entries, err := b.fs.ReadDir(packagesDir)
-	if err != nil {
-		// If packages directory doesn't exist, nothing to clean up
-		exists, checkErr := b.fs.Exists(packagesDir)
-		if checkErr == nil && !exists {
-			return nil
-		}
-		return fmt.Errorf("failed to read packages directory: %w", err)
-	}
-
-	for _, pkgEntry := range entries {
-		if !pkgEntry.IsDir() {
-			continue
-		}
-		
-		pkgPath := b.path.Join(packagesDir, pkgEntry.Name())
-		versionEntries, err := b.fs.ReadDir(pkgPath)
-		if err != nil {
-			b.logger.Warnf("failed to read package directory %s: %v", pkgPath, err)
-			continue
-		}
-
-		for _, versionEntry := range versionEntries {
-			if !versionEntry.IsDir() {
-				continue
-			}
-
-			versionPath := b.path.Join(pkgPath, versionEntry.Name())
-			fileEntries, err := b.fs.ReadDir(versionPath)
-			if err != nil {
-				b.logger.Warnf("failed to read version directory %s: %v", versionPath, err)
-				continue
-			}
-
-			// Look for .old files (with or without timestamp) and remove them
-			for _, fileEntry := range fileEntries {
-				if fileEntry.IsDir() {
-					continue
-				}
-				
-				// Match files with .old or .old.timestamp pattern
-				if oldExecutablePattern.MatchString(fileEntry.Name()) {
-					oldFilePath := b.path.Join(versionPath, fileEntry.Name())
-					b.logger.Debugf("removing old executable: %s", oldFilePath)
-					err = b.fs.Remove(oldFilePath)
-					if err != nil {
-						b.logger.Warnf("failed to remove old executable %s: %v", oldFilePath, err)
-					}
-				}
-			}
-		}
-	}
-	
 	return nil
 }
