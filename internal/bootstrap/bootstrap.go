@@ -102,7 +102,8 @@ func (b *service) cleanupOldExecutables(cfg config.Config) error {
 	entries, err := b.fs.ReadDir(packagesDir)
 	if err != nil {
 		// If packages directory doesn't exist, nothing to clean up
-		if strings.Contains(err.Error(), "no such file") || strings.Contains(err.Error(), "cannot find") {
+		exists, checkErr := b.fs.Exists(packagesDir)
+		if checkErr == nil && !exists {
 			return nil
 		}
 		return fmt.Errorf("failed to read packages directory: %w", err)
@@ -132,13 +133,14 @@ func (b *service) cleanupOldExecutables(cfg config.Config) error {
 				continue
 			}
 
-			// Look for .old files and remove them
+			// Look for .old files (with or without timestamp) and remove them
 			for _, fileEntry := range fileEntries {
 				if fileEntry.IsDir() {
 					continue
 				}
 				
-				if strings.HasSuffix(fileEntry.Name(), ".old") {
+				// Match files with .old or .old.timestamp pattern
+				if strings.Contains(fileEntry.Name(), ".old") {
 					oldFilePath := b.path.Join(versionPath, fileEntry.Name())
 					b.logger.Debugf("removing old executable: %s", oldFilePath)
 					err = b.fs.Remove(oldFilePath)

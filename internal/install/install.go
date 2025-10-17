@@ -3,6 +3,7 @@ package install
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/patrickhuber/go-log"
 
@@ -366,8 +367,9 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 
 			if isSame {
 				i.log.Infof("detected that %s is the currently running executable, renaming before reinstall", execPath)
-				// Rename the executable with a .old suffix and timestamp
-				oldPath := execPath + ".old"
+				// Rename the executable with a .old suffix and timestamp to avoid conflicts
+				timestamp := time.Now().Format("20060102-150405")
+				oldPath := fmt.Sprintf("%s.old.%s", execPath, timestamp)
 				err = i.fs.Rename(execPath, oldPath)
 				if err != nil {
 					return fmt.Errorf("InstallService : unable to rename running executable: %w", err)
@@ -401,5 +403,14 @@ func (i *service) isSameFile(path1, path2 string) (bool, error) {
 	clean1 := i.path.Clean(path1)
 	clean2 := i.path.Clean(path2)
 	
-	return clean1 == clean2, nil
+	// If the cleaned paths are the same, they refer to the same file
+	if clean1 == clean2 {
+		return true, nil
+	}
+
+	// For cross-platform compatibility, we primarily rely on path comparison
+	// since the go-cross library abstracts platform-specific details
+	// This is sufficient for our use case as we're comparing an executable
+	// path from console.Executable() with a constructed path
+	return false, nil
 }
