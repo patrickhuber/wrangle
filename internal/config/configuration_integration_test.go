@@ -32,7 +32,7 @@ func TestDefaultConfiguration_LoadsLocalConfigFromParent(t *testing.T) {
 	err = fs.WriteFile(localConfigPath, localConfig, 0o644)
 	require.NoError(t, err)
 
-	defaultRoot, err := config.GetRoot(env, os.Platform())
+	defaultRoot, err := config.GetRoot(env, path, os.Platform())
 	require.NoError(t, err)
 
 	systemConfigPath := config.GetDefaultSystemConfigPath(path, defaultRoot)

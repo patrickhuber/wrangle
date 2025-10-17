@@ -25,7 +25,7 @@ type testDefaultProvider struct {
 // Get implements config.Provider.
 func (t *testDefaultProvider) Get(ctx *config.GetContext) (any, error) {
 
-	root, err := GetRoot(t.env, t.os.Platform())
+	root, err := GetRoot(t.env, t.path, t.os.Platform())
 	if err != nil {
 		return nil, err
 	}

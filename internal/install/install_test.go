@@ -67,7 +67,7 @@ func RunInstallTest(t *testing.T,
 	err := fixtures.Apply(target.OS(), target.FS(), target.Env())
 	require.NoError(t, err)
 
-	root, err := config.GetRoot(target.Env(), plat)
+	root, err := config.GetRoot(target.Env(), target.Path(), plat)
 	require.NoError(t, err)
 
 	packagesDir := config.GetDefaultPackagesPath(target.Path(), root)
