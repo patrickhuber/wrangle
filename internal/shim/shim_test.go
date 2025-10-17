@@ -40,7 +40,7 @@ func TestShim(t *testing.T) {
 
 			fixtures.Apply(target.OS(), fs, env)
 
-			root, err := config.GetRoot(env, test.platform)
+			root, err := config.GetRoot(env, path, test.platform)
 			require.NoError(t, err)
 
 			binDirectory := config.GetDefaultBinPath(path, root)

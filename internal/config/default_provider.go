@@ -27,7 +27,7 @@ type defaultProvider struct {
 }
 
 func (p *defaultProvider) Get(ctx *config.GetContext) (any, error) {
-	root, err := GetRoot(p.env, p.os.Platform())
+	root, err := GetRoot(p.env, p.path, p.os.Platform())
 	if err != nil {
 		return nil, err
 	}

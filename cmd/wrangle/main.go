@@ -41,7 +41,7 @@ func main() {
 	appName, err := config.GetAppName("wrangle", o.Platform())
 	handle(err)
 
-	root, err := config.GetRoot(environment, o.Platform())
+	root, err := config.GetRoot(environment, path, o.Platform())
 	handle(err)
 
 	home, err := o.Home()

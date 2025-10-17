@@ -2,14 +2,13 @@ package config
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/platform"
 )
 
-func GetRoot(env env.Environment, plat platform.Platform) (string, error) {
+func GetRoot(env env.Environment, path filepath.Provider, plat platform.Platform) (string, error) {
 	root := "/opt/wrangle"
 	if platform.IsWindows(plat) {
 		programData := env.Get("ProgramData")
