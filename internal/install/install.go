@@ -404,7 +404,7 @@ func (i *service) cleanupOldFiles(dirPath string) error {
 		}
 		
 		// Check if file has .old suffix
-		if len(entry.Name()) > 4 && entry.Name()[len(entry.Name())-4:] == ".old" {
+		if i.path.Ext(entry.Name()) == ".old" {
 			oldFilePath := i.path.Join(dirPath, entry.Name())
 			i.log.Debugf("removing old file: %s", oldFilePath)
 			err = i.fs.Remove(oldFilePath)
