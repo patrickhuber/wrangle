@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
@@ -10,6 +10,12 @@ import (
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/install"
+)
+
+var (
+	// oldExecutablePattern matches files with .old or .old.timestamp suffix
+	// Examples: wrangle.exe.old, wrangle.exe.old.20251017-143000
+	oldExecutablePattern = regexp.MustCompile(`\.old(?:\.\d{8}-\d{6})?$`)
 )
 
 type service struct {
@@ -140,7 +146,7 @@ func (b *service) cleanupOldExecutables(cfg config.Config) error {
 				}
 				
 				// Match files with .old or .old.timestamp pattern
-				if strings.Contains(fileEntry.Name(), ".old") {
+				if oldExecutablePattern.MatchString(fileEntry.Name()) {
 					oldFilePath := b.path.Join(versionPath, fileEntry.Name())
 					b.logger.Debugf("removing old executable: %s", oldFilePath)
 					err = b.fs.Remove(oldFilePath)

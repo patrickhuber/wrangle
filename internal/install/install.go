@@ -19,6 +19,11 @@ import (
 	"github.com/patrickhuber/wrangle/internal/shim"
 )
 
+const (
+	// oldExecutableTimestampFormat is the timestamp format used when renaming old executables
+	oldExecutableTimestampFormat = "20060102-150405"
+)
+
 type service struct {
 	configuration    config.Configuration
 	fs               fs.FS
@@ -368,7 +373,7 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 			if isSame {
 				i.log.Infof("detected that %s is the currently running executable, renaming before reinstall", execPath)
 				// Rename the executable with a .old suffix and timestamp to avoid conflicts
-				timestamp := time.Now().Format("20060102-150405")
+				timestamp := time.Now().Format(oldExecutableTimestampFormat)
 				oldPath := fmt.Sprintf("%s.old.%s", execPath, timestamp)
 				err = i.fs.Rename(execPath, oldPath)
 				if err != nil {
