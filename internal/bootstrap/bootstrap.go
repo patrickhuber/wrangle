@@ -14,7 +14,9 @@ import (
 
 var (
 	// oldExecutablePattern matches files with .old or .old.timestamp suffix
+	// Pattern matches: .old or .old.YYYYMMDD-HHMMSS
 	// Examples: wrangle.exe.old, wrangle.exe.old.20251017-143000
+	// where \d{8} = YYYYMMDD and \d{6} = HHMMSS
 	oldExecutablePattern = regexp.MustCompile(`\.old(?:\.\d{8}-\d{6})?$`)
 )
 
