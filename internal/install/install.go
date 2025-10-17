@@ -3,7 +3,6 @@ package install
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/patrickhuber/go-log"
 
@@ -17,11 +16,6 @@ import (
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"github.com/patrickhuber/wrangle/internal/shim"
-)
-
-const (
-	// oldExecutableTimestampFormat is the timestamp format used when renaming old executables
-	oldExecutableTimestampFormat = "20060102-150405"
 )
 
 type service struct {
@@ -372,9 +366,21 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 
 			if isSame {
 				i.log.Infof("detected that %s is the currently running executable, renaming before reinstall", execPath)
-				// Rename the executable with a .old suffix and timestamp to avoid conflicts
-				timestamp := time.Now().Format(oldExecutableTimestampFormat)
-				oldPath := fmt.Sprintf("%s.old.%s", execPath, timestamp)
+				
+				// Delete any existing .old file before renaming
+				oldPath := fmt.Sprintf("%s.old", execPath)
+				exists, err := i.fs.Exists(oldPath)
+				if err != nil {
+					i.log.Debugf("unable to check if old file exists: %v", err)
+				} else if exists {
+					i.log.Debugf("removing existing old file: %s", oldPath)
+					err = i.fs.Remove(oldPath)
+					if err != nil {
+						i.log.Warnf("failed to remove existing old file %s: %v", oldPath, err)
+					}
+				}
+				
+				// Rename the executable with a .old suffix
 				err = i.fs.Rename(execPath, oldPath)
 				if err != nil {
 					return fmt.Errorf("InstallService : unable to rename running executable: %w", err)
