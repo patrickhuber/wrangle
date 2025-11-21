@@ -22,6 +22,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/initialize"
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/interpolate"
+	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
@@ -101,6 +102,9 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	// bootstrap
 	container.RegisterConstructor(bootstrap.NewService)
 	container.RegisterConstructor(bootstrap.NewTestConfiguration)
+
+	// upgrades
+	container.RegisterConstructor(oldfile.NewManager)
 
 	// install
 	container.RegisterConstructor(install.NewService)

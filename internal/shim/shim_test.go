@@ -11,6 +11,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/fixtures"
 	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/stretchr/testify/require"
 )
@@ -72,7 +73,8 @@ func TestShim(t *testing.T) {
 				},
 			}
 
-			shim := shim.NewService(fs, path, configuration, log)
+			oldFiles := oldfile.NewManager(fs, path)
+			shim := shim.NewService(fs, path, configuration, oldFiles, log)
 			err = shim.Execute(req)
 			if err != nil {
 				t.Fatal(err)

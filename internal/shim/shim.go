@@ -13,6 +13,7 @@ import (
 	"github.com/patrickhuber/go-shellhook"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/oldfile"
 )
 
 type Service interface {
@@ -28,6 +29,7 @@ func NewService(
 	fs fs.FS,
 	path filepath.Provider,
 	configuration config.Configuration,
+	oldFiles *oldfile.Manager,
 	log log.Logger) Service {
 	shells := []string{shellhook.Bash, shellhook.Powershell}
 	return &service{
@@ -36,6 +38,7 @@ func NewService(
 		configuration: configuration,
 		fs:            fs,
 		path:          path,
+		oldFiles:      oldFiles,
 	}
 }
 
@@ -45,6 +48,7 @@ type service struct {
 	path          filepath.Provider
 	configuration config.Configuration
 	log           log.Logger
+	oldFiles      *oldfile.Manager
 }
 
 const bashTemplate = `#!/usr/bin/bash
@@ -74,7 +78,9 @@ func (s *service) Execute(req *Request) error {
 	}
 
 	var buf bytes.Buffer
+	cleanedDirs := map[string]struct{}{}
 	for _, executable := range req.Executables {
+		buf.Reset()
 		data := map[string]any{
 			"Executable": executable,
 		}
@@ -84,6 +90,22 @@ func (s *service) Execute(req *Request) error {
 		}
 
 		shimPath := s.getShimPath(cfg, req.Shell, executable)
+		dir := s.path.Dir(shimPath)
+		if _, seen := cleanedDirs[dir]; !seen {
+			s.log.Debugf("cleaning up *.old files in %s", dir)
+			if cleanupErr := s.oldFiles.Cleanup(dir); cleanupErr != nil {
+				s.log.Warnf("failed to cleanup old shim files in %s: %v", dir, cleanupErr)
+			}
+			cleanedDirs[dir] = struct{}{}
+		}
+
+		oldPath, rotateErr := s.oldFiles.Rotate(shimPath)
+		if rotateErr != nil {
+			return fmt.Errorf("failed to rotate existing shim %s: %w", shimPath, rotateErr)
+		}
+		if oldPath != "" {
+			s.log.Debugf("renamed %s to %s", shimPath, oldPath)
+		}
 
 		err = s.fs.WriteFile(shimPath, buf.Bytes(), 0775)
 		if err != nil {

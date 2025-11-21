@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"fmt"
 
+	"github.com/patrickhuber/go-cross/filepath"
 	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/config"
@@ -12,9 +13,10 @@ import (
 
 type service struct {
 	install       install.Service
-	configuration Configuration `inject:"bootstrap"`
-	logger        log.Logger    `inject:"logger"`
-	fs            fs.FS         `inject:"fs"`
+	configuration Configuration   `inject:"bootstrap"`
+	logger        log.Logger      `inject:"logger"`
+	fs            fs.FS           `inject:"fs"`
+	path          filepath.Provider `inject:"filepath"`
 }
 
 type Request struct {
@@ -29,12 +31,14 @@ func NewService(
 	install install.Service,
 	configuration Configuration,
 	logger log.Logger,
-	fs fs.FS) Service {
+	fs fs.FS,
+	path filepath.Provider) Service {
 	return &service{
 		install:       install,
 		configuration: configuration,
 		logger:        logger,
 		fs:            fs,
+		path:          path,
 	}
 }
 
@@ -61,15 +65,16 @@ func (b *service) Execute(r *Request) error {
 		return fmt.Errorf("BootstrapService : failed to create bin directory %s: %w", binDirectory, err)
 	}
 
-	return b.installPackages(cfg)
+	return b.installPackages(cfg, r.Force)
 }
 
-func (b *service) installPackages(cfg config.Config) error {
+func (b *service) installPackages(cfg config.Config, force bool) error {
 	b.logger.Debugln("install packages")
 	for _, pkg := range cfg.Spec.Packages {
 		request := &install.Request{
 			Package: pkg.Name,
 			Version: pkg.Version,
+			Force:   force,
 		}
 		b.logger.Debugf("install %s@%s", pkg.Name, pkg.Version)
 		err := b.install.Execute(request)
