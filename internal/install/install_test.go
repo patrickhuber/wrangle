@@ -194,6 +194,16 @@ func TestInstallWithForce(t *testing.T) {
 			platform: platform.Linux,
 			force:    true,
 		},
+		{
+			name:     "Darwin_NoForce",
+			platform: platform.Darwin,
+			force:    false,
+		},
+		{
+			name:     "Darwin_WithForce",
+			platform: platform.Darwin,
+			force:    true,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
