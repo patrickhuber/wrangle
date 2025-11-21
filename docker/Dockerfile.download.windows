@@ -1,4 +1,4 @@
-FROM --platform=windows/amd64 mcr.microsoft.com/windows/servercore:ltsc2022
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/servercore:ltsc2025
 ARG LOCAL
 SHELL ["powershell", "-command"]
 COPY install.ps1 install.ps1
