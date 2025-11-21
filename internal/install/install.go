@@ -14,6 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
+	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"github.com/patrickhuber/wrangle/internal/shim"
 )
@@ -29,6 +30,7 @@ type service struct {
 	log              log.Logger
 	shim             shim.Service
 	console          console.Console
+	oldFiles         *oldfile.Manager
 }
 
 type Request struct {
@@ -49,6 +51,7 @@ func NewService(
 	configuration config.Configuration,
 	metadataProvider actions.MetadataProvider,
 	path filepath.Provider,
+	oldFiles *oldfile.Manager,
 	shim shim.Service,
 	console console.Console,
 	log log.Logger) Service {
@@ -63,6 +66,7 @@ func NewService(
 		shim:             shim,
 		console:          console,
 		log:              log,
+		oldFiles:         oldFiles,
 	}
 }
 
@@ -96,6 +100,9 @@ func (i *service) validate() error {
 	}
 	if i.console == nil {
 		return fmt.Errorf("console property must have a value")
+	}
+	if i.oldFiles == nil {
+		return fmt.Errorf("oldFiles property must have a value")
 	}
 	return nil
 }
@@ -155,7 +162,8 @@ func (i *service) Execute(r *Request) error {
 			if exists && r.Force {
 				i.log.Debugf("package %s@%s already exists, will reinstall due to --force flag", r.Package, v.Version)
 				// Clean up any .old files in the directory before handling running executables
-				err = i.cleanupOldFiles(meta.PackageVersionPath)
+				i.log.Debugf("cleaning up *.old files in %s", meta.PackageVersionPath)
+				err = i.oldFiles.Cleanup(meta.PackageVersionPath)
 				if err != nil {
 					i.log.Warnf("failed to cleanup old files: %v", err)
 				}
@@ -178,7 +186,7 @@ func (i *service) Execute(r *Request) error {
 		}
 	}
 	if !oneVersionMatched {
-		return fmt.Errorf("InstallService : , no packages were installed matching name '%s' and version '%s'", r.Package, r.Version)
+		return fmt.Errorf("InstallService : no packages were installed matching name '%s' and version '%s'", r.Package, r.Version)
 	}
 	return nil
 }
@@ -189,49 +197,51 @@ func (i *service) runTargets(
 	targets []*packages.ManifestTarget,
 	meta *actions.Metadata) error {
 
-	oneTargetMatched := false
-
 	i.log.Debugf("InstallService : runTargets : current platform %s and architecture %s", i.opsys.Platform(), i.opsys.Architecture())
 
+	var matchedTarget *packages.ManifestTarget
 	for _, target := range targets {
 
 		// check if target matches, architecture and platform
 		// we don't want to run windows actions on linux
 		if !i.targetIsMatch(target) {
-			i.log.Debugf("unable to match target %s %s", target.Platform, target.Architecture)
+			i.log.Debugf("target %s %s does not match", target.Platform, target.Architecture)
 			continue
 		}
 
 		i.log.Debugf("matched target %s %s", target.Platform, target.Architecture)
-		oneTargetMatched = true
+		matchedTarget = target
 
-		err := i.runSteps(target.Steps, meta)
+		// once we match a target, no need to process additional targets
+		break
+	}
+
+	if matchedTarget == nil {
+		return fmt.Errorf("no targets in the package %s@%s match %s %s", packageName, packageVersion, i.opsys.Platform(), i.opsys.Architecture())
+	}
+
+	err := i.runSteps(matchedTarget.Steps, meta)
+	if err != nil {
+		return err
+	}
+
+	for _, exec := range matchedTarget.Executables {
+		execPath := i.path.Join(meta.PackageVersionPath, exec)
+		ok, err := i.fs.Exists(execPath)
 		if err != nil {
 			return err
 		}
-
-		for _, exec := range target.Executables {
-			execPath := i.path.Join(meta.PackageVersionPath, exec)
-			ok, err := i.fs.Exists(execPath)
-			if err != nil {
-				return err
-			}
-			if !ok {
-				continue
-			}
-			err = i.setExecutable(execPath)
-			if err != nil {
-				return err
-			}
-			err = i.shimExecutable(execPath)
-			if err != nil {
-				return err
-			}
+		if !ok {
+			continue
 		}
-	}
-
-	if !oneTargetMatched {
-		return fmt.Errorf("no targets in the package %s@%s match %s %s", packageName, packageVersion, i.opsys.Platform(), i.opsys.Architecture())
+		err = i.setExecutable(execPath)
+		if err != nil {
+			return err
+		}
+		err = i.shimExecutable(execPath)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -361,9 +371,11 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 
 		for _, exec := range target.Executables {
 			execPath := i.path.Join(meta.PackageVersionPath, exec)
-			
+
+			i.log.Debugf("comparing current executable %s with target executable %s", currentExe, execPath)
+
 			// Check if this is the same file as the currently running executable
-			isSame, err := i.isSameFile(currentExe, execPath)
+			isSame, err := i.oldFiles.SameFile(currentExe, execPath)
 			if err != nil {
 				i.log.Debugf("unable to compare files: %v", err)
 				continue
@@ -371,10 +383,9 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 
 			if isSame {
 				i.log.Infof("detected that %s is the currently running executable, renaming before reinstall", execPath)
-				
+
 				// Rename the executable with a .old suffix
-				oldPath := fmt.Sprintf("%s.old", execPath)
-				err = i.fs.Rename(execPath, oldPath)
+				oldPath, err := i.oldFiles.Rotate(execPath)
 				if err != nil {
 					return fmt.Errorf("InstallService : unable to rename running executable: %w", err)
 				}
@@ -383,70 +394,4 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 		}
 	}
 	return nil
-}
-
-func (i *service) cleanupOldFiles(dirPath string) error {
-	i.log.Debugf("cleaning up *.old files in %s", dirPath)
-	
-	entries, err := i.fs.ReadDir(dirPath)
-	if err != nil {
-		// If directory doesn't exist, nothing to clean up
-		exists, checkErr := i.fs.Exists(dirPath)
-		if checkErr == nil && !exists {
-			return nil
-		}
-		return fmt.Errorf("failed to read directory: %w", err)
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		
-		// Check if file has .old suffix
-		if i.path.Ext(entry.Name()) == ".old" {
-			oldFilePath := i.path.Join(dirPath, entry.Name())
-			i.log.Debugf("removing old file: %s", oldFilePath)
-			err = i.fs.Remove(oldFilePath)
-			if err != nil {
-				i.log.Warnf("failed to remove old file %s: %v", oldFilePath, err)
-			}
-		}
-	}
-	
-	return nil
-}
-
-func (i *service) isSameFile(path1, path2 string) (bool, error) {
-	// Check if both files exist
-	exists1, err := i.fs.Exists(path1)
-	if err != nil {
-		return false, err
-	}
-	if !exists1 {
-		return false, nil
-	}
-
-	exists2, err := i.fs.Exists(path2)
-	if err != nil {
-		return false, err
-	}
-	if !exists2 {
-		return false, nil
-	}
-
-	// Clean and compare paths
-	clean1 := i.path.Clean(path1)
-	clean2 := i.path.Clean(path2)
-	
-	// If the cleaned paths are the same, they refer to the same file
-	if clean1 == clean2 {
-		return true, nil
-	}
-
-	// For cross-platform compatibility, we primarily rely on path comparison
-	// since the go-cross library abstracts platform-specific details
-	// This is sufficient for our use case as we're comparing an executable
-	// path from console.Executable() with a constructed path
-	return false, nil
 }

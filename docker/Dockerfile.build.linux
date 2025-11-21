@@ -23,6 +23,16 @@ COPY --from=build /go/src/dist/wrangle /usr/local/bin/wrangle
 RUN export WRANGLE_LOG_LEVEL=trace && \
     wrangle bootstrap
 
+# copy the installed wrangle executable to overwrite the package one
+# we do this to ensure the installed version was copiled from source
+# and not just downloaded as a precompiled binary
+COPY --from=build /go/src/dist/wrangle /opt/wrangle/bin/wrangle
+
+# run the bootstrap command again to test if it errors
+# this export will overwrite the /opt/wrangle/bin/wrangle file that is currently running and produce a .old file
+RUN export WRANGLE_LOG_LEVEL=trace && \
+    /opt/wrangle/bin/wrangle bootstrap --force
+
 WORKDIR /working
 
 # run the initialize command

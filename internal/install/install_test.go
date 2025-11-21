@@ -15,6 +15,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/fixtures"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/install"
+	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/stretchr/testify/require"
@@ -96,6 +97,8 @@ func RunInstallTest(t *testing.T,
 	metadataProvider := actions.NewMetadataProvider(target.Path())
 	logger := log.Default(log.WithLevel(log.DebugLevel))
 	configuration := config.NewMock(cfg)
+	oldFiles := oldfile.NewManager(target.FS(), target.Path())
+	shimService := shim.NewService(target.FS(), target.Path(), configuration, oldFiles, logger)
 
 	service := install.NewService(
 		target.FS(),
@@ -143,7 +146,8 @@ func RunInstallTest(t *testing.T,
 		configuration,
 		metadataProvider,
 		target.Path(),
-		shim.NewService(target.FS(), target.Path(), configuration, logger),
+		oldFiles,
+		shimService,
 		target.Console(),
 		logger)
 
@@ -244,6 +248,8 @@ func RunInstallWithForceTest(t *testing.T, plat platform.Platform, force bool) {
 	metadataProvider := actions.NewMetadataProvider(target.Path())
 	logger := log.Default(log.WithLevel(log.DebugLevel))
 	configuration := config.NewMock(cfg)
+	oldFiles := oldfile.NewManager(target.FS(), target.Path())
+	shimService := shim.NewService(target.FS(), target.Path(), configuration, oldFiles, logger)
 
 	service := install.NewService(
 		target.FS(),
@@ -292,18 +298,19 @@ func RunInstallWithForceTest(t *testing.T, plat platform.Platform, force bool) {
 		configuration,
 		metadataProvider,
 		target.Path(),
-		shim.NewService(target.FS(), target.Path(), configuration, logger),
+		oldFiles,
+		shimService,
 		target.Console(),
 		logger)
 
 	// First installation - create the package version directory and file
 	metadata := metadataProvider.Get(&cfg, packageName, packageVersion)
 	packageVersionFileLocation := target.Path().Join(metadata.PackageVersionPath, appName)
-	
+
 	// Create the directory structure
 	err = target.FS().MkdirAll(metadata.PackageVersionPath, 0755)
 	require.NoError(t, err)
-	
+
 	// Write initial file
 	err = target.FS().WriteFile(packageVersionFileLocation, []byte("initial content"), 0644)
 	require.NoError(t, err)

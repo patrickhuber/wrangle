@@ -16,6 +16,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/initialize"
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/interpolate"
+	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
@@ -88,6 +89,9 @@ func New() Host {
 	// bootstrap
 	container.RegisterConstructor(bootstrap.NewConfiguration)
 	container.RegisterConstructor(bootstrap.NewService)
+
+	// upgrades
+	container.RegisterConstructor(oldfile.NewManager)
 
 	// install
 	container.RegisterConstructor(install.NewService)
