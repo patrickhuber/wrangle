@@ -13,9 +13,11 @@ type Store struct {
 }
 
 type VaultOptions struct {
-	Address string
-	Token   string
-	Path    string
+	Address  string
+	Token    string
+	Path     string
+	RoleID   string
+	SecretID string
 }
 
 // NewVault returns a new Store implemented by HashiCorp Vault
@@ -30,7 +32,13 @@ func NewVault(options *VaultOptions) (*Store, error) {
 		return nil, err
 	}
 
-	if options.Token != "" {
+	// AppRole authentication takes precedence over token
+	if options.RoleID != "" && options.SecretID != "" {
+		err = authenticateWithAppRole(client, options.RoleID, options.SecretID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to authenticate with AppRole: %w", err)
+		}
+	} else if options.Token != "" {
 		client.SetToken(options.Token)
 	}
 
@@ -43,6 +51,26 @@ func NewVault(options *VaultOptions) (*Store, error) {
 		client: client,
 		path:   path,
 	}, nil
+}
+
+// authenticateWithAppRole authenticates to Vault using AppRole auth method
+func authenticateWithAppRole(client *api.Client, roleID, secretID string) error {
+	data := map[string]interface{}{
+		"role_id":   roleID,
+		"secret_id": secretID,
+	}
+
+	resp, err := client.Logical().Write("auth/approle/login", data)
+	if err != nil {
+		return err
+	}
+
+	if resp == nil || resp.Auth == nil {
+		return fmt.Errorf("authentication response is nil")
+	}
+
+	client.SetToken(resp.Auth.ClientToken)
+	return nil
 }
 
 func (s *Store) Get(key stores.Key) (any, bool, error) {
