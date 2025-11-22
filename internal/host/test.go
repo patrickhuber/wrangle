@@ -148,7 +148,6 @@ func (t *test) newFeedProvider(server *httptest.Server, opsys os.OS, logger log.
 	packageVersions := []packageVersion{
 		{"test", "1.0.0", []string{"1.0.0", "0.8.0"}},
 		{"wrangle", "1.0.0", []string{"0.8.0", "0.9.0", "1.0.0"}},
-		{"shim", "1.0.0", []string{"0.8.0", "0.9.0", "1.0.0"}},
 	}
 	extension := ""
 	if platform.IsWindows(opsys.Platform()) {
