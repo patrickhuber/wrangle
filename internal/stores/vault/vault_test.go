@@ -9,23 +9,62 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	integrationEnv     = "INTEGRATION"
+	vaultAddrEnv       = "INTEGRATION_VAULT_ADDR"
+	vaultTokenEnv      = "INTEGRATION_VAULT_TOKEN"
+	vaultRoleIDEnv     = "INTEGRATION_VAULT_ROLE_ID"
+	vaultSecretIDEnv   = "INTEGRATION_VAULT_SECRET_ID"
+)
+
+// runStoreTests runs common store tests for the given store instance
+func runStoreTests(t *testing.T, store stores.Store, keyPrefix string) {
+	t.Run("set", func(t *testing.T) {
+		key := stores.Key{Data: stores.Data{
+			Name: keyPrefix + "-test",
+		}}
+		value := keyPrefix + "-value"
+		err := store.Set(key, value)
+		require.NoError(t, err)
+
+		v, ok, err := store.Get(key)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.NotNil(t, v)
+		require.Equal(t, value, v)
+	})
+
+	t.Run("get", func(t *testing.T) {
+		key := stores.Key{Data: stores.Data{
+			Name: keyPrefix + "-test",
+		}}
+		v, ok, err := store.Get(key)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.NotNil(t, v)
+		require.Equal(t, keyPrefix+"-value", v)
+	})
+
+	t.Run("list", func(t *testing.T) {
+		items, err := store.List()
+		require.NoError(t, err)
+		require.GreaterOrEqual(t, len(items), 1)
+	})
+}
+
 func TestVaultWithToken(t *testing.T) {
-	var INTEGRATION = "INTEGRATION"
-	var VAULT_ADDR_ENV = "INTEGRATION_VAULT_ADDR"
-	var VAULT_TOKEN_ENV = "INTEGRATION_VAULT_TOKEN"
-
-	if os.Getenv(INTEGRATION) == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
+	if os.Getenv(integrationEnv) == "" {
+		t.Skipf("skipping integration tests: set %s environment variable", integrationEnv)
 	}
 
-	address := os.Getenv(VAULT_ADDR_ENV)
+	address := os.Getenv(vaultAddrEnv)
 	if address == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", VAULT_ADDR_ENV)
+		t.Skipf("skipping integration tests: set %s environment variable", vaultAddrEnv)
 	}
 
-	token := os.Getenv(VAULT_TOKEN_ENV)
+	token := os.Getenv(vaultTokenEnv)
 	if token == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", VAULT_TOKEN_ENV)
+		t.Skipf("skipping integration tests: set %s environment variable", vaultTokenEnv)
 	}
 
 	factory := vault.NewFactory()
@@ -37,61 +76,27 @@ func TestVaultWithToken(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, store)
 
-	t.Run("set", func(t *testing.T) {
-		key := stores.Key{Data: stores.Data{
-			Name: "test",
-		}}
-		err := store.Set(key, "test-value")
-		require.NoError(t, err)
-
-		v, ok, err := store.Get(key)
-		require.NoError(t, err)
-		require.True(t, ok)
-		require.NotNil(t, v)
-		require.Equal(t, "test-value", v)
-	})
-
-	t.Run("get", func(t *testing.T) {
-		key := stores.Key{Data: stores.Data{
-			Name: "test",
-		}}
-		v, ok, err := store.Get(key)
-		require.NoError(t, err)
-		require.True(t, ok)
-		require.NotNil(t, v)
-		require.Equal(t, "test-value", v)
-	})
-
-	t.Run("list", func(t *testing.T) {
-		items, err := store.List()
-		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(items), 1)
-	})
+	runStoreTests(t, store, "token")
 }
 
 func TestVaultWithAppRole(t *testing.T) {
-	var INTEGRATION = "INTEGRATION"
-	var VAULT_ADDR_ENV = "INTEGRATION_VAULT_ADDR"
-	var VAULT_ROLE_ID_ENV = "INTEGRATION_VAULT_ROLE_ID"
-	var VAULT_SECRET_ID_ENV = "INTEGRATION_VAULT_SECRET_ID"
-
-	if os.Getenv(INTEGRATION) == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
+	if os.Getenv(integrationEnv) == "" {
+		t.Skipf("skipping integration tests: set %s environment variable", integrationEnv)
 	}
 
-	address := os.Getenv(VAULT_ADDR_ENV)
+	address := os.Getenv(vaultAddrEnv)
 	if address == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", VAULT_ADDR_ENV)
+		t.Skipf("skipping integration tests: set %s environment variable", vaultAddrEnv)
 	}
 
-	roleID := os.Getenv(VAULT_ROLE_ID_ENV)
+	roleID := os.Getenv(vaultRoleIDEnv)
 	if roleID == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", VAULT_ROLE_ID_ENV)
+		t.Skipf("skipping integration tests: set %s environment variable", vaultRoleIDEnv)
 	}
 
-	secretID := os.Getenv(VAULT_SECRET_ID_ENV)
+	secretID := os.Getenv(vaultSecretIDEnv)
 	if secretID == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", VAULT_SECRET_ID_ENV)
+		t.Skipf("skipping integration tests: set %s environment variable", vaultSecretIDEnv)
 	}
 
 	factory := vault.NewFactory()
@@ -104,34 +109,5 @@ func TestVaultWithAppRole(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, store)
 
-	t.Run("set", func(t *testing.T) {
-		key := stores.Key{Data: stores.Data{
-			Name: "test-approle",
-		}}
-		err := store.Set(key, "approle-value")
-		require.NoError(t, err)
-
-		v, ok, err := store.Get(key)
-		require.NoError(t, err)
-		require.True(t, ok)
-		require.NotNil(t, v)
-		require.Equal(t, "approle-value", v)
-	})
-
-	t.Run("get", func(t *testing.T) {
-		key := stores.Key{Data: stores.Data{
-			Name: "test-approle",
-		}}
-		v, ok, err := store.Get(key)
-		require.NoError(t, err)
-		require.True(t, ok)
-		require.NotNil(t, v)
-		require.Equal(t, "approle-value", v)
-	})
-
-	t.Run("list", func(t *testing.T) {
-		items, err := store.List()
-		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(items), 1)
-	})
+	runStoreTests(t, store, "approle")
 }
