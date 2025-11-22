@@ -201,6 +201,24 @@ stores:
 | -------- | ----------- |
 | service  | the service under which to store secrets |
 
+### HashiCorp Vault
+
+```yaml
+stores:
+- name: default
+  type: vault
+  properties:
+    address: http://127.0.0.1:8200  # (required)
+    token: s.xxxxxxxxxxxxxxxxxxxxxxxx  # (optional)
+    path: secret  # (optional, defaults to "secret")
+```
+
+| property | description |
+| -------- | ----------- |
+| address  | the address of the Vault server (e.g., http://127.0.0.1:8200) |
+| token    | the authentication token (optional, can use VAULT_TOKEN environment variable) |
+| path     | the KV v2 secrets engine mount path (optional, defaults to "secret") |
+
 ## Package Management
 
 Wrangle is a simple package manager much like [arkade](https://github.com/alexellis/arkade). Arkade tends to focus on the lastest package version while Wrangle is fully version aware. Arkade also embeds its package feed into the execuable while Wrangle utilizes external package feeds.
