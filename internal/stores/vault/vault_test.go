@@ -11,11 +11,16 @@ import (
 	vaultcontainer "github.com/testcontainers/testcontainers-go/modules/vault"
 )
 
+const (
+	vaultVersion = "hashicorp/vault:1.13.3"
+	rootToken    = "root-token"
+)
+
 // setupVaultContainer starts a Vault testcontainer and returns the address and root token
 func setupVaultContainer(ctx context.Context, t *testing.T) (string, string, func()) {
 	container, err := vaultcontainer.Run(ctx,
-		"hashicorp/vault:1.13.3",
-		vaultcontainer.WithToken("root-token"),
+		vaultVersion,
+		vaultcontainer.WithToken(rootToken),
 	)
 	require.NoError(t, err)
 
@@ -29,15 +34,11 @@ func setupVaultContainer(ctx context.Context, t *testing.T) (string, string, fun
 	}
 
 	// HttpHostAddress already includes the protocol
-	return addr, "root-token", cleanup
+	return addr, rootToken, cleanup
 }
 
 // setupAppRole configures AppRole authentication in Vault and returns role_id and secret_id
-func setupAppRole(ctx context.Context, t *testing.T, container *vaultcontainer.VaultContainer, token string) (string, string) {
-	// Get the Vault address (already includes protocol)
-	vaultAddr, err := container.HttpHostAddress(ctx)
-	require.NoError(t, err)
-
+func setupAppRole(ctx context.Context, t *testing.T, vaultAddr, token string) (string, string) {
 	// Create Vault client for setup
 	client, err := vault.NewVault(&vault.VaultOptions{
 		Address: vaultAddr,
@@ -139,22 +140,11 @@ func TestVaultWithAppRole(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup Vault container
-	container, err := vaultcontainer.Run(ctx,
-		"hashicorp/vault:1.13.3",
-		vaultcontainer.WithToken("root-token"),
-	)
-	require.NoError(t, err)
-	defer func() {
-		if err := container.Terminate(ctx); err != nil {
-			t.Logf("failed to terminate container: %s", err)
-		}
-	}()
-
-	address, err := container.HttpHostAddress(ctx)
-	require.NoError(t, err)
+	address, token, cleanup := setupVaultContainer(ctx, t)
+	defer cleanup()
 
 	// Setup AppRole authentication
-	roleID, secretID := setupAppRole(ctx, t, container, "root-token")
+	roleID, secretID := setupAppRole(ctx, t, address, token)
 
 	// Create store with AppRole authentication
 	factory := vault.NewFactory()

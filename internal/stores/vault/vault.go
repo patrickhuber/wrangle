@@ -73,7 +73,10 @@ func authenticateWithAppRole(client *api.Client, roleID, secretID string) error 
 	return nil
 }
 
-// Client returns the underlying Vault API client for advanced operations
+// Client returns the underlying Vault API client for advanced operations.
+// This method is primarily intended for testing purposes to configure Vault
+// (e.g., setting up AppRole authentication). Production code should use the
+// Store interface methods (Get, Set, List) instead.
 func (s *Store) Client() *api.Client {
 	return s.client
 }
