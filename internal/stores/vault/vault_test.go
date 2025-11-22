@@ -1,21 +1,84 @@
 package vault_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
+	"github.com/hashicorp/vault/api"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/vault"
 	"github.com/stretchr/testify/require"
+	vaultcontainer "github.com/testcontainers/testcontainers-go/modules/vault"
 )
 
-const (
-	integrationEnv     = "INTEGRATION"
-	vaultAddrEnv       = "INTEGRATION_VAULT_ADDR"
-	vaultTokenEnv      = "INTEGRATION_VAULT_TOKEN"
-	vaultRoleIDEnv     = "INTEGRATION_VAULT_ROLE_ID"
-	vaultSecretIDEnv   = "INTEGRATION_VAULT_SECRET_ID"
-)
+// setupVaultContainer starts a Vault testcontainer and returns the address and root token
+func setupVaultContainer(ctx context.Context, t *testing.T) (string, string, func()) {
+	container, err := vaultcontainer.Run(ctx,
+		"hashicorp/vault:1.13.3",
+		vaultcontainer.WithToken("root-token"),
+	)
+	require.NoError(t, err)
+
+	addr, err := container.HttpHostAddress(ctx)
+	require.NoError(t, err)
+
+	cleanup := func() {
+		if err := container.Terminate(ctx); err != nil {
+			t.Logf("failed to terminate container: %s", err)
+		}
+	}
+
+	// HttpHostAddress already includes the protocol
+	return addr, "root-token", cleanup
+}
+
+// setupAppRole configures AppRole authentication in Vault and returns role_id and secret_id
+func setupAppRole(ctx context.Context, t *testing.T, container *vaultcontainer.VaultContainer, token string) (string, string) {
+	// Get the Vault address (already includes protocol)
+	vaultAddr, err := container.HttpHostAddress(ctx)
+	require.NoError(t, err)
+
+	// Create Vault client for setup
+	client, err := vault.NewVault(&vault.VaultOptions{
+		Address: vaultAddr,
+		Token:   token,
+		Path:    "secret",
+	})
+	require.NoError(t, err)
+
+	// Enable AppRole auth method
+	err = client.Client().Sys().EnableAuthWithOptions("approle", &api.EnableAuthOptions{
+		Type: "approle",
+	})
+	require.NoError(t, err)
+
+	// Create a policy that allows access to secret/*
+	policy := `path "secret/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}`
+	err = client.Client().Sys().PutPolicy("test-policy", policy)
+	require.NoError(t, err)
+
+	// Create an AppRole with the policy
+	_, err = client.Client().Logical().Write("auth/approle/role/test-role", map[string]interface{}{
+		"token_policies": []string{"test-policy"},
+		"token_ttl":      "1h",
+		"token_max_ttl":  "4h",
+	})
+	require.NoError(t, err)
+
+	// Get role_id
+	roleIDResp, err := client.Client().Logical().Read("auth/approle/role/test-role/role-id")
+	require.NoError(t, err)
+	roleID := roleIDResp.Data["role_id"].(string)
+
+	// Generate secret_id
+	secretIDResp, err := client.Client().Logical().Write("auth/approle/role/test-role/secret-id", nil)
+	require.NoError(t, err)
+	secretID := secretIDResp.Data["secret_id"].(string)
+
+	return roleID, secretID
+}
 
 // runStoreTests runs common store tests for the given store instance
 func runStoreTests(t *testing.T, store stores.Store, keyPrefix string) {
@@ -53,20 +116,13 @@ func runStoreTests(t *testing.T, store stores.Store, keyPrefix string) {
 }
 
 func TestVaultWithToken(t *testing.T) {
-	if os.Getenv(integrationEnv) == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", integrationEnv)
-	}
+	ctx := context.Background()
 
-	address := os.Getenv(vaultAddrEnv)
-	if address == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", vaultAddrEnv)
-	}
+	// Setup Vault container
+	address, token, cleanup := setupVaultContainer(ctx, t)
+	defer cleanup()
 
-	token := os.Getenv(vaultTokenEnv)
-	if token == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", vaultTokenEnv)
-	}
-
+	// Create store with token authentication
 	factory := vault.NewFactory()
 	store, err := factory.Create(map[string]string{
 		"address": address,
@@ -80,25 +136,27 @@ func TestVaultWithToken(t *testing.T) {
 }
 
 func TestVaultWithAppRole(t *testing.T) {
-	if os.Getenv(integrationEnv) == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", integrationEnv)
-	}
+	ctx := context.Background()
 
-	address := os.Getenv(vaultAddrEnv)
-	if address == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", vaultAddrEnv)
-	}
+	// Setup Vault container
+	container, err := vaultcontainer.Run(ctx,
+		"hashicorp/vault:1.13.3",
+		vaultcontainer.WithToken("root-token"),
+	)
+	require.NoError(t, err)
+	defer func() {
+		if err := container.Terminate(ctx); err != nil {
+			t.Logf("failed to terminate container: %s", err)
+		}
+	}()
 
-	roleID := os.Getenv(vaultRoleIDEnv)
-	if roleID == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", vaultRoleIDEnv)
-	}
+	address, err := container.HttpHostAddress(ctx)
+	require.NoError(t, err)
 
-	secretID := os.Getenv(vaultSecretIDEnv)
-	if secretID == "" {
-		t.Skipf("skipping integration tests: set %s environment variable", vaultSecretIDEnv)
-	}
+	// Setup AppRole authentication
+	roleID, secretID := setupAppRole(ctx, t, container, "root-token")
 
+	// Create store with AppRole authentication
 	factory := vault.NewFactory()
 	store, err := factory.Create(map[string]string{
 		"address":   address,

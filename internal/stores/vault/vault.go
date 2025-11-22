@@ -73,6 +73,11 @@ func authenticateWithAppRole(client *api.Client, roleID, secretID string) error 
 	return nil
 }
 
+// Client returns the underlying Vault API client for advanced operations
+func (s *Store) Client() *api.Client {
+	return s.client
+}
+
 func (s *Store) Get(key stores.Key) (any, bool, error) {
 	secretPath := fmt.Sprintf("%s/data/%s", s.path, key.Data.Name)
 
