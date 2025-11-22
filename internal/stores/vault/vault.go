@@ -47,7 +47,7 @@ func NewVault(options *VaultOptions) (*Store, error) {
 
 func (s *Store) Get(key stores.Key) (any, bool, error) {
 	secretPath := fmt.Sprintf("%s/data/%s", s.path, key.Data.Name)
-	
+
 	secret, err := s.client.Logical().Read(secretPath)
 	if err != nil {
 		return nil, false, err
@@ -80,7 +80,7 @@ func (s *Store) Get(key stores.Key) (any, bool, error) {
 
 func (s *Store) Set(key stores.Key, value any) error {
 	secretPath := fmt.Sprintf("%s/data/%s", s.path, key.Data.Name)
-	
+
 	// Wrap value in data map for KV v2
 	data := map[string]interface{}{
 		"data": map[string]interface{}{
@@ -94,7 +94,7 @@ func (s *Store) Set(key stores.Key, value any) error {
 
 func (s *Store) List() ([]stores.Key, error) {
 	listPath := fmt.Sprintf("%s/metadata", s.path)
-	
+
 	secret, err := s.client.Logical().List(listPath)
 	if err != nil {
 		return nil, err
