@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/vault/api"
@@ -9,6 +10,7 @@ import (
 
 type Store struct {
 	client *api.Client
+	kv     *api.KVv2
 	path   string
 }
 
@@ -47,8 +49,12 @@ func NewVault(options *VaultOptions) (*Store, error) {
 		path = options.Path
 	}
 
+	// Use the KVv2 API for KV version 2 secrets engine
+	kv := client.KVv2(path)
+
 	return &Store{
 		client: client,
+		kv:     kv,
 		path:   path,
 	}, nil
 }
@@ -82,53 +88,46 @@ func (s *Store) Client() *api.Client {
 }
 
 func (s *Store) Get(key stores.Key) (any, bool, error) {
-	secretPath := fmt.Sprintf("%s/data/%s", s.path, key.Data.Name)
-
-	secret, err := s.client.Logical().Read(secretPath)
+	ctx := context.Background()
+	
+	secret, err := s.kv.Get(ctx, key.Data.Name)
 	if err != nil {
+		// Check if it's a 404 error (secret not found)
+		if respErr, ok := err.(*api.ResponseError); ok && respErr.StatusCode == 404 {
+			return nil, false, nil
+		}
 		return nil, false, err
 	}
 
-	if secret == nil {
+	if secret == nil || secret.Data == nil {
 		return nil, false, nil
-	}
-
-	// KV v2 stores data under "data" key
-	data, ok := secret.Data["data"]
-	if !ok {
-		return nil, false, nil
-	}
-
-	dataMap, ok := data.(map[string]interface{})
-	if !ok {
-		return nil, false, fmt.Errorf("unexpected data format in vault secret")
 	}
 
 	// Get the value from the data map
-	value, ok := dataMap["value"]
+	value, ok := secret.Data["value"]
 	if !ok {
 		// If no "value" key, return the entire data map
-		return dataMap, true, nil
+		return secret.Data, true, nil
 	}
 
 	return value, true, nil
 }
 
 func (s *Store) Set(key stores.Key, value any) error {
-	secretPath := fmt.Sprintf("%s/data/%s", s.path, key.Data.Name)
-
-	// Wrap value in data map for KV v2
+	ctx := context.Background()
+	
+	// Create data map with the value
 	data := map[string]interface{}{
-		"data": map[string]interface{}{
-			"value": value,
-		},
+		"value": value,
 	}
 
-	_, err := s.client.Logical().Write(secretPath, data)
+	_, err := s.kv.Put(ctx, key.Data.Name, data)
 	return err
 }
 
 func (s *Store) List() ([]stores.Key, error) {
+	// For listing, we still need to use the Logical interface
+	// The KVv2 API doesn't expose a direct List method
 	listPath := fmt.Sprintf("%s/metadata", s.path)
 
 	secret, err := s.client.Logical().List(listPath)
@@ -136,7 +135,7 @@ func (s *Store) List() ([]stores.Key, error) {
 		return nil, err
 	}
 
-	if secret == nil {
+	if secret == nil || secret.Data == nil {
 		return []stores.Key{}, nil
 	}
 
