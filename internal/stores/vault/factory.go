@@ -28,6 +28,8 @@ func (f Factory) Create(properties map[string]string) (stores.Store, error) {
 		return nil, fmt.Errorf("invalid %s store config. missing required property '%s'", name, addressProperty)
 	}
 
+	// Token is optional - if not provided, the Vault client will use environment variables
+	// like VAULT_TOKEN or VAULT_ADDR for authentication
 	token, _ := properties[tokenProperty]
 	path, _ := properties[pathProperty]
 

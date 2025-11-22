@@ -1,7 +1,6 @@
 package vault
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/vault/api"
@@ -130,10 +129,4 @@ func (s *Store) List() ([]stores.Key, error) {
 	}
 
 	return keys, nil
-}
-
-func (s *Store) decodeJSON(str string) (any, error) {
-	var value any
-	err := json.Unmarshal([]byte(str), &value)
-	return value, err
 }
