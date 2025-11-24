@@ -201,6 +201,46 @@ stores:
 | -------- | ----------- |
 | service  | the service under which to store secrets |
 
+### HashiCorp Vault
+
+#### Token Authentication
+
+```yaml
+stores:
+- name: default
+  type: vault
+  properties:
+    address: http://127.0.0.1:8200  # (required)
+    token: s.xxxxxxxxxxxxxxxxxxxxxxxx  # (optional)
+    path: secret  # (optional, defaults to "secret")
+```
+
+#### AppRole Authentication
+
+```yaml
+stores:
+- name: default
+  type: vault
+  properties:
+    address: http://127.0.0.1:8200  # (required)
+    role_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # (required for AppRole)
+    secret_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # (required for AppRole)
+    path: secret  # (optional, defaults to "secret")
+```
+
+| property | description |
+| -------- | ----------- |
+| address  | the address of the Vault server (e.g., http://127.0.0.1:8200) |
+| token    | the authentication token (optional, can use VAULT_TOKEN environment variable) |
+| role_id  | the AppRole role ID for AppRole authentication (optional) |
+| secret_id | the AppRole secret ID for AppRole authentication (optional) |
+| path     | the KV v2 secrets engine mount path (optional, defaults to "secret") |
+
+**Authentication Methods** (in order of precedence):
+1. **AppRole**: Provide both `role_id` and `secret_id`
+2. **Token**: Provide `token`
+3. **Environment Variables**: Use `VAULT_TOKEN` and `VAULT_ADDR`
+
 ## Package Management
 
 Wrangle is a simple package manager much like [arkade](https://github.com/alexellis/arkade). Arkade tends to focus on the lastest package version while Wrangle is fully version aware. Arkade also embeds its package feed into the execuable while Wrangle utilizes external package feeds.

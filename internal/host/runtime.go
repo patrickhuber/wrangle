@@ -22,6 +22,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
 	"github.com/patrickhuber/wrangle/internal/stores/keyring"
+	"github.com/patrickhuber/wrangle/internal/stores/vault"
 
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/env"
@@ -121,6 +122,7 @@ func New() Host {
 	// stores
 	container.RegisterConstructor(azure.NewFactory)
 	container.RegisterConstructor(keyring.NewFactory)
+	container.RegisterConstructor(vault.NewFactory)
 	container.RegisterConstructor(stores.NewRegistry)
 	container.RegisterConstructor(stores.NewService)
 
