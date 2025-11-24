@@ -3,6 +3,7 @@ package vault_test
 import (
 	"context"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/hashicorp/vault/api"
@@ -124,6 +125,10 @@ func TestVaultWithToken(t *testing.T) {
 		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
 		return
 	}
+	if runtime.GOOS != "linux" {
+		t.Skipf("skipping test: Vault AppRole tests currently only supported on linux")
+		return
+	}
 
 	ctx := context.Background()
 	// Setup Vault container
@@ -148,6 +153,10 @@ func TestVaultWithAppRole(t *testing.T) {
 	var INTEGRATION = "INTEGRATION"
 	if os.Getenv(INTEGRATION) == "" {
 		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
+		return
+	}
+	if runtime.GOOS != "linux" {
+		t.Skipf("skipping test: Vault AppRole tests currently only supported on linux")
 		return
 	}
 
