@@ -21,8 +21,9 @@ type Vault struct {
 // Set sets the key to the vault in the key vault
 func (v *Vault) Set(key stores.Key, value any) error {
 	ring, err := keyring.Open(keyring.Config{
-		ServiceName: v.service,
-		FileDir:     "~/",
+		ServiceName:      v.service,
+		FileDir:          "~/",
+		FilePasswordFunc: func(s string) (string, error) { return "", nil },
 	})
 	if err != nil {
 		return err
