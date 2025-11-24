@@ -125,8 +125,10 @@ func TestVaultWithToken(t *testing.T) {
 		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
 		return
 	}
-	if runtime.GOOS != "linux" {
-		t.Skipf("skipping test: Vault AppRole tests currently only supported on linux")
+
+	// only run docker dependent tests on linux and windows
+	if runtime.GOOS != "linux" && runtime.GOOS != "windows" {
+		t.Skipf("skipping test: TestVaultWithToken tests currently only supported on linux and windows")
 		return
 	}
 
@@ -155,8 +157,9 @@ func TestVaultWithAppRole(t *testing.T) {
 		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
 		return
 	}
-	if runtime.GOOS != "linux" {
-		t.Skipf("skipping test: Vault AppRole tests currently only supported on linux")
+	// only run docker dependent tests on linux and windows
+	if runtime.GOOS != "linux" && runtime.GOOS != "windows" {
+		t.Skipf("skipping test:TestVaultWithAppRole currently only supported on linux and windows")
 		return
 	}
 
