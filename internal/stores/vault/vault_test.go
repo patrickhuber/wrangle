@@ -2,6 +2,7 @@ package vault_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/vault/api"
@@ -117,8 +118,14 @@ func runStoreTests(t *testing.T, store stores.Store, keyPrefix string) {
 }
 
 func TestVaultWithToken(t *testing.T) {
-	ctx := context.Background()
 
+	var INTEGRATION = "INTEGRATION"
+	if os.Getenv(INTEGRATION) == "" {
+		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
+		return
+	}
+
+	ctx := context.Background()
 	// Setup Vault container
 	address, token, cleanup := setupVaultContainer(ctx, t)
 	defer cleanup()
@@ -137,6 +144,13 @@ func TestVaultWithToken(t *testing.T) {
 }
 
 func TestVaultWithAppRole(t *testing.T) {
+
+	var INTEGRATION = "INTEGRATION"
+	if os.Getenv(INTEGRATION) == "" {
+		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
+		return
+	}
+
 	ctx := context.Background()
 
 	// Setup Vault container
