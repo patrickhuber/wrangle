@@ -46,7 +46,7 @@ type Store struct {
 	Type string `json:"type" yaml:"type" toml:"type" mapstructure:"type"`
 
 	// properties of the specific type
-	Properties map[string]string `json:"properties" yaml:"properties" toml:"properties" mapstructure:"properties"`
+	Properties map[string]any `json:"properties" yaml:"properties" toml:"properties" mapstructure:"properties"`
 }
 
 type Package struct {

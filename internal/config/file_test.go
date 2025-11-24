@@ -64,7 +64,7 @@ func TestFileConfig(t *testing.T) {
 					{
 						Name: "test-store",
 						Type: "memory",
-						Properties: map[string]string{
+						Properties: map[string]any{
 							"key": "value",
 						},
 					},

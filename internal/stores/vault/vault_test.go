@@ -132,7 +132,7 @@ func TestVaultWithToken(t *testing.T) {
 
 	// Create store with token authentication
 	factory := vault.NewFactory()
-	store, err := factory.Create(map[string]string{
+	store, err := factory.Create(map[string]any{
 		"address": address,
 		"token":   token,
 		"path":    "secret",
@@ -162,7 +162,7 @@ func TestVaultWithAppRole(t *testing.T) {
 
 	// Create store with AppRole authentication
 	factory := vault.NewFactory()
-	store, err := factory.Create(map[string]string{
+	store, err := factory.Create(map[string]any{
 		"address":   address,
 		"role_id":   roleID,
 		"secret_id": secretID,

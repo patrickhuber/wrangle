@@ -8,23 +8,24 @@ import (
 	"github.com/patrickhuber/wrangle/internal/stores"
 )
 
-func NewVault(service string) stores.Store {
+func NewVault(config keyring.Config) stores.Store {
 	return &Vault{
-		service: service,
+		config: config,
 	}
 }
 
 type Vault struct {
-	service string
+	config keyring.Config
+}
+
+func (v *Vault) open() (keyring.Keyring, error) {
+	return keyring.Open(v.config)
 }
 
 // Set sets the key to the vault in the key vault
 func (v *Vault) Set(key stores.Key, value any) error {
-	ring, err := keyring.Open(keyring.Config{
-		ServiceName:      v.service,
-		FileDir:          "~/",
-		FilePasswordFunc: func(s string) (string, error) { return "", nil },
-	})
+
+	ring, err := v.open()
 	if err != nil {
 		return err
 	}
@@ -40,9 +41,8 @@ func (v *Vault) Set(key stores.Key, value any) error {
 
 // Get returns the vault of the given key from the key vault
 func (v *Vault) Get(k stores.Key) (any, bool, error) {
-	ring, err := keyring.Open(keyring.Config{
-		ServiceName: v.service,
-	})
+
+	ring, err := v.open()
 	if err != nil {
 		return nil, false, err
 	}
@@ -67,9 +67,7 @@ func (v *Vault) Get(k stores.Key) (any, bool, error) {
 // List implements stores.Store.
 func (v *Vault) List() ([]stores.Key, error) {
 
-	ring, err := keyring.Open(keyring.Config{
-		ServiceName: v.service,
-	})
+	ring, err := v.open()
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +82,9 @@ func (v *Vault) List() ([]stores.Key, error) {
 		result = append(result, stores.Key{
 			Data: stores.Data{
 				Name: key,
+				Version: stores.Version{
+					Latest: true,
+				},
 			},
 		})
 	}
