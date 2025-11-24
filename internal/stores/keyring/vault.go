@@ -22,6 +22,7 @@ type Vault struct {
 func (v *Vault) Set(key stores.Key, value any) error {
 	ring, err := keyring.Open(keyring.Config{
 		ServiceName: v.service,
+		FileDir:     "~/",
 	})
 	if err != nil {
 		return err
