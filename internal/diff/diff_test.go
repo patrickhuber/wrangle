@@ -99,7 +99,7 @@ func TestDiffVariableReplacement(t *testing.T) {
 				{
 					Type: "memory",
 					Name: "memory",
-					Properties: map[string]string{
+					Properties: map[string]any{
 						"key": "TEST",
 					},
 				},

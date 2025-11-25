@@ -17,10 +17,14 @@ func (f Factory) Name() string {
 	return "azure.keyvault"
 }
 
-func (f Factory) Create(properties map[string]string) (stores.Store, error) {
+func (f Factory) Create(properties map[string]any) (stores.Store, error) {
 	uri, ok := properties["uri"]
 	if !ok {
 		return nil, fmt.Errorf("invalid azure.keyvault store config. missing required property 'uri'")
 	}
-	return NewKeyVault(uri, nil), nil
+	uriString, ok := uri.(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid azure.keyvault store config. property 'uri' must be a string")
+	}
+	return NewKeyVault(uriString, nil), nil
 }

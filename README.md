@@ -183,23 +183,49 @@ stores:
     uri: {key vault uri} // (required)
 ```
 
-| property | description |
-| -------- | ----------- |
+| property | description | values |
+| -------- | ----------- | ------ |
 | uri      | the uri to the key vault | https://quickstart-kv.vault.azure.net |
 
 ### Keyring
 
-```yaml
+> file
+
+```yaml 
 stores:
 - name: default
   type: keyring
   properties:
     service: test
+    allowed_backends: 
+    - file
+    file.directory: ~/
+    file.password: abc123    
 ```
 
-| property | description |
-| -------- | ----------- |
-| service  | the service under which to store secrets |
+> pass
+
+```yaml
+- name: default
+  type: keyring
+  properties:
+    service: test
+    allowed_backends: 
+    - pass
+    pass.directory: ~/
+    pass.command: /usr/bin/pass
+    pass.prefix: ""
+```
+
+| property         | description                              | reqired | values |
+| ---------------- | ---------------------------------------- | ------- | ------ |
+| service          | the service under which to store secrets | yes     | |
+| allowed_backends | the backends allowed                     | no      | file, secret-service, keychain, keyctl, kwallet, wincred, file, pass |
+| file.directory   | file backend directory                   | no      | |
+| file.password    | file backend password                    | no      | |
+| pass.directory   | pass backend directory                   | no      | | 
+| pass.command     | path to pass command                     | no      | |
+| pass.prefix      | key prefix                               | no      | |
 
 ### HashiCorp Vault
 
@@ -228,13 +254,13 @@ stores:
     path: secret  # (optional, defaults to "secret")
 ```
 
-| property | description |
-| -------- | ----------- |
-| address  | the address of the Vault server (e.g., http://127.0.0.1:8200) |
-| token    | the authentication token (optional, can use VAULT_TOKEN environment variable) |
-| role_id  | the AppRole role ID for AppRole authentication (optional) |
+| property  | description |
+| --------- | ----------- |
+| address   | the address of the Vault server (e.g., http://127.0.0.1:8200) |
+| token     | the authentication token (optional, can use VAULT_TOKEN environment variable) |
+| role_id   | the AppRole role ID for AppRole authentication (optional) |
 | secret_id | the AppRole secret ID for AppRole authentication (optional) |
-| path     | the KV v2 secrets engine mount path (optional, defaults to "secret") |
+| path      | the KV v2 secrets engine mount path (optional, defaults to "secret") |
 
 **Authentication Methods** (in order of precedence):
 1. **AppRole**: Provide both `role_id` and `secret_id`

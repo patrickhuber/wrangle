@@ -2,7 +2,10 @@ package vault_test
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"os/exec"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/vault/api"
@@ -125,6 +128,12 @@ func TestVaultWithToken(t *testing.T) {
 		return
 	}
 
+	// only run docker dependent tests if docker is installed
+	if !dockerIsInstalled() {
+		t.Skipf("skipping test: TestVaultWithToken tests currently only supported where docker is installed")
+		return
+	}
+
 	ctx := context.Background()
 	// Setup Vault container
 	address, token, cleanup := setupVaultContainer(ctx, t)
@@ -132,7 +141,7 @@ func TestVaultWithToken(t *testing.T) {
 
 	// Create store with token authentication
 	factory := vault.NewFactory()
-	store, err := factory.Create(map[string]string{
+	store, err := factory.Create(map[string]any{
 		"address": address,
 		"token":   token,
 		"path":    "secret",
@@ -151,6 +160,12 @@ func TestVaultWithAppRole(t *testing.T) {
 		return
 	}
 
+	// only run docker dependent tests if docker is installed
+	if !dockerIsInstalled() {
+		t.Skipf("skipping test: TestVaultWithAppRole tests currently only supported where docker is installed")
+		return
+	}
+
 	ctx := context.Background()
 
 	// Setup Vault container
@@ -162,7 +177,7 @@ func TestVaultWithAppRole(t *testing.T) {
 
 	// Create store with AppRole authentication
 	factory := vault.NewFactory()
-	store, err := factory.Create(map[string]string{
+	store, err := factory.Create(map[string]any{
 		"address":   address,
 		"role_id":   roleID,
 		"secret_id": secretID,
@@ -172,4 +187,40 @@ func TestVaultWithAppRole(t *testing.T) {
 	require.NotNil(t, store)
 
 	runStoreTests(t, store, "approle")
+}
+
+func dockerIsInstalled() bool {
+	cmd := exec.Command("docker", "--version")
+	version, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Println("Docker is not installed or not found in PATH.")
+		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Output: %s\n", version)
+		return false
+	}
+
+	cmd = exec.Command("docker", "info")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println("Docker daemon is not running or not accessible.")
+		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Output: %s\n", output)
+		return false
+	}
+
+	linuxContainersEnabled, err := regexp.MatchString("OSType[:]\\s+linux", string(output))
+	if err != nil {
+		fmt.Printf("Error checking Linux containers: %v\n", err)
+		return false
+	}
+	if !linuxContainersEnabled {
+		fmt.Println("Linux containers are not enabled in Docker.")
+		fmt.Printf("Output: %s\n", output)
+		return false
+	}
+
+	fmt.Println("Docker is installed.")
+	fmt.Printf("Docker Version: %s\n", version)
+	return true
 }

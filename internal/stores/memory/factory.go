@@ -14,13 +14,8 @@ func (f Factory) Name() string {
 }
 
 // Create implements stores.Factory.
-func (f Factory) Create(properties map[string]string) (stores.Store, error) {
-	anyProperties := map[string]any{}
-	for k, v := range properties {
-		anyProperties[k] = v
-	}
-
+func (f Factory) Create(properties map[string]any) (stores.Store, error) {
 	return &Memory{
-		Data: anyProperties,
+		Data: properties,
 	}, nil
 }

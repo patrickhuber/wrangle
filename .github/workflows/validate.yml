@@ -14,6 +14,8 @@ env:
 
 jobs:
   build_and_test:
+    env:
+      INTEGRATION: true
     strategy:
       matrix:
         os: 
