@@ -268,7 +268,7 @@ func (i *service) shimExecutable(execPath string) error {
 func (i *service) runSteps(steps []*packages.ManifestStep, meta *actions.Metadata) error {
 	i.log.Debugf("found %d steps", len(steps))
 	for _, step := range steps {
-		i.log.Debugf("runing task %s", step.Action)
+		i.log.Debugf("running task %s", step.Action)
 		action := i.transformManifestStepToAction(step)
 		err := i.runner.Run(action, meta)
 		if err != nil {
