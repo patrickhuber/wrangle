@@ -33,6 +33,17 @@ func TestKeyRing(t *testing.T) {
 				"file.password":    "password",
 			},
 		},
+		{
+			name:    "windows_file",
+			os:      "windows",
+			service: "test",
+			properties: map[string]any{
+				"service":          "test",
+				"allowed_backends": []string{"file"},
+				"file.directory":   "~/",
+				"file.password":    "password",
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
