@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/vault/api"
@@ -190,15 +191,36 @@ func TestVaultWithAppRole(t *testing.T) {
 
 func dockerIsInstalled() bool {
 	cmd := exec.Command("docker", "--version")
-	output, err := cmd.CombinedOutput()
+	version, err := cmd.CombinedOutput()
 
 	if err != nil {
 		fmt.Println("Docker is not installed or not found in PATH.")
 		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Output: %s\n", version)
+		return false
+	}
+
+	cmd = exec.Command("docker", "info")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println("Docker daemon is not running or not accessible.")
+		fmt.Printf("Error: %v\n", err)
 		fmt.Printf("Output: %s\n", output)
 		return false
 	}
+
+	linuxContainersEnabled, err := regexp.MatchString("OSType[:]\\s+linux", string(output))
+	if err != nil {
+		fmt.Printf("Error checking Linux containers: %v\n", err)
+		return false
+	}
+	if !linuxContainersEnabled {
+		fmt.Println("Linux containers are not enabled in Docker.")
+		fmt.Printf("Output: %s\n", output)
+		return false
+	}
+
 	fmt.Println("Docker is installed.")
-	fmt.Printf("Docker Version: %s\n", output)
+	fmt.Printf("Docker Version: %s\n", version)
 	return true
 }
