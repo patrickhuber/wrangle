@@ -2,8 +2,9 @@ package vault_test
 
 import (
 	"context"
+	"fmt"
 	"os"
-	"runtime"
+	"os/exec"
 	"testing"
 
 	"github.com/hashicorp/vault/api"
@@ -126,9 +127,9 @@ func TestVaultWithToken(t *testing.T) {
 		return
 	}
 
-	// only run docker dependent tests on linux and windows
-	if runtime.GOOS != "linux" && runtime.GOOS != "windows" {
-		t.Skipf("skipping test: TestVaultWithToken tests currently only supported on linux and windows")
+	// only run docker dependent tests if docker is installed
+	if !dockerIsInstalled() {
+		t.Skipf("skipping test: TestVaultWithToken tests currently only supported where docker is installed")
 		return
 	}
 
@@ -157,9 +158,10 @@ func TestVaultWithAppRole(t *testing.T) {
 		t.Skipf("skipping integration tests: set %s environment variable", INTEGRATION)
 		return
 	}
-	// only run docker dependent tests on linux and windows
-	if runtime.GOOS != "linux" && runtime.GOOS != "windows" {
-		t.Skipf("skipping test:TestVaultWithAppRole currently only supported on linux and windows")
+
+	// only run docker dependent tests if docker is installed
+	if !dockerIsInstalled() {
+		t.Skipf("skipping test: TestVaultWithAppRole tests currently only supported where docker is installed")
 		return
 	}
 
@@ -184,4 +186,17 @@ func TestVaultWithAppRole(t *testing.T) {
 	require.NotNil(t, store)
 
 	runStoreTests(t, store, "approle")
+}
+
+func dockerIsInstalled() bool {
+	cmd := exec.Command("docker", "--version")
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Println("Docker is not installed or not found in PATH.")
+		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Output: %s\n", output)
+		return false
+	}
+	return true
 }
