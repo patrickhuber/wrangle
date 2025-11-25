@@ -198,5 +198,7 @@ func dockerIsInstalled() bool {
 		fmt.Printf("Output: %s\n", output)
 		return false
 	}
+	fmt.Println("Docker is installed.")
+	fmt.Printf("Docker Version: %s\n", output)
 	return true
 }
