@@ -56,6 +56,10 @@ func (cmd *ListVariablesCommand) Execute() error {
 		return err
 	}
 	w := cmd.Console.Out()
-	writer := structio.NewWriter(w, cmd.Options.Output)
+	output := ""
+	if cmd.Options != nil {
+		output = cmd.Options.Output
+	}
+	writer := structio.NewWriter(w, output)
 	return writer.Write(cfg.Spec.Variables)
 }
