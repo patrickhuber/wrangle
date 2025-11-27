@@ -791,6 +791,12 @@ func TestVariables(t *testing.T) {
 		readCfg, err := fileConfig.Read(filePath)
 		require.NoError(t, err)
 		require.Len(t, readCfg.Spec.Variables, 2)
+		// Verify the root CA variable
+		require.Equal(t, "root-ca", readCfg.Spec.Variables[0].Name)
+		require.Equal(t, "Root CA", readCfg.Spec.Variables[0].Options["common_name"])
+		require.Equal(t, true, readCfg.Spec.Variables[0].Options["is_ca"])
+		// Verify the server certificate variable references the root CA
+		require.Equal(t, "server-cert", readCfg.Spec.Variables[1].Name)
 		require.Equal(t, "root-ca", readCfg.Spec.Variables[1].Options["ca"])
 		require.Equal(t, "server.example.com", readCfg.Spec.Variables[1].Options["common_name"])
 	})
