@@ -3,25 +3,30 @@ package commands
 import (
 	"fmt"
 
-	"github.com/patrickhuber/go-log"
-
 	"github.com/patrickhuber/go-cross/console"
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/app"
+	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/structio"
 	"github.com/urfave/cli/v2"
 )
 
 var ListVariables = &cli.Command{
-	Name:        "variables",
+	Name: "variables",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name: "output",
+		},
+	},
 	Action:      ListVariablesAction,
 	Description: "list available variables",
 	Usage:       "list available variables",
 }
 
 type ListVariablesCommand struct {
-	Logger  log.Logger           `inject:""`
-	Console console.Console      `inject:""`
-	Options ListVariablesOptions `options:""`
+	Configuration config.Configuration  `inject:""`
+	Console       console.Console       `inject:""`
+	Options       *ListVariablesOptions `options:""`
 }
 
 type ListVariablesOptions struct {
@@ -33,7 +38,11 @@ func ListVariablesAction(ctx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("invalid list variable command. %w", err)
 	}
-	listVariablesCommand := &ListVariablesCommand{}
+	listVariablesCommand := &ListVariablesCommand{
+		Options: &ListVariablesOptions{
+			Output: ctx.String("output"),
+		},
+	}
 	err = di.Inject(resolver, listVariablesCommand)
 	if err != nil {
 		return err
@@ -42,5 +51,11 @@ func ListVariablesAction(ctx *cli.Context) error {
 }
 
 func (cmd *ListVariablesCommand) Execute() error {
-	return nil
+	cfg, err := cmd.Configuration.Get()
+	if err != nil {
+		return err
+	}
+	w := cmd.Console.Out()
+	writer := structio.NewWriter(w, cmd.Options.Output)
+	return writer.Write(cfg.Spec.Variables)
 }
