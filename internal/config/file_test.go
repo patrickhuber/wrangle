@@ -566,3 +566,263 @@ func TestGetEncoding(t *testing.T) {
 		})
 	}
 }
+
+func TestVariables(t *testing.T) {
+	t.Run("can write and read config with certificate variable", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "my-cert",
+						Type: config.VariableTypeCertificate,
+						Options: map[string]any{
+							"common_name":       "example.com",
+							"organization":      "Example Org",
+							"alternative_names": []any{"www.example.com", "api.example.com"},
+							"is_ca":             false,
+							"duration":          365,
+							"key_length":        2048,
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_cert.yml"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 1)
+		require.Equal(t, "my-cert", readCfg.Spec.Variables[0].Name)
+		require.Equal(t, config.VariableTypeCertificate, readCfg.Spec.Variables[0].Type)
+		require.Equal(t, "example.com", readCfg.Spec.Variables[0].Options["common_name"])
+	})
+
+	t.Run("can write and read config with password variable", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "my-password",
+						Type: config.VariableTypePassword,
+						Options: map[string]any{
+							"length": 32,
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_password.yml"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 1)
+		require.Equal(t, "my-password", readCfg.Spec.Variables[0].Name)
+		require.Equal(t, config.VariableTypePassword, readCfg.Spec.Variables[0].Type)
+		require.Equal(t, 32, readCfg.Spec.Variables[0].Options["length"])
+	})
+
+	t.Run("can write and read config with rsa variable", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "my-rsa-key",
+						Type: config.VariableTypeRSA,
+						Options: map[string]any{
+							"key_length": 4096,
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_rsa.yml"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 1)
+		require.Equal(t, "my-rsa-key", readCfg.Spec.Variables[0].Name)
+		require.Equal(t, config.VariableTypeRSA, readCfg.Spec.Variables[0].Type)
+		require.Equal(t, 4096, readCfg.Spec.Variables[0].Options["key_length"])
+	})
+
+	t.Run("can write and read config with ssh variable", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "my-ssh-key",
+						Type: config.VariableTypeSSH,
+						Options: map[string]any{
+							"comment": "admin@example.com",
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_ssh.yml"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 1)
+		require.Equal(t, "my-ssh-key", readCfg.Spec.Variables[0].Name)
+		require.Equal(t, config.VariableTypeSSH, readCfg.Spec.Variables[0].Type)
+		require.Equal(t, "admin@example.com", readCfg.Spec.Variables[0].Options["comment"])
+	})
+
+	t.Run("can write and read config with multiple variables", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "ca-cert",
+						Type: config.VariableTypeCertificate,
+						Options: map[string]any{
+							"common_name": "My CA",
+							"is_ca":       true,
+						},
+					},
+					{
+						Name: "db-password",
+						Type: config.VariableTypePassword,
+						Options: map[string]any{
+							"length": 24,
+						},
+					},
+					{
+						Name: "deploy-key",
+						Type: config.VariableTypeSSH,
+						Options: map[string]any{
+							"comment": "deploy",
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_multi.yml"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 3)
+		require.Equal(t, "ca-cert", readCfg.Spec.Variables[0].Name)
+		require.Equal(t, "db-password", readCfg.Spec.Variables[1].Name)
+		require.Equal(t, "deploy-key", readCfg.Spec.Variables[2].Name)
+	})
+
+	t.Run("can write and read config with certificate variable using ca reference", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "root-ca",
+						Type: config.VariableTypeCertificate,
+						Options: map[string]any{
+							"common_name": "Root CA",
+							"is_ca":       true,
+						},
+					},
+					{
+						Name: "server-cert",
+						Type: config.VariableTypeCertificate,
+						Options: map[string]any{
+							"ca":                "root-ca",
+							"common_name":       "server.example.com",
+							"extended_key_usage": []any{"server_auth"},
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_ca_ref.yml"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 2)
+		require.Equal(t, "root-ca", readCfg.Spec.Variables[1].Options["ca"])
+		require.Equal(t, "server.example.com", readCfg.Spec.Variables[1].Options["common_name"])
+	})
+
+	t.Run("can write and read config with json format", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		fileConfig := config.NewFileConfig(fs)
+
+		cfg := config.Config{
+			ApiVersion: config.ApiVersion,
+			Kind:       config.Kind,
+			Spec: config.Spec{
+				Variables: []config.Variable{
+					{
+						Name: "json-password",
+						Type: config.VariableTypePassword,
+						Options: map[string]any{
+							"length": 16,
+						},
+					},
+				},
+			},
+		}
+
+		filePath := "/tmp/config_variables.json"
+		err := fileConfig.Write(filePath, cfg)
+		require.NoError(t, err)
+
+		readCfg, err := fileConfig.Read(filePath)
+		require.NoError(t, err)
+		require.Len(t, readCfg.Spec.Variables, 1)
+		require.Equal(t, "json-password", readCfg.Spec.Variables[0].Name)
+	})
+}
