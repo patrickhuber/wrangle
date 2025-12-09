@@ -19,7 +19,7 @@ type Service interface {
 }
 
 type diff struct {
-	configuration config.Configuration
+	configuration config.Service
 	store         stores.Service
 	os            os.OS
 	path          filepath.Provider
@@ -27,7 +27,7 @@ type diff struct {
 }
 
 func NewService(
-	configuration config.Configuration,
+	configuration config.Service,
 	store stores.Service,
 	os os.OS,
 	environment env.Environment,

@@ -28,7 +28,7 @@ type Request struct {
 func NewService(
 	fs fs.FS,
 	path filepath.Provider,
-	configuration config.Configuration,
+	configuration config.Service,
 	oldFiles *oldfile.Manager,
 	log log.Logger) Service {
 	shells := []string{shellhook.Bash, shellhook.Powershell}
@@ -46,7 +46,7 @@ type service struct {
 	shells        []string
 	fs            fs.FS
 	path          filepath.Provider
-	configuration config.Configuration
+	configuration config.Service
 	log           log.Logger
 	oldFiles      *oldfile.Manager
 }

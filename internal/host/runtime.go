@@ -68,7 +68,7 @@ func New() Host {
 	// configuration
 	container.RegisterConstructor(goconfig.DefaultGlobResolver)
 	container.RegisterConstructor(config.NewSystemDefaultProvider)
-	container.RegisterConstructor(config.NewDefaultConfiguration)
+	container.RegisterConstructor(config.NewDefaultService)
 
 	// actions
 	container.RegisterConstructor(archive.NewFactory)

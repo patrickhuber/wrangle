@@ -12,12 +12,12 @@ type Service interface {
 }
 
 type service struct {
-	configuration config.Configuration
+	configuration config.Service
 	registry      Registry
 	cache         map[string]Store
 }
 
-func NewService(configuration config.Configuration, registry Registry) Service {
+func NewService(configuration config.Service, registry Registry) Service {
 	return &service{
 		configuration: configuration,
 		registry:      registry,

@@ -4,7 +4,7 @@ type mock struct {
 	cfg Config
 }
 
-func NewMock(cfg Config) Configuration {
+func NewMock(cfg Config) Service {
 	return &mock{
 		cfg: cfg,
 	}

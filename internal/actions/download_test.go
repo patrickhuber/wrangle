@@ -51,7 +51,7 @@ func TestDownload(t *testing.T) {
 			"out": "test-local",
 		},
 	}
-	configuration, err := di.Resolve[config.Configuration](h.Container())
+	configuration, err := di.Resolve[config.Service](h.Container())
 	require.NoError(t, err)
 
 	cfg, err := configuration.Get()

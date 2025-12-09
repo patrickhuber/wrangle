@@ -7,10 +7,10 @@ type Service interface {
 }
 
 type service struct {
-	configuration config.Configuration
+	configuration config.Service
 }
 
-func NewService(configuration config.Configuration) Service {
+func NewService(configuration config.Service) Service {
 	return &service{
 		configuration: configuration,
 	}

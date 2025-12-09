@@ -11,7 +11,7 @@ import (
 )
 
 type Configuration interface {
-	config.Configuration
+	config.Service
 }
 
 func NewConfiguration(

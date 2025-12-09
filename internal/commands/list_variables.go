@@ -24,7 +24,7 @@ var ListVariables = &cli.Command{
 }
 
 type ListVariablesCommand struct {
-	Configuration config.Configuration  `inject:""`
+	Configuration config.Service        `inject:""`
 	Console       console.Console       `inject:""`
 	Options       *ListVariablesOptions `options:""`
 }

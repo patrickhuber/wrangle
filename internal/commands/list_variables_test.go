@@ -24,7 +24,7 @@ func TestListVariables(t *testing.T) {
 		require.NoError(t, err)
 
 		// Get configuration and add some variables
-		configuration, err := di.Resolve[config.Configuration](container)
+		configuration, err := di.Resolve[config.Service](container)
 		require.NoError(t, err)
 
 		// Verify we can get the configuration
