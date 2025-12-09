@@ -237,8 +237,11 @@ stores:
   type: vault
   properties:
     address: http://127.0.0.1:8200  # (required)
-    token: s.xxxxxxxxxxxxxxxxxxxxxxxx  # (optional)
+    token: ((vault_token))  # (optional)
     path: secret  # (optional, defaults to "secret")
+variables:
+- name: vault_token
+  type: password
 ```
 
 #### AppRole Authentication
@@ -250,8 +253,11 @@ stores:
   properties:
     address: http://127.0.0.1:8200  # (required)
     role_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # (required for AppRole)
-    secret_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # (required for AppRole)
+    secret_id: ((vault_secret_id))  # (required for AppRole)
     path: secret  # (optional, defaults to "secret")
+variables:
+- name: vault_secret_id
+  type: password
 ```
 
 | property  | description |
