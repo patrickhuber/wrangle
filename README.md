@@ -325,14 +325,14 @@ Generate random passwords with specified length.
 
 ```yaml
 variables:
-  - name: db-password
-    type: password
-    options:
-      length: 32
-  - name: api-key
-    type: password
-    options:
-      length: 64
+- name: db-password
+  type: password
+  options:
+    length: 32
+- name: api-key
+  type: password
+  options:
+    length: 64
 ```
 
 **Options:**
@@ -347,10 +347,10 @@ Generate RSA key pairs.
 
 ```yaml
 variables:
-  - name: encryption-key
-    type: rsa
-    options:
-      key_length: 4096
+- name: encryption-key
+  type: rsa
+  options:
+    key_length: 4096
 ```
 
 **Options:**
@@ -365,10 +365,10 @@ Generate SSH key pairs.
 
 ```yaml
 variables:
-  - name: deploy-key
-    type: ssh
-    options:
-      comment: "deploy@example.com"
+- name: deploy-key
+  type: ssh
+  options:
+    comment: "deploy@example.com"
 ```
 
 **Options:**
@@ -399,34 +399,34 @@ apiVersion: wrangle/v1
 kind: Config
 spec:
   variables:
-    - name: root-ca
-      type: certificate
-      options:
-        common_name: "Root CA"
-        is_ca: true
-    - name: server-cert
-      type: certificate
-      options:
-        ca: root-ca
-        common_name: "server.example.com"
-        extended_key_usage: ["server_auth"]
-    - name: db-password
-      type: password
-      options:
-        length: 32
-    - name: deploy-key
-      type: ssh
-      options:
-        comment: "deploy@prod"
+  - name: root-ca
+    type: certificate
+    options:
+      common_name: "Root CA"
+      is_ca: true
+  - name: server-cert
+    type: certificate
+    options:
+      ca: root-ca
+      common_name: "server.example.com"
+      extended_key_usage: ["server_auth"]
+  - name: db-password
+    type: password
+    options:
+      length: 32
+  - name: deploy-key
+    type: ssh
+    options:
+      comment: "deploy@prod"
   stores:
-    - name: vault
-      type: vault
-      properties:
-        address: http://127.0.0.1:8200
-        token: ((vault-token))
+  - name: vault
+    type: vault
+    properties:
+      address: http://127.0.0.1:8200
+      token: ((vault-token))
   packages:
-    - name: yq
-      version: 4.31.1
+  - name: yq
+    version: 4.31.1
 ```
 
 ## Package Management
