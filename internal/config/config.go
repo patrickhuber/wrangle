@@ -55,6 +55,9 @@ type Store struct {
 
 	// properties of the specific type
 	Properties map[string]any `json:"properties" yaml:"properties" toml:"properties" mapstructure:"properties"`
+
+	// dependencies are other stores this store requires to be evaluated first
+	Dependencies []string `json:"dependencies" yaml:"dependencies" toml:"dependencies" mapstructure:"dependencies"`
 }
 
 type Package struct {

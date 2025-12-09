@@ -16,6 +16,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/diff"
 	"github.com/patrickhuber/wrangle/internal/envdiff"
 	"github.com/patrickhuber/wrangle/internal/global"
+	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/memory"
 )
@@ -249,6 +250,7 @@ func setup(cfg config.Config) di.Container {
 			memory.NewFactory(),
 		}))
 	container.RegisterConstructor(stores.NewService)
+	container.RegisterConstructor(interpolate.NewService)
 	container.RegisterConstructor(diff.NewService)
 	return container
 }
