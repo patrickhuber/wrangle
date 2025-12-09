@@ -237,8 +237,11 @@ stores:
   type: vault
   properties:
     address: http://127.0.0.1:8200  # (required)
-    token: s.xxxxxxxxxxxxxxxxxxxxxxxx  # (optional)
+    token: ((vault_token))  # (optional)
     path: secret  # (optional, defaults to "secret")
+variables:
+- name: vault_token
+  type: password
 ```
 
 #### AppRole Authentication
@@ -250,8 +253,11 @@ stores:
   properties:
     address: http://127.0.0.1:8200  # (required)
     role_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # (required for AppRole)
-    secret_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # (required for AppRole)
+    secret_id: ((vault_secret_id))  # (required for AppRole)
     path: secret  # (optional, defaults to "secret")
+variables:
+- name: vault_secret_id
+  type: password
 ```
 
 | property  | description |
@@ -266,6 +272,162 @@ stores:
 1. **AppRole**: Provide both `role_id` and `secret_id`
 2. **Token**: Provide `token`
 3. **Environment Variables**: Use `VAULT_TOKEN` and `VAULT_ADDR`
+
+## Variables
+
+Wrangle supports defining variables for secret generation following the BOSH variable types specification. Variables define how secrets should be generated, specifying only the properties needed for generation—not the actual values.
+
+### Variable Types
+
+Variables can be defined in your configuration file and listed using the `wrangle list variables` command.
+
+#### Certificate
+
+Generate TLS/SSL certificates with customizable properties.
+
+```yaml
+variables:
+  - name: root-ca
+    type: certificate
+    options:
+      common_name: "Root CA"
+      is_ca: true
+      key_length: 4096
+  - name: server-cert
+    type: certificate
+    options:
+      ca: root-ca  # Sign with root-ca
+      common_name: "server.example.com"
+      alternative_names:
+        - www.example.com
+        - api.example.com
+      extended_key_usage:
+        - server_auth
+      duration: 365
+```
+
+**Options:**
+
+| Option | Description | Required | Default |
+| ------ | ----------- | -------- | ------- |
+| `common_name` | Common name for the certificate | Yes | |
+| `ca` | Name of a CA variable to sign the certificate | No | |
+| `organization` | Organization name | No | |
+| `alternative_names` | Subject alternative names (array) | No | |
+| `is_ca` | Whether to generate a CA certificate | No | false |
+| `extended_key_usage` | Extended key usage extensions (array) | No | |
+| `duration` | Certificate duration in days | No | 365 |
+| `key_length` | RSA key length | No | 2048 |
+
+#### Password
+
+Generate random passwords with specified length.
+
+```yaml
+variables:
+- name: db-password
+  type: password
+  options:
+    length: 32
+- name: api-key
+  type: password
+  options:
+    length: 64
+```
+
+**Options:**
+
+| Option | Description | Required | Default |
+| ------ | ----------- | -------- | ------- |
+| `length` | Password length | No | 20 |
+
+#### RSA
+
+Generate RSA key pairs.
+
+```yaml
+variables:
+- name: encryption-key
+  type: rsa
+  options:
+    key_length: 4096
+```
+
+**Options:**
+
+| Option | Description | Required | Default |
+| ------ | ----------- | -------- | ------- |
+| `key_length` | RSA key length (bits) | No | 2048 |
+
+#### SSH
+
+Generate SSH key pairs.
+
+```yaml
+variables:
+- name: deploy-key
+  type: ssh
+  options:
+    comment: "deploy@example.com"
+```
+
+**Options:**
+
+| Option | Description | Required | Default |
+| ------ | ----------- | -------- | ------- |
+| `comment` | Comment for the SSH key | No | |
+
+### Listing Variables
+
+To view all variables defined in your configuration:
+
+```bash
+# Table format (default)
+wrangle list variables
+
+# JSON format
+wrangle list variables --output json
+
+# YAML format
+wrangle list variables --output yaml
+```
+
+### Complete Configuration Example
+
+```yaml
+apiVersion: wrangle/v1
+kind: Config
+spec:
+  variables:
+  - name: root-ca
+    type: certificate
+    options:
+      common_name: "Root CA"
+      is_ca: true
+  - name: server-cert
+    type: certificate
+    options:
+      ca: root-ca
+      common_name: "server.example.com"
+      extended_key_usage: ["server_auth"]
+  - name: db-password
+    type: password
+    options:
+      length: 32
+  - name: deploy-key
+    type: ssh
+    options:
+      comment: "deploy@prod"
+  stores:
+  - name: vault
+    type: vault
+    properties:
+      address: http://127.0.0.1:8200
+      token: ((vault-token))
+  packages:
+  - name: yq
+    version: 4.31.1
+```
 
 ## Package Management
 

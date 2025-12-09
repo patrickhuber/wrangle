@@ -48,4 +48,5 @@ RUN export WRANGLE_LOG_LEVEL=trace && \
 RUN export WRANGLE_LOG_LEVEL=trace && \
     echo 'TEST="test"' >> /working/.wrangle.toml && \
     export WRANGLE_LOG_LEVEL=trace && \
-    wrangle export bash > /working/export.temp 
+    wrangle export bash > /working/export.temp && \
+    grep -E "export\s+TEST\s*[=]\s*'test'\s*;\s*" /working/export.temp

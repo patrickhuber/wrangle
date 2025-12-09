@@ -53,7 +53,7 @@ func TestDefaultConfiguration_LoadsLocalConfigFromParent(t *testing.T) {
 	require.NoError(t, err)
 
 	resolver := goconfig.DefaultGlobResolver(fs, path)
-	cfgSvc, err := config.NewDefaultConfiguration(
+	cfgSvc, err := config.NewDefaultService(
 		env,
 		fs,
 		path,

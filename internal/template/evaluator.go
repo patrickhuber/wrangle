@@ -25,10 +25,16 @@ func (e *Evaluator) Evaluate(data any) (*EvaluationResult, error) {
 }
 
 func (e *Evaluator) walk(v reflect.Value) (*EvaluationResult, error) {
+	if !v.IsValid() {
+		return &EvaluationResult{Value: nil}, nil
+	}
 
 	// dereference interfaces
 	if v.Kind() == reflect.Interface {
 		v = v.Elem()
+		if !v.IsValid() {
+			return &EvaluationResult{Value: nil}, nil
+		}
 	}
 
 	switch v.Kind() {

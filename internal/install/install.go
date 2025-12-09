@@ -20,7 +20,7 @@ import (
 )
 
 type service struct {
-	configuration    config.Configuration
+	configuration    config.Service
 	fs               fs.FS
 	serviceFactory   feed.ServiceFactory
 	runner           actions.Runner
@@ -48,7 +48,7 @@ func NewService(
 	serviceFactory feed.ServiceFactory,
 	runner actions.Runner,
 	o os.OS,
-	configuration config.Configuration,
+	configuration config.Service,
 	metadataProvider actions.MetadataProvider,
 	path filepath.Provider,
 	oldFiles *oldfile.Manager,

@@ -10,18 +10,18 @@ import (
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
-type Configuration interface {
+type Service interface {
 	Get() (Config, error)
 }
 
-func NewTestConfiguration(
+func NewTestService(
 	env env.Environment,
 	fs fs.FS,
 	path filepath.Provider,
 	os os.OS,
 	cli CliContext,
 	globResolver config.GlobResolver,
-	systemDefaultProvider SystemDefaultProvider) (Configuration, error) {
+	systemDefaultProvider SystemDefaultProvider) (Service, error) {
 
 	errorIfNotExists := true
 
@@ -41,14 +41,14 @@ func NewTestConfiguration(
 	return NewConfiguration(root), nil
 }
 
-func NewDefaultConfiguration(
+func NewDefaultService(
 	env env.Environment,
 	fs fs.FS,
 	path filepath.Provider,
 	os os.OS,
 	cli CliContext,
 	globResolver config.GlobResolver,
-	systemDefaultProvider SystemDefaultProvider) (Configuration, error) {
+	systemDefaultProvider SystemDefaultProvider) (Service, error) {
 
 	errorIfNotExists := true
 	builder := config.NewBuilder()
@@ -72,7 +72,7 @@ type configuration struct {
 	root config.Root
 }
 
-func NewConfiguration(root config.Root) Configuration {
+func NewConfiguration(root config.Root) Service {
 	return &configuration{
 		root: root,
 	}

@@ -77,7 +77,7 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	// configuration
 	container.RegisterConstructor(goconfig.DefaultGlobResolver)
 	container.RegisterConstructor(config.NewTestSystemDefaultProvider)
-	container.RegisterConstructor(config.NewTestConfiguration)
+	container.RegisterConstructor(config.NewTestService)
 
 	// feeds
 	container.RegisterConstructor(t.newFeedProvider)

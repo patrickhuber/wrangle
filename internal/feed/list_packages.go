@@ -26,12 +26,12 @@ type ListPackages interface {
 
 type listPackages struct {
 	serviceFactory ServiceFactory
-	configuration  config.Configuration
+	configuration  config.Service
 }
 
 func NewListPackages(
 	serviceFactory ServiceFactory,
-	configuration config.Configuration) ListPackages {
+	configuration config.Service) ListPackages {
 	return &listPackages{
 		serviceFactory: serviceFactory,
 		configuration:  configuration,
