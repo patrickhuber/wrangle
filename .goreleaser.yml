@@ -27,12 +27,12 @@ builds:
 archives:
 - id: wrangle
   name_template: "{{.Binary}}-{{.Version}}-{{.Os}}-{{.Arch}}{{ if .Arm }}v{{.Arm }}{{ end }}"
-  format: tar.gz
-  builds: 
+  formats: tar.gz
+  ids:
   - wrangle
   format_overrides:
   - goos: windows
-    format: zip  
+    formats: zip  
 
 checksum:
   name_template: 'checksums.txt'
