@@ -7,5 +7,6 @@ const (
 	FlagSystemConfig = "system"
 	FlagUserConfig   = "user"
 	FlagOutput       = "output"
+	FlagVersion      = "version"
 	FlagLogLevel     = "verbosity"
 )
