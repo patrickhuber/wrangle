@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 
@@ -56,6 +57,10 @@ func main() {
 		Usage:       "A DevOps Environment Management CLI",
 		Description: "A DevOps Environment Management CLI",
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    global.FlagVersion,
+				Aliases: []string{"v"},
+			},
 			&cli.StringFlag{
 				Name:    global.FlagBin,
 				Aliases: []string{"b"},
@@ -95,6 +100,13 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
+			if ctx.Bool(global.FlagVersion) {
+				_, err := fmt.Fprintln(ctx.App.Writer, ctx.App.Version)
+				if err != nil {
+					return err
+				}
+				return cli.Exit("", 0)
+			}
 
 			container, err := app.GetContainer(ctx)
 			if err != nil {
