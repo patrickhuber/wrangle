@@ -7,6 +7,6 @@ var Feed = &cli.Command{
 	Name:               "feed",
 	Description:        "manage feeds",
 	Usage:              "manage feeds",
-	Subcommands:        []*cli.Command{FeedList},
+	Subcommands:        []*cli.Command{FeedList, FeedUpdate},
 	CustomHelpTemplate: CommandHelpTemplate,
 }

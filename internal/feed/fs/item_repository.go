@@ -1,10 +1,13 @@
 package fs
 
 import (
+	"errors"
+	"os"
+
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-cross/filepath"
 
-	"github.com/patrickhuber/go-cross/fs"
+	crossfs "github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -12,17 +15,18 @@ import (
 
 const (
 	PlatformsFile = "platforms.yml"
+	ResourceFile  = "resource.yml"
 	StateFile     = "state.yml"
 	TemplateFile  = "template.yml"
 )
 
 type itemRepository struct {
-	fs               fs.FS
+	fs               crossfs.FS
 	path             filepath.Provider
 	workingDirectory string
 }
 
-func NewItemRepository(fs fs.FS, path filepath.Provider, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs crossfs.FS, path filepath.Provider, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		path:             path,
@@ -59,6 +63,7 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		Platforms: true,
 		State:     true,
 		Template:  true,
+		Resource:  true,
 	}
 	for _, option := range options {
 		option(include)
@@ -84,6 +89,13 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		}
 		item.Template = template
 	}
+	if include.Resource {
+		resource, err := r.GetResource(name)
+		if err != nil {
+			return nil, err
+		}
+		item.Resource = resource
+	}
 	return item, nil
 }
 
@@ -107,6 +119,21 @@ func (r *itemRepository) GetTemplate(name string) (string, error) {
 		return "", err
 	}
 	return string(data), err
+}
+
+func (r *itemRepository) GetResource(name string) (*feed.ResourceConfig, error) {
+	data, err := r.ReadFile(name, ResourceFile)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	wrapper := &feed.ItemResourceFile{}
+	if err := yaml.Unmarshal(data, wrapper); err != nil {
+		return nil, err
+	}
+	return wrapper.Resource, nil
 }
 
 func (r *itemRepository) GetItemPath(name string) string {

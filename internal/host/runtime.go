@@ -84,6 +84,7 @@ func New() Host {
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
 	container.RegisterConstructor(feed.NewListPackages)
+	container.RegisterConstructor(feed.NewUpdatePackages)
 
 	// initialize
 	container.RegisterConstructor(initialize.NewConfiguration)

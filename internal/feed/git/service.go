@@ -55,6 +55,10 @@ func (s *service) List(request *feed.ListRequest) (*feed.ListResponse, error) {
 	return s.internal.List(request)
 }
 
+func (s *service) SaveVersion(packageName string, version string, data []byte) error {
+	return s.internal.SaveVersion(packageName, version, data)
+}
+
 func (s *service) Update(request *feed.UpdateRequest) (*feed.UpdateResponse, error) {
 	response, err := s.internal.Update(request)
 	if err != nil {

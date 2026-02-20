@@ -16,6 +16,7 @@ import (
 
 const (
 	PlatformsFile = "platforms.yml"
+	ResourceFile  = "resource.yml"
 	StateFile     = "state.yml"
 	TemplateFile  = "template.yml"
 )
@@ -75,6 +76,7 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		Platforms: true,
 		State:     true,
 		Template:  true,
+		Resource:  true,
 	}
 	for _, option := range options {
 		option(include)
@@ -100,6 +102,13 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		}
 		item.Template = template
 	}
+	if include.Resource {
+		resource, err := r.getResource(name)
+		if err != nil {
+			return nil, err
+		}
+		item.Resource = resource
+	}
 	return item, nil
 }
 
@@ -123,6 +132,19 @@ func (r *itemRepository) getTemplate(packageName string) (string, error) {
 		return "", err
 	}
 	return string(content), nil
+}
+
+func (r *itemRepository) getResource(packageName string) (*feed.ResourceConfig, error) {
+	content, err := r.readFile(packageName, ResourceFile)
+	if err != nil {
+		// resource.yml is optional
+		return nil, nil
+	}
+	wrapper := &feed.ItemResourceFile{}
+	if err := yaml.Unmarshal(content, wrapper); err != nil {
+		return nil, err
+	}
+	return wrapper.Resource, nil
 }
 
 func (r *itemRepository) getObject(packageName, fileName string, out any) error {

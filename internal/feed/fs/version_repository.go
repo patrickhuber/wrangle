@@ -44,6 +44,16 @@ func (r *versionRepository) Save(name string, version *packages.Version) error {
 	return r.fs.WriteFile(versionFile, data, 0644)
 }
 
+func (r *versionRepository) SaveRaw(name string, version string, data []byte) error {
+	versionPath := r.GetVersionFolderPath(name, version)
+	err := r.fs.MkdirAll(versionPath, 0775)
+	if err != nil {
+		return err
+	}
+	versionFile := r.GetVersionFilePath(name, version)
+	return r.fs.WriteFile(versionFile, data, 0644)
+}
+
 func (r *versionRepository) Get(name string, version string) (*packages.Version, error) {
 	versionFile := r.GetVersionFilePath(name, version)
 	data, err := r.fs.ReadFile(versionFile)
