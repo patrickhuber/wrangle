@@ -38,12 +38,12 @@ func HookAction(ctx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("invalid initialize command configuration. %w", err)
 	}
-	if ctx.Args().Len() < 3 {
+	if ctx.Args().Len() < 1 {
 		return fmt.Errorf("expected <shell> argument")
 	}
 	cmd := &HookCommand{
 		Options: HookOptions{
-			Shell: ctx.Args().Get(2),
+			Shell: ctx.Args().Get(0),
 		},
 	}
 	err = di.Inject(resolver, cmd)

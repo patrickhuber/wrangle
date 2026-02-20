@@ -11,8 +11,10 @@ import (
 )
 
 var SetSecret = &cli.Command{
-	Name:   "secret",
-	Action: SetSecretAction,
+	Name:        "set",
+	Action:      SetSecretAction,
+	Description: "set the specified secret",
+	Usage:       "set the specified secret",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "key",

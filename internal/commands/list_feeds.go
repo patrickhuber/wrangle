@@ -5,7 +5,7 @@ import (
 )
 
 var ListFeeds = &cli.Command{
-	Name:        "feeds",
+	Name:        "list",
 	Action:      ListFeedsAction,
 	Description: "list available feeds",
 	Usage:       "list available feeds",

@@ -110,14 +110,13 @@ func main() {
 	// register
 	app.Commands = []*cli.Command{
 		commands.Bootstrap,
-		commands.List,
-		commands.Get,
-		commands.Set,
-		commands.Initialize,
-		commands.Install,
-		commands.Export,
-		commands.Hook,
-		commands.Interpolate,
+		commands.Packages,
+		commands.Package,
+		commands.Feeds,
+		commands.Variables,
+		commands.Secret,
+		commands.Config,
+		commands.Shell,
 	}
 
 	// this is a hack to get global options printed in the commands

@@ -12,7 +12,7 @@ import (
 )
 
 var ListVariables = &cli.Command{
-	Name: "variables",
+	Name: "list",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name: "output",

@@ -12,7 +12,7 @@ import (
 )
 
 var ListPackages = &cli.Command{
-	Name: "packages",
+	Name: "list",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name: "output",
