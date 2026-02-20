@@ -7,7 +7,7 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-cross/filepath"
 
-	crossfs "github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-cross/fs"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -21,12 +21,12 @@ const (
 )
 
 type itemRepository struct {
-	fs               crossfs.FS
+	fs               fs.FS
 	path             filepath.Provider
 	workingDirectory string
 }
 
-func NewItemRepository(fs crossfs.FS, path filepath.Provider, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs fs.FS, path filepath.Provider, workingDirectory string) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		path:             path,
