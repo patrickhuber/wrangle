@@ -14,6 +14,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
+	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"github.com/patrickhuber/wrangle/internal/shim"
@@ -135,6 +136,7 @@ func (i *service) Execute(r *Request) error {
 	}
 
 	oneVersionMatched := false
+	installedVersion := ""
 	for _, item := range items {
 		for _, v := range item.Package.Versions {
 			if v.Manifest == nil {
@@ -183,10 +185,19 @@ func (i *service) Execute(r *Request) error {
 			if err != nil {
 				return err
 			}
+			installedVersion = v.Version
 		}
 	}
 	if !oneVersionMatched {
 		return fmt.Errorf("InstallService : no packages were installed matching name '%s' and version '%s'", r.Package, r.Version)
+	}
+
+	// installedVersion may be empty if all matched versions were skipped (e.g. already installed, no --force)
+	if installedVersion != "" {
+		err = i.updateLocalConfig(r.Package, installedVersion)
+		if err != nil {
+			i.log.Warnf("unable to update local wrangle file: %v", err)
+		}
 	}
 	return nil
 }
@@ -393,5 +404,68 @@ func (i *service) handleRunningExecutable(targets []*packages.ManifestTarget, me
 			}
 		}
 	}
+	return nil
+}
+
+// findLocalConfigFile searches for a local wrangle config file starting from dir and going up.
+func (i *service) findLocalConfigFile(dir string) (string, bool) {
+	for {
+		candidate := i.path.Join(dir, global.LocalConfigurationFileName)
+		exists, err := i.fs.Exists(candidate)
+		if err == nil && exists {
+			return candidate, true
+		}
+		parent := i.path.Dir(dir)
+		if parent == dir {
+			// reached the root
+			break
+		}
+		dir = parent
+	}
+	return "", false
+}
+
+// updateLocalConfig adds or updates the package entry in the local wrangle config file if one is in scope.
+func (i *service) updateLocalConfig(packageName string, version string) error {
+	workDir, err := i.opsys.WorkingDirectory()
+	if err != nil {
+		return fmt.Errorf("unable to get working directory: %w", err)
+	}
+
+	localFile, found := i.findLocalConfigFile(workDir)
+	if !found {
+		i.log.Debugf("no local wrangle file found in scope, skipping local config update")
+		return nil
+	}
+
+	i.log.Debugf("updating local wrangle file: %s", localFile)
+
+	localCfg, err := config.ReadFile(i.fs, localFile)
+	if err != nil {
+		return fmt.Errorf("unable to read local wrangle file '%s': %w", localFile, err)
+	}
+
+	// update or add the package entry
+	updated := false
+	for idx, pkg := range localCfg.Spec.Packages {
+		if pkg.Name == packageName {
+			localCfg.Spec.Packages[idx].Version = version
+			updated = true
+			break
+		}
+	}
+	if !updated {
+		localCfg.Spec.Packages = append(localCfg.Spec.Packages, config.Package{
+			Name:    packageName,
+			Version: version,
+		})
+	}
+
+	err = config.WriteFile(i.fs, localFile, localCfg)
+	if err != nil {
+		return fmt.Errorf("unable to write local wrangle file '%s': %w", localFile, err)
+	}
+
+	i.log.Infof("updated local wrangle file '%s' with package %s@%s", localFile, packageName, version)
 	return nil
 }
