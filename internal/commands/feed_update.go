@@ -10,11 +10,10 @@ import (
 )
 
 var FeedUpdate = &cli.Command{
-	Name:               "update",
-	Action:             FeedUpdateAction,
-	Description:        "update feed packages to their latest versions based on resource configurations",
-	Usage:              "update feed packages to their latest versions",
-	CustomHelpTemplate: CommandHelpTemplate,
+	Name:        "update",
+	Action:      FeedUpdateAction,
+	Description: "update feed packages to their latest versions based on resource configurations",
+	Usage:       "update feed packages to their latest versions",
 }
 
 type FeedUpdateCommand struct {
