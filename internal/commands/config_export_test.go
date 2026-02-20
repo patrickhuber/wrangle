@@ -66,10 +66,10 @@ TEST="TEST"`), 0644)
 	err = bt.Execute(&bootstrap.Request{})
 	require.NoError(t, err)
 
-	exportCmd := &commands.ExportCommand{
+	exportCmd := &commands.ConfigExportCommand{
 		Export: export,
 		Diff:   diff,
-		Options: commands.ExportOptions{
+		Options: commands.ConfigExportOptions{
 			Shell: "bash",
 		},
 	}

@@ -92,16 +92,16 @@ Remove-Item README.md
 Once wrangle is installed you can install the latest package with the install command.
 
 ```bash
-wrangle install yq
+wrangle package install yq
 ```
 
 or a specific version
 
 ```
-wrangle install yq@4.31.1
+wrangle package install yq@4.31.1
 ```
 
-You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle restore` command.
+You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle package restore` command.
 
 > .wrangle.yml
 
@@ -144,7 +144,13 @@ version = "4.31.1"
 ```
 
 ```bash
-wrangle restore
+wrangle bootstrap
+```
+
+To restore packages from the configuration file, run:
+
+```bash
+wrangle package restore
 ```
 
 ## Shell Integration
@@ -156,7 +162,7 @@ Wrangle can integrate into your shell to enable environment variable injection.
 add the following to the ~/.bashrc file
 
 ```bash
-eval "$(wrangle hook bash)"
+eval "$(wrangle shell hook bash)"
 ```
 
 > powershell
@@ -164,7 +170,7 @@ eval "$(wrangle hook bash)"
 add the following to end of the $PROFILE file
 
 ```powershell
-iex $(wrangle hook powershell | Out-String)
+iex $(wrangle shell hook powershell | Out-String)
 ```
 
 ## Variable Replacement
@@ -383,13 +389,13 @@ To view all variables defined in your configuration:
 
 ```bash
 # Table format (default)
-wrangle list variables
+wrangle variables list
 
 # JSON format
-wrangle list variables --output json
+wrangle variables list --output json
 
 # YAML format
-wrangle list variables --output yaml
+wrangle variables list --output yaml
 ```
 
 ### Complete Configuration Example

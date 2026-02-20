@@ -10,10 +10,10 @@ import (
 )
 
 // initialize subcommand
-var Initialize = &cli.Command{
+var ConfigInitialize = &cli.Command{
 	Name:    "initialize",
 	Aliases: []string{"init"},
-	Action:  InitializeAction,
+	Action:  ConfigInitializeAction,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -26,23 +26,23 @@ var Initialize = &cli.Command{
 	CustomHelpTemplate: CommandHelpTemplate,
 }
 
-type InitializeCommand struct {
+type ConfigInitializeCommand struct {
 	Initialize initialize.Service `inject:""`
-	Options    InitializeOptions
+	Options    ConfigInitializeOptions
 }
 
-type InitializeOptions struct {
+type ConfigInitializeOptions struct {
 	Force bool `flag:"force"`
 }
 
-func InitializeAction(ctx *cli.Context) error {
+func ConfigInitializeAction(ctx *cli.Context) error {
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return fmt.Errorf("invalid initialize command configuration. %w", err)
 	}
 
-	cmd := &InitializeCommand{
-		Options: InitializeOptions{
+	cmd := &ConfigInitializeCommand{
+		Options: ConfigInitializeOptions{
 			Force: ctx.Bool("force"),
 		},
 	}
@@ -53,7 +53,7 @@ func InitializeAction(ctx *cli.Context) error {
 	return cmd.Execute()
 }
 
-func (cmd *InitializeCommand) Execute() error {
+func (cmd *ConfigInitializeCommand) Execute() error {
 	req := &initialize.Request{
 		Force: cmd.Options.Force,
 	}
