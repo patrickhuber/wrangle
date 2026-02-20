@@ -115,6 +115,7 @@ func main() {
 		commands.Set,
 		commands.Initialize,
 		commands.Install,
+		commands.UpdatePackages,
 		commands.Export,
 		commands.Hook,
 		commands.Interpolate,

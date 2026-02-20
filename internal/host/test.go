@@ -82,6 +82,7 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	// feeds
 	container.RegisterConstructor(t.newFeedProvider)
 	container.RegisterConstructor(feed.NewListPackages)
+	container.RegisterConstructor(feed.NewUpdatePackages)
 
 	// logging
 	container.RegisterConstructor(func() log.Logger { return log.Memory() })
