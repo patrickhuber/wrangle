@@ -7,6 +7,6 @@ var Config = &cli.Command{
 	Name:               "config",
 	Description:        "manage configuration",
 	Usage:              "manage configuration",
-	Subcommands:        []*cli.Command{Initialize, Export, Interpolate},
+	Subcommands:        []*cli.Command{ConfigInitialize, ConfigExport, ConfigInterpolate},
 	CustomHelpTemplate: CommandHelpTemplate,
 }

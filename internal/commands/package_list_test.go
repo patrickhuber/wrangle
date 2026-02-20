@@ -22,8 +22,8 @@ func TestListPackages(t *testing.T) {
 	err = bootstrapService.Execute(&bootstrap.Request{})
 	require.NoError(t, err)
 
-	cmd := &commands.ListPackagesCommand{
-		Options: &commands.ListPackagesOptions{
+	cmd := &commands.PackageListCommand{
+		Options: &commands.PackageListOptions{
 			Output: ".",
 		},
 	}

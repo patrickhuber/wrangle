@@ -7,6 +7,6 @@ var Shell = &cli.Command{
 	Name:               "shell",
 	Description:        "manage shell integration",
 	Usage:              "manage shell integration",
-	Subcommands:        []*cli.Command{Hook},
+	Subcommands:        []*cli.Command{ShellHook},
 	CustomHelpTemplate: CommandHelpTemplate,
 }

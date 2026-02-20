@@ -11,46 +11,46 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ListPackages = &cli.Command{
+var PackageList = &cli.Command{
 	Name: "list",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name: "output",
 		},
 	},
-	Action:      ListPackagesAction,
+	Action:      PackageListAction,
 	Description: "list available packages",
 	Usage:       "list available packages",
 }
 
-type ListPackagesCommand struct {
-	Service feed.ListPackages    `inject:""`
-	Console console.Console      `inject:""`
-	Options *ListPackagesOptions `options:""`
+type PackageListCommand struct {
+	Service feed.ListPackages   `inject:""`
+	Console console.Console     `inject:""`
+	Options *PackageListOptions `options:""`
 }
 
-type ListPackagesOptions struct {
+type PackageListOptions struct {
 	Output string `flag:"output"`
 }
 
-func ListPackagesAction(ctx *cli.Context) error {
+func PackageListAction(ctx *cli.Context) error {
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	listPackagesCommand := &ListPackagesCommand{
-		Options: &ListPackagesOptions{
+	cmd := &PackageListCommand{
+		Options: &PackageListOptions{
 			Output: ctx.String("output"),
 		},
 	}
-	err = di.Inject(resolver, listPackagesCommand)
+	err = di.Inject(resolver, cmd)
 	if err != nil {
 		return err
 	}
-	return listPackagesCommand.Execute()
+	return cmd.Execute()
 }
 
-func (cmd *ListPackagesCommand) Execute() error {
+func (cmd *PackageListCommand) Execute() error {
 	request := &feed.ListPackagesRequest{}
 	response, err := cmd.Service.Execute(request)
 	if err != nil {

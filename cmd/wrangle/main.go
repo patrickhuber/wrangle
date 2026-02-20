@@ -110,10 +110,9 @@ func main() {
 	// register
 	app.Commands = []*cli.Command{
 		commands.Bootstrap,
-		commands.Packages,
 		commands.Package,
-		commands.Feeds,
-		commands.Variables,
+		commands.Feed,
+		commands.Variable,
 		commands.Secret,
 		commands.Config,
 		commands.Shell,

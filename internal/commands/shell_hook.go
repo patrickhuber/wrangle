@@ -10,9 +10,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var Hook = &cli.Command{
+var ShellHook = &cli.Command{
 	Name:        "hook",
-	Action:      HookAction,
+	Action:      ShellHookAction,
 	Description: "Generates the shell hook script for the specified shell",
 	Usage:       "generate the shell hook script for the specified shell",
 	Flags:       []cli.Flag{},
@@ -23,17 +23,17 @@ ARGS:
 	ArgsUsage: "<shell>",
 }
 
-type HookCommand struct {
+type ShellHookCommand struct {
 	Hook    hook.Service    `inject:""`
 	Console console.Console `inject:""`
-	Options HookOptions
+	Options ShellHookOptions
 }
 
-type HookOptions struct {
+type ShellHookOptions struct {
 	Shell string
 }
 
-func HookAction(ctx *cli.Context) error {
+func ShellHookAction(ctx *cli.Context) error {
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return fmt.Errorf("invalid initialize command configuration. %w", err)
@@ -41,8 +41,8 @@ func HookAction(ctx *cli.Context) error {
 	if ctx.Args().Len() < 1 {
 		return fmt.Errorf("expected <shell> argument")
 	}
-	cmd := &HookCommand{
-		Options: HookOptions{
+	cmd := &ShellHookCommand{
+		Options: ShellHookOptions{
 			Shell: ctx.Args().Get(0),
 		},
 	}
@@ -53,7 +53,7 @@ func HookAction(ctx *cli.Context) error {
 	return cmd.Execute()
 }
 
-func (cmd *HookCommand) Execute() error {
+func (cmd *ShellHookCommand) Execute() error {
 	executable, err := cmd.Console.Executable()
 	if err != nil {
 		return err

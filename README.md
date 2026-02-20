@@ -101,7 +101,7 @@ or a specific version
 wrangle package install yq@4.31.1
 ```
 
-You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle restore` command.
+You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle package restore` command.
 
 > .wrangle.yml
 
@@ -145,6 +145,12 @@ version = "4.31.1"
 
 ```bash
 wrangle bootstrap
+```
+
+To restore packages from the configuration file, run:
+
+```bash
+wrangle package restore
 ```
 
 ## Shell Integration

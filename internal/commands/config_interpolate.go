@@ -11,36 +11,36 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var Interpolate = &cli.Command{
+var ConfigInterpolate = &cli.Command{
 	Name:        "interpolate",
 	Aliases:     []string{"int"},
-	Action:      InterpolateAction,
+	Action:      ConfigInterpolateAction,
 	Description: "Interpolate generates the aggregated configuration from all configurations",
 	Usage:       "generate the aggregated configuration from all configurations",
 }
 
-type InterpolateCommand struct {
+type ConfigInterpolateCommand struct {
 	Interpolate interpolate.Service `inject:""`
 	Console     console.Console     `inject:""`
-	Options     InterpolateOptions
+	Options     ConfigInterpolateOptions
 }
 
-type InterpolateOptions struct{}
+type ConfigInterpolateOptions struct{}
 
-func InterpolateAction(ctx *cli.Context) error {
+func ConfigInterpolateAction(ctx *cli.Context) error {
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return fmt.Errorf("invalid list variable command. %w", err)
 	}
-	interpolateCommand := &InterpolateCommand{}
-	err = di.Inject(resolver, interpolateCommand)
+	cmd := &ConfigInterpolateCommand{}
+	err = di.Inject(resolver, cmd)
 	if err != nil {
 		return err
 	}
-	return interpolateCommand.Execute()
+	return cmd.Execute()
 }
 
-func (cmd *InterpolateCommand) Execute() error {
+func (cmd *ConfigInterpolateCommand) Execute() error {
 	cfg, err := cmd.Interpolate.Execute()
 	if err != nil {
 		return err

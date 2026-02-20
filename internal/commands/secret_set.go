@@ -10,9 +10,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var SetSecret = &cli.Command{
+var SecretSet = &cli.Command{
 	Name:        "set",
-	Action:      SetSecretAction,
+	Action:      SecretSetAction,
 	Description: "set the specified secret",
 	Usage:       "set the specified secret",
 	Flags: []cli.Flag{
@@ -31,31 +31,31 @@ var SetSecret = &cli.Command{
 	},
 }
 
-type SetSecretCommand struct {
+type SecretSetCommand struct {
 	Secret  secret.Service `inject:""`
-	Options SetSecretOptions
+	Options SecretSetOptions
 }
 
-type SetSecretOptions struct {
+type SecretSetOptions struct {
 	Key   string
 	Value string
 	Store string
 }
 
-const SetSecretOptionKeyName = "key"
-const SetSecretOptionValueName = "value"
-const SetSecretOptionStoreName = "store"
+const SecretSetOptionKeyName = "key"
+const SecretSetOptionValueName = "value"
+const SecretSetOptionStoreName = "store"
 
-func SetSecretAction(ctx *cli.Context) error {
+func SecretSetAction(ctx *cli.Context) error {
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return err
 	}
-	cmd := &SetSecretCommand{
-		Options: SetSecretOptions{
-			Key:   ctx.String(SetSecretOptionKeyName),
-			Value: ctx.String(SetSecretOptionValueName),
-			Store: ctx.String(SetSecretOptionStoreName),
+	cmd := &SecretSetCommand{
+		Options: SecretSetOptions{
+			Key:   ctx.String(SecretSetOptionKeyName),
+			Value: ctx.String(SecretSetOptionValueName),
+			Store: ctx.String(SecretSetOptionStoreName),
 		},
 	}
 	err = di.Inject(resolver, cmd)
@@ -66,16 +66,16 @@ func SetSecretAction(ctx *cli.Context) error {
 	return cmd.Execute()
 }
 
-func (cmd *SetSecretCommand) Execute() error {
-	err := validate(SetSecretOptionStoreName, cmd.Options.Store)
+func (cmd *SecretSetCommand) Execute() error {
+	err := validate(SecretSetOptionStoreName, cmd.Options.Store)
 	if err != nil {
 		return err
 	}
-	err = validate(SetSecretOptionKeyName, cmd.Options.Key)
+	err = validate(SecretSetOptionKeyName, cmd.Options.Key)
 	if err != nil {
 		return err
 	}
-	err = validate(SetSecretOptionValueName, cmd.Options.Value)
+	err = validate(SecretSetOptionValueName, cmd.Options.Value)
 	if err != nil {
 		return err
 	}
