@@ -23,11 +23,13 @@ import (
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/oldfile"
+	"github.com/patrickhuber/wrangle/internal/restore"
 	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
+	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/memory"
@@ -109,6 +111,12 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 
 	// install
 	container.RegisterConstructor(install.NewService)
+
+	// restore
+	container.RegisterConstructor(restore.NewService)
+
+	// add
+	container.RegisterConstructor(add.NewService)
 
 	// shim
 	container.RegisterConstructor(shim.NewService)

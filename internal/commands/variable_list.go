@@ -11,46 +11,46 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ListVariables = &cli.Command{
-	Name: "variables",
+var VariableList = &cli.Command{
+	Name: "list",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name: "output",
 		},
 	},
-	Action:      ListVariablesAction,
+	Action:      VariableListAction,
 	Description: "list available variables",
 	Usage:       "list available variables",
 }
 
-type ListVariablesCommand struct {
-	Configuration config.Service        `inject:""`
-	Console       console.Console       `inject:""`
-	Options       *ListVariablesOptions `options:""`
+type VariableListCommand struct {
+	Configuration config.Service       `inject:""`
+	Console       console.Console      `inject:""`
+	Options       *VariableListOptions `options:""`
 }
 
-type ListVariablesOptions struct {
+type VariableListOptions struct {
 	Output string `flag:"output"`
 }
 
-func ListVariablesAction(ctx *cli.Context) error {
+func VariableListAction(ctx *cli.Context) error {
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
 		return fmt.Errorf("invalid list variable command. %w", err)
 	}
-	listVariablesCommand := &ListVariablesCommand{
-		Options: &ListVariablesOptions{
+	cmd := &VariableListCommand{
+		Options: &VariableListOptions{
 			Output: ctx.String("output"),
 		},
 	}
-	err = di.Inject(resolver, listVariablesCommand)
+	err = di.Inject(resolver, cmd)
 	if err != nil {
 		return err
 	}
-	return listVariablesCommand.Execute()
+	return cmd.Execute()
 }
 
-func (cmd *ListVariablesCommand) Execute() error {
+func (cmd *VariableListCommand) Execute() error {
 	cfg, err := cmd.Configuration.Get()
 	if err != nil {
 		return err

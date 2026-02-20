@@ -11,12 +11,12 @@ import (
 )
 
 // install subcommand
-var Install = &cli.Command{
+var PackageInstall = &cli.Command{
 	Name:               "install",
-	Action:             InstallAction,
+	Action:             PackageInstallAction,
 	CustomHelpTemplate: CommandHelpTemplate,
 	Description:        "Installs the specified package",
-	Usage:              "install the specified package",
+	Usage:              "install the specified package and adds it to the local configuration",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "version",
@@ -33,18 +33,18 @@ var Install = &cli.Command{
 	},
 }
 
-type InstallCommand struct {
-	Install install.Service `inject:""`
-	Options InstallOptions  `options:""`
+type PackageInstallCommand struct {
+	Install install.Service       `inject:""`
+	Options PackageInstallOptions `options:""`
 }
 
-type InstallOptions struct {
+type PackageInstallOptions struct {
 	Package string `position:"0"`
 	Version string `flag:"version"`
 	Force   bool   `flag:"force"`
 }
 
-func (cmd *InstallCommand) Execute() error {
+func (cmd *PackageInstallCommand) Execute() error {
 
 	request := &install.Request{
 		Package: cmd.Options.Package,
@@ -54,7 +54,7 @@ func (cmd *InstallCommand) Execute() error {
 	return cmd.Install.Execute(request)
 }
 
-func InstallAction(ctx *cli.Context) error {
+func PackageInstallAction(ctx *cli.Context) error {
 
 	pkg := ctx.Args().First()
 	if len(pkg) == 0 {
@@ -66,8 +66,8 @@ func InstallAction(ctx *cli.Context) error {
 		return fmt.Errorf("invalid install configuration. %w", err)
 	}
 
-	cmd := &InstallCommand{
-		Options: InstallOptions{
+	cmd := &PackageInstallCommand{
+		Options: PackageInstallOptions{
 			Package: pkg,
 			Version: ctx.String("version"),
 			Force:   ctx.Bool("force"),

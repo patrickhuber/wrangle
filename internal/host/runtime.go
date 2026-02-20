@@ -17,6 +17,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/oldfile"
+	"github.com/patrickhuber/wrangle/internal/restore"
 	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
@@ -27,6 +28,7 @@ import (
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/wrangle/internal/actions"
+	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/git"
@@ -97,6 +99,12 @@ func New() Host {
 
 	// install
 	container.RegisterConstructor(install.NewService)
+
+	// restore
+	container.RegisterConstructor(restore.NewService)
+
+	// add
+	container.RegisterConstructor(add.NewService)
 
 	// shim
 	container.RegisterConstructor(shim.NewService)

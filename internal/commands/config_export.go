@@ -10,9 +10,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var Export = &cli.Command{
+var ConfigExport = &cli.Command{
 	Name:        "export",
-	Action:      ExportAction,
+	Action:      ConfigExportAction,
 	Description: "Exports the current environment variables to in the format of the specified shell",
 	Usage:       "export aggregated environment variables to the format of the specified shell",
 	CustomHelpTemplate: CommandHelpTemplate + `
@@ -22,17 +22,17 @@ ARGS:
 	ArgsUsage: "<shell>",
 }
 
-type ExportCommand struct {
+type ConfigExportCommand struct {
 	Export  export.Service `inject:""`
 	Diff    diff.Service   `inject:""`
-	Options ExportOptions
+	Options ConfigExportOptions
 }
 
-type ExportOptions struct {
+type ConfigExportOptions struct {
 	Shell string
 }
 
-func ExportAction(ctx *cli.Context) error {
+func ConfigExportAction(ctx *cli.Context) error {
 
 	resolver, err := app.GetResolver(ctx)
 	if err != nil {
@@ -41,8 +41,8 @@ func ExportAction(ctx *cli.Context) error {
 	if ctx.Args().Len() < 1 {
 		return fmt.Errorf("expected <shell> argument")
 	}
-	cmd := &ExportCommand{
-		Options: ExportOptions{
+	cmd := &ConfigExportCommand{
+		Options: ConfigExportOptions{
 			Shell: ctx.Args().Get(0),
 		},
 	}
@@ -53,7 +53,7 @@ func ExportAction(ctx *cli.Context) error {
 	return cmd.Execute()
 }
 
-func (cmd *ExportCommand) Execute() error {
+func (cmd *ConfigExportCommand) Execute() error {
 	changes, err := cmd.Diff.Execute()
 	if err != nil {
 		return err

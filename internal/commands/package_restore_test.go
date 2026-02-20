@@ -7,13 +7,12 @@ import (
 	"github.com/patrickhuber/go-di"
 	"github.com/patrickhuber/wrangle/internal/bootstrap"
 	"github.com/patrickhuber/wrangle/internal/commands"
-	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/stretchr/testify/require"
 )
 
-func TestListVariables(t *testing.T) {
-	t.Run("lists variables from configuration", func(t *testing.T) {
+func TestPackageRestore(t *testing.T) {
+	t.Run("restores packages from configuration", func(t *testing.T) {
 		h := host.NewTest(platform.Linux, nil, []string{})
 		container := h.Container()
 
@@ -23,18 +22,32 @@ func TestListVariables(t *testing.T) {
 		err = bootstrapService.Execute(&bootstrap.Request{})
 		require.NoError(t, err)
 
-		// Get configuration and add some variables
-		configuration, err := di.Resolve[config.Service](container)
+		cmd := &commands.PackageRestoreCommand{
+			Options: commands.PackageRestoreOptions{
+				Force: false,
+			},
+		}
+
+		err = di.Inject(container, cmd)
 		require.NoError(t, err)
 
-		// Verify we can get the configuration
-		cfg, err := configuration.Get()
+		err = cmd.Execute()
 		require.NoError(t, err)
-		require.NotNil(t, cfg)
+	})
 
-		cmd := &commands.ListVariablesCommand{
-			Options: &commands.ListVariablesOptions{
-				Output: "table",
+	t.Run("restores packages with force", func(t *testing.T) {
+		h := host.NewTest(platform.Linux, nil, []string{})
+		container := h.Container()
+
+		bootstrapService, err := di.Resolve[bootstrap.Service](container)
+		require.NoError(t, err)
+
+		err = bootstrapService.Execute(&bootstrap.Request{})
+		require.NoError(t, err)
+
+		cmd := &commands.PackageRestoreCommand{
+			Options: commands.PackageRestoreOptions{
+				Force: true,
 			},
 		}
 

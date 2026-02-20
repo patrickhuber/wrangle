@@ -12,7 +12,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/fatih/structs v1.1.0
 	github.com/go-git/go-billy/v5 v5.6.2
-	github.com/go-git/go-git/v5 v5.16.2
+	github.com/go-git/go-git/v5 v5.16.5
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/go-github/v62 v62.0.0
 	github.com/hashicorp/vault/api v1.22.0
