@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"text/template"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/resource/githubrelease"
 )
@@ -117,15 +118,20 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 		return 0, fmt.Errorf("error checking versions for %s: %w", item.Package.Name, err)
 	}
 
-	// collect versions newer than current
+	// collect versions newer than current, using semver to find the true latest
 	newVersions := []string{}
+	var latestSemver *semver.Version
 	latestVersion := currentVersion
 	for _, v := range checkResp.Versions {
 		if v.ID == currentVersion {
 			continue
 		}
 		newVersions = append(newVersions, v.ID)
-		latestVersion = v.ID
+		sv, err := semver.NewVersion(v.ID)
+		if err == nil && (latestSemver == nil || sv.GreaterThan(latestSemver)) {
+			latestSemver = sv
+			latestVersion = v.ID
+		}
 	}
 
 	if len(newVersions) == 0 {
