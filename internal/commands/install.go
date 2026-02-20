@@ -17,7 +17,20 @@ var Install = &cli.Command{
 	CustomHelpTemplate: CommandHelpTemplate,
 	Description:        "Installs the specified package",
 	Usage:              "install the specified package",
-	Hidden:             true,
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "version",
+			Aliases: []string{"v"},
+			Usage:   "version of the package to install (default: latest)",
+			Value:   "",
+		},
+		&cli.BoolFlag{
+			Name:    "force",
+			Aliases: []string{"f"},
+			Usage:   "force reinstall if already installed",
+			Value:   false,
+		},
+	},
 }
 
 type InstallCommand struct {
@@ -27,12 +40,16 @@ type InstallCommand struct {
 
 type InstallOptions struct {
 	Package string `position:"0"`
+	Version string `flag:"version"`
+	Force   bool   `flag:"force"`
 }
 
 func (cmd *InstallCommand) Execute() error {
 
 	request := &install.Request{
 		Package: cmd.Options.Package,
+		Version: cmd.Options.Version,
+		Force:   cmd.Options.Force,
 	}
 	return cmd.Install.Execute(request)
 }
@@ -52,6 +69,8 @@ func InstallAction(ctx *cli.Context) error {
 	cmd := &InstallCommand{
 		Options: InstallOptions{
 			Package: pkg,
+			Version: ctx.String("version"),
+			Force:   ctx.Bool("force"),
 		},
 	}
 

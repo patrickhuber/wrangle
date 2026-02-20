@@ -330,3 +330,136 @@ func RunInstallWithForceTest(t *testing.T, plat platform.Platform, force bool) {
 	require.NoError(t, err)
 	require.True(t, ok, "file '%s' not found", packageVersionFileLocation)
 }
+
+func TestInstallUpdatesLocalConfig(t *testing.T) {
+	platforms := []platform.Platform{
+		platform.Linux,
+		platform.Darwin,
+		platform.Windows,
+	}
+	for _, plat := range platforms {
+		t.Run(plat.String(), func(t *testing.T) {
+			RunInstallUpdatesLocalConfigTest(t, plat)
+		})
+	}
+}
+
+func RunInstallUpdatesLocalConfigTest(t *testing.T, plat platform.Platform) {
+	packageName := "test"
+	packageVersion := "1.0.0"
+
+	target := cross.NewTest(plat, arch.AMD64)
+	err := fixtures.Apply(target.OS(), target.FS(), target.Env())
+	require.NoError(t, err)
+
+	root, err := config.GetRoot(target.Env(), target.Path(), plat)
+	require.NoError(t, err)
+
+	packagesDir := config.GetDefaultPackagesPath(target.Path(), root)
+	appName, err := config.GetAppName("test", plat)
+	require.NoError(t, err)
+
+	cfg := config.Config{
+		Spec: config.Spec{
+			Environment: map[string]string{
+				global.EnvPackages: packagesDir,
+			},
+			Feeds: []config.Feed{
+				{
+					Name: feedmemory.ProviderType,
+					Type: feedmemory.ProviderType,
+				},
+			},
+		},
+	}
+
+	metadataProvider := actions.NewMetadataProvider(target.Path())
+	logger := log.Default(log.WithLevel(log.DebugLevel))
+	configuration := config.NewMock(cfg)
+	oldFiles := oldfile.NewManager(target.FS(), target.Path())
+	shimService := shim.NewService(target.FS(), target.Path(), configuration, oldFiles, logger)
+
+	service := install.NewService(
+		target.FS(),
+		feed.NewServiceFactory(feedmemory.NewProvider(logger, []*feed.Item{
+			{
+				State: &feed.State{
+					LatestVersion: packageVersion,
+				},
+				Package: &packages.Package{
+					Name: packageName,
+					Versions: []*packages.Version{
+						{
+							Version: packageVersion,
+							Manifest: &packages.Manifest{
+								Package: &packages.ManifestPackage{
+									Name:    packageName,
+									Version: packageVersion,
+									Targets: []*packages.ManifestTarget{
+										{
+											Platform:     plat,
+											Architecture: arch.AMD64,
+											Steps: []*packages.ManifestStep{
+												{
+													Action: "move",
+													With: map[string]any{
+														"source":      appName,
+														"destination": appName,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}...)),
+		actions.NewRunner(
+			actions.NewFactory(
+				actions.NewMoveProvider(target.FS(), target.Path(), logger),
+			)),
+		target.OS(),
+		configuration,
+		metadataProvider,
+		target.Path(),
+		oldFiles,
+		shimService,
+		target.Console(),
+		logger)
+
+	// write out package file
+	metadata := metadataProvider.Get(&cfg, packageName, packageVersion)
+	packageVersionFileLocation := target.Path().Join(metadata.PackageVersionPath, appName)
+	target.FS().WriteFile(packageVersionFileLocation, []byte("test"), 0644)
+
+	// write out a local wrangle config file in the working directory
+	workDir, err := target.OS().WorkingDirectory()
+	require.NoError(t, err)
+	localConfigFile := target.Path().Join(workDir, global.LocalConfigurationFileName)
+	localCfg := config.Config{
+		ApiVersion: config.ApiVersion,
+		Kind:       config.Kind,
+		Spec: config.Spec{
+			Packages: []config.Package{},
+		},
+	}
+	err = config.WriteFile(target.FS(), localConfigFile, localCfg)
+	require.NoError(t, err)
+
+	req := &install.Request{
+		Package: packageName,
+		Version: packageVersion,
+	}
+	err = service.Execute(req)
+	require.NoError(t, err)
+
+	// verify the local config was updated
+	updatedCfg, err := config.ReadFile(target.FS(), localConfigFile)
+	require.NoError(t, err)
+	require.Len(t, updatedCfg.Spec.Packages, 1)
+	require.Equal(t, packageName, updatedCfg.Spec.Packages[0].Name)
+	require.Equal(t, packageVersion, updatedCfg.Spec.Packages[0].Version)
+}
