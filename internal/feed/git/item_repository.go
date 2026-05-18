@@ -60,8 +60,8 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 	r.logger.Tracef("itemRepository.Get %s", name)
 	packagePath := r.path.Join(r.workingDirectory, name)
 	_, err := r.fs.Stat(packagePath)
-	if errors.Is(fs.ErrNotExist, err) {
-		return nil, fmt.Errorf("%w : %w", feed.ErrNotFound, err)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("%w : package %s %w", feed.ErrNotFound, name, err)
 	}
 
 	if err != nil {
@@ -162,7 +162,11 @@ func (r *itemRepository) GetItemPath(name string) string {
 func (r *itemRepository) readFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
 	filePath := r.path.Join(itemPath, fileName)
-	return util.ReadFile(r.fs, filePath)
+	data, err := util.ReadFile(r.fs, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s for package %s: %w", fileName, name, err)
+	}
+	return data, nil
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {

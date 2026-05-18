@@ -2,6 +2,7 @@ package fs
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -144,7 +145,7 @@ func (r *itemRepository) GetObject(name string, file string, out any) error {
 	itemPath := r.GetItemPath(name)
 	data, err := r.fs.ReadFile(r.path.Join(itemPath, file))
 	if err != nil {
-		return err
+		return fmt.Errorf("reading %s for package %s: %w", file, name, err)
 	}
 
 	// validate with mapstructure package
@@ -174,7 +175,11 @@ func (r *itemRepository) GetObject(name string, file string, out any) error {
 
 func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
-	return r.fs.ReadFile(r.path.Join(itemPath, fileName))
+	data, err := r.fs.ReadFile(r.path.Join(itemPath, fileName))
+	if err != nil {
+		return nil, fmt.Errorf("reading %s for package %s: %w", fileName, name, err)
+	}
+	return data, nil
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {
