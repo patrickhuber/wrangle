@@ -90,13 +90,14 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		}
 		item.Template = template
 	}
-	if include.Resource {
-		resource, err := r.GetResource(name)
-		if err != nil {
-			return nil, err
-		}
-		item.Resource = resource
+	if !include.Resource {
+		return item, nil
 	}
+	resource, err := r.GetResource(name)
+	if err != nil {
+		return nil, err
+	}
+	item.Resource = resource
 	return item, nil
 }
 
