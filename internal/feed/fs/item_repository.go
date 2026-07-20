@@ -1,6 +1,10 @@
 package fs
 
 import (
+	"errors"
+	"fmt"
+	"os"
+
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-cross/filepath"
 
@@ -12,6 +16,7 @@ import (
 
 const (
 	PlatformsFile = "platforms.yml"
+	ResourceFile  = "resource.yml"
 	StateFile     = "state.yml"
 	TemplateFile  = "template.yml"
 )
@@ -59,6 +64,7 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		Platforms: true,
 		State:     true,
 		Template:  true,
+		Resource:  true,
 	}
 	for _, option := range options {
 		option(include)
@@ -84,6 +90,14 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		}
 		item.Template = template
 	}
+	if !include.Resource {
+		return item, nil
+	}
+	resource, err := r.GetResource(name)
+	if err != nil {
+		return nil, err
+	}
+	item.Resource = resource
 	return item, nil
 }
 
@@ -109,6 +123,21 @@ func (r *itemRepository) GetTemplate(name string) (string, error) {
 	return string(data), err
 }
 
+func (r *itemRepository) GetResource(name string) (*feed.ResourceConfig, error) {
+	data, err := r.ReadFile(name, ResourceFile)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	wrapper := &feed.ItemResourceFile{}
+	if err := yaml.Unmarshal(data, wrapper); err != nil {
+		return nil, err
+	}
+	return wrapper.Resource, nil
+}
+
 func (r *itemRepository) GetItemPath(name string) string {
 	return r.path.Join(r.workingDirectory, name)
 }
@@ -117,7 +146,7 @@ func (r *itemRepository) GetObject(name string, file string, out any) error {
 	itemPath := r.GetItemPath(name)
 	data, err := r.fs.ReadFile(r.path.Join(itemPath, file))
 	if err != nil {
-		return err
+		return fmt.Errorf("reading %s for package %s: %w", file, name, err)
 	}
 
 	// validate with mapstructure package
@@ -147,7 +176,11 @@ func (r *itemRepository) GetObject(name string, file string, out any) error {
 
 func (r *itemRepository) ReadFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
-	return r.fs.ReadFile(r.path.Join(itemPath, fileName))
+	data, err := r.fs.ReadFile(r.path.Join(itemPath, fileName))
+	if err != nil {
+		return nil, fmt.Errorf("reading %s for package %s: %w", fileName, name, err)
+	}
+	return data, nil
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {

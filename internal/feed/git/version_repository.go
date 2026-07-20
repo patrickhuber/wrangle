@@ -132,6 +132,17 @@ func (s *versionRepository) Save(name string, version *packages.Version) error {
 	return util.WriteFile(s.fs, versionPackagePath, content, 0644)
 }
 
+func (s *versionRepository) SaveRaw(name string, version string, data []byte) error {
+	s.logger.Tracef("versionRepository.SaveRaw %s@%s", name, version)
+	versionPath := s.path.Join(s.workingDirectory, name, version)
+	err := s.fs.MkdirAll(versionPath, 0775)
+	if err != nil {
+		return err
+	}
+	versionPackagePath := s.path.Join(versionPath, "package.yml")
+	return util.WriteFile(s.fs, versionPackagePath, data, 0644)
+}
+
 func (s *versionRepository) Remove(name string, version string) error {
 	path := s.path.Join(s.workingDirectory, name, version)
 	return s.fs.Remove(path)

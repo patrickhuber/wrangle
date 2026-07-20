@@ -22,6 +22,7 @@ type ReadService interface {
 
 type WriteService interface {
 	Update(request *UpdateRequest) (*UpdateResponse, error)
+	SaveVersion(packageName string, version string, data []byte) error
 }
 
 type GeneratorService interface {
@@ -208,6 +209,10 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 			return nil, err
 		}
 		if changed {
+			err = s.itemRepository.Save(item, ItemSaveState(true), ItemSavePlatforms(false), ItemSaveTemplate(false))
+			if err != nil {
+				return nil, err
+			}
 			updateCount++
 		}
 	}
@@ -409,6 +414,11 @@ func (s *service) RemoveTargets(version *packages.Version, remove []*PlatformArc
 
 func (s *service) RemoveVersions(name string, removals []string) (bool, error) {
 	return false, nil
+}
+
+func (s *service) SaveVersion(packageName string, version string, data []byte) error {
+	s.logger.Tracef("feedService.SaveVersion %s@%s", packageName, version)
+	return s.versionRepository.SaveRaw(packageName, version, data)
 }
 
 func (s *service) Generate(request *GenerateRequest) (*GenerateResponse, error) {

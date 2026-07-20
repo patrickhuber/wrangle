@@ -11,9 +11,8 @@ import (
 
 // get subcommand
 var Version = &cli.Command{
-	Name:               "version",
-	Action:             VersionAction,
-	CustomHelpTemplate: CommandHelpTemplate,
+	Name:   "version",
+	Action: VersionAction,
 }
 
 func VersionAction(ctx *cli.Context) error {

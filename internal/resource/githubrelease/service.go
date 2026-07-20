@@ -48,7 +48,16 @@ func (s *service) Check(request *CheckRequest) (*CheckResponse, error) {
 		return nil, err
 	}
 
-	re, err := regexp.Compile(request.Source.TagFilter)
+	// use VersionRegex if TagFilter is not set
+	tagFilter := request.Source.TagFilter
+	if tagFilter == "" {
+		tagFilter = request.Source.VersionRegex
+	}
+	if tagFilter == "" {
+		tagFilter = ".*"
+	}
+
+	re, err := regexp.Compile(tagFilter)
 	if err != nil {
 		return nil, err
 	}
