@@ -209,7 +209,7 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 			return nil, err
 		}
 		if changed {
-			err = s.itemRepository.Save(item, ItemSaveState(true), ItemSavePlatforms(false), ItemSaveTemplate(false))
+			err = s.itemRepository.Save(item, ItemSaveState(true), ItemSavePlatforms(false), ItemSaveTemplate(modify.Template != nil))
 			if err != nil {
 				return nil, err
 			}
