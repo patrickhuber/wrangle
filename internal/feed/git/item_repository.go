@@ -138,8 +138,10 @@ func (r *itemRepository) getTemplate(packageName string) (string, error) {
 func (r *itemRepository) getResource(packageName string) (*feed.ResourceConfig, error) {
 	content, err := r.readFile(packageName, ResourceFile)
 	if err != nil {
-		// resource.yml is optional
-		return nil, nil
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
 	}
 	wrapper := &feed.ItemResourceFile{}
 	if err := yaml.Unmarshal(content, wrapper); err != nil {
