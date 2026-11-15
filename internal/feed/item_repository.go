@@ -3,9 +3,11 @@ package feed
 import "fmt"
 
 type ItemGetInclude struct {
-	Platforms bool
-	State     bool
-	Template  bool
+	Platforms          bool
+	State              bool
+	StateOptional      bool
+	Template           bool
+	Resource           bool
 }
 
 type ItemGetOption func(*ItemGetInclude)
@@ -15,6 +17,7 @@ func ItemGetAll(load bool) ItemGetOption {
 		o.Platforms = load
 		o.State = load
 		o.Template = load
+		o.Resource = load
 	}
 }
 
@@ -30,9 +33,21 @@ func ItemGetState(load bool) ItemGetOption {
 	}
 }
 
+func ItemGetStateOptional() ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.StateOptional = true
+	}
+}
+
 func ItemGetTemplate(load bool) ItemGetOption {
 	return func(o *ItemGetInclude) {
 		o.Template = load
+	}
+}
+
+func ItemGetResource(load bool) ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.Resource = load
 	}
 }
 
@@ -46,17 +61,17 @@ type ItemSaveOption func(*ItemSaveInclude)
 
 func ItemSavePlatforms(save bool) ItemSaveOption {
 	return func(i *ItemSaveInclude) {
-		i.Platforms = true
+		i.Platforms = save
 	}
 }
 func ItemSaveState(save bool) ItemSaveOption {
 	return func(i *ItemSaveInclude) {
-		i.Platforms = true
+		i.State = save
 	}
 }
 func ItemSaveTemplate(save bool) ItemSaveOption {
 	return func(i *ItemSaveInclude) {
-		i.Template = true
+		i.Template = save
 	}
 }
 

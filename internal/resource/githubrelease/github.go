@@ -21,6 +21,15 @@ type ListRequest struct {
 	Repository string
 }
 
+// NewGitHubClient creates a new GitHub client, optionally authenticated with a token.
+func NewGitHubClient(token string) GitHub {
+	client := github.NewClient(nil)
+	if token != "" {
+		client = client.WithAuthToken(token)
+	}
+	return &githubClient{client: client}
+}
+
 func (g *githubClient) ListReleases(request *ListRequest) ([]*github.RepositoryRelease, error) {
 	listOptions := &github.ListOptions{PerPage: 100}
 

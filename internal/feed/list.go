@@ -1,8 +1,9 @@
 package feed
 
 type ListRequest struct {
-	Where  []*ItemReadAnyOf
-	Expand *ItemReadExpand
+	Where             []*ItemReadAnyOf
+	Expand            *ItemReadExpand
+	AllowMissingState bool
 }
 
 type ItemReadAnyOf struct {

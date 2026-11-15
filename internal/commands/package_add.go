@@ -10,11 +10,10 @@ import (
 )
 
 var PackageAdd = &cli.Command{
-	Name:               "add",
-	Action:             PackageAddAction,
-	CustomHelpTemplate: CommandHelpTemplate,
-	Description:        "Adds a package to the local configuration file without installing it",
-	Usage:              "add a package to the local configuration",
+	Name:        "add",
+	Action:      PackageAddAction,
+	Description: "Adds a package to the local configuration file without installing it",
+	Usage:       "add a package to the local configuration",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "version",

@@ -29,19 +29,23 @@ func NewVersionRepository(fs fs.FS, path filepath.Provider, workingDirectory str
 }
 
 func (r *versionRepository) Save(name string, version *packages.Version) error {
-	versionPath := r.GetVersionFolderPath(name, version.Version)
-	err := r.fs.MkdirAll(versionPath, 0775)
+	data, err := yaml.Marshal(version.Manifest)
 	if err != nil {
 		return err
 	}
-	versionFile := r.GetVersionFilePath(name, version.Version)
-	manifest := version.Manifest
+	return r.writeVersionFile(name, version.Version, data)
+}
 
-	data, err := yaml.Marshal(manifest)
-	if err != nil {
+func (r *versionRepository) SaveRaw(name string, version string, data []byte) error {
+	return r.writeVersionFile(name, version, data)
+}
+
+func (r *versionRepository) writeVersionFile(name string, version string, data []byte) error {
+	versionPath := r.GetVersionFolderPath(name, version)
+	if err := r.fs.MkdirAll(versionPath, 0775); err != nil {
 		return err
 	}
-	return r.fs.WriteFile(versionFile, data, 0644)
+	return r.fs.WriteFile(r.GetVersionFilePath(name, version), data, 0644)
 }
 
 func (r *versionRepository) Get(name string, version string) (*packages.Version, error) {

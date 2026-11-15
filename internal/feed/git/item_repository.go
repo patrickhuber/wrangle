@@ -16,6 +16,7 @@ import (
 
 const (
 	PlatformsFile = "platforms.yml"
+	ResourceFile  = "resource.yml"
 	StateFile     = "state.yml"
 	TemplateFile  = "template.yml"
 )
@@ -59,8 +60,8 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 	r.logger.Tracef("itemRepository.Get %s", name)
 	packagePath := r.path.Join(r.workingDirectory, name)
 	_, err := r.fs.Stat(packagePath)
-	if errors.Is(fs.ErrNotExist, err) {
-		return nil, fmt.Errorf("%w : %w", feed.ErrNotFound, err)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("%w : package %s %w", feed.ErrNotFound, name, err)
 	}
 
 	if err != nil {
@@ -75,6 +76,7 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		Platforms: true,
 		State:     true,
 		Template:  true,
+		Resource:  true,
 	}
 	for _, option := range options {
 		option(include)
@@ -89,9 +91,12 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 	if include.State {
 		state, err := r.getState(name)
 		if err != nil {
-			return nil, err
+			if !include.StateOptional || !errors.Is(err, fs.ErrNotExist) {
+				return nil, err
+			}
+		} else {
+			item.State = state
 		}
-		item.State = state
 	}
 	if include.Template {
 		template, err := r.getTemplate(name)
@@ -100,6 +105,14 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 		}
 		item.Template = template
 	}
+	if !include.Resource {
+		return item, nil
+	}
+	resource, err := r.getResource(name)
+	if err != nil {
+		return nil, err
+	}
+	item.Resource = resource
 	return item, nil
 }
 
@@ -125,6 +138,21 @@ func (r *itemRepository) getTemplate(packageName string) (string, error) {
 	return string(content), nil
 }
 
+func (r *itemRepository) getResource(packageName string) (*feed.ResourceConfig, error) {
+	content, err := r.readFile(packageName, ResourceFile)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	wrapper := &feed.ItemResourceFile{}
+	if err := yaml.Unmarshal(content, wrapper); err != nil {
+		return nil, err
+	}
+	return wrapper.Resource, nil
+}
+
 func (r *itemRepository) getObject(packageName, fileName string, out any) error {
 	content, err := r.readFile(packageName, fileName)
 	if err != nil {
@@ -140,11 +168,11 @@ func (r *itemRepository) GetItemPath(name string) string {
 func (r *itemRepository) readFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
 	filePath := r.path.Join(itemPath, fileName)
-	content, err := util.ReadFile(r.fs, filePath)
+	data, err := util.ReadFile(r.fs, filePath)
 	if err != nil {
-		return nil, fmt.Errorf("read feed file %q: %w", filePath, err)
+		return nil, fmt.Errorf("reading %s for package %s: %w", filePath, name, err)
 	}
-	return content, nil
+	return data, nil
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {

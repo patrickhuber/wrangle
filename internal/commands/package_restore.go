@@ -10,11 +10,10 @@ import (
 )
 
 var PackageRestore = &cli.Command{
-	Name:               "restore",
-	Action:             PackageRestoreAction,
-	CustomHelpTemplate: CommandHelpTemplate,
-	Description:        "Restores all packages defined in the configuration",
-	Usage:              "restore packages from configuration",
+	Name:        "restore",
+	Action:      PackageRestoreAction,
+	Description: "Restores all packages defined in the configuration",
+	Usage:       "restore packages from configuration",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",

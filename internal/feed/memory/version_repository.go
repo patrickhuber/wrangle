@@ -72,6 +72,11 @@ func (r *versionRepository) Save(name string, version *packages.Version) error {
 	return nil
 }
 
+func (r *versionRepository) SaveRaw(name string, version string, data []byte) error {
+	// memory repository is for testing; skip raw save (SaveRaw is a no-op in memory)
+	return nil
+}
+
 func (r *versionRepository) Remove(name string, version string) error {
 	item, ok := r.items[name]
 	if !ok {

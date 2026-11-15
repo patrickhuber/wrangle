@@ -12,11 +12,10 @@ import (
 
 // install subcommand
 var PackageInstall = &cli.Command{
-	Name:               "install",
-	Action:             PackageInstallAction,
-	CustomHelpTemplate: CommandHelpTemplate,
-	Description:        "Installs the specified package",
-	Usage:              "install the specified package and adds it to the local configuration",
+	Name:        "install",
+	Action:      PackageInstallAction,
+	Description: "Installs the specified package",
+	Usage:       "install the specified package and adds it to the local configuration",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "version",

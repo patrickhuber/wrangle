@@ -12,11 +12,10 @@ import (
 
 // SecretGet is the get subcommand for secret operations
 var SecretGet = &cli.Command{
-	Name:               "get",
-	Action:             SecretGetAction,
-	Description:        "get the specified secret",
-	Usage:              "get the specified secret",
-	CustomHelpTemplate: CommandHelpTemplate,
+	Name:        "get",
+	Action:      SecretGetAction,
+	Description: "get the specified secret",
+	Usage:       "get the specified secret",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "key",

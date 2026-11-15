@@ -47,6 +47,20 @@ func TestItemRepositoryMissingMetadata(t *testing.T) {
 	}
 }
 
+func TestItemRepositoryListAllowsMissingState(t *testing.T) {
+	filesystem := memfs.New()
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	repo := git.NewItemRepository(filesystem, h.Path(), log.Memory(), "/feed")
+	require.NoError(t, filesystem.MkdirAll("/feed/example", 0755))
+	for _, name := range []string{"platforms.yml", "template.yml"} {
+		require.NoError(t, util.WriteFile(filesystem, "/feed/example/"+name, []byte("{}"), 0644))
+	}
+
+	items, err := repo.List(feed.ItemGetStateOptional())
+	require.NoError(t, err)
+	require.Nil(t, items[0].State)
+}
+
 func TestItemRepositoryMissingFeedDirectory(t *testing.T) {
 	h := cross.NewTest(platform.Linux, arch.AMD64)
 	repo := git.NewItemRepository(memfs.New(), h.Path(), log.Memory(), "/missing-feed")
