@@ -39,7 +39,7 @@ func NewItemRepository(fs billy.Filesystem, path filepath.Provider, logger log.L
 func (r *itemRepository) List(options ...feed.ItemGetOption) ([]*feed.Item, error) {
 	files, err := r.fs.ReadDir(r.workingDirectory)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read feed directory %q: %w", r.workingDirectory, err)
 	}
 	items := []*feed.Item{}
 	for _, f := range files {
@@ -140,7 +140,11 @@ func (r *itemRepository) GetItemPath(name string) string {
 func (r *itemRepository) readFile(name, fileName string) ([]byte, error) {
 	itemPath := r.GetItemPath(name)
 	filePath := r.path.Join(itemPath, fileName)
-	return util.ReadFile(r.fs, filePath)
+	content, err := util.ReadFile(r.fs, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("read feed file %q: %w", filePath, err)
+	}
+	return content, nil
 }
 
 func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) error {

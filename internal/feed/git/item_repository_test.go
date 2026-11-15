@@ -1,9 +1,11 @@
 package git_test
 
 import (
+	"io/fs"
 	"testing"
 
 	"github.com/go-git/go-billy/v5/memfs"
+	"github.com/go-git/go-billy/v5/util"
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/platform"
@@ -23,6 +25,35 @@ func TestItemRepository(t *testing.T) {
 		repo := setupItemRepository(t)
 		conformance.CanGetItem(t, repo)
 	})
+}
+
+func TestItemRepositoryMissingMetadata(t *testing.T) {
+	for _, missing := range []string{"platforms.yml", "state.yml", "template.yml"} {
+		t.Run(missing, func(t *testing.T) {
+			filesystem := memfs.New()
+			h := cross.NewTest(platform.Linux, arch.AMD64)
+			repo := git.NewItemRepository(filesystem, h.Path(), log.Memory(), "/feed")
+			require.NoError(t, filesystem.MkdirAll("/feed/example", 0755))
+			for _, name := range []string{"platforms.yml", "state.yml", "template.yml"} {
+				if name != missing {
+					require.NoError(t, util.WriteFile(filesystem, "/feed/example/"+name, []byte("{}"), 0644))
+				}
+			}
+
+			_, err := repo.List()
+			require.ErrorIs(t, err, fs.ErrNotExist)
+			require.ErrorContains(t, err, "/feed/example/"+missing)
+		})
+	}
+}
+
+func TestItemRepositoryMissingFeedDirectory(t *testing.T) {
+	h := cross.NewTest(platform.Linux, arch.AMD64)
+	repo := git.NewItemRepository(memfs.New(), h.Path(), log.Memory(), "/missing-feed")
+
+	_, err := repo.List()
+	require.ErrorIs(t, err, fs.ErrNotExist)
+	require.ErrorContains(t, err, "/missing-feed")
 }
 
 func setupItemRepository(t *testing.T) feed.ItemRepository {

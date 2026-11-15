@@ -53,12 +53,12 @@ func (svc *listPackages) Execute(r *ListPackagesRequest) (*ListPackagesResponse,
 	for _, f := range cfg.Spec.Feeds {
 		feedSvc, err := svc.serviceFactory.Create(f)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("create feed %q: %w", f.Name, err)
 		}
 
 		response, err := feedSvc.List(query)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list packages in feed %q: %w", f.Name, err)
 		}
 		if len(response.Items) == 0 {
 			continue
