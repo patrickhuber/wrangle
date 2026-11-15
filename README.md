@@ -92,16 +92,16 @@ Remove-Item README.md
 Once wrangle is installed you can install the latest package with the install command.
 
 ```bash
-wrangle package install yq
+wrangle install yq
 ```
 
 or a specific version
 
 ```
-wrangle package install yq@4.31.1
+wrangle install yq --version 4.31.1
 ```
 
-You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle package restore` command.
+The same command is also available as `wrangle package install`. You can install packages by creating a .wrangle(.yml|.json) file in the directory and running `wrangle package restore`.
 
 > .wrangle.yml
 

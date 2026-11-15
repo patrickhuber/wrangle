@@ -10,27 +10,33 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// install subcommand
-var PackageInstall = &cli.Command{
-	Name:               "install",
-	Action:             PackageInstallAction,
-	CustomHelpTemplate: CommandHelpTemplate,
-	Description:        "Installs the specified package",
-	Usage:              "install the specified package and adds it to the local configuration",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "version",
-			Aliases: []string{"v"},
-			Usage:   "version of the package to install (default: latest)",
-			Value:   "",
+// install commands
+var PackageInstall = newPackageInstallCommand()
+
+var Install = newPackageInstallCommand()
+
+func newPackageInstallCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "install",
+		Action:             PackageInstallAction,
+		CustomHelpTemplate: CommandHelpTemplate,
+		Description:        "Installs the specified package",
+		Usage:              "install the specified package and adds it to the local configuration",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "version",
+				Aliases: []string{"v"},
+				Usage:   "version of the package to install (default: latest)",
+				Value:   "",
+			},
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "force reinstall if already installed",
+				Value:   false,
+			},
 		},
-		&cli.BoolFlag{
-			Name:    "force",
-			Aliases: []string{"f"},
-			Usage:   "force reinstall if already installed",
-			Value:   false,
-		},
-	},
+	}
 }
 
 type PackageInstallCommand struct {

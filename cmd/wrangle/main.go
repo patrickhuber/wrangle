@@ -21,6 +21,17 @@ import (
 // set with -ldflags
 var version = ""
 
+var rootCommands = []*cli.Command{
+	commands.Bootstrap,
+	commands.Install,
+	commands.Package,
+	commands.Feed,
+	commands.Variable,
+	commands.Secret,
+	commands.Config,
+	commands.Shell,
+}
+
 func main() {
 	h := host.New()
 
@@ -108,15 +119,7 @@ func main() {
 	}
 
 	// register
-	app.Commands = []*cli.Command{
-		commands.Bootstrap,
-		commands.Package,
-		commands.Feed,
-		commands.Variable,
-		commands.Secret,
-		commands.Config,
-		commands.Shell,
-	}
+	app.Commands = rootCommands
 
 	// this is a hack to get global options printed in the commands
 	// see https://github.com/urfave/cli/issues/734#issuecomment-597344796
