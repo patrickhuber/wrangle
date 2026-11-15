@@ -170,7 +170,7 @@ func (r *itemRepository) readFile(name, fileName string) ([]byte, error) {
 	filePath := r.path.Join(itemPath, fileName)
 	data, err := util.ReadFile(r.fs, filePath)
 	if err != nil {
-		return nil, fmt.Errorf("reading %s for package %s: %w", fileName, name, err)
+		return nil, fmt.Errorf("reading %s for package %s: %w", filePath, name, err)
 	}
 	return data, nil
 }
