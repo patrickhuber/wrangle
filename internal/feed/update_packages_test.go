@@ -37,7 +37,6 @@ func TestUpdatePackages(t *testing.T) {
     repository: testrepo
     version-regex: '[0-9]+\.[0-9]+\.[0-9]+'
 `), 0644))
-		require.NoError(t, fs.WriteFile(itemDir+"/state.yml", []byte("version: 1.0.0\n"), 0644))
 		require.NoError(t, fs.WriteFile(itemDir+"/template.yml", []byte(`package:
   name: testpkg
   version: {{ .version }}
@@ -86,7 +85,7 @@ func TestUpdatePackages(t *testing.T) {
 		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
 		require.NoError(t, err)
 		require.NotNil(t, resp)
-		require.Equal(t, 1, resp.Updated)
+		require.Equal(t, 2, resp.Updated)
 
 		// Verify the new version file was created
 		versionFile := workDir + "/testpkg/1.1.0/package.yml"

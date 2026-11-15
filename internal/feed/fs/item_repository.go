@@ -79,9 +79,12 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 	if include.State {
 		state, err := r.GetState(name)
 		if err != nil {
-			return nil, err
+			if !include.StateOptional || !errors.Is(err, os.ErrNotExist) {
+				return nil, err
+			}
+		} else {
+			item.State = state
 		}
-		item.State = state
 	}
 	if include.Template {
 		template, err := r.GetTemplate(name)

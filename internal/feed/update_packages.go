@@ -77,7 +77,7 @@ func (u *updatePackages) Execute(r *UpdatePackagesRequest) (*UpdatePackagesRespo
 }
 
 func (u *updatePackages) updateFeed(feedSvc Service) (int, error) {
-	items, err := feedSvc.List(&ListRequest{})
+	items, err := feedSvc.List(&ListRequest{AllowMissingState: true})
 	if err != nil {
 		return 0, err
 	}

@@ -107,11 +107,15 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 func (s *service) listItems(request *ListRequest) ([]*Item, error) {
 	s.logger.Tracef("feedService.GetItems")
 	names := s.getNames(request)
+	options := []ItemGetOption{}
+	if request.AllowMissingState {
+		options = append(options, ItemGetStateOptional())
+	}
 	var items []*Item
 	var err error
 
 	if len(names) == 0 {
-		items, err = s.itemRepository.List()
+		items, err = s.itemRepository.List(options...)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +124,7 @@ func (s *service) listItems(request *ListRequest) ([]*Item, error) {
 			if !IsMatch(request.Where, name) {
 				continue
 			}
-			item, err := s.itemRepository.Get(name)
+			item, err := s.itemRepository.Get(name, options...)
 			if err != nil {
 				return nil, err
 			}
@@ -195,7 +199,11 @@ func (s *service) Update(request *UpdateRequest) (*UpdateResponse, error) {
 
 	for _, modify := range request.Items.Modify {
 
-		item, err := s.itemRepository.Get(modify.Name)
+		options := []ItemGetOption{}
+		if modify.State != nil {
+			options = append(options, ItemGetStateOptional())
+		}
+		item, err := s.itemRepository.Get(modify.Name, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -229,10 +237,14 @@ func (s *service) modifyItem(item *Item, modify *ItemModify) (bool, error) {
 	}
 	modified := false
 	if modify.State != nil &&
-		modify.State.LatestVersion != nil &&
-		item.State.LatestVersion != *modify.State.LatestVersion {
-		item.State.LatestVersion = *modify.State.LatestVersion
-		modified = true
+		modify.State.LatestVersion != nil {
+		if item.State == nil {
+			item.State = &State{}
+		}
+		if item.State.LatestVersion != *modify.State.LatestVersion {
+			item.State.LatestVersion = *modify.State.LatestVersion
+			modified = true
+		}
 	}
 
 	if modify.Template != nil &&
