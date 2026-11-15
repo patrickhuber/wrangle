@@ -50,7 +50,8 @@ func TestUpdatePackages(t *testing.T) {
         url: https://example.com/testpkg-{{ $.version }}.tar.gz
   {{ end -}}
 `), 0644))
-		require.NoError(t, fs.WriteFile(itemDir+"/platforms.yml", []byte(`- platform: linux
+		require.NoError(t, fs.WriteFile(itemDir+"/platforms.yml", []byte(`platforms:
+- platform: linux
   architectures:
   - amd64
 `), 0644))

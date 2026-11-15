@@ -105,11 +105,11 @@ func (r *itemRepository) Get(name string, options ...feed.ItemGetOption) (*feed.
 }
 
 func (r *itemRepository) GetPlatforms(name string) ([]*feed.Platform, error) {
-	platforms := []*feed.Platform{}
-	if err := r.GetObject(name, PlatformsFile, &platforms); err != nil {
+	platforms := &feed.Platforms{}
+	if err := r.GetObject(name, PlatformsFile, platforms); err != nil {
 		return nil, err
 	}
-	return platforms, nil
+	return platforms.Platforms, nil
 }
 
 func (r *itemRepository) GetState(name string) (*feed.State, error) {
@@ -218,7 +218,9 @@ func (r *itemRepository) Save(item *feed.Item, options ...feed.ItemSaveOption) e
 }
 
 func (r *itemRepository) SavePlatforms(name string, platforms []*feed.Platform) error {
-	return r.SaveObject(name, PlatformsFile, platforms)
+	return r.SaveObject(name, PlatformsFile, &feed.Platforms{
+		Platforms: platforms,
+	})
 }
 
 func (r *itemRepository) SaveState(name string, state *feed.State) error {
