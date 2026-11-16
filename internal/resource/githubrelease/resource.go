@@ -3,27 +3,32 @@ package githubrelease
 import "github.com/patrickhuber/wrangle/internal/resource"
 
 type githubReleaseResource struct {
-	name string
-	svc  Service
+	name   string
+	source Source
+	svc    Service
 }
 
-func NewResource(name string, svc Service) resource.Resource {
+func NewResource(name string, source Source, svc Service) resource.Resource {
 	return &githubReleaseResource{
-		name: name,
-		svc:  svc,
+		name:   name,
+		source: source,
+		svc:    svc,
 	}
 }
 
 func (r *githubReleaseResource) Type() string {
-	return "githubrelease"
+	return "github-release"
 }
 
 func (r *githubReleaseResource) Name() string {
 	return r.name
 }
 
-func (r *githubReleaseResource) Versions() ([]string, error) {
-	request := &CheckRequest{}
+func (r *githubReleaseResource) Versions(currentVersion string) ([]string, error) {
+	request := &CheckRequest{
+		Source:  r.source,
+		Version: Version{ID: currentVersion},
+	}
 	response, err := r.svc.Check(request)
 	if err != nil {
 		return nil, err

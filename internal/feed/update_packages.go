@@ -7,7 +7,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/patrickhuber/wrangle/internal/config"
-	"github.com/patrickhuber/wrangle/internal/resource/githubrelease"
+	"github.com/patrickhuber/wrangle/internal/resource"
 )
 
 // UpdatePackagesRequest contains options for the feed update command
@@ -23,30 +23,17 @@ type UpdatePackages interface {
 	Execute(r *UpdatePackagesRequest) (*UpdatePackagesResponse, error)
 }
 
-// GitHubClientFactory creates a GitHub client, optionally authenticated with a token
-type GitHubClientFactory func(token string) githubrelease.GitHub
-
 type updatePackages struct {
-	serviceFactory      ServiceFactory
-	configuration       config.Service
-	gitHubClientFactory GitHubClientFactory
+	serviceFactory  ServiceFactory
+	configuration   config.Service
+	resourceFactory resource.Factory
 }
 
-// NewUpdatePackages creates a new UpdatePackages service using the default GitHub client
-func NewUpdatePackages(serviceFactory ServiceFactory, configuration config.Service) UpdatePackages {
+func NewUpdatePackages(serviceFactory ServiceFactory, configuration config.Service, resourceFactory resource.Factory) UpdatePackages {
 	return &updatePackages{
-		serviceFactory:      serviceFactory,
-		configuration:       configuration,
-		gitHubClientFactory: githubrelease.NewGitHubClient,
-	}
-}
-
-// NewUpdatePackagesWithGitHubClientFactory creates an UpdatePackages with a custom GitHub client factory (useful for testing)
-func NewUpdatePackagesWithGitHubClientFactory(serviceFactory ServiceFactory, configuration config.Service, factory GitHubClientFactory) UpdatePackages {
-	return &updatePackages{
-		serviceFactory:      serviceFactory,
-		configuration:       configuration,
-		gitHubClientFactory: factory,
+		serviceFactory:  serviceFactory,
+		configuration:   configuration,
+		resourceFactory: resourceFactory,
 	}
 }
 
@@ -97,23 +84,22 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 	if item.Resource == nil {
 		return 0, nil
 	}
-	if item.Resource.Type != "github-release" {
-		return 0, nil
-	}
 
-	source := buildSource(item.Resource)
 	currentVersion := ""
 	if item.State != nil {
 		currentVersion = item.State.LatestVersion
 	}
 
-	client := u.gitHubClientFactory(source.AccessToken)
-	svc := githubrelease.NewService(client)
-
-	checkResp, err := svc.Check(&githubrelease.CheckRequest{
-		Source:  source,
-		Version: githubrelease.Version{ID: currentVersion},
+	resource, err := u.resourceFactory.Create(resource.Config{
+		Name:   item.Resource.Name,
+		Type:   item.Resource.Type,
+		Source: item.Resource.Source,
 	})
+	if err != nil {
+		return 0, fmt.Errorf("create resource for %s: %w", item.Package.Name, err)
+	}
+
+	versions, err := resource.Versions(currentVersion)
 	if err != nil {
 		return 0, fmt.Errorf("error checking versions for %s: %w", item.Package.Name, err)
 	}
@@ -122,15 +108,15 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 	newVersions := []string{}
 	var latestSemver *semver.Version
 	latestVersion := currentVersion
-	for _, v := range checkResp.Versions {
-		if v.ID == currentVersion {
+	for _, version := range versions {
+		if version == currentVersion {
 			continue
 		}
-		newVersions = append(newVersions, v.ID)
-		sv, err := semver.NewVersion(v.ID)
+		newVersions = append(newVersions, version)
+		sv, err := semver.NewVersion(version)
 		if err == nil && (latestSemver == nil || sv.GreaterThan(latestSemver)) {
 			latestSemver = sv
-			latestVersion = v.ID
+			latestVersion = version
 		}
 	}
 
@@ -170,16 +156,6 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 	}
 
 	return len(newVersions), nil
-}
-
-func buildSource(resource *ResourceConfig) githubrelease.Source {
-	return githubrelease.Source{
-		Owner:        resource.Source["owner"],
-		Repository:   resource.Source["repository"],
-		VersionRegex: resource.Source["version-regex"],
-		TagFilter:    resource.Source["tag_filter"],
-		AccessToken:  resource.Source["access_token"],
-	}
 }
 
 // toPlatformData converts feed.Platform structs to template-compatible map data

@@ -11,6 +11,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
+	"github.com/patrickhuber/wrangle/internal/resource"
 	"github.com/patrickhuber/wrangle/internal/resource/githubrelease"
 	"github.com/stretchr/testify/require"
 )
@@ -35,7 +36,8 @@ func TestUpdatePackages(t *testing.T) {
   source:
     owner: testowner
     repository: testrepo
-    version-regex: '[0-9]+\.[0-9]+\.[0-9]+'
+    version_regex: '[0-9]+\.[0-9]+\.[0-9]+'
+    access_token: test-token
 `), 0644))
 		require.NoError(t, fs.WriteFile(itemDir+"/template.yml", []byte(`package:
   name: testpkg
@@ -77,11 +79,13 @@ func TestUpdatePackages(t *testing.T) {
 		factory := &fakeFeedServiceFactory{svc: svc}
 
 		// Use a fake GitHub client factory that returns our fake client
-		ghFactory := feed.GitHubClientFactory(func(token string) githubrelease.GitHub {
+		ghProvider := githubrelease.NewProviderWithClientFactory(func(token string) githubrelease.GitHub {
+			require.Equal(t, "test-token", token)
 			return fakeGH
 		})
+		resourceFactory := resource.NewFactory(ghProvider)
 
-		updateSvc := feed.NewUpdatePackagesWithGitHubClientFactory(factory, cfgSvc, ghFactory)
+		updateSvc := feed.NewUpdatePackages(factory, cfgSvc, resourceFactory)
 
 		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
 		require.NoError(t, err)
@@ -98,6 +102,56 @@ func TestUpdatePackages(t *testing.T) {
 		stateData, err := fs.ReadFile(itemDir + "/state.yml")
 		require.NoError(t, err)
 		require.Contains(t, string(stateData), "1.1.0")
+	})
+
+	t.Run("uses the registered resource provider", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := h.FS()
+		path := h.Path()
+		logger := log.Memory()
+		workDir := "/opt/wrangle/feed"
+		svc := feedfs.NewService("test", fs, path, workDir, logger)
+		itemDir := workDir + "/testpkg"
+
+		require.NoError(t, fs.MkdirAll(itemDir, 0755))
+		require.NoError(t, fs.WriteFile(itemDir+"/resource.yml", []byte(`resource:
+  name: test-resource
+  type: test-resource
+  source: {}
+`), 0644))
+		require.NoError(t, fs.WriteFile(itemDir+"/state.yml", []byte("version: 1.0.0\n"), 0644))
+		require.NoError(t, fs.WriteFile(itemDir+"/template.yml", []byte(`package:
+  name: testpkg
+  version: {{ .version }}
+  targets:
+  {{ range .platforms -}}
+  - platform: {{ .platform }}
+    architecture: {{ index .architectures 0 }}
+  {{ end -}}
+`), 0644))
+		require.NoError(t, fs.WriteFile(itemDir+"/platforms.yml", []byte(`platforms:
+- platform: linux
+  architectures:
+  - amd64
+`), 0644))
+
+		cfg := config.Config{
+			Spec: config.Spec{
+				Feeds: []config.Feed{{Name: "test", Type: "test"}},
+			},
+		}
+		cfgSvc := &fakeConfigService{cfg: cfg}
+		feedFactory := &fakeFeedServiceFactory{svc: svc}
+		resourceFactory := resource.NewFactory(fakeResourceProvider{})
+		updateSvc := feed.NewUpdatePackages(feedFactory, cfgSvc, resourceFactory)
+
+		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
+		require.NoError(t, err)
+		require.Equal(t, 1, resp.Updated)
+
+		exists, err := fs.Exists(itemDir + "/1.1.0/package.yml")
+		require.NoError(t, err)
+		require.True(t, exists)
 	})
 
 	t.Run("skips item without resource config", func(t *testing.T) {
@@ -123,11 +177,9 @@ func TestUpdatePackages(t *testing.T) {
 		}
 		cfgSvc := &fakeConfigService{cfg: cfg}
 		factory := &fakeFeedServiceFactory{svc: svc}
-		ghFactory := feed.GitHubClientFactory(func(token string) githubrelease.GitHub {
-			return &githubrelease.FakeGitHub{}
-		})
+		resourceFactory := resource.NewFactory()
 
-		updateSvc := feed.NewUpdatePackagesWithGitHubClientFactory(factory, cfgSvc, ghFactory)
+		updateSvc := feed.NewUpdatePackages(factory, cfgSvc, resourceFactory)
 		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
 		require.NoError(t, err)
 		require.Equal(t, 0, resp.Updated)
@@ -150,4 +202,28 @@ type fakeFeedServiceFactory struct {
 
 func (f *fakeFeedServiceFactory) Create(cfg config.Feed) (feed.Service, error) {
 	return f.svc, nil
+}
+
+type fakeResourceProvider struct{}
+
+func (fakeResourceProvider) Type() string {
+	return "test-resource"
+}
+
+func (fakeResourceProvider) Create(resource.Config) (resource.Resource, error) {
+	return fakeResource{}, nil
+}
+
+type fakeResource struct{}
+
+func (fakeResource) Type() string {
+	return "test-resource"
+}
+
+func (fakeResource) Name() string {
+	return "test-resource"
+}
+
+func (fakeResource) Versions(string) ([]string, error) {
+	return []string{"1.0.0", "1.1.0"}, nil
 }
