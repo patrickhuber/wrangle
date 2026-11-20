@@ -10,6 +10,10 @@ type ServiceFactory interface {
 	Create(f config.Feed) (Service, error)
 }
 
+type LocalServiceFactory interface {
+	Create(directory string) (Service, error)
+}
+
 type serviceFactory struct {
 	providers []Provider
 }

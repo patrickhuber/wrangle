@@ -42,10 +42,25 @@ func (r *itemRepository) List(options ...feed.ItemGetOption) ([]*feed.Item, erro
 	if err != nil {
 		return nil, fmt.Errorf("read feed directory %q: %w", r.workingDirectory, err)
 	}
+	include := &feed.ItemGetInclude{}
+	for _, option := range options {
+		option(include)
+	}
 	items := []*feed.Item{}
 	for _, f := range files {
 		if !f.IsDir() {
 			continue
+		}
+		if include.SkipMissingResource {
+			resourcePath := r.path.Join(r.GetItemPath(f.Name()), ResourceFile)
+			_, err := r.fs.Stat(resourcePath)
+			if errors.Is(err, fs.ErrNotExist) {
+				r.logger.Infof("skipping feed package %s: missing %s", f.Name(), ResourceFile)
+				continue
+			}
+			if err != nil {
+				return nil, fmt.Errorf("check resource file for package %s: %w", f.Name(), err)
+			}
 		}
 		item, err := r.Get(f.Name(), options...)
 		if err != nil {

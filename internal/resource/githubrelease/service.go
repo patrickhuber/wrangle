@@ -1,10 +1,14 @@
 package githubrelease
 
 import (
+	"errors"
+	"net/http"
 	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/google/go-github/v62/github"
+	"github.com/patrickhuber/go-log"
 )
 
 // Service defines a github release service
@@ -15,12 +19,14 @@ type Service interface {
 
 type service struct {
 	client GitHub
+	logger log.Logger
 }
 
 // NewService creates a new githubrelease service
-func NewService(client GitHub) Service {
+func NewService(client GitHub, logger log.Logger) Service {
 	return &service{
 		client: client,
+		logger: logger,
 	}
 }
 
@@ -31,6 +37,11 @@ func (s *service) Check(request *CheckRequest) (*CheckResponse, error) {
 	}
 	githubReleases, err := s.client.ListReleases(listRequest)
 	if err != nil {
+		var response *github.ErrorResponse
+		if errors.As(err, &response) && response.Response != nil && response.Response.StatusCode == http.StatusNotFound {
+			s.logger.Warnf("skipping GitHub release source %s/%s: repository not found (404)", request.Source.Owner, request.Source.Repository)
+			return &CheckResponse{Versions: []*Version{}}, nil
+		}
 		return nil, err
 	}
 

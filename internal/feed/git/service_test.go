@@ -17,6 +17,28 @@ import (
 )
 
 func TestService(t *testing.T) {
+	t.Run("skips filtered package without resource before loading metadata", func(t *testing.T) {
+		logger := log.Memory()
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		fs := memfs.New()
+		repository, err := git.Init(memory.NewStorage(), fs)
+		require.NoError(t, err)
+
+		svc, err := gitfeed.NewService("test", fs, repository, h.Path(), logger)
+		require.NoError(t, err)
+		require.NoError(t, svc.SaveVersion("package-only", "1.0.0", nil))
+
+		response, err := svc.List(&feed.ListRequest{
+			Where: []*feed.ItemReadAnyOf{{
+				AnyOf: []*feed.ItemReadAllOf{{
+					AllOf: []*feed.ItemReadPredicate{{Name: "package-only"}},
+				}},
+			}},
+			SkipItemsWithoutResource: true,
+		})
+		require.NoError(t, err)
+		require.Empty(t, response.Items)
+	})
 	setup := func(t *testing.T) conformance.ServiceTester {
 		logger := log.Memory()
 		store := memory.NewStorage()
