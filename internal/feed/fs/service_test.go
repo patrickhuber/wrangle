@@ -15,6 +15,22 @@ import (
 )
 
 func TestService(t *testing.T) {
+	t.Run("skips filtered package without resource before loading metadata", func(t *testing.T) {
+		h := cross.NewTest(platform.Linux, arch.AMD64)
+		svc := feedfs.NewService("test", h.FS(), h.Path(), "/opt/wrangle/feed", log.Memory())
+		require.NoError(t, svc.SaveVersion("package-only", "1.0.0", nil))
+
+		response, err := svc.List(&feed.ListRequest{
+			Where: []*feed.ItemReadAnyOf{{
+				AnyOf: []*feed.ItemReadAllOf{{
+					AllOf: []*feed.ItemReadPredicate{{Name: "package-only"}},
+				}},
+			}},
+			SkipItemsWithoutResource: true,
+		})
+		require.NoError(t, err)
+		require.Empty(t, response.Items)
+	})
 	t.Run("can list all packages", func(t *testing.T) {
 		tester := SetupServiceTest(t)
 		tester.CanListAllPackages(t)

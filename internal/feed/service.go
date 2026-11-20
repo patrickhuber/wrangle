@@ -130,12 +130,32 @@ func (s *service) listItems(request *ListRequest) ([]*Item, error) {
 			if !IsMatch(request.Where, name) {
 				continue
 			}
-			item, err := s.itemRepository.Get(name, options...)
+			var resource *Item
+			if request.SkipItemsWithoutResource {
+				resource, err = s.itemRepository.Get(name,
+					ItemGetPlatforms(false),
+					ItemGetState(false),
+					ItemGetTemplate(false),
+					ItemGetResource(true),
+				)
+				if err != nil {
+					return nil, err
+				}
+				if resource.Resource == nil {
+					continue
+				}
+			}
+
+			itemOptions := options
+			if request.SkipItemsWithoutResource {
+				itemOptions = append(append([]ItemGetOption{}, options...), ItemGetResource(false))
+			}
+			item, err := s.itemRepository.Get(name, itemOptions...)
 			if err != nil {
 				return nil, err
 			}
-			if request.SkipItemsWithoutResource && item.Resource == nil {
-				continue
+			if resource != nil {
+				item.Resource = resource.Resource
 			}
 			items = append(items, item)
 		}
