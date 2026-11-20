@@ -33,6 +33,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/archive"
 	"github.com/patrickhuber/wrangle/internal/feed"
+	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
 	"github.com/patrickhuber/wrangle/internal/feed/git"
 )
 
@@ -85,6 +86,7 @@ func New() Host {
 	// feeds
 	container.RegisterConstructor(git.NewProvider)
 	container.RegisterConstructor(feed.NewServiceFactory)
+	container.RegisterConstructor(feedfs.NewLocalServiceFactory)
 	container.RegisterConstructor(githubrelease.NewProvider)
 	container.RegisterConstructor(resource.NewFactory)
 	container.RegisterConstructor(feed.NewListPackages)

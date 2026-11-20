@@ -1,9 +1,11 @@
 package feed
 
 type ListRequest struct {
-	Where             []*ItemReadAnyOf
-	Expand            *ItemReadExpand
-	AllowMissingState bool
+	Where                    []*ItemReadAnyOf
+	Expand                   *ItemReadExpand
+	AllowMissingState        bool
+	SkipPackageVersions      bool
+	SkipItemsWithoutResource bool
 }
 
 type ItemReadAnyOf struct {

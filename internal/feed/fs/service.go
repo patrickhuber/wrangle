@@ -9,7 +9,7 @@ import (
 )
 
 func NewService(name string, fs fs.FS, path filepath.Provider, workingDirectory string, logger log.Logger) feed.Service {
-	itemRepo := NewItemRepository(fs, path, workingDirectory)
+	itemRepo := NewItemRepository(fs, path, workingDirectory, logger)
 	versionRepo := NewVersionRepository(fs, path, workingDirectory)
 	return feed.NewService(name, itemRepo, versionRepo, logger)
 }

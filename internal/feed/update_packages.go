@@ -6,12 +6,14 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/resource"
 )
 
 // UpdatePackagesRequest contains options for the feed update command
-type UpdatePackagesRequest struct{}
+type UpdatePackagesRequest struct {
+	Directory string
+}
 
 // UpdatePackagesResponse contains the result of updating feed packages
 type UpdatePackagesResponse struct {
@@ -24,47 +26,39 @@ type UpdatePackages interface {
 }
 
 type updatePackages struct {
-	serviceFactory  ServiceFactory
-	configuration   config.Service
+	serviceFactory  LocalServiceFactory
 	resourceFactory resource.Factory
+	logger          log.Logger
 }
 
-func NewUpdatePackages(serviceFactory ServiceFactory, configuration config.Service, resourceFactory resource.Factory) UpdatePackages {
+func NewUpdatePackages(serviceFactory LocalServiceFactory, resourceFactory resource.Factory, logger log.Logger) UpdatePackages {
 	return &updatePackages{
 		serviceFactory:  serviceFactory,
-		configuration:   configuration,
 		resourceFactory: resourceFactory,
+		logger:          logger,
 	}
 }
 
 func (u *updatePackages) Execute(r *UpdatePackagesRequest) (*UpdatePackagesResponse, error) {
-	cfg, err := u.configuration.Get()
+	feedSvc, err := u.serviceFactory.Create(r.Directory)
 	if err != nil {
 		return nil, err
 	}
-	if len(cfg.Spec.Feeds) == 0 {
-		return &UpdatePackagesResponse{}, nil
+
+	updated, err := u.updateFeed(feedSvc)
+	if err != nil {
+		return nil, err
 	}
 
-	totalUpdated := 0
-	for _, f := range cfg.Spec.Feeds {
-		feedSvc, err := u.serviceFactory.Create(f)
-		if err != nil {
-			return nil, err
-		}
-
-		updated, err := u.updateFeed(feedSvc)
-		if err != nil {
-			return nil, err
-		}
-		totalUpdated += updated
-	}
-
-	return &UpdatePackagesResponse{Updated: totalUpdated}, nil
+	return &UpdatePackagesResponse{Updated: updated}, nil
 }
 
 func (u *updatePackages) updateFeed(feedSvc Service) (int, error) {
-	items, err := feedSvc.List(&ListRequest{AllowMissingState: true})
+	items, err := feedSvc.List(&ListRequest{
+		AllowMissingState:        true,
+		SkipPackageVersions:      true,
+		SkipItemsWithoutResource: true,
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -82,10 +76,12 @@ func (u *updatePackages) updateFeed(feedSvc Service) (int, error) {
 
 func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 	if item.Resource == nil {
+		u.logger.Infof("skipping feed package %s: missing resource configuration", item.Package.Name)
 		return 0, nil
 	}
 
 	currentVersion := ""
+	hasState := item.State != nil
 	if item.State != nil {
 		currentVersion = item.State.LatestVersion
 	}
@@ -102,6 +98,10 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 	versions, err := resource.Versions(currentVersion)
 	if err != nil {
 		return 0, fmt.Errorf("error checking versions for %s: %w", item.Package.Name, err)
+	}
+	if len(versions) == 0 {
+		u.logger.Infof("skipping feed package %s: no matching releases", item.Package.Name)
+		return 0, nil
 	}
 
 	// collect versions newer than current, using semver to find the true latest
@@ -122,6 +122,9 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 
 	if len(newVersions) == 0 {
 		return 0, nil
+	}
+	if !hasState {
+		newVersions = []string{latestVersion}
 	}
 
 	// render and save each new version

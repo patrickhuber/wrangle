@@ -3,11 +3,12 @@ package feed
 import "fmt"
 
 type ItemGetInclude struct {
-	Platforms          bool
-	State              bool
-	StateOptional      bool
-	Template           bool
-	Resource           bool
+	Platforms           bool
+	State               bool
+	StateOptional       bool
+	Template            bool
+	Resource            bool
+	SkipMissingResource bool
 }
 
 type ItemGetOption func(*ItemGetInclude)
@@ -48,6 +49,12 @@ func ItemGetTemplate(load bool) ItemGetOption {
 func ItemGetResource(load bool) ItemGetOption {
 	return func(o *ItemGetInclude) {
 		o.Resource = load
+	}
+}
+
+func ItemGetSkipMissingResource() ItemGetOption {
+	return func(o *ItemGetInclude) {
+		o.SkipMissingResource = true
 	}
 }
 

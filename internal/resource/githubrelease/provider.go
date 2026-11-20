@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/resource"
 )
 
@@ -13,14 +14,15 @@ type ClientFactory func(token string) GitHub
 
 type provider struct {
 	clientFactory ClientFactory
+	logger        log.Logger
 }
 
-func NewProvider() resource.Provider {
-	return NewProviderWithClientFactory(NewGitHubClient)
+func NewProvider(logger log.Logger) resource.Provider {
+	return NewProviderWithClientFactory(NewGitHubClient, logger)
 }
 
-func NewProviderWithClientFactory(factory ClientFactory) resource.Provider {
-	return &provider{clientFactory: factory}
+func NewProviderWithClientFactory(factory ClientFactory, logger log.Logger) resource.Provider {
+	return &provider{clientFactory: factory, logger: logger}
 }
 
 func (*provider) Type() string {
@@ -33,7 +35,7 @@ func (p *provider) Create(config resource.Config) (resource.Resource, error) {
 		return nil, err
 	}
 	client := p.clientFactory(source.AccessToken)
-	return NewResource(config.Name, source, NewService(client)), nil
+	return NewResource(config.Name, source, NewService(client, p.logger)), nil
 }
 
 func sourceFromConfig(values map[string]string) (Source, error) {
@@ -41,6 +43,7 @@ func sourceFromConfig(values map[string]string) (Source, error) {
 		"owner":         true,
 		"repository":    true,
 		"version_regex": true,
+		"version-regex": true,
 		"tag_filter":    true,
 		"access_token":  true,
 	}
@@ -60,6 +63,9 @@ func sourceFromConfig(values map[string]string) (Source, error) {
 	}
 
 	versionRegex := values["version_regex"]
+	if versionRegex == "" {
+		versionRegex = values["version-regex"]
+	}
 	tagFilter := values["tag_filter"]
 	for _, entry := range []struct {
 		key     string

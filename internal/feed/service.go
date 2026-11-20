@@ -92,6 +92,9 @@ func (s *service) List(request *ListRequest) (*ListResponse, error) {
 	}
 
 	for _, item := range items {
+		if request.SkipPackageVersions {
+			continue
+		}
 		versions, err := s.expandPackage(item, request.Expand)
 		if err != nil {
 			return nil, err
@@ -111,6 +114,9 @@ func (s *service) listItems(request *ListRequest) ([]*Item, error) {
 	if request.AllowMissingState {
 		options = append(options, ItemGetStateOptional())
 	}
+	if request.SkipItemsWithoutResource {
+		options = append(options, ItemGetSkipMissingResource())
+	}
 	var items []*Item
 	var err error
 
@@ -127,6 +133,9 @@ func (s *service) listItems(request *ListRequest) ([]*Item, error) {
 			item, err := s.itemRepository.Get(name, options...)
 			if err != nil {
 				return nil, err
+			}
+			if request.SkipItemsWithoutResource && item.Resource == nil {
+				continue
 			}
 			items = append(items, item)
 		}

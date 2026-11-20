@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/patrickhuber/go-cross/filepath"
 
 	"github.com/patrickhuber/go-cross/fs"
+	"github.com/patrickhuber/go-log"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/packages"
 	"gopkg.in/yaml.v3"
@@ -25,13 +27,15 @@ type itemRepository struct {
 	fs               fs.FS
 	path             filepath.Provider
 	workingDirectory string
+	logger           log.Logger
 }
 
-func NewItemRepository(fs fs.FS, path filepath.Provider, workingDirectory string) feed.ItemRepository {
+func NewItemRepository(fs fs.FS, path filepath.Provider, workingDirectory string, logger log.Logger) feed.ItemRepository {
 	return &itemRepository{
 		fs:               fs,
 		path:             path,
 		workingDirectory: workingDirectory,
+		logger:           logger,
 	}
 }
 
@@ -40,10 +44,25 @@ func (r *itemRepository) List(options ...feed.ItemGetOption) ([]*feed.Item, erro
 	if err != nil {
 		return nil, err
 	}
+	include := &feed.ItemGetInclude{}
+	for _, option := range options {
+		option(include)
+	}
 	items := []*feed.Item{}
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
+		}
+		if include.SkipMissingResource {
+			resourcePath := r.path.Join(r.GetItemPath(file.Name()), ResourceFile)
+			exists, err := r.fs.Exists(resourcePath)
+			if err != nil {
+				return nil, fmt.Errorf("check resource file for package %s: %w", file.Name(), err)
+			}
+			if !exists {
+				r.logger.Infof("skipping feed package %s: missing %s", file.Name(), ResourceFile)
+				continue
+			}
 		}
 		item, err := r.Get(file.Name(), options...)
 		if err != nil {
@@ -164,6 +183,18 @@ func (r *itemRepository) GetObject(name string, file string, out any) error {
 		Result:      out,
 		ErrorUnused: true,
 		ErrorUnset:  true,
+		DecodeHook: func(from reflect.Type, to reflect.Type, value any) (any, error) {
+			if to.Kind() != reflect.String {
+				return value, nil
+			}
+			switch from.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+				reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+				return fmt.Sprint(value), nil
+			default:
+				return value, nil
+			}
+		},
 	})
 	if err != nil {
 		return err

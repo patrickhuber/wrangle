@@ -8,7 +8,6 @@ import (
 	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
 	"github.com/patrickhuber/wrangle/internal/resource"
@@ -22,14 +21,14 @@ func TestUpdatePackages(t *testing.T) {
 		fs := h.FS()
 		path := h.Path()
 		logger := log.Memory()
-		workDir := "/opt/wrangle/feed"
-		svc := feedfs.NewService("test", fs, path, workDir, logger)
-
+		rootDir := "/opt/wrangle"
+		workDir := path.Join(rootDir, "feed")
 		// Set up an item with resource config, state and template
 		itemName := "testpkg"
 		itemDir := workDir + "/" + itemName
 
 		require.NoError(t, fs.MkdirAll(itemDir, 0755))
+		require.NoError(t, fs.MkdirAll(path.Join(itemDir, "0.6"), 0755))
 		require.NoError(t, fs.WriteFile(itemDir+"/resource.yml", []byte(`resource:
   name: github-release
   type: github-release
@@ -67,36 +66,30 @@ func TestUpdatePackages(t *testing.T) {
 		}
 		fakeGH := &githubrelease.FakeGitHub{Releases: fakeReleases}
 
-		// Create a fake service factory that returns our fs-backed service
-		cfg := config.Config{
-			Spec: config.Spec{
-				Feeds: []config.Feed{
-					{Name: "test", Type: "test"},
-				},
-			},
-		}
-		cfgSvc := &fakeConfigService{cfg: cfg}
-		factory := &fakeFeedServiceFactory{svc: svc}
+		factory := feedfs.NewLocalServiceFactory(fs, path, logger)
 
 		// Use a fake GitHub client factory that returns our fake client
 		ghProvider := githubrelease.NewProviderWithClientFactory(func(token string) githubrelease.GitHub {
 			require.Equal(t, "test-token", token)
 			return fakeGH
-		})
+		}, logger)
 		resourceFactory := resource.NewFactory(ghProvider)
 
-		updateSvc := feed.NewUpdatePackages(factory, cfgSvc, resourceFactory)
+		updateSvc := feed.NewUpdatePackages(factory, resourceFactory, logger)
 
-		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
+		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
 		require.NoError(t, err)
 		require.NotNil(t, resp)
-		require.Equal(t, 2, resp.Updated)
+		require.Equal(t, 1, resp.Updated)
 
 		// Verify the new version file was created
 		versionFile := workDir + "/testpkg/1.1.0/package.yml"
 		exists, err := fs.Exists(versionFile)
 		require.NoError(t, err)
 		require.True(t, exists, "version file should exist at %s", versionFile)
+		exists, err = fs.Exists(workDir + "/testpkg/1.0.0/package.yml")
+		require.NoError(t, err)
+		require.False(t, exists, "only the latest version should be generated without state")
 
 		// Verify state was updated
 		stateData, err := fs.ReadFile(itemDir + "/state.yml")
@@ -109,8 +102,8 @@ func TestUpdatePackages(t *testing.T) {
 		fs := h.FS()
 		path := h.Path()
 		logger := log.Memory()
-		workDir := "/opt/wrangle/feed"
-		svc := feedfs.NewService("test", fs, path, workDir, logger)
+		rootDir := "/opt/wrangle"
+		workDir := path.Join(rootDir, "feed")
 		itemDir := workDir + "/testpkg"
 
 		require.NoError(t, fs.MkdirAll(itemDir, 0755))
@@ -135,17 +128,11 @@ func TestUpdatePackages(t *testing.T) {
   - amd64
 `), 0644))
 
-		cfg := config.Config{
-			Spec: config.Spec{
-				Feeds: []config.Feed{{Name: "test", Type: "test"}},
-			},
-		}
-		cfgSvc := &fakeConfigService{cfg: cfg}
-		feedFactory := &fakeFeedServiceFactory{svc: svc}
+		feedFactory := feedfs.NewLocalServiceFactory(fs, path, logger)
 		resourceFactory := resource.NewFactory(fakeResourceProvider{})
-		updateSvc := feed.NewUpdatePackages(feedFactory, cfgSvc, resourceFactory)
+		updateSvc := feed.NewUpdatePackages(feedFactory, resourceFactory, logger)
 
-		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
+		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
 		require.NoError(t, err)
 		require.Equal(t, 1, resp.Updated)
 
@@ -159,9 +146,8 @@ func TestUpdatePackages(t *testing.T) {
 		fs := h.FS()
 		path := h.Path()
 		logger := log.Memory()
-		workDir := "/opt/wrangle/feed"
-		svc := feedfs.NewService("test", fs, path, workDir, logger)
-
+		rootDir := "/opt/wrangle"
+		workDir := path.Join(rootDir, "feed")
 		// Set up an item without a resource config
 		itemName := "noresource"
 		itemDir := workDir + "/" + itemName
@@ -170,38 +156,14 @@ func TestUpdatePackages(t *testing.T) {
 		require.NoError(t, fs.WriteFile(itemDir+"/template.yml", []byte(""), 0644))
 		require.NoError(t, fs.WriteFile(itemDir+"/platforms.yml", []byte(""), 0644))
 
-		cfg := config.Config{
-			Spec: config.Spec{
-				Feeds: []config.Feed{{Name: "test", Type: "test"}},
-			},
-		}
-		cfgSvc := &fakeConfigService{cfg: cfg}
-		factory := &fakeFeedServiceFactory{svc: svc}
+		factory := feedfs.NewLocalServiceFactory(fs, path, logger)
 		resourceFactory := resource.NewFactory()
 
-		updateSvc := feed.NewUpdatePackages(factory, cfgSvc, resourceFactory)
-		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{})
+		updateSvc := feed.NewUpdatePackages(factory, resourceFactory, logger)
+		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
 		require.NoError(t, err)
 		require.Equal(t, 0, resp.Updated)
 	})
-}
-
-// fakeConfigService implements config.Service for testing
-type fakeConfigService struct {
-	cfg config.Config
-}
-
-func (f *fakeConfigService) Get() (config.Config, error) {
-	return f.cfg, nil
-}
-
-// fakeFeedServiceFactory returns a predetermined feed.Service for testing
-type fakeFeedServiceFactory struct {
-	svc feed.Service
-}
-
-func (f *fakeFeedServiceFactory) Create(cfg config.Feed) (feed.Service, error) {
-	return f.svc, nil
 }
 
 type fakeResourceProvider struct{}
