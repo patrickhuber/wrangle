@@ -17,6 +17,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/patrickhuber/wrangle/internal/oldfile"
 	"github.com/patrickhuber/wrangle/internal/packages"
+	"github.com/patrickhuber/wrangle/internal/restore"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/stretchr/testify/require"
 )
@@ -331,7 +332,7 @@ func RunInstallWithForceTest(t *testing.T, plat platform.Platform, force bool) {
 	require.True(t, ok, "file '%s' not found", packageVersionFileLocation)
 }
 
-func TestInstallUpdatesLocalConfig(t *testing.T) {
+func TestInstallDoesNotUpdateLocalConfig(t *testing.T) {
 	platforms := []platform.Platform{
 		platform.Linux,
 		platform.Darwin,
@@ -339,12 +340,12 @@ func TestInstallUpdatesLocalConfig(t *testing.T) {
 	}
 	for _, plat := range platforms {
 		t.Run(plat.String(), func(t *testing.T) {
-			RunInstallUpdatesLocalConfigTest(t, plat)
+			runInstallDoesNotUpdateLocalConfigTest(t, plat)
 		})
 	}
 }
 
-func RunInstallUpdatesLocalConfigTest(t *testing.T, plat platform.Platform) {
+func runInstallDoesNotUpdateLocalConfigTest(t *testing.T, plat platform.Platform) {
 	packageName := "test"
 	packageVersion := "1.0.0"
 
@@ -443,23 +444,30 @@ func RunInstallUpdatesLocalConfigTest(t *testing.T, plat platform.Platform) {
 		ApiVersion: config.ApiVersion,
 		Kind:       config.Kind,
 		Spec: config.Spec{
-			Packages: []config.Package{},
+			Packages: []config.Package{{Name: packageName, Version: "latest"}},
 		},
 	}
 	err = config.WriteFile(target.FS(), localConfigFile, localCfg)
+	require.NoError(t, err)
+	before, err := target.FS().ReadFile(localConfigFile)
 	require.NoError(t, err)
 
 	req := &install.Request{
 		Package: packageName,
 		Version: packageVersion,
+		Force:   true,
 	}
 	err = service.Execute(req)
 	require.NoError(t, err)
 
-	// verify the local config was updated
-	updatedCfg, err := config.ReadFile(target.FS(), localConfigFile)
+	after, err := target.FS().ReadFile(localConfigFile)
 	require.NoError(t, err)
-	require.Len(t, updatedCfg.Spec.Packages, 1)
-	require.Equal(t, packageName, updatedCfg.Spec.Packages[0].Name)
-	require.Equal(t, packageVersion, updatedCfg.Spec.Packages[0].Version)
+	require.Equal(t, before, after)
+
+	cfg.Spec.Packages = []config.Package{{Name: packageName, Version: "latest"}}
+	restoreService := restore.NewService(config.NewMock(cfg), service, logger)
+	require.NoError(t, restoreService.Execute(&restore.Request{Force: true}))
+	after, err = target.FS().ReadFile(localConfigFile)
+	require.NoError(t, err)
+	require.Equal(t, before, after)
 }

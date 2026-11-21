@@ -12,14 +12,18 @@ import (
 var PackageAdd = &cli.Command{
 	Name:        "add",
 	Action:      PackageAddAction,
-	Description: "Adds a package to the local configuration file without installing it",
-	Usage:       "add a package to the local configuration",
+	Description: "Adds a package to configuration without installing it",
+	Usage:       "add a package to configuration",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "version",
 			Aliases: []string{"v"},
 			Usage:   "version of the package to add (default: latest)",
 			Value:   "",
+		},
+		&cli.StringFlag{
+			Name:  "scope",
+			Usage: "configuration scope: nearest, local, user, or system (default: nearest)",
 		},
 	},
 }
@@ -32,12 +36,14 @@ type PackageAddCommand struct {
 type PackageAddOptions struct {
 	Package string `position:"0"`
 	Version string `flag:"version"`
+	Scope   string `flag:"scope"`
 }
 
 func (cmd *PackageAddCommand) Execute() error {
 	request := &add.Request{
 		Package: cmd.Options.Package,
 		Version: cmd.Options.Version,
+		Scope:   cmd.Options.Scope,
 	}
 	return cmd.Add.Execute(request)
 }
@@ -57,6 +63,7 @@ func PackageAddAction(ctx *cli.Context) error {
 		Options: PackageAddOptions{
 			Package: pkg,
 			Version: ctx.String("version"),
+			Scope:   ctx.String("scope"),
 		},
 	}
 
