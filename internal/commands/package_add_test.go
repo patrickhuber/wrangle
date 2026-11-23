@@ -30,6 +30,7 @@ func TestPackageAdd(t *testing.T) {
 			Options: commands.PackageAddOptions{
 				Package: "test",
 				Version: "1.0.0",
+				Scope:   "local",
 			},
 		}
 
@@ -80,6 +81,7 @@ func TestPackageAdd(t *testing.T) {
 			Options: commands.PackageAddOptions{
 				Package: "test",
 				Version: "1.0.0",
+				Scope:   "local",
 			},
 		}
 
@@ -94,6 +96,7 @@ func TestPackageAdd(t *testing.T) {
 			Options: commands.PackageAddOptions{
 				Package: "test",
 				Version: "2.0.0",
+				Scope:   "local",
 			},
 		}
 
@@ -136,6 +139,7 @@ func TestPackageAdd(t *testing.T) {
 			Options: commands.PackageAddOptions{
 				Package: "test",
 				Version: "1.0.0",
+				Scope:   "local",
 			},
 		}
 
@@ -150,6 +154,7 @@ func TestPackageAdd(t *testing.T) {
 			Options: commands.PackageAddOptions{
 				Package: "wrangle",
 				Version: "0.9.0",
+				Scope:   "local",
 			},
 		}
 

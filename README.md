@@ -98,10 +98,27 @@ wrangle package install yq
 or a specific version
 
 ```
-wrangle package install yq@4.31.1
+wrangle package install --version 4.31.1 yq
 ```
 
-You can also install packages by creating a .wrangle(.yml|.json) file in the directory and run the `wrangle package restore` command.
+Installation does not change configuration by default. To record a package without
+installing it, use `wrangle package add yq`. By default, `add` edits the nearest
+local configuration, searching from the current directory upward, then falls
+back to the existing user and system configurations.
+
+Both `add` and `install` accept `--scope nearest|local|user|system`. An explicit
+scope on `install` records the requested version after installation; without a
+version it records `latest`. `--scope local` creates `.wrangle.toml` in the
+current directory if no local configuration exists. If multiple local configs
+exist in the nearest directory, Wrangle reports an error rather than choosing one.
+
+```bash
+wrangle package add --scope user yq
+wrangle package install --scope local --version 4.31.1 yq
+```
+
+You can also declare packages in a local configuration and run
+`wrangle package restore` to install them without modifying configuration.
 
 > .wrangle.yml
 
@@ -138,7 +155,7 @@ spec:
 apiVersion = "wrangle/v1"
 kind = "Config"
 
-[spec.packages]
+[[spec.packages]]
 name = "jq"
 version = "4.31.1"
 ```
