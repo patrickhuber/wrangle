@@ -12,6 +12,7 @@ import (
 
 type Service interface {
 	Execute() (config.Config, error)
+	Interpolate(value any) (any, error)
 }
 
 type service struct {
@@ -31,13 +32,7 @@ func (i *service) Execute() (config.Config, error) {
 	if err != nil {
 		return config.Config{}, err
 	}
-
-	layers, providers, err := i.createVariableProviders(cfg)
-	if err != nil {
-		return config.Config{}, err
-	}
-
-	if len(layers) == 0 {
+	if len(cfg.Spec.Stores) == 0 {
 		return cfg, nil
 	}
 
@@ -51,6 +46,53 @@ func (i *service) Execute() (config.Config, error) {
 		if err := json.Unmarshal(bytes, &specMap); err != nil {
 			return config.Config{}, err
 		}
+	}
+
+	value, err := i.interpolate(cfg, specMap)
+	if err != nil {
+		return config.Config{}, err
+	}
+
+	valueMap, ok := value.(map[string]any)
+	if !ok {
+		return config.Config{}, fmt.Errorf("unexpected evaluation result type %T", value)
+	}
+
+	var spec config.Spec
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{Result: &spec})
+	if err != nil {
+		return config.Config{}, err
+	}
+	if err := decoder.Decode(valueMap); err != nil {
+		return config.Config{}, err
+	}
+
+	cfg.Spec = spec
+	return cfg, nil
+}
+
+func (i *service) Interpolate(value any) (any, error) {
+	cfg, err := i.configuration.Get()
+	if err != nil {
+		return nil, err
+	}
+	return i.interpolate(cfg, value)
+}
+
+func (i *service) interpolate(cfg config.Config, value any) (any, error) {
+	layers, providers, err := i.createVariableProviders(cfg)
+	if err != nil {
+		return nil, err
+	}
+	if len(layers) == 0 {
+		result, err := template.New(value).Evaluate()
+		if err != nil {
+			return nil, err
+		}
+		if len(result.Unresolved) > 0 {
+			return nil, fmt.Errorf("unable to resolve the following variables %v", result.Unresolved)
+		}
+		return result.Value, nil
 	}
 
 	var lastResult *template.EvaluationResult
@@ -68,19 +110,15 @@ func (i *service) Execute() (config.Config, error) {
 			options = append(options, template.WithProvider(vp))
 		}
 
-		result, err := template.New(specMap, options...).Evaluate()
+		result, err := template.New(value, options...).Evaluate()
 		if err != nil {
-			return config.Config{}, err
+			return nil, err
 		}
 
 		lastResult = result
 		unresolved = result.Unresolved
 
-		valueMap, ok := result.Value.(map[string]any)
-		if !ok {
-			return config.Config{}, fmt.Errorf("unexpected evaluation result type %T", result.Value)
-		}
-		specMap = valueMap
+		value = result.Value
 
 		if len(unresolved) == 0 {
 			break
@@ -88,20 +126,12 @@ func (i *service) Execute() (config.Config, error) {
 	}
 
 	if len(unresolved) > 0 {
-		return config.Config{}, fmt.Errorf("unable to resolve the following variables %v", unresolved)
+		return nil, fmt.Errorf("unable to resolve the following variables %v", unresolved)
 	}
-
-	var spec config.Spec
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{Result: &spec})
-	if err != nil {
-		return config.Config{}, err
+	if lastResult == nil {
+		return value, nil
 	}
-	if err := decoder.Decode(lastResult.Value); err != nil {
-		return config.Config{}, err
-	}
-
-	cfg.Spec = spec
-	return cfg, nil
+	return lastResult.Value, nil
 }
 
 func (i *service) createVariableProviders(cfg config.Config) ([][]string, map[string]template.VariableProvider, error) {
