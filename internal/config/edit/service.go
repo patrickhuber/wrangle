@@ -1,4 +1,4 @@
-package add
+package edit
 
 import (
 	"fmt"
@@ -15,31 +15,9 @@ import (
 	"github.com/patrickhuber/wrangle/internal/global"
 )
 
-type Request struct {
-	Package string
-	Version string
-	Store   *config.Store
-	Scope   string
-}
-
-const (
-	ScopeNearest = "nearest"
-	ScopeLocal   = "local"
-	ScopeUser    = "user"
-	ScopeSystem  = "system"
-)
-
-func ValidateScope(scope string) error {
-	switch scope {
-	case ScopeNearest, ScopeLocal, ScopeUser, ScopeSystem:
-		return nil
-	default:
-		return fmt.Errorf("invalid scope %q (expected nearest, local, user, or system)", scope)
-	}
-}
-
 type Service interface {
-	Execute(r *Request) error
+	AddPackage(r *PackageRequest) error
+	AddStore(r *StoreRequest) error
 }
 
 type service struct {
@@ -72,36 +50,41 @@ func NewService(
 	}
 }
 
-func (s *service) Execute(r *Request) error {
-	if r.Store == nil && r.Package == "" {
-		return fmt.Errorf("package name is required")
-	}
+const (
+	ScopeNearest = "nearest"
+	ScopeLocal   = "local"
+	ScopeUser    = "user"
+	ScopeSystem  = "system"
+)
 
-	scope := r.Scope
-	if scope == "" {
-		scope = ScopeNearest
+func ValidateScope(scope string) error {
+	switch scope {
+	case ScopeNearest, ScopeLocal, ScopeUser, ScopeSystem:
+		return nil
+	default:
+		return fmt.Errorf("invalid scope %q (expected nearest, local, user, or system)", scope)
 	}
-	if err := ValidateScope(scope); err != nil {
-		return err
-	}
+}
+
+func (s *service) update(scope string, update func(*config.Config) error) (string, error) {
 	file, err := s.configFile(scope)
 	if err != nil {
-		return err
+		return "", err
 	}
 	exists, err := s.fs.Exists(file)
 	if err != nil {
-		return fmt.Errorf("unable to check config file: %w", err)
+		return "", fmt.Errorf("unable to check config file: %w", err)
 	}
 
 	var cfg config.Config
 	if exists {
 		cfg, err = config.ReadFile(s.fs, file)
 		if err != nil {
-			return fmt.Errorf("unable to read config file '%s': %w", file, err)
+			return "", fmt.Errorf("unable to read config file '%s': %w", file, err)
 		}
 	} else {
 		if err := s.fs.MkdirAll(s.path.Dir(file), 0755); err != nil {
-			return fmt.Errorf("unable to create config directory: %w", err)
+			return "", fmt.Errorf("unable to create config directory: %w", err)
 		}
 		s.log.Infof("creating config file '%s'", file)
 		cfg = config.Config{
@@ -116,71 +99,23 @@ func (s *service) Execute(r *Request) error {
 		}
 	}
 
-	if r.Store != nil {
-		if r.Store.Name == "" {
-			return fmt.Errorf("store name is required")
-		}
-		if r.Store.Type == "" {
-			return fmt.Errorf("store type is required")
-		}
-
-		updated := false
-		for idx, store := range cfg.Spec.Stores {
-			if store.Name == r.Store.Name {
-				cfg.Spec.Stores[idx] = *r.Store
-				updated = true
-				break
-			}
-		}
-		if !updated {
-			cfg.Spec.Stores = append(cfg.Spec.Stores, *r.Store)
-		}
-
-		if err := config.WriteFile(s.fs, file, cfg); err != nil {
-			return fmt.Errorf("unable to write config file '%s': %w", file, err)
-		}
-		if updated {
-			s.log.Infof("updated store %s in '%s'", r.Store.Name, file)
-		} else {
-			s.log.Infof("added store %s to '%s'", r.Store.Name, file)
-		}
-		return nil
+	if err := update(&cfg); err != nil {
+		return "", err
 	}
-
-	version := r.Version
-	if version == "" {
-		version = config.TagLatest
+	if err := config.WriteFile(s.fs, file, cfg); err != nil {
+		return "", fmt.Errorf("unable to write config file '%s': %w", file, err)
 	}
-	// update or add the package entry
-	updated := false
-	for idx, pkg := range cfg.Spec.Packages {
-		if pkg.Name == r.Package {
-			cfg.Spec.Packages[idx].Version = version
-			updated = true
-			break
-		}
-	}
-	if !updated {
-		cfg.Spec.Packages = append(cfg.Spec.Packages, config.Package{
-			Name:    r.Package,
-			Version: version,
-		})
-	}
-
-	err = config.WriteFile(s.fs, file, cfg)
-	if err != nil {
-		return fmt.Errorf("unable to write config file '%s': %w", file, err)
-	}
-
-	if updated {
-		s.log.Infof("updated package %s@%s in '%s'", r.Package, version, file)
-	} else {
-		s.log.Infof("added package %s@%s to '%s'", r.Package, version, file)
-	}
-	return nil
+	return file, nil
 }
 
 func (s *service) configFile(scope string) (string, error) {
+	if scope == "" {
+		scope = ScopeNearest
+	}
+	if err := ValidateScope(scope); err != nil {
+		return "", err
+	}
+
 	if scope == ScopeNearest || scope == ScopeLocal {
 		dir, err := s.opsys.WorkingDirectory()
 		if err != nil {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/app"
+	"github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,7 +29,7 @@ var PackageAdd = &cli.Command{
 }
 
 type PackageAddCommand struct {
-	Add     add.Service       `inject:""`
+	Edit    edit.Service      `inject:""`
 	Options PackageAddOptions `options:""`
 }
 
@@ -40,12 +40,12 @@ type PackageAddOptions struct {
 }
 
 func (cmd *PackageAddCommand) Execute() error {
-	request := &add.Request{
+	request := &edit.PackageRequest{
 		Package: cmd.Options.Package,
 		Version: cmd.Options.Version,
 		Scope:   cmd.Options.Scope,
 	}
-	return cmd.Add.Execute(request)
+	return cmd.Edit.AddPackage(request)
 }
 
 func PackageAddAction(ctx *cli.Context) error {

@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/app"
 	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/urfave/cli/v2"
 )
 
@@ -46,7 +46,7 @@ var StoreAdd = &cli.Command{
 }
 
 type StoreAddCommand struct {
-	Add     add.Service     `inject:""`
+	Edit    edit.Service    `inject:""`
 	Options StoreAddOptions `options:""`
 }
 
@@ -68,8 +68,8 @@ func (cmd *StoreAddCommand) Execute() error {
 		properties["exclude"] = cmd.Options.Exclude
 	}
 
-	return cmd.Add.Execute(&add.Request{
-		Store: &config.Store{
+	return cmd.Edit.AddStore(&edit.StoreRequest{
+		Store: config.Store{
 			Name:         cmd.Options.Name,
 			Type:         cmd.Options.Type,
 			Properties:   properties,

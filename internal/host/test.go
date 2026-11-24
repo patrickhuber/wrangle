@@ -30,8 +30,8 @@ import (
 	"github.com/patrickhuber/wrangle/internal/stores/environment"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/archive"
+	configedit "github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	"github.com/patrickhuber/wrangle/internal/feed/memory"
 	"github.com/patrickhuber/wrangle/internal/packages"
@@ -115,8 +115,8 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	// restore
 	container.RegisterConstructor(restore.NewService)
 
-	// add
-	container.RegisterConstructor(add.NewService)
+	// configuration editing
+	container.RegisterConstructor(configedit.NewService)
 
 	// shim
 	container.RegisterConstructor(shim.NewService)

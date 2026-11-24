@@ -31,8 +31,8 @@ import (
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/wrangle/internal/actions"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/archive"
+	configedit "github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
 	"github.com/patrickhuber/wrangle/internal/feed/git"
@@ -110,8 +110,8 @@ func New() Host {
 	// restore
 	container.RegisterConstructor(restore.NewService)
 
-	// add
-	container.RegisterConstructor(add.NewService)
+	// configuration editing
+	container.RegisterConstructor(configedit.NewService)
 
 	// shim
 	container.RegisterConstructor(shim.NewService)

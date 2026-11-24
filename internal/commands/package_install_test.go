@@ -9,10 +9,10 @@ import (
 	"github.com/patrickhuber/go-cross/os"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/bootstrap"
 	"github.com/patrickhuber/wrangle/internal/commands"
 	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/patrickhuber/wrangle/internal/host"
 	"github.com/patrickhuber/wrangle/internal/install"
 	"github.com/stretchr/testify/require"
@@ -67,11 +67,15 @@ func (f *fakeInstaller) Execute(_ *install.Request) error {
 }
 
 type fakeAdder struct {
-	request *add.Request
+	request *edit.PackageRequest
 }
 
-func (f *fakeAdder) Execute(r *add.Request) error {
+func (f *fakeAdder) AddPackage(r *edit.PackageRequest) error {
 	f.request = r
+	return nil
+}
+
+func (f *fakeAdder) AddStore(*edit.StoreRequest) error {
 	return nil
 }
 
@@ -94,7 +98,7 @@ func TestInstallConfigScope(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			installer, adder := &fakeInstaller{err: tc.installErr}, &fakeAdder{}
 			cmd := commands.PackageInstallCommand{
-				Install: installer, Add: adder,
+				Install: installer, Edit: adder,
 				Options: commands.PackageInstallOptions{Package: "test", Version: tc.version, Scope: tc.scope},
 			}
 			err := cmd.Execute()
@@ -105,7 +109,7 @@ func TestInstallConfigScope(t *testing.T) {
 			}
 			require.Equal(t, tc.wantInstall, installer.called)
 			if tc.wantAdd {
-				require.Equal(t, &add.Request{Package: "test", Version: tc.version, Scope: tc.scope}, adder.request)
+				require.Equal(t, &edit.PackageRequest{Package: "test", Version: tc.version, Scope: tc.scope}, adder.request)
 			} else {
 				require.Nil(t, adder.request)
 			}

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/patrickhuber/go-di"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/app"
+	"github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/patrickhuber/wrangle/internal/install"
 
 	"github.com/urfave/cli/v2"
@@ -39,7 +39,7 @@ var PackageInstall = &cli.Command{
 
 type PackageInstallCommand struct {
 	Install install.Service       `inject:""`
-	Add     add.Service           `inject:""`
+	Edit    edit.Service          `inject:""`
 	Options PackageInstallOptions `options:""`
 }
 
@@ -52,7 +52,7 @@ type PackageInstallOptions struct {
 
 func (cmd *PackageInstallCommand) Execute() error {
 	if cmd.Options.Scope != "" {
-		if err := add.ValidateScope(cmd.Options.Scope); err != nil {
+		if err := edit.ValidateScope(cmd.Options.Scope); err != nil {
 			return err
 		}
 	}
@@ -65,7 +65,7 @@ func (cmd *PackageInstallCommand) Execute() error {
 		return err
 	}
 	if cmd.Options.Scope != "" {
-		return cmd.Add.Execute(&add.Request{
+		return cmd.Edit.AddPackage(&edit.PackageRequest{
 			Package: cmd.Options.Package,
 			Version: cmd.Options.Version,
 			Scope:   cmd.Options.Scope,

@@ -1,4 +1,4 @@
-package add_test
+package edit_test
 
 import (
 	"testing"
@@ -7,8 +7,8 @@ import (
 	"github.com/patrickhuber/go-cross/arch"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
-	"github.com/patrickhuber/wrangle/internal/add"
 	"github.com/patrickhuber/wrangle/internal/config"
+	"github.com/patrickhuber/wrangle/internal/config/edit"
 	"github.com/patrickhuber/wrangle/internal/fixtures"
 	"github.com/stretchr/testify/require"
 )
@@ -36,7 +36,7 @@ func TestConfigScopes(t *testing.T) {
 				require.NoError(t, fs.MkdirAll(path.Dir(file), 0755))
 				require.NoError(t, config.WriteFile(fs, file, config.Config{ApiVersion: config.ApiVersion, Kind: config.Kind}))
 			}
-			service := add.NewService(fs, target.OS(), path, log.Memory(), target.Env(), config.NewMockCliContext(nil), config.NewTestSystemDefaultProvider(path))
+			service := edit.NewService(fs, target.OS(), path, log.Memory(), target.Env(), config.NewMockCliContext(nil), config.NewTestSystemDefaultProvider(path))
 			check := func(file, name, version string) {
 				t.Helper()
 				cfg, err := config.ReadFile(fs, file)
@@ -44,22 +44,22 @@ func TestConfigScopes(t *testing.T) {
 				require.Contains(t, cfg.Spec.Packages, config.Package{Name: name, Version: version})
 			}
 
-			require.NoError(t, service.Execute(&add.Request{Package: "nearest"}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "nearest"}))
 			check(local, "nearest", "latest")
-			require.NoError(t, service.Execute(&add.Request{Package: "user", Version: "1.2.3", Scope: add.ScopeUser}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "user", Version: "1.2.3", Scope: edit.ScopeUser}))
 			check(user, "user", "1.2.3")
-			require.NoError(t, service.Execute(&add.Request{Package: "system", Scope: add.ScopeSystem}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "system", Scope: edit.ScopeSystem}))
 			check(system, "system", "latest")
-			require.NoError(t, service.Execute(&add.Request{Package: "local", Scope: add.ScopeLocal}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "local", Scope: edit.ScopeLocal}))
 			check(local, "local", "latest")
 
 			require.NoError(t, fs.Remove(local))
-			require.NoError(t, service.Execute(&add.Request{Package: "fallback-user"}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "fallback-user"}))
 			check(user, "fallback-user", "latest")
 			require.NoError(t, fs.Remove(user))
-			require.NoError(t, service.Execute(&add.Request{Package: "fallback-system"}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "fallback-system"}))
 			check(system, "fallback-system", "latest")
-			require.NoError(t, service.Execute(&add.Request{Package: "new-local", Scope: add.ScopeLocal}))
+			require.NoError(t, service.AddPackage(&edit.PackageRequest{Package: "new-local", Scope: edit.ScopeLocal}))
 			check(path.Join(child, ".wrangle.toml"), "new-local", "latest")
 		})
 	}
@@ -73,7 +73,7 @@ func TestAmbiguousLocalConfig(t *testing.T) {
 	for _, name := range []string{".wrangle.toml", ".wrangle.yml"} {
 		require.NoError(t, config.WriteFile(target.FS(), target.Path().Join(work, name), config.Config{}))
 	}
-	service := add.NewService(target.FS(), target.OS(), target.Path(), log.Memory(), target.Env(), config.NewMockCliContext(nil), config.NewTestSystemDefaultProvider(target.Path()))
-	require.ErrorContains(t, service.Execute(&add.Request{Package: "test"}), "multiple local config files")
-	require.ErrorContains(t, service.Execute(&add.Request{Package: "test", Scope: "invalid"}), "invalid scope")
+	service := edit.NewService(target.FS(), target.OS(), target.Path(), log.Memory(), target.Env(), config.NewMockCliContext(nil), config.NewTestSystemDefaultProvider(target.Path()))
+	require.ErrorContains(t, service.AddPackage(&edit.PackageRequest{Package: "test"}), "multiple local config files")
+	require.ErrorContains(t, edit.ValidateScope("invalid"), "invalid scope")
 }
