@@ -24,6 +24,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/patrickhuber/wrangle/internal/stores/azure"
+	"github.com/patrickhuber/wrangle/internal/stores/environment"
 	"github.com/patrickhuber/wrangle/internal/stores/keyring"
 	"github.com/patrickhuber/wrangle/internal/stores/vault"
 
@@ -136,6 +137,7 @@ func New() Host {
 
 	// stores
 	container.RegisterConstructor(azure.NewFactory)
+	container.RegisterConstructor(environment.NewFactory)
 	container.RegisterConstructor(keyring.NewFactory)
 	container.RegisterConstructor(vault.NewFactory)
 	container.RegisterConstructor(stores.NewRegistry)

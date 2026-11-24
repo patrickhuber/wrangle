@@ -27,6 +27,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/secret"
 	"github.com/patrickhuber/wrangle/internal/shim"
 	"github.com/patrickhuber/wrangle/internal/stores"
+	"github.com/patrickhuber/wrangle/internal/stores/environment"
 
 	"github.com/patrickhuber/wrangle/internal/actions"
 	"github.com/patrickhuber/wrangle/internal/add"
@@ -140,6 +141,7 @@ func NewTest(plat platform.Platform, vars map[string]string, args []string) Host
 	container.RegisterConstructor(shellhook.NewPowershell, di.WithName(shellhook.Powershell))
 
 	// stores
+	container.RegisterConstructor(environment.NewFactory)
 	container.RegisterConstructor(stores.NewRegistry)
 	container.RegisterConstructor(memstore.NewFactory)
 	container.RegisterConstructor(stores.NewService)

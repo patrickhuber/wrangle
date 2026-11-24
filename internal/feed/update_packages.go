@@ -3,10 +3,12 @@ package feed
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/resource"
 )
 
@@ -28,13 +30,15 @@ type UpdatePackages interface {
 type updatePackages struct {
 	serviceFactory  LocalServiceFactory
 	resourceFactory resource.Factory
+	interpolator    interpolate.Service
 	logger          log.Logger
 }
 
-func NewUpdatePackages(serviceFactory LocalServiceFactory, resourceFactory resource.Factory, logger log.Logger) UpdatePackages {
+func NewUpdatePackages(serviceFactory LocalServiceFactory, resourceFactory resource.Factory, interpolator interpolate.Service, logger log.Logger) UpdatePackages {
 	return &updatePackages{
 		serviceFactory:  serviceFactory,
 		resourceFactory: resourceFactory,
+		interpolator:    interpolator,
 		logger:          logger,
 	}
 }
@@ -86,10 +90,15 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 		currentVersion = item.State.LatestVersion
 	}
 
+	source, err := u.interpolateSource(item.Resource.Source)
+	if err != nil {
+		return 0, fmt.Errorf("interpolate resource source for %s: %w", item.Package.Name, err)
+	}
+
 	resource, err := u.resourceFactory.Create(resource.Config{
 		Name:   item.Resource.Name,
 		Type:   item.Resource.Type,
-		Source: item.Resource.Source,
+		Source: source,
 	})
 	if err != nil {
 		return 0, fmt.Errorf("create resource for %s: %w", item.Package.Name, err)
@@ -159,6 +168,43 @@ func (u *updatePackages) updateItem(feedSvc Service, item *Item) (int, error) {
 	}
 
 	return len(newVersions), nil
+}
+
+func (u *updatePackages) interpolateSource(source map[string]string) (map[string]string, error) {
+	if source == nil {
+		return nil, nil
+	}
+
+	hasReference := false
+	data := make(map[string]any, len(source))
+	for key, value := range source {
+		data[key] = value
+		if strings.Contains(value, "((") && strings.Contains(value, "))") {
+			hasReference = true
+		}
+	}
+	if !hasReference {
+		return source, nil
+	}
+
+	result, err := u.interpolator.Interpolate(data)
+	if err != nil {
+		return nil, err
+	}
+
+	values, ok := result.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("unexpected interpolated source type %T", result)
+	}
+	interpolated := make(map[string]string, len(values))
+	for key, value := range values {
+		text, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("interpolated source value %q has type %T, expected string", key, value)
+		}
+		interpolated[key] = text
+	}
+	return interpolated, nil
 }
 
 // toPlatformData converts feed.Platform structs to template-compatible map data

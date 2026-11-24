@@ -296,6 +296,55 @@ variables:
 2. **Token**: Provide `token`
 3. **Environment Variables**: Use `VAULT_TOKEN` and `VAULT_ADDR`
 
+### Environment variables
+
+The `env` store makes variables from the process running Wrangle
+available to interpolation by name, such as `((MY_API_TOKEN))`. It is
+read-only. Its `name` registers the provider; it does not define a mapping or
+become a prefix in references. By default, the store exposes all process
+environment variables. Use `include` and `exclude` glob lists to restrict
+which variables are visible; if `include` is specified, only matching names
+are included, and `exclude` always takes precedence. An explicitly empty
+`include` list exposes no variables. Patterns use simple glob syntax (`*`,
+`?`, and character classes); there is no prefix option.
+
+`spec.env` is separate: each key is a shell variable Wrangle should export, and
+its value can interpolate a value from a configured store. Configure the
+provider in Wrangle's user configuration:
+
+```yaml
+spec:
+  stores:
+    - name: env
+      type: env
+      properties:
+        include:
+          - MY_API_TOKEN
+          - GITHUB_TOKEN
+        exclude:
+          - GITHUB_TOKEN_DEBUG_*
+```
+
+Then map the process variable `MY_API_TOKEN` to the shell variable `API_TOKEN`
+in your project configuration:
+
+```yaml
+spec:
+  env:
+    API_TOKEN: ((MY_API_TOKEN))
+```
+
+`wrangle config export bash` prints the shell commands for configured
+environment variables. Evaluate its output to apply them to the current shell:
+
+```bash
+eval "$(wrangle config export bash)"
+```
+
+Values can also be interpolated directly by commands that use configured
+stores. For example, `wrangle feed update` can use
+`access_token: ((GITHUB_TOKEN))` when the environment store is configured.
+
 ## Variables
 
 Wrangle supports defining variables for secret generation following the BOSH variable types specification. Variables define how secrets should be generated, specifying only the properties needed for generation—not the actual values.

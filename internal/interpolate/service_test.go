@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/patrickhuber/go-cross"
+	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/stores"
+	"github.com/patrickhuber/wrangle/internal/stores/environment"
 	memstore "github.com/patrickhuber/wrangle/internal/stores/memory"
 	"github.com/stretchr/testify/require"
 )
@@ -39,6 +43,11 @@ func (f *fakeStoreService) List() ([]stores.Store, error) {
 }
 
 func TestInterpolate(t *testing.T) {
+	target := cross.NewTest(platform.Linux, arch.AMD64)
+	require.NoError(t, target.Env().Set("MY_TOKEN", "from-process-env"))
+	environmentStore, err := environment.NewFactory(target.Env()).Create(nil)
+	require.NoError(t, err)
+
 	cases := []struct {
 		name        string
 		cfg         config.Config
@@ -47,6 +56,15 @@ func TestInterpolate(t *testing.T) {
 		wantPkgs    []config.Package
 		wantErrLike string
 	}{
+		{
+			name: "resolves environment variable store",
+			cfg: config.Config{Spec: config.Spec{
+				Stores:      []config.Store{{Name: "env"}},
+				Environment: map[string]string{"TOKEN": "((MY_TOKEN))"},
+			}},
+			stores:  map[string]stores.Store{"env": environmentStore},
+			wantEnv: map[string]string{"TOKEN": "from-process-env"},
+		},
 		{
 			name: "resolves env variables",
 			cfg: config.Config{Spec: config.Spec{
@@ -169,4 +187,30 @@ func TestInterpolateNoStoresSkipsResolution(t *testing.T) {
 	result, err := svc.Execute()
 	require.NoError(t, err)
 	require.Equal(t, "((secret/password))", result.Spec.Environment["PASSWORD"])
+}
+
+func TestInterpolateArbitraryValueUsesConfiguredStores(t *testing.T) {
+	key, err := stores.ParseKey("secret/password")
+	require.NoError(t, err)
+	store := memstore.NewStore()
+	require.NoError(t, store.Set(key, "resolved"))
+
+	svc := NewService(
+		&fakeConfigService{cfg: config.Config{Spec: config.Spec{
+			Stores: []config.Store{{Name: "secrets"}},
+		}}},
+		&fakeStoreService{stores: map[string]stores.Store{"secrets": store}},
+	)
+	value, err := svc.Interpolate(map[string]any{"access_token": "((secret/password))"})
+	require.NoError(t, err)
+	require.Equal(t, map[string]any{"access_token": "resolved"}, value)
+}
+
+func TestInterpolateArbitraryValueFailsForUnresolvedVariable(t *testing.T) {
+	svc := NewService(
+		&fakeConfigService{cfg: config.Config{}},
+		&fakeStoreService{stores: map[string]stores.Store{}},
+	)
+	_, err := svc.Interpolate(map[string]any{"access_token": "((GITHUB_TOKEN))"})
+	require.ErrorContains(t, err, "GITHUB_TOKEN")
 }

@@ -6,12 +6,17 @@ import (
 	"github.com/google/go-github/v62/github"
 	"github.com/patrickhuber/go-cross"
 	"github.com/patrickhuber/go-cross/arch"
+	"github.com/patrickhuber/go-cross/env"
 	"github.com/patrickhuber/go-cross/platform"
 	"github.com/patrickhuber/go-log"
+	"github.com/patrickhuber/wrangle/internal/config"
 	"github.com/patrickhuber/wrangle/internal/feed"
 	feedfs "github.com/patrickhuber/wrangle/internal/feed/fs"
+	"github.com/patrickhuber/wrangle/internal/interpolate"
 	"github.com/patrickhuber/wrangle/internal/resource"
 	"github.com/patrickhuber/wrangle/internal/resource/githubrelease"
+	"github.com/patrickhuber/wrangle/internal/stores"
+	environmentstore "github.com/patrickhuber/wrangle/internal/stores/environment"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,8 +41,9 @@ func TestUpdatePackages(t *testing.T) {
     owner: testowner
     repository: testrepo
     version_regex: '[0-9]+\.[0-9]+\.[0-9]+'
-    access_token: test-token
+    access_token: ((GITHUB_TOKEN))
 `), 0644))
+		require.NoError(t, h.Env().Set("GITHUB_TOKEN", "test-token"))
 		require.NoError(t, fs.WriteFile(itemDir+"/template.yml", []byte(`package:
   name: testpkg
   version: {{ .version }}
@@ -75,7 +81,10 @@ func TestUpdatePackages(t *testing.T) {
 		}, logger)
 		resourceFactory := resource.NewFactory(ghProvider)
 
-		updateSvc := feed.NewUpdatePackages(factory, resourceFactory, logger)
+		interpolator := newInterpolator(h.Env(), config.Config{Spec: config.Spec{
+			Stores: []config.Store{{Name: "env", Type: "env"}},
+		}})
+		updateSvc := feed.NewUpdatePackages(factory, resourceFactory, interpolator, logger)
 
 		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
 		require.NoError(t, err)
@@ -95,6 +104,18 @@ func TestUpdatePackages(t *testing.T) {
 		stateData, err := fs.ReadFile(itemDir + "/state.yml")
 		require.NoError(t, err)
 		require.Contains(t, string(stateData), "1.1.0")
+
+		require.NoError(t, fs.WriteFile(itemDir+"/resource.yml", []byte(`resource:
+  name: github-release
+  type: github-release
+  source:
+    owner: testowner
+    repository: testrepo
+    version_regex: '[0-9]+\.[0-9]+\.[0-9]+'
+    access_token: ((MISSING_GITHUB_TOKEN))
+`), 0644))
+		_, err = updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
+		require.ErrorContains(t, err, "MISSING_GITHUB_TOKEN")
 	})
 
 	t.Run("uses the registered resource provider", func(t *testing.T) {
@@ -130,7 +151,7 @@ func TestUpdatePackages(t *testing.T) {
 
 		feedFactory := feedfs.NewLocalServiceFactory(fs, path, logger)
 		resourceFactory := resource.NewFactory(fakeResourceProvider{})
-		updateSvc := feed.NewUpdatePackages(feedFactory, resourceFactory, logger)
+		updateSvc := feed.NewUpdatePackages(feedFactory, resourceFactory, newInterpolator(h.Env(), config.Config{}), logger)
 
 		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
 		require.NoError(t, err)
@@ -159,11 +180,19 @@ func TestUpdatePackages(t *testing.T) {
 		factory := feedfs.NewLocalServiceFactory(fs, path, logger)
 		resourceFactory := resource.NewFactory()
 
-		updateSvc := feed.NewUpdatePackages(factory, resourceFactory, logger)
+		updateSvc := feed.NewUpdatePackages(factory, resourceFactory, newInterpolator(h.Env(), config.Config{}), logger)
 		resp, err := updateSvc.Execute(&feed.UpdatePackagesRequest{Directory: rootDir})
 		require.NoError(t, err)
 		require.Equal(t, 0, resp.Updated)
 	})
+}
+
+func newInterpolator(environment env.Environment, cfg config.Config) interpolate.Service {
+	configuration := config.NewMock(cfg)
+	registry := stores.NewRegistry([]stores.Factory{
+		environmentstore.NewFactory(environment),
+	})
+	return interpolate.NewService(configuration, stores.NewService(configuration, registry))
 }
 
 type fakeResourceProvider struct{}
