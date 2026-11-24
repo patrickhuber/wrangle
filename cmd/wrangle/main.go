@@ -111,6 +111,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		commands.Bootstrap,
 		commands.Package,
+		commands.Store,
 		commands.Feed,
 		commands.Variable,
 		commands.Secret,

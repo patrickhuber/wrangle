@@ -18,6 +18,7 @@ import (
 type Request struct {
 	Package string
 	Version string
+	Store   *config.Store
 	Scope   string
 }
 
@@ -72,7 +73,7 @@ func NewService(
 }
 
 func (s *service) Execute(r *Request) error {
-	if r.Package == "" {
+	if r.Store == nil && r.Package == "" {
 		return fmt.Errorf("package name is required")
 	}
 
@@ -113,6 +114,37 @@ func (s *service) Execute(r *Request) error {
 				Packages:    []config.Package{},
 			},
 		}
+	}
+
+	if r.Store != nil {
+		if r.Store.Name == "" {
+			return fmt.Errorf("store name is required")
+		}
+		if r.Store.Type == "" {
+			return fmt.Errorf("store type is required")
+		}
+
+		updated := false
+		for idx, store := range cfg.Spec.Stores {
+			if store.Name == r.Store.Name {
+				cfg.Spec.Stores[idx] = *r.Store
+				updated = true
+				break
+			}
+		}
+		if !updated {
+			cfg.Spec.Stores = append(cfg.Spec.Stores, *r.Store)
+		}
+
+		if err := config.WriteFile(s.fs, file, cfg); err != nil {
+			return fmt.Errorf("unable to write config file '%s': %w", file, err)
+		}
+		if updated {
+			s.log.Infof("updated store %s in '%s'", r.Store.Name, file)
+		} else {
+			s.log.Infof("added store %s to '%s'", r.Store.Name, file)
+		}
+		return nil
 	}
 
 	version := r.Version
