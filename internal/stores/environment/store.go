@@ -84,7 +84,7 @@ func matchesAny(name string, patterns []string) (bool, error) {
 }
 
 func variableName(key stores.Key) (string, error) {
-	if len(key.Path.Segments) != 0 || !key.Data.Version.Latest {
+	if len(key.Path.Segments) != 0 || (!key.Data.Version.Latest && key.Data.Version.Value != "") {
 		return "", fmt.Errorf("environment variable key cannot include a path or version")
 	}
 	if key.Data.Name == "" {
