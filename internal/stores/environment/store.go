@@ -18,7 +18,7 @@ type Store struct {
 func (s *Store) Get(key stores.Key) (any, bool, error) {
 	name, err := variableName(key)
 	if err != nil {
-		return nil, false, err
+		return nil, false, nil
 	}
 	included, err := s.includes(name)
 	if err != nil {
