@@ -119,6 +119,9 @@ func (p *testSystemDefaultProvider) GetDefault(ctx *config.GetContext) (Config, 
 				global.EnvPackages: p.path.Join(rootDirectory, "packages"),
 				global.EnvRoot:     rootDirectory,
 			},
+			Stores: []Store{
+				{Name: "env", Type: "env"},
+			},
 			Packages: []Package{
 				{
 					Name:    "wrangle",
@@ -149,6 +152,9 @@ func (p *systemDefaultProvider) GetDefault(ctx *config.GetContext) (Config, erro
 				global.EnvBin:      path.Join(rootDirectory, "bin"),
 				global.EnvPackages: path.Join(rootDirectory, "packages"),
 				global.EnvRoot:     rootDirectory,
+			},
+			Stores: []Store{
+				{Name: "env", Type: "env"},
 			},
 			Packages: []Package{
 				{

@@ -99,3 +99,23 @@ func TestSystemProvider(t *testing.T) {
 		})
 	}
 }
+
+func TestSystemDefaultProviderIncludesEnvironmentStore(t *testing.T) {
+	target := cross.NewTest(platform.Linux, arch.AMD64)
+	provider := config.NewSystemDefaultProvider(target.Path())
+
+	cfg, err := provider.GetDefault(&cfgpkg.GetContext{
+		MergedConfiguration: map[string]any{
+			"spec": map[string]any{
+				"env": map[string]any{
+					global.EnvRoot: "/opt/wrangle",
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.Contains(t, cfg.Spec.Stores, config.Store{
+		Name: "env",
+		Type: "env",
+	})
+}

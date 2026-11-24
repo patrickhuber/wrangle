@@ -95,7 +95,7 @@ spec:
 
 	cfg, err = configuration.Get()
 	require.NoError(t, err)
-	require.Len(t, cfg.Spec.Stores, 1)
+	require.Len(t, cfg.Spec.Stores, 2)
 
 	exportCmd := &commands.ConfigExportCommand{
 		Export: export,

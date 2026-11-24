@@ -61,6 +61,9 @@ func (s *service) load() error {
 		return err
 	}
 	for _, c := range cfg.Spec.Stores {
+		if _, exists := s.cache[c.Name]; exists {
+			continue
+		}
 		factory, err := s.registry.Get(c.Type)
 		if err != nil {
 			return err
