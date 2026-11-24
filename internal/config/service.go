@@ -88,5 +88,15 @@ func (c *configuration) Get() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	// Merged slices are ordered from highest to lowest precedence.
+	seenStores := make(map[string]bool, len(cfg.Spec.Stores))
+	stores := cfg.Spec.Stores[:0]
+	for _, store := range cfg.Spec.Stores {
+		if !seenStores[store.Name] {
+			seenStores[store.Name] = true
+			stores = append(stores, store)
+		}
+	}
+	cfg.Spec.Stores = stores
 	return cfg, nil
 }

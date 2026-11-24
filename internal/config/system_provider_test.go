@@ -99,3 +99,40 @@ func TestSystemProvider(t *testing.T) {
 		})
 	}
 }
+
+func TestSystemProviderDefaultEnvStore(t *testing.T) {
+	target := cross.NewTest(platform.Linux, arch.AMD64)
+	fileSystem := target.FS()
+	configPath := "/etc/wrangle/config.yml"
+	provider := config.NewSystemProvider(fileSystem, target.Path(), config.NewSystemDefaultProvider(target.Path()), false)
+	ctx := &cfgpkg.GetContext{
+		MergedConfiguration: map[string]any{
+			"spec": map[string]any{
+				"env": map[string]any{
+					global.EnvSystemConfig: configPath,
+					global.EnvRoot:         "/opt/wrangle",
+				},
+			},
+		},
+	}
+
+	_, err := provider.Get(ctx)
+	require.NoError(t, err)
+	cfg, err := config.ReadFile(fileSystem, configPath)
+	require.NoError(t, err)
+	require.Len(t, cfg.Spec.Stores, 1)
+	require.Equal(t, "env", cfg.Spec.Stores[0].Name)
+	require.Equal(t, "env", cfg.Spec.Stores[0].Type)
+	require.Empty(t, cfg.Spec.Stores[0].Properties)
+	require.Empty(t, cfg.Spec.Stores[0].Dependencies)
+
+	cfg.Spec.Stores = []config.Store{{Name: "custom", Type: "env"}}
+	require.NoError(t, config.WriteFile(fileSystem, configPath, cfg))
+	_, err = provider.Get(ctx)
+	require.NoError(t, err)
+	persisted, err := config.ReadFile(fileSystem, configPath)
+	require.NoError(t, err)
+	require.Len(t, persisted.Spec.Stores, 1)
+	require.Equal(t, "custom", persisted.Spec.Stores[0].Name)
+	require.Equal(t, "env", persisted.Spec.Stores[0].Type)
+}
