@@ -81,6 +81,14 @@ func RunBootstrapTest(
 	require.NoError(t, err)
 	require.True(t, ok, globalConfigFile+" does not exist")
 
+	cfg, err := config.ReadFile(fs, globalConfigFile)
+	require.NoError(t, err)
+	require.Len(t, cfg.Spec.Stores, 1)
+	require.Equal(t, "env", cfg.Spec.Stores[0].Name)
+	require.Equal(t, "env", cfg.Spec.Stores[0].Type)
+	require.Empty(t, cfg.Spec.Stores[0].Properties)
+	require.Empty(t, cfg.Spec.Stores[0].Dependencies)
+
 	ok, err = fs.Exists(versionedPackagePath)
 	require.NoError(t, err)
 	require.True(t, ok, "versioned package path: "+versionedPackagePath+" does not exist")

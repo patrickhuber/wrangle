@@ -17,6 +17,7 @@ import (
 	"github.com/patrickhuber/wrangle/internal/export"
 	"github.com/patrickhuber/wrangle/internal/global"
 	"github.com/patrickhuber/wrangle/internal/host"
+	"github.com/patrickhuber/wrangle/internal/stores"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,6 +28,7 @@ func TestExport(t *testing.T) {
 	processEnv, err := di.Resolve[env.Environment](container)
 	require.NoError(t, err)
 	require.NoError(t, processEnv.Set("MY_API_TOKEN", "test-token"))
+	require.NoError(t, processEnv.Set("OTHER_TOKEN", "not-included"))
 
 	fs, err := di.Resolve[fs.FS](container)
 	require.NoError(t, err)
@@ -96,6 +98,17 @@ spec:
 	cfg, err = configuration.Get()
 	require.NoError(t, err)
 	require.Len(t, cfg.Spec.Stores, 1)
+	require.Equal(t, []any{"MY_API_TOKEN"}, cfg.Spec.Stores[0].Properties["include"])
+
+	storeService, err := di.Resolve[stores.Service](container)
+	require.NoError(t, err)
+	envStore, err := storeService.Get("env")
+	require.NoError(t, err)
+	key, err := stores.ParseKey("OTHER_TOKEN")
+	require.NoError(t, err)
+	_, found, err := envStore.Get(key)
+	require.NoError(t, err)
+	require.False(t, found)
 
 	exportCmd := &commands.ConfigExportCommand{
 		Export: export,

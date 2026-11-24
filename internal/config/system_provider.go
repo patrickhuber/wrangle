@@ -125,6 +125,12 @@ func (p *testSystemDefaultProvider) GetDefault(ctx *config.GetContext) (Config, 
 					Version: "latest",
 				},
 			},
+			Stores: []Store{
+				{
+					Name: "env",
+					Type: "env",
+				},
+			},
 			Feeds: []Feed{
 				{
 					Name: "default",
@@ -154,6 +160,12 @@ func (p *systemDefaultProvider) GetDefault(ctx *config.GetContext) (Config, erro
 				{
 					Name:    "wrangle",
 					Version: "latest",
+				},
+			},
+			Stores: []Store{
+				{
+					Name: "env",
+					Type: "env",
 				},
 			},
 			Feeds: []Feed{

@@ -309,8 +309,10 @@ are included, and `exclude` always takes precedence. An explicitly empty
 `?`, and character classes); there is no prefix option.
 
 `spec.env` is separate: each key is a shell variable Wrangle should export, and
-its value can interpolate a value from a configured store. Configure the
-provider in Wrangle's user configuration:
+its value can interpolate a value from a configured store. Bootstrap adds the
+`env` store to newly created system configurations. To restrict its variables,
+configure a store named `env` in the user configuration; stores with the same
+name in higher-precedence configurations replace those in lower ones:
 
 ```yaml
 spec:
