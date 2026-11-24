@@ -48,11 +48,26 @@ func TestEnvironmentStoreMissingVariableAndInvalidKeys(t *testing.T) {
 	require.False(t, found)
 
 	for _, invalid := range []string{"", "env/one", "MY_VAR@1"} {
-		key, err := stores.ParseKey(invalid)
-		require.NoError(t, err)
-		_, _, err = store.Get(key)
-		require.Error(t, err)
+		t.Run(invalid, func(t *testing.T) {
+			key, err := stores.ParseKey(invalid)
+			require.NoError(t, err)
+			_, found, err := store.Get(key)
+			require.NoError(t, err)
+			require.False(t, found)
+		})
 	}
+}
+
+func TestEnvironmentStoreUnspecifiedVersion(t *testing.T) {
+	target := cross.NewTest(platform.Linux, arch.AMD64)
+	require.NoError(t, target.Env().Set("MY_VAR", "value"))
+	store, err := environment.NewFactory(target.Env()).Create(nil)
+	require.NoError(t, err)
+
+	value, found, err := store.Get(stores.Key{Data: stores.Data{Name: "MY_VAR"}})
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Equal(t, "value", value)
 }
 
 func TestEnvironmentStoreIncludeAndExcludePatterns(t *testing.T) {

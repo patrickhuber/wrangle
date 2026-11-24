@@ -40,6 +40,20 @@ func TestKeyParse(t *testing.T) {
 				},
 			}},
 		{
+			"name with digits version and path",
+			"TOKEN2_value3@v1.0.0/test",
+			stores.Key{
+				Data: stores.Data{
+					Name: "TOKEN2_value3",
+					Version: stores.Version{
+						Value: "v1.0.0",
+					},
+				},
+				Path: dataptr.DataPointer{
+					Segments: []dataptr.Segment{dataptr.Key{Key: "test"}},
+				},
+			}},
+		{
 			"name version",
 			"name@v1.0.0", stores.Key{
 				Data: stores.Data{

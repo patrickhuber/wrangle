@@ -86,7 +86,7 @@ func parseName(str string) (capture string, rest string, err error) {
 	i := 0
 	for {
 		r, size := utf8.DecodeRuneInString(str[i:])
-		if !(isLetter(r) || r == '_') {
+		if !(isLetter(r) || r == '_' || i > 0 && r >= '0' && r <= '9') {
 			break
 		}
 		i += size
